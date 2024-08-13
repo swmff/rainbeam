@@ -67,6 +67,18 @@ endblock %} {% block content %}
             .getElementById("register_form")
             .addEventListener("submit", async (e) => {
                 e.preventDefault();
+
+                // check if we come here often
+                if (trigger("app:do_i_know_you", [])) {
+                    alert(
+                        "Don't create too many accounts, as you can only use maybe one or two of them actively. Please login instead!",
+                    );
+
+                    window.location.href = "/login";
+                    return;
+                }
+
+                // sign up
                 const res = await fetch("/api/auth/register", {
                     method: "POST",
                     body: JSON.stringify({

@@ -1,7 +1,7 @@
 (() => {
     const app = reg_ns("app");
 
-    app.define("fold_nav", ({ $ }) => {
+    app.define("fold_nav", function ({ $ }) {
         if (!$.nav_folded) {
             for (const nav of Array.from(document.querySelectorAll("nav"))) {
                 nav.style.display = "none";
@@ -19,7 +19,7 @@
         $.nav_folded = !($.nav_folded || false);
     });
 
-    app.define("clean_date_codes", ({ $ }) => {
+    app.define("clean_date_codes", function ({ $ }) {
         for (const element of Array.from(document.querySelectorAll(".date"))) {
             if (isNaN(element.innerText)) {
                 continue;
@@ -29,6 +29,24 @@
                 parseInt(element.innerText),
             ).toLocaleDateString();
         }
+    });
+
+    app.define("i_know_you", function (_) {
+        // this will store your current username in localStorage
+        fetch("/api/auth/me")
+            .then((res) => res.json())
+            .then((res) => {
+                window.localStorage.setItem("me", res.message);
+            });
+    });
+
+    app.define("do_i_know_you", function ({$}) {
+        if (window.localStorage.getItem("me")) {
+            globalThis.username = window.localStorage.getItem("me");
+            return true;
+        }
+
+        return false;
     });
 
     app.define("logout", function (_) {

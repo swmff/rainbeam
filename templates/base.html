@@ -269,6 +269,15 @@
             })();
         </script>
 
+        {% if profile.is_some() %}
+        <script>
+            (() => {
+                const app = ns("app");
+                app.i_know_you();
+            })();
+        </script>
+        {% endif %}
+
         <!-- dialogs -->
         <dialog id="link_filter">
             <div class="inner">
