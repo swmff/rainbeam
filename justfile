@@ -16,3 +16,7 @@ doc:
 
 subs:
     git submodule update --recursive --remote
+
+pull:
+    git pull
+    git submodule update
