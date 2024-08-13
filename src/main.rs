@@ -2,7 +2,7 @@
 use axum::routing::{get, get_service};
 use axum::Router;
 
-use xsu_authman::{Database as AuthDatabase, api as AuthApi};
+use xsu_authman::{api as AuthApi, Database as AuthDatabase};
 use xsu_dataman::config::Config as DataConf;
 
 mod config;
@@ -22,7 +22,9 @@ pub async fn main() {
     // create databases
     let auth_database = AuthDatabase::new(
         DataConf::get_config().connection, // pull connection config from config file
-        xsu_authman::ServerOptions::truthy(),
+        xsu_authman::ServerOptions {
+            captcha: config.captcha.clone(),
+        },
     )
     .await;
     auth_database.init().await;

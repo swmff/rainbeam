@@ -13,3 +13,6 @@ test:
 # ...
 doc:
     cargo doc --no-deps --document-private-items
+
+subs:
+    git submodule update --recursive --remote

@@ -40,6 +40,11 @@ endblock %} {% block content %}
                     />
                 </div>
 
+                <div
+                    class="h-captcha"
+                    data-sitekey="{{ config.captcha.site_key }}"
+                ></div>
+
                 <hr />
 
                 <button class="primary bold">Register</button>
@@ -67,6 +72,8 @@ endblock %} {% block content %}
                     body: JSON.stringify({
                         username: e.target.username.value,
                         password: e.target.password.value,
+                        token: e.target.querySelector(".h-captcha textarea")
+                            .value,
                     }),
                     headers: {
                         "Content-Type": "application/json",

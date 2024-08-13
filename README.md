@@ -10,6 +10,15 @@ To clone Sparkler, please clone **with submodules**:
 git clone --recurse-submodules https://github.com/swmff/sparkler
 ```
 
+Sparkler requires h-captcha to secure logins and registers. You can provide your h-captcha configuration in `~/.config/xsu-apps/sparkler/config.toml`:
+
+```toml
+# ...
+[captcha]
+site_key = "..."
+secret = "..."
+```
+
 For Sparkler to properly serve static assets, you must link the `static` directory to `~/.config/xsu-apps/sparkler/static`:
 
 ```bash

@@ -821,6 +821,11 @@ dialog::backdrop {
     border-bottom-right-radius: var(--radius);
 }
 
+.h-captcha {
+    display: flex;
+    justify-content: center;
+}
+
 /* utility */
 .flex {
     display: flex;

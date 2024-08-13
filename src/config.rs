@@ -1,6 +1,8 @@
 //! Application config manager
 use serde::{Deserialize, Serialize};
 use std::{env, io::Result};
+
+use xsu_authman::database::HCaptchaConfig;
 use xsu_util::fs;
 
 /// Configuration file
@@ -15,6 +17,8 @@ pub struct Config {
     /// The location of the static directory, should not be supplied manually as it will be overwritten with `$HOME/.config/xsu-apps/sparkler/static`
     #[serde(default)]
     pub static_dir: String,
+    /// HCaptcha configuration
+    pub captcha: HCaptchaConfig,
 }
 
 impl Default for Config {
@@ -24,6 +28,7 @@ impl Default for Config {
             name: "Sparkler".to_string(),
             description: "Simple Q&A".to_string(),
             static_dir: String::new(),
+            captcha: HCaptchaConfig::default(),
         }
     }
 }
