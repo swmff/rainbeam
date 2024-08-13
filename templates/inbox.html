@@ -74,6 +74,9 @@
                 >
                     <div class="footernav">
                         <b class="flex items-center gap-2 item">
+                            <!-- prettier-ignore -->
+                            {% let author_tag = crate::database::Database::anonymous_tag(question.author.as_ref()) %}
+                            {% if author_tag.0 == false %}
                             <img
                                 title="{{ question.author }}'s avatar"
                                 src="/api/v1/profiles/{{ question.author }}/avatar"
@@ -82,14 +85,37 @@
                                 style="--size: 20px"
                             />
 
-                            {% if question.author != "anonymous" %}
                             <a
                                 href="/@{{ question.author }}"
                                 style="color: inherit"
                             >
                                 {{ question.author }}
                             </a>
-                            {% else %} {{ question.author }} {% endif %}
+                            {% else %}
+                            <img
+                                title="{{ question.author }}'s avatar"
+                                src="/static/images/default-avatar.svg"
+                                alt=""
+                                class="avatar round-sm"
+                                style="--size: 20px"
+                            />
+
+                            <!-- prettier-ignore -->
+                            <!-- anonymous user display -->
+                            {{ author_tag.2 }}
+                            <span class="notification">
+                                <!-- prettier-ignore -->
+                                {% if author_tag.1.len() <= 32 %}
+                                <!-- generate a fake short tag, showing the user's real username would ruin the fun -->
+                                <!-- prettier-ignore -->
+                                {{ crate::database::Database::fake_short_tag(author_tag.1) }}
+                                {% else %}
+                                <!-- show real short tag -->
+                                <!-- prettier-ignore -->
+                                {{ crate::database::Database::short_tag(author_tag.1) }}
+                                {% endif %}
+                            </span>
+                            {% endif %}
                         </b>
 
                         <span class="date item">{{ question.timestamp }}</span>

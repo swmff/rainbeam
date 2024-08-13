@@ -72,7 +72,9 @@ block head %}
                                 style="--size: 20px"
                             />
 
-                            {% if question.author != "anonymous" %}
+                            <!-- prettier-ignore -->
+                            {% let author_tag = crate::database::Database::anonymous_tag(question.author.as_ref()) %}
+                            {% if author_tag.0 == false %}
                             <a
                                 href="/@{{ question.author }}"
                                 style="color: inherit"

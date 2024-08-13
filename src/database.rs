@@ -79,6 +79,49 @@ impl Database {
 
     // ...
 
+    /// Get the tag of an anonymous username
+    ///
+    /// # Returns
+    /// `(is anonymous, tag, username)`
+    pub fn anonymous_tag(input: &str) -> (bool, String, String) {
+        if (input != "anonymous") && !input.starts_with("anonymous#") {
+            // not anonymous
+            return (false, String::new(), String::new());
+        }
+
+        // anonymous questions from BEFORE the anonymous tag update will just have the "anonymous" tag
+        let split: Vec<&str> = input.split("#").collect();
+        (
+            true,
+            split.get(1).unwrap_or(&"unknown").to_string(),
+            split.get(0).unwrap().to_string(),
+        )
+    }
+
+    /// Shorten the anonymous tag
+    pub fn short_tag(input: &str) -> String {
+        input.chars().take(10).collect()
+    }
+
+    /// Create a fake short tag for when the anonymous tag is a username
+    ///
+    /// The fake short tag is a hash of the real tag so that it doesn't change every time
+    pub fn fake_short_tag(username: &String) -> String {
+        xsu_util::hash::hash(username.to_owned())
+            .chars()
+            .take(10)
+            .collect()
+    }
+
+    /// Create an anonymous username
+    ///
+    /// # Returns
+    /// `("anonymous#" + tag, tag)`
+    pub fn create_anonymous(&self) -> (String, String) {
+        let tag = xsu_util::hash::random_id();
+        (format!("anonymous#{tag}"), tag)
+    }
+
     // questions
 
     /// Get an existing question
@@ -426,6 +469,7 @@ impl Database {
 
         // check recipient
         // "@" is the recipient we use for global questions (questions anybody can respond to)
+        let tag = Database::anonymous_tag(&author);
         if props.recipient != "@" {
             let recipient = match self
                 .auth
@@ -461,7 +505,7 @@ impl Database {
                 return Err(DatabaseError::NotAllowed);
             }
 
-            if (block_anonymous == true) && author == "anonymous" {
+            if (block_anonymous == true) && (tag.0 == true) {
                 return Err(DatabaseError::NotAllowed);
             }
 
@@ -470,13 +514,13 @@ impl Database {
             }
         } else {
             // anonymous users cannot ask global questions
-            if author == "anonymous" {
+            if tag.0 == true {
                 return Err(DatabaseError::NotAllowed);
             }
         }
 
         // check author permissions
-        if author != "anonymous" {
+        if tag.0 == false {
             let author = match self.auth.get_profile_by_username(author.clone()).await {
                 Ok(ua) => ua,
                 Err(_) => return Err(DatabaseError::NotFound),
@@ -1050,7 +1094,9 @@ impl Database {
         {
             Ok(_) => {
                 // create notification
-                if (question.recipient != question.author) && question.author != "anonymous" {
+                let tag = Database::anonymous_tag(&question.author);
+
+                if (question.recipient != question.author) && tag.0 == false {
                     if let Err(_) = self
                         .auth
                         .create_notification(NotificationCreate {
@@ -1402,7 +1448,10 @@ impl Database {
             Err(e) => return Err(e),
         };
 
-        if author == "anonymous" {
+        let tag = Database::anonymous_tag(&author);
+
+        if tag.0 {
+            // anonymous users cannot comment
             return Err(DatabaseError::NotAllowed);
         }
 

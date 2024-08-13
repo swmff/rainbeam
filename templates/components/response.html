@@ -5,7 +5,9 @@
         <div class="flex justify-between gap-1 question_title">
             <div class="footernav">
                 <b class="flex items-center gap-2 item">
-                    {% if response.question.author != "anonymous" %}
+                    <!-- prettier-ignore -->
+                    {% let author_tag = crate::database::Database::anonymous_tag(response.question.author.as_ref()) %}
+                    {% if author_tag.0 == false %}
                     <img
                         title="{{ response.question.author }}'s avatar"
                         src="/api/v1/profiles/{{ response.question.author }}/avatar"
@@ -27,7 +29,7 @@
                     <!-- default avatar, setting set but blank or unsafe -->
                     <img
                         title="{{ response.question.author }}'s avatar"
-                        src="/api/v1/profiles/{{ response.question.author }}/avatar"
+                        src="/static/images/default-avatar.svg"
                         alt=""
                         class="avatar round-sm"
                         style="--size: 20px"
@@ -45,7 +47,7 @@
                     <!-- default avatar, setting not set -->
                     <img
                         title="{{ response.question.author }}'s avatar"
-                        src="/api/v1/profiles/{{ response.question.author }}/avatar"
+                        src="/static/images/default-avatar.svg"
                         alt=""
                         class="avatar round-sm"
                         style="--size: 20px"

@@ -29,39 +29,99 @@ pub async fn create_request(
     Json(req): Json<QuestionCreate>,
 ) -> impl IntoResponse {
     // get user from token
+    let mut was_not_anonymous = false;
+
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
             .get_profile_by_unhashed(c.value_trimmed().to_string())
             .await
         {
-            Ok(ua) => ua.username,
+            Ok(ua) => {
+                was_not_anonymous = true;
+                ua.username
+            }
             Err(_) => String::from("anonymous"),
         },
         None => String::from("anonymous"),
     };
 
-    // ...
+    let existing_tag = match jar.get("__Secure-Question-Tag") {
+        Some(c) => c.value_trimmed().to_string(),
+        None => String::new(),
+    };
+
+    // get correct username
     let use_anonymous_anyways = req.anonymous; // this is the "Hide your name" field
-    Json(
-        match database
-            .create_question(
-                req,
-                if use_anonymous_anyways {
-                    "anonymous".to_string()
-                } else {
-                    auth_user
+
+    let username = if use_anonymous_anyways {
+        if !existing_tag.is_empty() {
+            // this will use the tag we already got when creating this question
+            format!("anonymous#{existing_tag}")
+        } else {
+            // this will make us generate a new tag and send it as a cookie
+            "anonymous".to_string()
+        }
+    } else {
+        auth_user.clone()
+    };
+
+    if username == "anonymous" {
+        // add tag
+        let tag = if was_not_anonymous {
+            // use the user's real username as their tag
+            // this allows us to detect authenticated users who are breaking rules as anonymous
+            (format!("anonymous#{auth_user}"), auth_user)
+        } else {
+            // create a random tag
+            database.create_anonymous()
+        };
+
+        // create as anonymous
+        return (
+            [
+                ("Content-Type".to_string(), "text/plain".to_string()),
+                (
+                    "Set-Cookie".to_string(),
+                    format!(
+                        "__Secure-Question-Tag={}; SameSite=Lax; Secure; Path=/; HostOnly=true; HttpOnly=true; Max-Age={}",
+                        tag.1,
+                        60 * 60 * 24 * 365
+                    ),
+                ),
+            ],
+            Json(match database.create_question(req, username).await {
+                Ok(r) => DefaultReturn {
+                    success: true,
+                    message: String::new(),
+                    payload: Some(r),
                 },
-            )
-            .await
-        {
+                Err(e) => e.into(),
+            }),
+        );
+    }
+
+    // ...
+    (
+        [
+            ("Content-Type".to_string(), "text/plain".to_string()),
+            (
+                "Set-Cookie".to_string(),
+                format!(
+                    "__Secure-Question-Tag={}; SameSite=Lax; Secure; Path=/; HostOnly=true; HttpOnly=true; Max-Age={}",
+                    username.replace("anonymous#", ""),
+                    60 * 60 * 24 * 365
+                ),
+            ),
+        ],
+        Json(match database.create_question(req, username).await {
             Ok(r) => DefaultReturn {
                 success: true,
                 message: String::new(),
                 payload: Some(r),
             },
             Err(e) => e.into(),
-        },
+        })
     )
 }
 
