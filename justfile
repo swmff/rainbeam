@@ -1,6 +1,6 @@
 # build release
-build:
-    cargo build -r
+build database="sqlite":
+    cargo build -r --no-default-features --features {{database}}
 
 # build debug
 build-d:
