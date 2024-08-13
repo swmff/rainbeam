@@ -83,7 +83,7 @@ pub enum DatabaseError {
     ContentTooShort,
     ContentTooLong,
     NotAllowed,
-    ValueError,
+    // ValueError,
     NotFound,
     Other,
 }
@@ -101,7 +101,7 @@ impl DatabaseError {
             ContentTooShort => String::from("Content too short!"),
             ContentTooLong => String::from("Content too long!"),
             NotAllowed => String::from("You are not allowed to do this!"),
-            ValueError => String::from("One of the field values given is invalid!"),
+            // ValueError => String::from("One of the field values given is invalid!"),
             NotFound => {
                 String::from("Nothing with this path exists or you do not have access to it!")
             }

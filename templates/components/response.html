@@ -117,7 +117,7 @@
         </span>
 
         <div
-            class="flex justify-between items-center flex-collapse sm:items-start gap-1 response_title"
+            class="flex justify-between items-center {% if show_comments != false %}flex-collapse{% endif %} sm:items-start gap-1 response_title"
         >
             <div class="footernav flex-wrap">
                 <b class="flex items-center gap-2">
@@ -137,7 +137,9 @@
                 <span class="date item">{{ response.timestamp }}</span>
             </div>
 
-            <div class="flex justify-between gap-2 sm:w-full">
+            <div
+                class="flex justify-between gap-2 {% if show_comments != false %}sm:w-full{% endif %}"
+            >
                 <!-- comments -->
                 {% if show_comments != false %}
                 <a
