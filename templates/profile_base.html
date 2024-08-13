@@ -2,8 +2,32 @@
 }}{% endblock %} {% block head %}
 <!-- prettier-ignore -->
 {% if let Some(biography) = other.metadata.kv.get("sparkler:biography") %}
+<meta name="og:title" content="{{ other.username }}" />
+<meta name="og:url" content="{{ config.host }}/@{{ other.username }}" />
+
+<meta property="og:type" content="profile" />
+<meta property="profile:username" content="{{ other.username }}" />
+
+<meta
+    name="og:image"
+    content="{{ config.host }}/api/v1/profiles/{{ other.username }}/avatar"
+/>
+
+<meta
+    name="twitter:image"
+    content="{{ config.host }}/api/v1/profiles/{{ other.username }}/avatar"
+/>
+
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Ask me something!" />
+<meta
+    name="twitter:description"
+    content="Ask @{{ other.username }} something on {{ config.name }}!"
+/>
+
 {% let biography = biography.replace("\"", "\\\\\"") %}
 <meta name="description" content="{{ biography }}" />
+<meta name="og:description" content="{{ biography }}" />
 {% endif %} {% endblock %} {% block nav_left %} {% if profile.is_some() %}
 <a class="button" href="/">
     <svg

@@ -19,6 +19,11 @@ pub struct Config {
     pub static_dir: String,
     /// HCaptcha configuration
     pub captcha: HCaptchaConfig,
+    #[serde(default)]
+    /// The origin of the public server (ex: "https://sparkler.cc")
+    ///
+    /// Used in embeds and links.
+    pub host: String,
 }
 
 impl Default for Config {
@@ -29,6 +34,7 @@ impl Default for Config {
             description: "Simple Q&A".to_string(),
             static_dir: String::new(),
             captcha: HCaptchaConfig::default(),
+            host: String::new(),
         }
     }
 }
