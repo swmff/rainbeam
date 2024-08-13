@@ -3,10 +3,10 @@ use crate::model::DatabaseError;
 use axum::body::Bytes;
 use axum::routing::post;
 use axum::Json;
-use serde::{Deserialize, Serialize};
+use hcaptcha::Hcaptcha;
+use std::{fs::File, io::Read};
 use xsu_authman::model::NotificationCreate;
 use xsu_dataman::DefaultReturn;
-use std::{io::Read, fs::File};
 
 use axum::response::IntoResponse;
 use axum::{
@@ -151,17 +151,24 @@ pub async fn banner_request(
     }
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct CreateReport {
-    content: String,
-}
-
 /// Report a user profile
 pub async fn report_request(
     Path(username): Path<String>,
     State(database): State<Database>,
-    Json(req): Json<CreateReport>,
+    Json(req): Json<super::CreateReport>,
 ) -> impl IntoResponse {
+    // check hcaptcha
+    if let Err(e) = req
+        .valid_response(&database.server_options.captcha.secret, None)
+        .await
+    {
+        return Json(DefaultReturn {
+            success: false,
+            message: e.to_string(),
+            payload: (),
+        });
+    }
+
     // get user
     if let Err(_) = database
         .auth

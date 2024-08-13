@@ -116,7 +116,9 @@
             {{ xsu_util::ui::render_markdown(response.content)|safe }}
         </span>
 
-        <div class="flex justify-between items-center gap-1 response_title">
+        <div
+            class="flex justify-between items-center flex-collapse sm:items-start gap-1 response_title"
+        >
             <div class="footernav flex-wrap">
                 <b class="flex items-center gap-2">
                     <img
@@ -135,13 +137,13 @@
                 <span class="date item">{{ response.timestamp }}</span>
             </div>
 
-            <div class="flex gap-2">
+            <div class="flex justify-between gap-2 sm:w-full">
                 <!-- comments -->
                 {% if show_comments != false %}
                 <a
                     href="/response/{{ response.id }}"
                     title="{{ comment_count }} comments"
-                    class="button desktop"
+                    class="button"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -181,32 +183,7 @@
                     </button>
 
                     <div class="inner shadow-md w-content" exclude="dropdown">
-                        {% if show_comments != false %}
-                        <a
-                            href="/response/{{ response.id }}"
-                            title="{{ comment_count }} comments"
-                            class="mobile flex"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 16 16"
-                                width="16"
-                                height="16"
-                                aria-label="Discussion symbol"
-                                class="icon"
-                            >
-                                <path
-                                    d="M1.75 1h8.5c.966 0 1.75.784 1.75 1.75v5.5A1.75 1.75 0 0 1 10.25 10H7.061l-2.574 2.573A1.458 1.458 0 0 1 2 11.543V10h-.25A1.75 1.75 0 0 1 0 8.25v-5.5C0 1.784.784 1 1.75 1ZM1.5 2.75v5.5c0 .138.112.25.25.25h1a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h3.5a.25.25 0 0 0 .25-.25v-5.5a.25.25 0 0 0-.25-.25h-8.5a.25.25 0 0 0-.25.25Zm13 2a.25.25 0 0 0-.25-.25h-.5a.75.75 0 0 1 0-1.5h.5c.966 0 1.75.784 1.75 1.75v5.5A1.75 1.75 0 0 1 14.25 12H14v1.543a1.458 1.458 0 0 1-2.487 1.03L9.22 12.28a.749.749 0 0 1 .326-1.275.749.749 0 0 1 .734.215l2.22 2.22v-2.19a.75.75 0 0 1 .75-.75h1a.25.25 0 0 0 .25-.25Z"
-                                ></path>
-                            </svg>
-
-                            Comments
-
-                            <span class="notification">
-                                {{ comment_count }}
-                            </span>
-                        </a>
-                        {% endif %} {% if let Some(profile) = profile %} {% if
+                        {% if let Some(profile) = profile %} {% if
                         profile.username == response.author %}
                         <!-- actions for the profile owner only -->
                         <b class="title">Manage</b>
@@ -276,7 +253,6 @@
                         <a
                             href="#"
                             onclick="trigger('app:copy_text', ['{{ response.id }}'])"
-                            class="red"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -294,6 +270,40 @@
                                 ></path>
                             </svg>
                             Copy ID
+                        </a>
+
+                        <a href="/response/{{ response.id }}">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 16 16"
+                                width="16"
+                                height="16"
+                                aria-label="Link symbol"
+                                class="icon"
+                            >
+                                <path
+                                    d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"
+                                ></path>
+                            </svg>
+                            Open
+                        </a>
+
+                        <a
+                            href="javascript:trigger('reports:bootstrap', ['responses', '{{ response.id }}'])"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 16 16"
+                                width="16"
+                                height="16"
+                                aria-label="Report symbol"
+                                class="icon"
+                            >
+                                <path
+                                    d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"
+                                ></path>
+                            </svg>
+                            Report
                         </a>
                     </div>
                 </div>

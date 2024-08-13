@@ -967,6 +967,7 @@ struct ResponseTemplate {
     notifs: usize,
     response: QuestionResponse,
     comments: Vec<ResponseComment>,
+    page: i32,
     anonymous_username: Option<String>,
     anonymous_avatar: Option<String>,
 }
@@ -1032,6 +1033,87 @@ pub async fn response_request(
             notifs,
             response: response.0,
             comments,
+            page: query.page,
+            anonymous_username: Some("anonymous".to_string()), // TODO: fetch recipient setting
+            anonymous_avatar: None,
+        }
+        .render()
+        .unwrap(),
+    )
+}
+
+#[derive(Template)]
+#[template(path = "comment.html")]
+struct CommentTemplate {
+    config: Config,
+    profile: Option<Profile>,
+    unread: usize,
+    notifs: usize,
+    comment: ResponseComment,
+    response: QuestionResponse,
+    comment_count: usize,
+    anonymous_username: Option<String>,
+    anonymous_avatar: Option<String>,
+}
+
+/// GET /comment/:id
+pub async fn comment_request(
+    jar: CookieJar,
+    Path(id): Path<String>,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => Some(ua),
+            Err(_) => None,
+        },
+        None => None,
+    };
+
+    let unread = if let Some(ref ua) = auth_user {
+        match database
+            .get_questions_by_recipient(ua.username.to_owned())
+            .await
+        {
+            Ok(unread) => unread.len(),
+            Err(_) => 0,
+        }
+    } else {
+        0
+    };
+
+    let notifs = if let Some(ref ua) = auth_user {
+        database
+            .auth
+            .get_notification_count_by_recipient(ua.username.to_owned())
+            .await
+    } else {
+        0
+    };
+
+    let comment = match database.get_comment(id.clone()).await {
+        Ok(r) => r,
+        Err(e) => return Html(e.to_html(database)),
+    };
+
+    let response = match database.get_response(comment.response.clone()).await {
+        Ok(r) => r,
+        Err(e) => return Html(e.to_html(database)),
+    };
+
+    Html(
+        CommentTemplate {
+            config: database.server_options.clone(),
+            profile: auth_user,
+            unread,
+            notifs,
+            comment,
+            response: response.0,
+            comment_count: response.1,
             anonymous_username: Some("anonymous".to_string()), // TODO: fetch recipient setting
             anonymous_avatar: None,
         }
@@ -1498,9 +1580,11 @@ pub async fn routes(database: Database) -> Router {
         .route("/inbox/compose", get(compose_request))
         .route("/inbox/notifications", get(notifications_request))
         .route("/inbox/reports", get(reports_request)) // staff
-        // profiles
+        // assets
         .route("/question/:id", get(global_question_request))
         .route("/response/:id", get(response_request))
+        .route("/comment/:id", get(comment_request))
+        // profiles
         .route("/@:username/questions", get(profile_questions_request))
         .route("/@:username/following", get(following_request))
         .route("/@:username/followers", get(followers_request))

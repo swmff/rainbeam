@@ -1,11 +1,13 @@
 use crate::database::Database;
-use crate::model::{ResponseCreate, DatabaseError};
+use crate::model::{DatabaseError, ResponseCreate};
+use hcaptcha::Hcaptcha;
+use xsu_authman::model::NotificationCreate;
 use xsu_dataman::DefaultReturn;
 
 use axum::response::IntoResponse;
 use axum::{
     extract::{Path, State},
-    routing::{get, post, delete},
+    routing::{delete, get, post},
     Json, Router,
 };
 
@@ -16,6 +18,7 @@ pub fn routes(database: Database) -> Router {
         .route("/", post(create_request))
         .route("/:id", get(get_request))
         .route("/:id", delete(delete_request))
+        .route("/:id/report", post(report_request))
         // ...
         .with_state(database)
 }
@@ -99,4 +102,56 @@ pub async fn delete_request(
         },
         Err(e) => e.into(),
     })
+}
+
+/// Report a response
+pub async fn report_request(
+    Path(id): Path<String>,
+    State(database): State<Database>,
+    Json(req): Json<super::CreateReport>,
+) -> impl IntoResponse {
+    // check hcaptcha
+    if let Err(e) = req
+        .valid_response(&database.server_options.captcha.secret, None)
+        .await
+    {
+        return Json(DefaultReturn {
+            success: false,
+            message: e.to_string(),
+            payload: (),
+        });
+    }
+
+    // get response
+    if let Err(_) = database.get_response(id.clone()).await {
+        return Json(DefaultReturn {
+            success: false,
+            message: DatabaseError::NotFound.to_string(),
+            payload: (),
+        });
+    };
+
+    match database
+        .auth
+        .create_notification(NotificationCreate {
+            title: format!("**RESPONSE REPORT**: {id}"),
+            content: req.content,
+            address: format!("/response/{id}"),
+            recipient: "*".to_string(), // all staff
+        })
+        .await
+    {
+        Ok(_) => {
+            return Json(DefaultReturn {
+                success: true,
+                message: "Response reported!".to_string(),
+                payload: (),
+            })
+        }
+        Err(_) => Json(DefaultReturn {
+            success: false,
+            message: DatabaseError::NotFound.to_string(),
+            payload: (),
+        }),
+    }
 }

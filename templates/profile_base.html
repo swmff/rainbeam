@@ -178,7 +178,9 @@
                         </svg>
                         Block
                     </a>
-                    <a href="javascript:report()">
+                    <a
+                        href="javascript:trigger('reports:bootstrap', ['profiles', '{{ other.username }}'])"
+                    >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 16 16"
@@ -276,7 +278,9 @@
 
                 <div class="inner shadow-md w-content left" exclude="dropdown">
                     <b class="title">This user</b>
-                    <a href="javascript:report()">
+                    <a
+                        href="javascript:trigger('reports:bootstrap', ['profiles', '{{ other.username }}'])"
+                    >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 16 16"
@@ -364,36 +368,6 @@
         </section>
     </div>
 </article>
-
-<dialog id="report_dialog">
-    <form class="inner" onsubmit="file_report(event)">
-        <div class="flex flex-col gap-1">
-            <label for="content">Reason</label>
-            <textarea
-                name="content"
-                id="content"
-                required
-                minlength="5"
-            ></textarea>
-
-            <p class="fade">
-                Please describe your reason for reporting this profile above.
-            </p>
-        </div>
-
-        <hr />
-        <div class="flex gap-2">
-            <button class="primary bold">Report</button>
-            <button
-                class="bold"
-                type="button"
-                onclick="document.getElementById('report_dialog').close()"
-            >
-                Cancel
-            </button>
-        </div>
-    </form>
-</dialog>
 
 <!-- prettier-ignore -->
 <div id="stylesheets">
@@ -538,33 +512,6 @@
                     button.classList.add("primary");
                     button.innerText = "Follow";
                 }
-            });
-    }
-
-    function report() {
-        document.getElementById("report_dialog").showModal();
-    }
-
-    function file_report(e) {
-        e.preventDefault();
-        fetch("/api/v1/profiles/{{ other.username }}/report", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                content: e.target.content.value,
-            }),
-        })
-            .then((res) => res.json())
-            .then((res) => {
-                trigger("app:shout", [
-                    res.success ? "tip" : "caution",
-                    res.message || "Profile reported!",
-                ]);
-
-                e.target.reset();
-                document.getElementById("report_dialog").close();
             });
     }
 </script>

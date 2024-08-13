@@ -56,6 +56,7 @@ block head %}
 {% endif %} {% endblock %} {% block content %}
 <article>
     <main class="flex flex-col gap-2">
+        <!-- response -->
         <!-- prettier-ignore -->
         {% let is_pinned = false %}
         {% let show_pin_button = false %}
@@ -65,78 +66,16 @@ block head %}
         {% include "components/response.html" %}
 
         <hr />
-        <div class="card-nest w-full shadow" id="comment_field">
-            <div class="card flex flex-col gap-1">Leave a comment</div>
+        <!-- single comment -->
+        {% include "components/comment.html" %}
 
-            <div class="card">
-                <form
-                    class="flex flex-col gap-2"
-                    onsubmit="comment(event, '{{ response.id }}')"
-                >
-                    <textarea
-                        class="w-full"
-                        placeholder="Type your comment!"
-                        minlength="1"
-                        maxlength="500"
-                        required
-                        name="content"
-                        id="content"
-                    ></textarea>
-
-                    <div
-                        class="flex w-full gap-1"
-                        style="justify-content: right"
-                    >
-                        <button class="round-lg primary bold">Submit</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- prettier-ignore -->
-        {% for comment in comments %}
-            {% include "components/comment.html" %} 
-        {% endfor %}
-
-        <!-- pagination buttons -->
-        <div class="flex justify-between gap-2 w-full">
-            {% if page > 0 %}
-            <a class="button secondary" href="?page={{ page - 1 }}">Previous</a>
-            {% else %}
-            <div></div>
-            {% endif %} {% if comments.len() != 0 %}
-            <a class="button secondary" href="?page={{ page + 1 }}">Next</a>
-            {% endif %}
+        <!-- link to all comments -->
+        <div class="flex justify-center w-full">
+            <a href="/response/{{ response.id }}" class="button bold">
+                Show all comments
+                <span class="notification">{{ comment_count }}</span>
+            </a>
         </div>
     </main>
 </article>
-
-<script>
-    function comment(e, response) {
-        e.preventDefault();
-        fetch("/api/v1/comments", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                response,
-                content: e.target.content.value,
-            }),
-        })
-            .then((res) => res.json())
-            .then((res) => {
-                trigger("app:shout", [
-                    res.success ? "tip" : "caution",
-                    res.message || "Comment posted!",
-                ]);
-
-                document
-                    .getElementById("comment_field")
-                    .setAttribute("disabled", "fully");
-
-                e.target.reset();
-            });
-    }
-</script>
 {% call super() %} {% endblock %}

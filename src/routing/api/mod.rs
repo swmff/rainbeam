@@ -5,6 +5,15 @@ pub mod responses;
 
 use crate::database::Database;
 use axum::Router;
+use hcaptcha::Hcaptcha;
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Hcaptcha)]
+pub struct CreateReport {
+    content: String,
+    #[captcha]
+    token: String,
+}
 
 pub fn routes(database: Database) -> Router {
     Router::new()

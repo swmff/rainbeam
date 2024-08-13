@@ -1966,6 +1966,7 @@ dependencies = [
  "askama_axum",
  "axum",
  "axum-extra",
+ "hcaptcha",
  "mime_guess",
  "regex",
  "reqwest",

@@ -1,11 +1,11 @@
 use crate::database::Database;
-use crate::model::{QuestionCreate, DatabaseError};
+use crate::model::{DatabaseError, QuestionCreate};
 use xsu_dataman::DefaultReturn;
 
 use axum::response::IntoResponse;
 use axum::{
     extract::{Path, State},
-    routing::{get, post, delete},
+    routing::{delete, get, post},
     Json, Router,
 };
 

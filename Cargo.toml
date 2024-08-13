@@ -1,6 +1,6 @@
 [package]
 name = "sparkler"
-version = "0.3.0"
+version = "0.3.1"
 edition = "2021"
 authors = ["trisuaso", "swmff"]
 description = "Ask, share, socialize!"
@@ -33,6 +33,7 @@ xsu-authman = { path = "./xsu-authman", default-features = false }
 serde_json = "1.0.120"
 regex = "1.10.5"
 mime_guess = "2.0.5"
+hcaptcha = "2.4.6"
 
 [[bin]]
 path = "src/main.rs"

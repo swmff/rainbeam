@@ -213,6 +213,11 @@ a.button {
     text-decoration: none !important;
 }
 
+button:has(.notification),
+a.button:has(.notification) {
+    gap: 0.5rem;
+}
+
 button:hover,
 a.button:hover {
     background: var(--color-super-lowered);
@@ -882,6 +887,10 @@ dialog::backdrop {
 
     .sm\:mt-2 {
         margin-top: 2rem !important;
+    }
+
+    .sm\:items-start {
+        align-items: flex-start !important;
     }
 }
 
