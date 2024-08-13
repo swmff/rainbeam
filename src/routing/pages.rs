@@ -1569,11 +1569,68 @@ pub async fn reports_request(
     )
 }
 
+#[derive(Template)]
+#[template(path = "report.html")]
+struct ReportTemplate {
+    config: Config,
+    profile: Option<Profile>,
+    unread: usize,
+    notifs: usize,
+}
+
+/// GET /site/report
+pub async fn report_request(jar: CookieJar, State(database): State<Database>) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => Some(ua),
+            Err(_) => None,
+        },
+        None => None,
+    };
+
+    let unread = if let Some(ref ua) = auth_user {
+        match database
+            .get_questions_by_recipient(ua.username.to_owned())
+            .await
+        {
+            Ok(unread) => unread.len(),
+            Err(_) => 0,
+        }
+    } else {
+        0
+    };
+
+    let notifs = if let Some(ref ua) = auth_user {
+        database
+            .auth
+            .get_notification_count_by_recipient(ua.username.to_owned())
+            .await
+    } else {
+        0
+    };
+
+    Html(
+        ReportTemplate {
+            config: database.server_options.clone(),
+            profile: auth_user,
+            unread,
+            notifs,
+        }
+        .render()
+        .unwrap(),
+    )
+}
+
 // ...
 pub async fn routes(database: Database) -> Router {
     Router::new()
         .route("/", get(homepage_request))
         .route("/site/about", get(about_request))
+        .route("/site/report", get(report_request))
         // inbox
         .route("/inbox", get(inbox_request))
         .route("/inbox/global", get(global_timeline_request))

@@ -1,10 +1,13 @@
 (() => {
     const self = reg_ns("reports");
 
-    self.define("bootstrap", function ({ $ }, type, target) {
+    self.define("fill", function ({ $ }, type, target) {
         $.type = type;
         $.target = target;
-        document.getElementById("report_dialog").showModal();
+    });
+
+    self.define("bootstrap", function (_, type, target) {
+        window.open(`/site/report?type=${type}&target=${target}`);
     });
 
     self.define("file", function ({ $ }, e) {
@@ -21,13 +24,14 @@
         })
             .then((res) => res.json())
             .then((res) => {
-                trigger("app:shout", [
-                    res.success ? "tip" : "caution",
-                    res.message || "Report filed!",
-                ]);
+                if (res.success === true) {
+                    alert(res.message);
+                    window.close();
+                    return;
+                }
 
+                trigger("app:shout", ["caution", res.message]);
                 e.target.reset();
-                document.getElementById("report_dialog").close();
             });
     });
 })();

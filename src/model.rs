@@ -78,6 +78,10 @@ pub struct CommentCreate {
 
 /// General API errors
 pub enum DatabaseError {
+    FailedToDeserialize,
+    FailedToSerialize,
+    ContentTooShort,
+    ContentTooLong,
     NotAllowed,
     ValueError,
     NotFound,
@@ -88,6 +92,14 @@ impl DatabaseError {
     pub fn to_string(&self) -> String {
         use DatabaseError::*;
         match self {
+            FailedToDeserialize => {
+                String::from("Failed to deserialize field! Please report this as a bug.")
+            }
+            FailedToSerialize => {
+                String::from("Failed to serialize field! Please report this as a bug.")
+            }
+            ContentTooShort => String::from("Content too short!"),
+            ContentTooLong => String::from("Content too long!"),
             NotAllowed => String::from("You are not allowed to do this!"),
             ValueError => String::from("One of the field values given is invalid!"),
             NotFound => {

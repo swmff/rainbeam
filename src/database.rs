@@ -1,10 +1,12 @@
 use crate::config::Config;
-use crate::model::{CommentCreate, QuestionCreate, QuestionResponse, ResponseComment, ResponseCreate};
+use crate::model::{
+    CommentCreate, QuestionCreate, QuestionResponse, ResponseComment, ResponseCreate,
+};
 use crate::model::{DatabaseError, Question};
 
-use xsu_dataman::utility;
-use xsu_dataman::query as sqlquery;
 use xsu_authman::model::{NotificationCreate, Permission, Profile};
+use xsu_dataman::query as sqlquery;
+use xsu_dataman::utility;
 
 pub type Result<T> = std::result::Result<T, DatabaseError>;
 
@@ -414,8 +416,12 @@ impl Database {
     /// * `author` - the username of the user creating the question
     pub async fn create_question(&self, mut props: QuestionCreate, author: String) -> Result<()> {
         // check content length
-        if (props.content.trim().len() < 2) | (props.content.len() > 250) {
-            return Err(DatabaseError::ValueError);
+        if props.content.trim().len() < 2 {
+            return Err(DatabaseError::ContentTooShort);
+        }
+
+        if props.content.len() > 250 {
+            return Err(DatabaseError::ContentTooLong);
         }
 
         // check recipient
@@ -672,7 +678,7 @@ impl Database {
             author: res.get("author").unwrap().to_string(),
             question: match serde_json::from_str(res.get("question").unwrap()) {
                 Ok(q) => q,
-                Err(_) => return Err(DatabaseError::ValueError),
+                Err(_) => return Err(DatabaseError::FailedToDeserialize),
             },
             content: res.get("content").unwrap().to_string(),
             id: res.get("id").unwrap().to_string(),
@@ -727,7 +733,7 @@ impl Database {
                             author: res.get("author").unwrap().to_string(),
                             question: match serde_json::from_str(res.get("question").unwrap()) {
                                 Ok(q) => q,
-                                Err(_) => return Err(DatabaseError::ValueError),
+                                Err(_) => return Err(DatabaseError::FailedToDeserialize),
                             },
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
@@ -781,7 +787,7 @@ impl Database {
                             author: res.get("author").unwrap().to_string(),
                             question: match serde_json::from_str(res.get("question").unwrap()) {
                                 Ok(q) => q,
-                                Err(_) => return Err(DatabaseError::ValueError),
+                                Err(_) => return Err(DatabaseError::FailedToDeserialize),
                             },
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
@@ -894,7 +900,7 @@ impl Database {
                             author: res.get("author").unwrap().to_string(),
                             question: match serde_json::from_str(res.get("question").unwrap()) {
                                 Ok(q) => q,
-                                Err(_) => return Err(DatabaseError::ValueError),
+                                Err(_) => return Err(DatabaseError::FailedToDeserialize),
                             },
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
@@ -948,7 +954,7 @@ impl Database {
                             author: res.get("author").unwrap().to_string(),
                             question: match serde_json::from_str(res.get("question").unwrap()) {
                                 Ok(q) => q,
-                                Err(_) => return Err(DatabaseError::ValueError),
+                                Err(_) => return Err(DatabaseError::FailedToDeserialize),
                             },
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
@@ -993,7 +999,11 @@ impl Database {
 
         // check content length
         if props.content.len() > 500 {
-            return Err(DatabaseError::ValueError);
+            return Err(DatabaseError::ContentTooLong);
+        }
+
+        if props.content.len() < 2 {
+            return Err(DatabaseError::ContentTooShort);
         }
 
         // check author permissions
@@ -1030,7 +1040,7 @@ impl Database {
             .bind::<&String>(&response.author)
             .bind::<&String>(&match serde_json::to_string(&response.question) {
                 Ok(s) => s,
-                Err(_) => return Err(DatabaseError::ValueError),
+                Err(_) => return Err(DatabaseError::FailedToSerialize),
             })
             .bind::<&String>(&response.content)
             .bind::<&String>(&response.id)
@@ -1398,7 +1408,11 @@ impl Database {
 
         // check content length
         if props.content.len() > 250 {
-            return Err(DatabaseError::ValueError);
+            return Err(DatabaseError::ContentTooLong);
+        }
+
+        if props.content.len() < 2 {
+            return Err(DatabaseError::ContentTooShort);
         }
 
         // check author permissions
