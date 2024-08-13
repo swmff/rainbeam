@@ -1,0 +1,25 @@
+<div class="card-nest w-full shadow" id="notif:{{ notif.id }}">
+    <div class="card flex justify-between gap-2">
+        <b class="notif_title">
+            {{ xsu_util::ui::render_markdown(notif.title)|safe }}
+        </b>
+        <span class="notif_timestamp date">{{ notif.timestamp }}</span>
+    </div>
+
+    <div class="card flex flex-col gap-2">
+        <!-- prettier-ignore-->
+        <div class="notif_content">{{ xsu_util::ui::render_markdown(notif.content)|safe }}</div>
+
+        <!-- actions -->
+        <div class="flex gap-2">
+            <a class="button primary bold" href="{{ notif.address }}">Open</a>
+
+            <button
+                class="button bold"
+                onclick="trigger('notifications:delete', ['{{ notif.id }}'])"
+            >
+                Mark as Read
+            </button>
+        </div>
+    </div>
+</div>

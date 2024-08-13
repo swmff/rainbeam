@@ -1,0 +1,605 @@
+{% extends "base.html" %} {% block title %}{{ other.username }} - {{ config.name
+}}{% endblock %} {% block head %}
+<!-- prettier-ignore -->
+{% if let Some(biography) = other.metadata.kv.get("sparkler:biography") %}
+{% let biography = biography.replace("\"", "\\\\\"") %}
+<meta name="description" content="{{ biography }}" />
+{% endif %} {% endblock %} {% block nav_left %} {% if profile.is_some() %}
+<a class="button" href="/">
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        width="18"
+        height="18"
+        aria-label="Home symbol"
+        class="icon"
+    >
+        <path
+            d="M12.97 2.59a1.5 1.5 0 0 0-1.94 0l-7.5 6.363A1.5 1.5 0 0 0 3 10.097V19.5A1.5 1.5 0 0 0 4.5 21h4.75a.75.75 0 0 0 .75-.75V14h4v6.25c0 .414.336.75.75.75h4.75a1.5 1.5 0 0 0 1.5-1.5v-9.403a1.5 1.5 0 0 0-.53-1.144l-7.5-6.363Z"
+        ></path>
+    </svg>
+    Timeline
+</a>
+
+<a class="button" href="/inbox">
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 16 16"
+        width="16"
+        height="16"
+        aria-label="Inbox symbol"
+        class="icon"
+    >
+        <path
+            d="M2.8 2.06A1.75 1.75 0 0 1 4.41 1h7.18c.7 0 1.333.417 1.61 1.06l2.74 6.395c.04.093.06.194.06.295v4.5A1.75 1.75 0 0 1 14.25 15H1.75A1.75 1.75 0 0 1 0 13.25v-4.5c0-.101.02-.202.06-.295Zm1.61.44a.25.25 0 0 0-.23.152L1.887 8H4.75a.75.75 0 0 1 .6.3L6.625 10h2.75l1.275-1.7a.75.75 0 0 1 .6-.3h2.863L11.82 2.652a.25.25 0 0 0-.23-.152Zm10.09 7h-2.875l-1.275 1.7a.75.75 0 0 1-.6.3h-3.5a.75.75 0 0 1-.6-.3L4.375 9.5H1.5v3.75c0 .138.112.25.25.25h12.5a.25.25 0 0 0 .25-.25Z"
+        ></path>
+    </svg>
+    Inbox {% if unread != 0 %}
+    <span class="notification">{{ unread }}</span>
+    {% endif %}
+</a>
+{% endif %} {% endblock %} {% block nav_right %} {% if profile.is_some() %}
+<a class="button" href="/inbox/notifications">
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 16 16"
+        width="16"
+        height="16"
+        aria-label="Bell symbol"
+        class="icon"
+    >
+        <path
+            d="M8 16a2 2 0 0 0 1.985-1.75c.017-.137-.097-.25-.235-.25h-3.5c-.138 0-.252.113-.235.25A2 2 0 0 0 8 16ZM3 5a5 5 0 0 1 10 0v2.947c0 .05.015.098.042.139l1.703 2.555A1.519 1.519 0 0 1 13.482 13H2.518a1.516 1.516 0 0 1-1.263-2.36l1.703-2.554A.255.255 0 0 0 3 7.947Zm5-3.5A3.5 3.5 0 0 0 4.5 5v2.947c0 .346-.102.683-.294.97l-1.703 2.556a.017.017 0 0 0-.003.01l.001.006c0 .002.002.004.004.006l.006.004.007.001h10.964l.007-.001.006-.004.004-.006.001-.007a.017.017 0 0 0-.003-.01l-1.703-2.554a1.745 1.745 0 0 1-.294-.97V5A3.5 3.5 0 0 0 8 1.5Z"
+        ></path>
+    </svg>
+    {% if notifs != 0 %}
+    <span class="notification">{{ notifs }}</span>
+    {% endif %}
+</a>
+{% endif %} {% endblock %} {% block content %}
+<article class="flex flex-col gap-2">
+    <img
+        title="{{ other.username }}'s banner"
+        src="/api/v1/profiles/{{ other.username }}/banner"
+        alt=""
+        class="shadow round"
+        style="
+            width: 100%;
+            min-height: 150px;
+            max-height: 440px;
+            object-fit: cover;
+        "
+    />
+
+    <div class="flex flex-collapse gap-2 sm:mt-2">
+        <div
+            id="profile_card"
+            class="card padded flex flex-col gap-2 sm:w-full"
+            style="width: 20rem; padding-top: 0; height: max-content"
+        >
+            <img
+                title="{{ other.username }}'s avatar"
+                src="/api/v1/profiles/{{ other.username }}/avatar"
+                alt=""
+                class="avatar shadow-md"
+                style="--size: 160px; margin: -80px auto 0"
+            />
+
+            <!-- prettier-ignore -->
+            <div id="names">
+                <h3 class="no-margin">
+                    {% if let Some(display_name) = other.metadata.kv.get("sparkler:display_name") %}
+                        {{ display_name }}
+                    {% else %}
+                        {{ other.username }}
+                    {% endif %}
+                </h3>
+
+                <h4 class="no-margin" style="font-weight: normal; opacity: 50%">{{ other.username }}</h4>
+            </div>
+
+            <!-- prettier-ignore -->
+            <div id="biography">
+                {% if let Some(biography) = other.metadata.kv.get("sparkler:biography") %}
+                    {{ xsu_util::ui::render_markdown(biography)|safe }}
+                {% endif %}
+            </div>
+
+            <!-- buttons -->
+            {% if let Some(profile) = profile %} {% if profile.username ==
+            other.username %}
+            <!-- options for account owner -->
+            <hr />
+            <a
+                class="button round-lg w-full bold primary"
+                href="/settings/profile"
+            >
+                Edit Profile
+            </a>
+            {% else %}
+            <!-- follow, unfollow -->
+            {% if !is_following %}
+            <button
+                class="round-lg w-full bold primary"
+                onclick="follow()"
+                id="follow_button"
+            >
+                Follow
+            </button>
+            {% else %}
+            <button
+                class="round-lg w-full bold"
+                onclick="follow()"
+                id="follow_button"
+            >
+                Unfollow
+            </button>
+            {% endif %}
+
+            <!-- actions -->
+            <div class="dropdown">
+                <button
+                    onclick="trigger('app:hook.dropdown', [event])"
+                    exclude="dropdown"
+                    class="round-lg w-full"
+                >
+                    Actions
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 16 16"
+                        width="16"
+                        height="16"
+                        aria-label="Chevron down symbol"
+                        class="icon"
+                    >
+                        <path
+                            d="M12.78 5.22a.749.749 0 0 1 0 1.06l-4.25 4.25a.749.749 0 0 1-1.06 0L3.22 6.28a.749.749 0 1 1 1.06-1.06L8 8.939l3.72-3.719a.749.749 0 0 1 1.06 0Z"
+                        ></path>
+                    </svg>
+                </button>
+
+                <div class="inner shadow-md w-content left" exclude="dropdown">
+                    <b class="title">This user</b>
+                    <a
+                        href="/settings/privacy?block={{ other.username }}#sparkler:block_somebody"
+                        target="_blank"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 16 16"
+                            width="16"
+                            height="16"
+                            aria-label="Blocked symbol"
+                            class="icon"
+                        >
+                            <path
+                                d="M4.467.22a.749.749 0 0 1 .53-.22h6.006c.199 0 .389.079.53.22l4.247 4.247c.141.14.22.331.22.53v6.006a.749.749 0 0 1-.22.53l-4.247 4.247a.749.749 0 0 1-.53.22H4.997a.749.749 0 0 1-.53-.22L.22 11.533a.749.749 0 0 1-.22-.53V4.997c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.308v5.384L5.308 14.5h5.384l3.808-3.808V5.308L10.692 1.5ZM4 7.75A.75.75 0 0 1 4.75 7h6.5a.75.75 0 0 1 0 1.5h-6.5A.75.75 0 0 1 4 7.75Z"
+                            ></path>
+                        </svg>
+                        Block
+                    </a>
+                    <a href="javascript:report()">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 16 16"
+                            width="16"
+                            height="16"
+                            aria-label="Report symbol"
+                            class="icon"
+                        >
+                            <path
+                                d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"
+                            ></path>
+                        </svg>
+                        Report
+                    </a>
+                    {% if is_powerful %}
+                    <!-- for managers ONLY -->
+                    <a href="javascript:delete_account()">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 16 16"
+                            width="16"
+                            height="16"
+                            aria-label="Trash symbol"
+                            class="icon"
+                        >
+                            <path
+                                d="M11 1.75V3h2.25a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75ZM4.496 6.675l.66 6.6a.25.25 0 0 0 .249.225h5.19a.25.25 0 0 0 .249-.225l.66-6.6a.75.75 0 0 1 1.492.149l-.66 6.6A1.748 1.748 0 0 1 10.595 15h-5.19a1.75 1.75 0 0 1-1.741-1.575l-.66-6.6a.75.75 0 1 1 1.492-.15ZM6.5 1.75V3h3V1.75a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25Z"
+                            ></path>
+                        </svg>
+                        Delete
+                    </a>
+
+                    <script>
+                        function delete_account() {
+                            if (!confirm("Are you sure you want to do this?")) {
+                                return;
+                            }
+
+                            fetch("/api/auth/profile/{{ other.username }}", {
+                                method: "DELETE",
+                            })
+                                .then((res) => res.json())
+                                .then((res) => {
+                                    trigger("app:shout", [
+                                        res.success ? "tip" : "caution",
+                                        res.message ||
+                                            "Profile deleted! Thanks for keeping {{ config.name }} clean!",
+                                    ]);
+
+                                    e.target.reset();
+                                });
+                        }
+                    </script>
+                    {% endif %}
+                    <b class="title">Your account</b>
+                    <a href="/settings/privacy#sparkler:block_list">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 16 16"
+                            width="16"
+                            height="16"
+                            aria-label="Lock symbol"
+                            class="icon"
+                        >
+                            <path
+                                d="M4 4a4 4 0 0 1 8 0v2h.25c.966 0 1.75.784 1.75 1.75v5.5A1.75 1.75 0 0 1 12.25 15h-8.5A1.75 1.75 0 0 1 2 13.25v-5.5C2 6.784 2.784 6 3.75 6H4Zm8.25 3.5h-8.5a.25.25 0 0 0-.25.25v5.5c0 .138.112.25.25.25h8.5a.25.25 0 0 0 .25-.25v-5.5a.25.25 0 0 0-.25-.25ZM10.5 6V4a2.5 2.5 0 1 0-5 0v2Z"
+                            ></path>
+                        </svg>
+                        Manage block list
+                    </a>
+                </div>
+            </div>
+            {% endif %} {% else %}
+            <!-- anonymous actions -->
+            <div class="dropdown">
+                <button
+                    onclick="trigger('app:hook.dropdown', [event])"
+                    exclude="dropdown"
+                    class="round-lg w-full"
+                >
+                    Actions
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 16 16"
+                        width="16"
+                        height="16"
+                        aria-label="Chevron down symbol"
+                        class="icon"
+                    >
+                        <path
+                            d="M12.78 5.22a.749.749 0 0 1 0 1.06l-4.25 4.25a.749.749 0 0 1-1.06 0L3.22 6.28a.749.749 0 1 1 1.06-1.06L8 8.939l3.72-3.719a.749.749 0 0 1 1.06 0Z"
+                        ></path>
+                    </svg>
+                </button>
+
+                <div class="inner shadow-md w-content left" exclude="dropdown">
+                    <b class="title">This user</b>
+                    <a href="javascript:report()">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 16 16"
+                            width="16"
+                            height="16"
+                            aria-label="Report symbol"
+                            class="icon"
+                        >
+                            <path
+                                d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"
+                            ></path>
+                        </svg>
+                        Report
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <section id="feed" class="flex flex-col gap-2 w-full">
+            <!-- upper -->
+            <!-- new question -->
+            <div class="card-nest w-full shadow">
+                <!-- prettier-ignore -->
+                <div class="card motivational_header">
+                    {% if let Some(header) = other.metadata.kv.get("sparkler:motivational_header") %}
+                        {{ xsu_util::ui::render_markdown(header)|safe }}
+                    {% else %}
+                        Ask a question
+                    {% endif %}
+                </div>
+
+                <div class="card">
+                    <!-- prettier-ignore -->
+                    {% if !lock_profile && !is_blocked %}
+                    {% if (require_account && profile.is_some()) | (disallow_anonymous && profile.is_some()) | (!require_account && !disallow_anonymous) %}
+                    <form id="question_form" class="flex flex-col gap-2">
+                        <textarea
+                            class="w-full"
+                            placeholder="Type your question!"
+                            minlength="1"
+                            maxlength="250"
+                            required
+                            name="content"
+                            id="content"
+                        ></textarea>
+
+                        <!-- prettier-ignore -->
+                        <div class="flex justify-between w-full gap-1">
+                            {% if profile.is_some() && (disallow_anonymous == false) %}
+                            <div class="checkbox_container">
+                                <input
+                                    type="checkbox"
+                                    name="anonymous"
+                                    id="anonymous"
+                                />
+
+                                <label for="anonymous" class="normal">
+                                    Hide your name
+                                </label>
+                            </div>
+                            {% else %}
+                            <div></div>
+                            {% endif %}
+
+                            <button class="round-lg primary bold">Ask</button>
+                        </div>
+                    </form>
+                    {% else %}
+                    <b>This profile does not allow anonymous questions.</b>
+                    {% endif %} {% else %}
+                    <b>This profile is not currently accepting questions.</b>
+                    {% endif %}
+                </div>
+            </div>
+            {% block upper %} {% endblock %}
+
+            <!-- menu -->
+            <div class="pillmenu">{% block pillmenu %}{% endblock %}</div>
+
+            <!-- panel -->
+            <div id="panel" style="display: contents">
+                {% block panel %}{% endblock %}
+            </div>
+        </section>
+    </div>
+</article>
+
+<dialog id="report_dialog">
+    <form class="inner" onsubmit="file_report(event)">
+        <div class="flex flex-col gap-1">
+            <label for="content">Reason</label>
+            <textarea
+                name="content"
+                id="content"
+                required
+                minlength="5"
+            ></textarea>
+
+            <p class="fade">
+                Please describe your reason for reporting this profile above.
+            </p>
+        </div>
+
+        <hr />
+        <div class="flex gap-2">
+            <button class="primary bold">Report</button>
+            <button
+                class="bold"
+                type="button"
+                onclick="document.getElementById('report_dialog').close()"
+            >
+                Cancel
+            </button>
+        </div>
+    </form>
+</dialog>
+
+<!-- prettier-ignore -->
+<div id="stylesheets">
+{% if let Some(color) = other.metadata.kv.get("sparkler:color_surface") %}
+    {% if !color.is_empty() %}
+        <style>:root, * { --color-surface: {{ color }} !important }</style>
+    {% endif %}
+{% endif %}
+{% if let Some(color) = other.metadata.kv.get("sparkler:color_lowered") %}
+    {% if !color.is_empty() %}
+        <style>:root, * { --color-lowered: {{ color }} !important }</style>
+    {% endif %}
+{% endif %}
+{% if let Some(color) = other.metadata.kv.get("sparkler:color_super_lowered") %}
+    {% if !color.is_empty() %}
+        <style>:root, * { --color-super-lowered: {{ color }} !important }</style>
+    {% endif %}
+{% endif %}
+{% if let Some(color) = other.metadata.kv.get("sparkler:color_raised") %}
+    {% if !color.is_empty() %}
+        <style>:root, * { --color-raised: {{ color }} !important }</style>
+    {% endif %}
+{% endif %}
+{% if let Some(color) = other.metadata.kv.get("sparkler:color_super_raised") %}
+    {% if !color.is_empty() %}
+        <style>:root, * { --color-super-raised: {{ color }} !important }</style>
+    {% endif %}
+{% endif %}
+{% if let Some(color) = other.metadata.kv.get("sparkler:color_text") %}
+    {% if !color.is_empty() %}
+        <style>:root, * { --color-text: {{ color }} !important }</style>
+    {% endif %}
+{% endif %}
+{% if let Some(color) = other.metadata.kv.get("sparkler:color_text_raised") %}
+    {% if !color.is_empty() %}
+        <style>:root, * { --color-text-raised: {{ color }} !important }</style>
+    {% endif %}
+{% endif %}
+{% if let Some(color) = other.metadata.kv.get("sparkler:color_text_lowered") %}
+    {% if !color.is_empty() %}
+        <style>:root, * { --color-text-lowered: {{ color }} !important }</style>
+    {% endif %}
+{% endif %}
+{% if let Some(color) = other.metadata.kv.get("sparkler:color_link") %}
+    {% if !color.is_empty() %}
+        <style>:root, * { --color-link: {{ color }} !important }</style>
+    {% endif %}
+{% endif %}
+{% if let Some(color) = other.metadata.kv.get("sparkler:color_primary") %}
+    {% if !color.is_empty() %}
+        <style>:root, * { --color-primary: {{ color }} !important }</style>
+    {% endif %}
+{% endif %}
+{% if let Some(color) = other.metadata.kv.get("sparkler:color_primary_lowered") %}
+    {% if !color.is_empty() %}
+        <style>:root, * { --color-primary-lowered: {{ color }} !important }</style>
+    {% endif %}
+{% endif %}
+{% if let Some(color) = other.metadata.kv.get("sparkler:color_text_primary") %}
+    {% if !color.is_empty() %}
+        <style>:root, * { --color-text-primary: {{ color }} !important }</style>
+    {% endif %}
+{% endif %}
+</div>
+
+<script type="text/plain" id="theme">
+    {% if let Some(theme) = other.metadata.kv.get("sparkler:profile_theme") %}
+        {{ theme }}
+    {% endif %}
+</script>
+
+<script>
+    // theme preference
+    const theme_pref = window.localStorage.getItem("theme-pref") || "yes";
+
+    if (theme_pref === "no") {
+        document.getElementById("stylesheets").remove(); // remove custom theme stuff
+    }
+
+    // profile theme
+    const profile_theme = document.getElementById("theme").innerText.trim();
+
+    if (profile_theme !== "" && theme_pref !== "no") {
+        document.documentElement.setAttribute("class", profile_theme);
+    }
+
+    // ...
+    document.getElementById("question_form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        fetch("/api/v1/questions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                recipient: "{{ other.username }}",
+                content: e.target.content.value,
+                anonymous: (e.target.anonymous || { checked: true }).checked,
+            }),
+        })
+            .then((res) => res.json())
+            .then((res) => {
+                trigger("app:shout", [
+                    res.success ? "tip" : "caution",
+                    res.message || "Question asked!",
+                ]);
+
+                e.target.reset();
+            });
+    });
+
+    function follow() {
+        fetch(`/api/auth/profile/{{ other.username }}/follow`)
+            .then((res) => res.json())
+            .then((res) => {
+                trigger("app:shout", [
+                    res.success ? "tip" : "caution",
+                    res.message || "Toggled user follow!",
+                ]);
+
+                // swap button
+                const button = document.getElementById("follow_button");
+
+                if (button.innerText === "Follow") {
+                    button.classList.remove("primary");
+                    button.innerText = "Unfollow";
+                } else {
+                    button.classList.add("primary");
+                    button.innerText = "Follow";
+                }
+            });
+    }
+
+    function report() {
+        document.getElementById("report_dialog").showModal();
+    }
+
+    function file_report(e) {
+        e.preventDefault();
+        fetch("/api/v1/profiles/{{ other.username }}/report", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                content: e.target.content.value,
+            }),
+        })
+            .then((res) => res.json())
+            .then((res) => {
+                trigger("app:shout", [
+                    res.success ? "tip" : "caution",
+                    res.message || "Profile reported!",
+                ]);
+
+                e.target.reset();
+                document.getElementById("report_dialog").close();
+            });
+    }
+</script>
+
+{% if let Some(profile) = profile %} {% if profile.username == other.username %}
+<script type="application/json" id="metadata">
+    {{ metadata|safe }}
+</script>
+
+<script>
+    let metadata = JSON.parse(document.getElementById("metadata").innerHTML);
+
+    async function save_metadata() {
+        const res = await (
+            await fetch("/api/auth/profile/{{ profile.username }}/metadata", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    metadata,
+                }),
+            })
+        ).json();
+
+        trigger("app:shout", [
+            res.success ? "tip" : "caution",
+            res.message || "Settings saved!",
+        ]);
+    }
+
+    function pin_response(id) {
+        if (!metadata.kv["sparkler:pinned"]) {
+            metadata.kv["sparkler:pinned"] = "";
+        }
+
+        metadata.kv["sparkler:pinned"] += `${id},`;
+        save_metadata();
+        alert("Pinned!");
+    }
+
+    function unpin_response(id) {
+        metadata.kv["sparkler:pinned"] = metadata.kv["sparkler:pinned"].replace(
+            `${id},`,
+            "",
+        );
+
+        save_metadata();
+        alert("Unpinned!");
+    }
+</script>
+{% endif %} {% endif %} {% call super() %} {% endblock %}

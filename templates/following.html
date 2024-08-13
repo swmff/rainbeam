@@ -1,0 +1,72 @@
+{% extends "profile_base.html" %} {% block pillmenu %}
+<a href="/@{{ other.username }}">
+    Answers
+    <b class="notification">{{ response_count }}</b>
+</a>
+
+<a href="/@{{ other.username }}/questions">
+    Questions
+    <b class="notification">{{ questions_count }}</b>
+</a>
+
+<a href="/@{{ other.username }}/followers">
+    Followers
+    <b class="notification">{{ followers_count }}</b>
+</a>
+
+<a href="/@{{ other.username }}/following" class="active">
+    Following
+    <b class="notification">{{ following_count }}</b>
+</a>
+{% endblock %} {% block panel %}
+<!-- followers -->
+<div id="following" class="flex flex-col items-center gap-2">
+    {% for card in following %}
+    <div class="card-nest w-full">
+        <div class="card" style="padding: 0">
+            <img
+                title="{{ card.following }}'s banner"
+                src="/api/v1/profiles/{{card.following }}/banner"
+                alt=""
+                class="shadow round"
+                style="
+                    width: 100%;
+                    min-height: 80px;
+                    max-height: 80px;
+                    object-fit: cover;
+                    border-bottom-left-radius: 0 !important;
+                    border-bottom-right-radius: 0 !important;
+                "
+            />
+        </div>
+
+        <div class="card flex gap-2">
+            <img
+                title="{{ card.following }}'s avatar"
+                src="/api/v1/profiles/{{ card.following }}/avatar"
+                alt=""
+                class="avatar shadow-md"
+                style="--size: 80px; margin: -50px 0.5rem 0"
+            />
+
+            <h3 class="no-margin">
+                <a href="/@{{ card.following }}">{{ card.following }}</a>
+            </h3>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- pagination buttons -->
+    {% if following_count != 0 %}
+    <div class="flex justify-between gap-2 w-full">
+        {% if page > 0 %}
+        <a class="button secondary" href="?page={{ page - 1 }}">Previous</a>
+        {% else %}
+        <div></div>
+        {% endif %} {% if following.len() != 0 %}
+        <a class="button secondary" href="?page={{ page + 1 }}">Next</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% call super() %} {% endblock %}

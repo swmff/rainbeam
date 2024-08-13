@@ -1,0 +1,44 @@
+{% extends "base.html" %} {% block title %}{{ config.name }}{% endblock %} {%
+block head %}
+<meta name="description" content="{{ config.description }}" />
+{% endblock %} {% block content %}
+<main class="flex flex-col gap-2">
+    <div
+        class="card padded flex flex-col gap-2 justify-center items-center"
+        style="background: var(--color-primary); color: white"
+    >
+        <h1 class="no-margin">{{ config.name }}</h1>
+        <h3 style="font-weight: normal; margin-top: 0">
+            Ask, share, socialize!
+        </h3>
+
+        <div class="flex items-center gap-2" style="margin-top: 1rem">
+            <a class="button secondary" href="/sign_up">Register</a>
+            <em>or</em>
+            <a class="button" href="/login">Login</a>
+        </div>
+    </div>
+
+    <div class="card flex flex-col gap-1">
+        <p>
+            Sparkler is a faithful Retrospring recreation designed to be faster
+            and easier. You can ask your friends questions, view their
+            responses, and interact with them!
+        </p>
+
+        <hr />
+
+        <p>
+            Sparkler
+            <strong>only</strong>
+            collects data that you give to it! Everything is private and your
+            data always belongs to you.
+        </p>
+    </div>
+</main>
+
+<script>
+    // logout of account (if it exists), we can only possibly see this page with an account if it was deleted
+    fetch("/api/auth/logout", { method: "POST" });
+</script>
+{% call super() %} {% endblock %}

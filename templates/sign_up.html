@@ -1,0 +1,92 @@
+{% extends "base.html" %} {% block title %}Sign Up - {{ config.name }}{%
+endblock %} {% block content %}
+<article class="flex flex-col gap-1 items-center">
+    <div
+        id="success"
+        class="card flex flex-col gap-2"
+        style="display: none; width: 100%"
+    ></div>
+    <div
+        id="error"
+        class="markdown-alert-caution"
+        style="display: none; width: 100%"
+    ></div>
+
+    <div id="forms" class="flex flex-col gap-2 items-center">
+        <h3 class="no-margin">Sign Up</h3>
+
+        <div class="card" style="width: 25rem">
+            <form id="register_form" class="flex flex-col gap-2">
+                <div class="row flex flex-col gap-1">
+                    <label for="username">Username</label>
+                    <input
+                        type="text"
+                        name="username"
+                        id="username"
+                        required
+                        minlength="4"
+                        maxlength="32"
+                    />
+                </div>
+
+                <div class="row flex flex-col gap-1">
+                    <label for="password">Password</label>
+                    <input
+                        type="password"
+                        name="password"
+                        id="password"
+                        required
+                        minlength="6"
+                    />
+                </div>
+
+                <hr />
+
+                <button class="primary bold">Register</button>
+            </form>
+        </div>
+
+        <p>
+            Already have an account?
+            <a href="/login">Login</a>
+        </p>
+    </div>
+
+    <script>
+        const error = document.getElementById("error");
+        const success = document.getElementById("success");
+        const forms = document.getElementById("forms");
+        const callback = "/api/auth/callback";
+
+        document
+            .getElementById("register_form")
+            .addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const res = await fetch("/api/auth/register", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        username: e.target.username.value,
+                        password: e.target.password.value,
+                    }),
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                });
+
+                const json = await res.json();
+
+                if (json.success === false) {
+                    error.style.display = "block";
+                    error.innerHTML = `<div class="mdnote-title">${json.message}</div>`;
+                } else {
+                    success.style.display = "flex";
+                    success.innerHTML = `<p>Account successfully created, welcome!</p>
+                    
+                    <hr />
+                    <a href="${callback}?uid=${json.message}" class="button primary bold">Continue</a>`;
+                    forms.style.display = "none";
+                }
+            });
+    </script>
+</article>
+{% call super() %} {% endblock %}

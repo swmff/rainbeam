@@ -1,0 +1,18 @@
+{% extends "base.html" %} {% block title %}Uh oh! 🙁 - {{ config.name }}{%
+endblock %} {% block head %}
+<meta name="description" content="{{ message }}" />
+{% endblock %} {% block content %}
+<article>
+    <main class="flex flex-col gap-2">
+        <div class="card flex flex-col gap-2 w-full">
+            <p>
+                <b>Uh oh.</b>
+                <span id="error">{{ message }}</span>
+            </p>
+
+            <hr />
+            <a href="/" class="button login bold">Go Home</a>
+        </div>
+    </main>
+</article>
+{% call super() %} {% endblock %}

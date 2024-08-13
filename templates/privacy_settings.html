@@ -1,0 +1,160 @@
+{% extends "settings_base.html" %} {% block sidenav %}
+<a href="/settings">Account</a>
+<a href="/settings/profile">Profile</a>
+<a class="active" href="/settings/privacy">Privacy</a>
+{% endblock %} {% block panel %}
+<div class="flex flex-col gap-2">
+    <div class="flex flex-col gap-1">
+        <div class="checkbox_container">
+            <input
+                type="checkbox"
+                name="sparkler:lock_profile"
+                id="sparkler:lock_profile"
+                onchange="update_kv('sparkler:lock_profile', event.target.checked.toString())"
+            />
+
+            <label for="sparkler:lock_profile" class="normal">
+                Lock your profile
+            </label>
+        </div>
+
+        <p class="fade">
+            Locking your profile blocks everybody from submitting questions to
+            you.
+        </p>
+    </div>
+
+    <div class="checkbox_container">
+        <input
+            type="checkbox"
+            name="sparkler:disallow_anonymous"
+            id="sparkler:disallow_anonymous"
+            onchange="update_kv('sparkler:disallow_anonymous', event.target.checked.toString())"
+        />
+
+        <label for="sparkler:disallow_anonymous" class="normal">
+            Disallow anonymous questions on your profile
+        </label>
+    </div>
+
+    <div class="checkbox_container">
+        <input
+            type="checkbox"
+            name="sparkler:require_account"
+            id="sparkler:require_account"
+            onchange="update_kv('sparkler:require_account', event.target.checked.toString())"
+        />
+
+        <label for="sparkler:require_account" class="normal">
+            Require an account to ask questions on your profile
+        </label>
+    </div>
+
+    <hr />
+
+    <div class="flex flex-col gap-1">
+        <label for="sparkler:block_list">Block list</label>
+
+        <textarea
+            name="sparkler:block_list"
+            id="sparkler:block_list"
+            onchange="update_kv('sparkler:block_list', event.target.value)"
+        ></textarea>
+
+        <p class="fade">
+            A list of usernames that you have blocked from interacting with your
+            profile. As long as the usernames are formatted using the mentions
+            syntax (
+            <code>&lt;@username&gt;</code>
+            ), the list can be formatted however you'd like. You can also use
+            the form below.
+        </p>
+
+        <label for="sparkler:block_somebody">Block somebody</label>
+
+        <div class="flex gap-2">
+            <input
+                name="sparkler:block_somebody"
+                id="sparkler:block_somebody"
+                placeholder="username"
+            />
+
+            <button type="button" onclick="block_dialog()">Submit</button>
+        </div>
+
+        <p class="fade">
+            Put the username of somebody you want to block in the input above
+            and click "Submit" to add them to your block list.
+        </p>
+    </div>
+</div>
+
+<dialog id="block_dialog">
+    <div class="inner">
+        <p>Are you sure you would like to block this user?</p>
+
+        <hr />
+        <div class="flex gap-2">
+            <button class="primary bold" onclick="block()">Confirm</button>
+            <button
+                class="bold"
+                onclick="document.getElementById('block_dialog').close(); window.close()"
+            >
+                Cancel
+            </button>
+        </div>
+    </div>
+</dialog>
+
+<script>
+    function block_dialog() {
+        // check if this user is already blocked
+        if (
+            document
+                .getElementById("sparkler:block_list")
+                .value.includes(
+                    `<@${document.getElementById("sparkler:block_somebody").value}>`,
+                )
+        ) {
+            alert("This user is already blocked!");
+            window.close(); // if this was a popup, close window
+            return;
+        }
+
+        // show confirmation
+        document.getElementById("block_dialog").showModal();
+    }
+
+    function block() {
+        document.getElementById("sparkler:block_list").value +=
+            `<@${document.getElementById("sparkler:block_somebody").value}>\n`;
+
+        document.getElementById("sparkler:block_somebody").value = "";
+        update_kv(
+            "sparkler:block_list",
+            document.getElementById("sparkler:block_list").value,
+        );
+
+        // close dialog
+        document.getElementById("block_dialog").close();
+        document.querySelector("#submit_form button").click(); // save metadata
+
+        setTimeout(() => {
+            alert("User blocked.");
+            window.close();
+        }, 100);
+    }
+
+    // fill block_somebody
+    const search = new URLSearchParams(window.location.search);
+
+    if (search.get("block")) {
+        setTimeout(() => {
+            document.getElementById("sparkler:block_somebody").value =
+                search.get("block");
+
+            block_dialog();
+        }, 100);
+    }
+</script>
+{% call super() %} {% endblock %}

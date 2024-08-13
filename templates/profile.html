@@ -1,0 +1,64 @@
+{% extends "profile_base.html" %} {% block pillmenu %}
+<a href="/@{{ other.username }}" class="active">
+    Answers
+    <b class="notification">{{ response_count }}</b>
+</a>
+
+<a href="/@{{ other.username }}/questions">
+    Questions
+    <b class="notification">{{ questions_count }}</b>
+</a>
+
+<a href="/@{{ other.username }}/followers">
+    Followers
+    <b class="notification">{{ followers_count }}</b>
+</a>
+
+<a href="/@{{ other.username }}/following">
+    Following
+    <b class="notification">{{ following_count }}</b>
+</a>
+{% endblock %} {% block panel %}
+<!-- feed -->
+<div id="feed" class="flex flex-col gap-2">
+    <!-- prettier-ignore -->
+    {% let anonymous_username = other.metadata.kv.get("sparkler:anonymous_username") %}
+    {% let anonymous_avatar = other.metadata.kv.get("sparkler:anonymous_avatar") %}
+
+    <!-- pinned -->
+    <!-- prettier-ignore -->
+    {% if let Some(pinned) = pinned %}
+        {% for response in pinned %}
+            {% let is_pinned = true %}
+            {% let show_pin_button = true %}
+            {% let do_not_render_question = false %}
+            {% let show_comments = true %}
+            {% include "components/response.html" %}
+        {% endfor %}
+    <hr />
+    {% endif %}
+
+    <!-- actual feed -->
+    <!-- prettier-ignore -->
+    {% for response in responses %}
+        {% let is_pinned = false %}
+        {% let show_pin_button = true %}
+        {% let do_not_render_question = false %}
+        {% let show_comments = true %}
+        {% include "components/response.html" %} 
+    {% endfor %}
+
+    <!-- pagination buttons -->
+    {% if response_count != 0 %}
+    <div class="flex justify-between gap-2 w-full">
+        {% if page > 0 %}
+        <a class="button secondary" href="?page={{ page - 1 }}">Previous</a>
+        {% else %}
+        <div></div>
+        {% endif %} {% if responses.len() != 0 %}
+        <a class="button secondary" href="?page={{ page + 1 }}">Next</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% call super() %} {% endblock %}

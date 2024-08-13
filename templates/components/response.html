@@ -1,0 +1,313 @@
+{% let comment_count = response.1 %} {% let response = response.0.clone() %}
+<div class="card-nest w-full shadow" id="response:{{ response.id }}">
+    {% if do_not_render_question == false %}
+    <div class="card flex flex-col gap-1">
+        <div class="flex justify-between gap-1 question_title">
+            <div class="footernav">
+                <b class="flex items-center gap-2 item">
+                    {% if response.question.author != "anonymous" %}
+                    <img
+                        title="{{ response.question.author }}'s avatar"
+                        src="/api/v1/profiles/{{ response.question.author }}/avatar"
+                        alt=""
+                        class="avatar round-sm"
+                        style="--size: 20px"
+                    />
+
+                    <a
+                        href="/@{{ response.question.author }}"
+                        style="color: inherit"
+                    >
+                        {{ response.question.author }}
+                    </a>
+                    {% else %}
+                    <!-- TODO: proxy this -->
+                    {% if let Some(avatar) = anonymous_avatar %} {% if
+                    (avatar.is_empty()) | (!avatar.starts_with("https://")) %}
+                    <!-- default avatar, setting set but blank or unsafe -->
+                    <img
+                        title="{{ response.question.author }}'s avatar"
+                        src="/api/v1/profiles/{{ response.question.author }}/avatar"
+                        alt=""
+                        class="avatar round-sm"
+                        style="--size: 20px"
+                    />
+                    {% else %}
+                    <!-- anonymous avatar, setting set and valid -->
+                    <img
+                        title="This profile's anonymous avatar"
+                        src="{{ avatar }}"
+                        alt=""
+                        class="avatar round-sm"
+                        style="--size: 20px"
+                    />
+                    {% endif %} {% else %}
+                    <!-- default avatar, setting not set -->
+                    <img
+                        title="{{ response.question.author }}'s avatar"
+                        src="/api/v1/profiles/{{ response.question.author }}/avatar"
+                        alt=""
+                        class="avatar round-sm"
+                        style="--size: 20px"
+                    />
+                    {% endif %}
+
+                    <!-- prettier-ignore -->
+                    {% if let Some(username) = anonymous_username %}
+                        {{ username }}
+                    {% else %}
+                        anonymous
+                    {% endif %}
+                    {% endif %}
+                </b>
+
+                <span class="date item">{{ response.question.timestamp }}</span>
+
+                {% if is_pinned == true %}
+                <span class="item" title="This question/response is pinned">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 16 16"
+                        width="16"
+                        height="16"
+                        style="color: var(--color-primary)"
+                        aria-label="Pin symbol"
+                        class="icon"
+                    >
+                        <path
+                            d="M4.456.734a1.75 1.75 0 0 1 2.826.504l.613 1.327a3.08 3.08 0 0 0 2.084 1.707l2.454.584c1.332.317 1.8 1.972.832 2.94L11.06 10l3.72 3.72a.748.748 0 0 1-.332 1.265.75.75 0 0 1-.729-.205L10 11.06l-2.204 2.205c-.968.968-2.623.5-2.94-.832l-.584-2.454a3.08 3.08 0 0 0-1.707-2.084l-1.327-.613a1.75 1.75 0 0 1-.504-2.826ZM5.92 1.866a.253.253 0 0 0-.183-.142.251.251 0 0 0-.221.07L1.794 5.516a.251.251 0 0 0-.07.221c.015.08.068.149.142.183l1.328.613A4.582 4.582 0 0 1 5.73 9.63l.584 2.454a.251.251 0 0 0 .42.12l5.47-5.47a.25.25 0 0 0-.12-.42L9.63 5.73a4.583 4.583 0 0 1-3.098-2.537Z"
+                        ></path>
+                    </svg>
+                </span>
+                {% endif %} {% if response.question.recipient == "@" %}
+                <a
+                    class="button item primary"
+                    href="/question/{{ response.question.id }}"
+                    title="Global question"
+                    style="height: 24px; min-height: 24px; padding: 0.25rem"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 16 16"
+                        width="16"
+                        height="16"
+                        aria-label="Globe symbol"
+                        class="icon"
+                    >
+                        <path
+                            d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM5.78 8.75a9.64 9.64 0 0 0 1.363 4.177c.255.426.542.832.857 1.215.245-.296.551-.705.857-1.215A9.64 9.64 0 0 0 10.22 8.75Zm4.44-1.5a9.64 9.64 0 0 0-1.363-4.177c-.307-.51-.612-.919-.857-1.215a9.927 9.927 0 0 0-.857 1.215A9.64 9.64 0 0 0 5.78 7.25Zm-5.944 1.5H1.543a6.507 6.507 0 0 0 4.666 5.5c-.123-.181-.24-.365-.352-.552-.715-1.192-1.437-2.874-1.581-4.948Zm-2.733-1.5h2.733c.144-2.074.866-3.756 1.58-4.948.12-.197.237-.381.353-.552a6.507 6.507 0 0 0-4.666 5.5Zm10.181 1.5c-.144 2.074-.866 3.756-1.58 4.948-.12.197-.237.381-.353.552a6.507 6.507 0 0 0 4.666-5.5Zm2.733-1.5a6.507 6.507 0 0 0-4.666-5.5c.123.181.24.365.353.552.714 1.192 1.436 2.874 1.58 4.948Z"
+                        ></path>
+                    </svg>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- prettier-ignore -->
+        <span class="question_content">
+            {{ xsu_util::ui::render_markdown(response.question.content)|safe }}
+        </span>
+    </div>
+    {% endif %}
+
+    <div class="card flex flex-col gap-1 response_body">
+        <!-- prettier-ignore -->
+        <span class="response_content">
+            {{ xsu_util::ui::render_markdown(response.content)|safe }}
+        </span>
+
+        <div class="flex justify-between items-center gap-1 response_title">
+            <div class="footernav flex-wrap">
+                <b class="flex items-center gap-2">
+                    <img
+                        title="{{ response.author }}'s avatar"
+                        src="/api/v1/profiles/{{ response.author }}/avatar"
+                        alt=""
+                        class="avatar round-sm"
+                        style="--size: 20px"
+                    />
+
+                    <a href="/@{{ response.author }}" style="color: inherit">
+                        {{ response.author }}
+                    </a>
+                </b>
+
+                <span class="date item">{{ response.timestamp }}</span>
+            </div>
+
+            <div class="flex gap-2">
+                <!-- comments -->
+                {% if show_comments != false %}
+                <a
+                    href="/response/{{ response.id }}"
+                    title="{{ comment_count }} comments"
+                    class="button desktop"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 16 16"
+                        width="16"
+                        height="16"
+                        aria-label="Discussion symbol"
+                        class="icon"
+                    >
+                        <path
+                            d="M1.75 1h8.5c.966 0 1.75.784 1.75 1.75v5.5A1.75 1.75 0 0 1 10.25 10H7.061l-2.574 2.573A1.458 1.458 0 0 1 2 11.543V10h-.25A1.75 1.75 0 0 1 0 8.25v-5.5C0 1.784.784 1 1.75 1ZM1.5 2.75v5.5c0 .138.112.25.25.25h1a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h3.5a.25.25 0 0 0 .25-.25v-5.5a.25.25 0 0 0-.25-.25h-8.5a.25.25 0 0 0-.25.25Zm13 2a.25.25 0 0 0-.25-.25h-.5a.75.75 0 0 1 0-1.5h.5c.966 0 1.75.784 1.75 1.75v5.5A1.75 1.75 0 0 1 14.25 12H14v1.543a1.458 1.458 0 0 1-2.487 1.03L9.22 12.28a.749.749 0 0 1 .326-1.275.749.749 0 0 1 .734.215l2.22 2.22v-2.19a.75.75 0 0 1 .75-.75h1a.25.25 0 0 0 .25-.25Z"
+                        ></path>
+                    </svg>
+
+                    <span class="notification camo">{{ comment_count }}</span>
+                </a>
+                {% endif %}
+
+                <!-- options -->
+                <div class="dropdown">
+                    <button
+                        onclick="trigger('app:hook.dropdown', [event])"
+                        exclude="dropdown"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 16 16"
+                            width="16"
+                            height="16"
+                            aria-label="Ellipsis symbol"
+                            class="icon"
+                        >
+                            <path
+                                d="M8 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM1.5 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm13 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"
+                            ></path>
+                        </svg>
+                    </button>
+
+                    <div class="inner shadow-md w-content" exclude="dropdown">
+                        {% if show_comments != false %}
+                        <a
+                            href="/response/{{ response.id }}"
+                            title="{{ comment_count }} comments"
+                            class="mobile flex"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 16 16"
+                                width="16"
+                                height="16"
+                                aria-label="Discussion symbol"
+                                class="icon"
+                            >
+                                <path
+                                    d="M1.75 1h8.5c.966 0 1.75.784 1.75 1.75v5.5A1.75 1.75 0 0 1 10.25 10H7.061l-2.574 2.573A1.458 1.458 0 0 1 2 11.543V10h-.25A1.75 1.75 0 0 1 0 8.25v-5.5C0 1.784.784 1 1.75 1ZM1.5 2.75v5.5c0 .138.112.25.25.25h1a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h3.5a.25.25 0 0 0 .25-.25v-5.5a.25.25 0 0 0-.25-.25h-8.5a.25.25 0 0 0-.25.25Zm13 2a.25.25 0 0 0-.25-.25h-.5a.75.75 0 0 1 0-1.5h.5c.966 0 1.75.784 1.75 1.75v5.5A1.75 1.75 0 0 1 14.25 12H14v1.543a1.458 1.458 0 0 1-2.487 1.03L9.22 12.28a.749.749 0 0 1 .326-1.275.749.749 0 0 1 .734.215l2.22 2.22v-2.19a.75.75 0 0 1 .75-.75h1a.25.25 0 0 0 .25-.25Z"
+                                ></path>
+                            </svg>
+
+                            Comments
+
+                            <span class="notification">
+                                {{ comment_count }}
+                            </span>
+                        </a>
+                        {% endif %} {% if let Some(profile) = profile %} {% if
+                        profile.username == response.author %}
+                        <!-- actions for the profile owner only -->
+                        <b class="title">Manage</b>
+
+                        <!-- pin -->
+                        {% if show_pin_button == true %} {% if is_pinned ==
+                        false %}
+                        <a href="#" onclick="pin_response('{{ response.id }}')">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 16 16"
+                                width="16"
+                                height="16"
+                                aria-label="Pin symbol"
+                                class="icon"
+                            >
+                                <path
+                                    d="M4.456.734a1.75 1.75 0 0 1 2.826.504l.613 1.327a3.08 3.08 0 0 0 2.084 1.707l2.454.584c1.332.317 1.8 1.972.832 2.94L11.06 10l3.72 3.72a.748.748 0 0 1-.332 1.265.75.75 0 0 1-.729-.205L10 11.06l-2.204 2.205c-.968.968-2.623.5-2.94-.832l-.584-2.454a3.08 3.08 0 0 0-1.707-2.084l-1.327-.613a1.75 1.75 0 0 1-.504-2.826ZM5.92 1.866a.253.253 0 0 0-.183-.142.251.251 0 0 0-.221.07L1.794 5.516a.251.251 0 0 0-.07.221c.015.08.068.149.142.183l1.328.613A4.582 4.582 0 0 1 5.73 9.63l.584 2.454a.251.251 0 0 0 .42.12l5.47-5.47a.25.25 0 0 0-.12-.42L9.63 5.73a4.583 4.583 0 0 1-3.098-2.537Z"
+                                ></path>
+                            </svg>
+                            Pin
+                        </a>
+                        {% else %}
+                        <a
+                            href="#"
+                            onclick="unpin_response('{{ response.id }}')"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 16 16"
+                                width="16"
+                                height="16"
+                                aria-label="Pin symbol"
+                                class="icon"
+                            >
+                                <path
+                                    d="M4.456.734a1.75 1.75 0 0 1 2.826.504l.613 1.327a3.08 3.08 0 0 0 2.084 1.707l2.454.584c1.332.317 1.8 1.972.832 2.94L11.06 10l3.72 3.72a.748.748 0 0 1-.332 1.265.75.75 0 0 1-.729-.205L10 11.06l-2.204 2.205c-.968.968-2.623.5-2.94-.832l-.584-2.454a3.08 3.08 0 0 0-1.707-2.084l-1.327-.613a1.75 1.75 0 0 1-.504-2.826ZM5.92 1.866a.253.253 0 0 0-.183-.142.251.251 0 0 0-.221.07L1.794 5.516a.251.251 0 0 0-.07.221c.015.08.068.149.142.183l1.328.613A4.582 4.582 0 0 1 5.73 9.63l.584 2.454a.251.251 0 0 0 .42.12l5.47-5.47a.25.25 0 0 0-.12-.42L9.63 5.73a4.583 4.583 0 0 1-3.098-2.537Z"
+                                ></path>
+                            </svg>
+                            Unpin
+                        </a>
+                        {% endif %} {% endif %}
+
+                        <!-- ... -->
+                        <a
+                            href="#"
+                            onclick="trigger('responses:delete', ['{{ response.id }}'])"
+                            class="red"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 16 16"
+                                width="16"
+                                height="16"
+                                aria-label="Trash symbol"
+                                class="icon"
+                            >
+                                <path
+                                    d="M11 1.75V3h2.25a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75ZM4.496 6.675l.66 6.6a.25.25 0 0 0 .249.225h5.19a.25.25 0 0 0 .249-.225l.66-6.6a.75.75 0 0 1 1.492.149l-.66 6.6A1.748 1.748 0 0 1 10.595 15h-5.19a1.75 1.75 0 0 1-1.741-1.575l-.66-6.6a.75.75 0 1 1 1.492-.15ZM6.5 1.75V3h3V1.75a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25Z"
+                                ></path>
+                            </svg>
+                            Delete
+                        </a>
+                        {% endif %} {% endif %}
+                        <!-- actions for everybody -->
+                        <b class="title">Tools</b>
+                        <a
+                            href="#"
+                            onclick="trigger('app:copy_text', ['{{ response.id }}'])"
+                            class="red"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 16 16"
+                                width="16"
+                                height="16"
+                                aria-label="Copy symbol"
+                                class="icon"
+                            >
+                                <path
+                                    d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"
+                                ></path>
+                                <path
+                                    d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"
+                                ></path>
+                            </svg>
+                            Copy ID
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if do_not_render_question == true %}
+    <div class="card" style="display: none"></div>
+
+    <style>
+        .response_body {
+            border-radius: var(--radius) !important;
+        }
+    </style>
+    {% endif %}
+</div>

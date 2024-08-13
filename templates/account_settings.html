@@ -1,0 +1,224 @@
+{% extends "settings_base.html" %} {% block sidenav %}
+<a class="active" href="/settings">Account</a>
+<a href="/settings/profile">Profile</a>
+<a href="/settings/privacy">Privacy</a>
+{% endblock %} {% block panel %}
+<div class="flex flex-col gap-2">
+    <div class="flex flex-col gap-1">
+        <label for="sparkler:display_name">Display name</label>
+
+        <input
+            name="sparkler:display_name"
+            id="sparkler:display_name"
+            onchange="update_kv('sparkler:display_name', event.target.value)"
+        />
+
+        <p class="fade">
+            Your display name is shown about your username on your profile and
+            can be used to have a name that is not bound by character limits!
+        </p>
+    </div>
+
+    <div class="flex flex-col gap-1">
+        <label for="sparkler:biography">Biography</label>
+
+        <textarea
+            name="sparkler:biography"
+            id="sparkler:biography"
+            onchange="update_kv('sparkler:biography', event.target.value)"
+        ></textarea>
+
+        <p class="fade">A short description about you. Supports Markdown.</p>
+    </div>
+
+    <div class="flex flex-col gap-1">
+        <label for="sparkler:avatar_url">Avatar URL</label>
+
+        <input
+            type="url"
+            name="sparkler:avatar_url"
+            id="sparkler:avatar_url"
+            onchange="update_kv('sparkler:avatar_url', event.target.value)"
+        />
+
+        <p class="fade">
+            Hosting images is expensive and annoying, so instead you save a link
+            to your desired image and we'll proxy it and show it on your
+            profile!
+        </p>
+    </div>
+
+    <div class="flex flex-col gap-1">
+        <label for="sparkler:banner_url">Banner URL</label>
+
+        <input
+            type="url"
+            name="sparkler:banner_url"
+            id="sparkler:banner_url"
+            onchange="update_kv('sparkler:banner_url', event.target.value)"
+        />
+
+        <p class="fade">
+            Same deal as the avatar! This is the big thing at the top of your
+            profile.
+        </p>
+    </div>
+
+    <hr />
+    <div class="flex flex-col gap-1">
+        <label for="sparkler:website_theme">Website theme</label>
+
+        <select
+            type="url"
+            name="sparkler:website_theme"
+            id="sparkler:website_theme"
+            onchange="update_theme(event.target.options[event.target.selectedIndex].value)"
+        >
+            <option value="light" id="light">Light</option>
+            <option value="dark" id="dark">Dark</option>
+        </select>
+
+        <p class="fade">
+            This is just your local preferred theme! Profiles are always in
+            light theme, but this will show on every other page.
+        </p>
+    </div>
+
+    <div class="flex flex-col gap-1">
+        <label for="sparkler:allow_profile_themes">Allow profile themes</label>
+
+        <select
+            type="url"
+            name="sparkler:allow_profile_themes"
+            id="sparkler:allow_profile_themes"
+            onchange="update_theme_preference(event.target.options[event.target.selectedIndex].value)"
+        >
+            <option value="yes" id="yes">Yes</option>
+            <option value="no" id="no">No</option>
+        </select>
+
+        <p class="fade">
+            This is a local perference! Changing this to "No" will not show
+            custom profile themes.
+        </p>
+    </div>
+
+    <hr />
+    <form class="flex flex-col gap-1" id="change_password">
+        <h3>Change password</h3>
+
+        <label for="current_password">Current password</label>
+        <input type="text" name="current_password" id="current_password" />
+
+        <label for="new_password">New password</label>
+        <input
+            type="password"
+            name="new_password"
+            id="new_password"
+            minlength="6"
+        />
+
+        <button>Submit</button>
+    </form>
+
+    <hr />
+    <form class="flex flex-col gap-1" id="delete_account">
+        <h3>Delete account</h3>
+        <p>
+            Note you
+            <b>cannot</b>
+            undo this! Please be sure this is what you want before you continue.
+        </p>
+
+        <label for="current_password">Current password</label>
+        <input type="text" name="current_password" id="current_password" />
+
+        <button>Submit</button>
+    </form>
+</div>
+
+{% let profile = profile.as_ref().unwrap() %}
+
+<script>
+    globalThis.update_theme = (theme) => {
+        window.localStorage.setItem("theme", theme);
+        document.documentElement.setAttribute("class", theme);
+    };
+
+    globalThis.update_theme_preference = (pref) => {
+        window.localStorage.setItem("theme-pref", pref);
+    };
+
+    // fill current theme
+    const current = window.localStorage.getItem("theme");
+
+    if (document.getElementById(current)) {
+        document.getElementById(current).setAttribute("selected", "true");
+    }
+
+    // fill current theme preference
+    const pref = window.localStorage.getItem("theme-pref");
+
+    if (document.getElementById(pref)) {
+        document.getElementById(pref).setAttribute("selected", "true");
+    }
+
+    // change password
+    document
+        .getElementById("change_password")
+        .addEventListener("submit", (e) => {
+            e.preventDefault();
+            fetch("/api/auth/profile/{{ profile.username }}/password", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    password: e.target.current_password.value,
+                    new_password: e.target.new_password.value,
+                }),
+            })
+                .then((res) => res.json())
+                .then((res) => {
+                    trigger("app:shout", [
+                        res.success ? "tip" : "caution",
+                        res.message || "Password changed!",
+                    ]);
+
+                    window.location.href = "#top";
+                    e.target.reset();
+                });
+        });
+
+    // delete account
+    document
+        .getElementById("delete_account")
+        .addEventListener("submit", (e) => {
+            e.preventDefault();
+
+            if (!confirm("Are you 100% sure you want to do this?")) {
+                return;
+            }
+
+            fetch("/api/auth/me/delete", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    password: e.target.current_password.value,
+                }),
+            })
+                .then((res) => res.json())
+                .then((res) => {
+                    trigger("app:shout", [
+                        res.success ? "tip" : "caution",
+                        res.message || "Profile deleted, goodbye!",
+                    ]);
+
+                    window.location.href = "#top";
+                    e.target.reset();
+                });
+        });
+</script>
+{% call super() %} {% endblock %}
