@@ -1,0 +1,9 @@
+[submodule "xsu-util"]
+	path = xsu-util
+	url = https://github.com/swmff/xsu-util
+[submodule "xsu-authman"]
+	path = xsu-authman
+	url = https://github.com/swmff/xsu-authman
+[submodule "xsu-dataman"]
+	path = xsu-dataman
+	url = https://github.com/swmff/xsu-dataman

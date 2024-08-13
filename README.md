@@ -4,6 +4,12 @@ A simple [Retrospring](https://github.com/Retrospring/retrospring)-inspired serv
 
 ## Usage
 
+To clone Sparkler, please clone **with submodules**:
+
+```bash
+git clone --recurse-submodules https://github.com/swmff/sparkler
+```
+
 For Sparkler to properly serve static assets, you must link the `static` directory to `~/.config/xsu-apps/sparkler/static`:
 
 ```bash
