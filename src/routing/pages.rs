@@ -217,6 +217,16 @@ pub struct ProfileQuery {
     page: i32,
 }
 
+/// Escape profile colors
+pub fn color_escape(color: &&&String) -> String {
+    color
+        .replace(";", "")
+        .replace("<", "&lt;")
+        .replace(">", "%gt;")
+        .replace("}", "")
+        .replace("{", "")
+}
+
 #[derive(Template)]
 #[template(path = "profile.html")]
 struct ProfileTemplate {
