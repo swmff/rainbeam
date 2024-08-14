@@ -150,5 +150,76 @@ block head %}
 <!-- prettier-ignore -->
 {% if let Some(profile) = profile %}
     {% include "components/theming.html" %}
-{% endif %}
-{% call super() %} {% endblock %}
+
+<!-- author actions -->
+<!-- prettier-ignore -->
+{% if profile.username == response.author %}
+<dialog id="edit_dialog">
+    <form class="inner flex flex-col gap-2" onsubmit="edit(event)">
+        <!-- prettier-ignore -->
+        {% let value = response.content.replace("<", "&lt;").replace(">", "%gt;") %}
+
+        <label for="edit_content">New content</label>
+
+        <textarea
+            class="w-full"
+            placeholder="Type your response!"
+            minlength="1"
+            maxlength="1000"
+            required
+            name="content"
+            id="edit_content"
+            hook="counter"
+        >
+{{ value }}</textarea
+        >
+
+        <div>
+            <span id="edit_content:counter" class="notification item"></span>
+        </div>
+
+        <hr />
+        <div class="flex gap-2">
+            <button class="primary bold">Confirm</button>
+            <button
+                class="bold"
+                onclick="document.getElementById('edit_dialog').close(); window.close()"
+                type="button"
+            >
+                Cancel
+            </button>
+        </div>
+    </form>
+</dialog>
+
+<script>
+    if (window.location.search === "?edit") {
+        document.getElementById("edit_dialog").showModal();
+    }
+
+    function edit(e) {
+        e.preventDefault();
+        fetch("/api/v1/responses/{{ response.id }}", {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                content: e.target.content.value,
+            }),
+        })
+            .then((res) => res.json())
+            .then((res) => {
+                alert(res.message || "Response edited!");
+
+                if (res.success === true) {
+                    window.close();
+
+                    setTimeout(() => {
+                        window.location.href = "?";
+                    }, 100);
+                }
+            });
+    }
+</script>
+{% endif %} {% endif %} {% call super() %} {% endblock %}

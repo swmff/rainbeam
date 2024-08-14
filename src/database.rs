@@ -1176,13 +1176,94 @@ impl Database {
                             .await;
 
                         // return
-                        return Ok(());
+                        Ok(())
                     }
-                    Err(_) => return Err(DatabaseError::Other),
-                };
+                    Err(_) => Err(DatabaseError::Other),
+                }
             }
-            Err(_) => return Err(DatabaseError::Other),
+            Err(_) => Err(DatabaseError::Other),
+        }
+    }
+
+    /// Create a new response
+    ///
+    /// Responses can only be created for questions where `recipient` matches the given `author`
+    ///
+    /// ## Arguments:
+    /// * `content`
+    /// * `user` - the user doing this
+    pub async fn update_response_content(
+        &self,
+        id: String,
+        content: String,
+        user: Profile,
+    ) -> Result<()> {
+        // make sure the response exists
+        let response = match self.get_response(id.clone()).await {
+            Ok(q) => q.0,
+            Err(e) => return Err(e),
         };
+
+        // check content length
+        if content.len() > 1000 {
+            return Err(DatabaseError::ContentTooLong);
+        }
+
+        if content.len() < 2 {
+            return Err(DatabaseError::ContentTooShort);
+        }
+
+        // check user permissions
+        if user.group == -1 {
+            // group -1 (even if it exists) is for marking users as banned
+            return Err(DatabaseError::NotAllowed);
+        }
+
+        if user.username != response.author {
+            // check permission
+            let group = match self.auth.get_group_by_id(user.group).await {
+                Ok(g) => g,
+                Err(_) => return Err(DatabaseError::Other),
+            };
+
+            if !group.permissions.contains(&Permission::Manager) {
+                return Err(DatabaseError::NotAllowed);
+            }
+        }
+
+        // check markdown content
+        let markdown = xsu_util::ui::render_markdown(&content);
+
+        if markdown.trim().len() == 0 {
+            return Err(DatabaseError::ContentTooShort);
+        }
+
+        // update response
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "UPDATE \"xresponses\" SET \"content\" = ? WHERE \"id\" = ?"
+        } else {
+            "UPDATE \"xresponses\" SET (\"content\") = ($1) WHERE \"id\" = $2"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query)
+            .bind::<&String>(&content)
+            .bind::<&String>(&id)
+            .execute(c)
+            .await
+        {
+            Ok(_) => {
+                self.base
+                    .cachedb
+                    .remove(format!("xsulib.sparkler.response:{id}"))
+                    .await;
+
+                Ok(())
+            }
+            Err(_) => Err(DatabaseError::Other),
+        }
     }
 
     /// Delete an existing question

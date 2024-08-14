@@ -71,6 +71,11 @@ pub struct ResponseCreate {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct ResponseEdit {
+    pub content: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct CommentCreate {
     pub response: String,
     pub content: String,
