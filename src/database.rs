@@ -98,21 +98,6 @@ impl Database {
         )
     }
 
-    /// Shorten the anonymous tag
-    pub fn short_tag(input: &str) -> String {
-        input.chars().take(10).collect()
-    }
-
-    /// Create a fake short tag for when the anonymous tag is a username
-    ///
-    /// The fake short tag is a hash of the real tag so that it doesn't change every time
-    pub fn fake_short_tag(username: &String) -> String {
-        xsu_util::hash::hash(username.to_owned())
-            .chars()
-            .take(10)
-            .collect()
-    }
-
     /// Create an anonymous username
     ///
     /// # Returns
@@ -1042,7 +1027,7 @@ impl Database {
         }
 
         // check content length
-        if props.content.len() > 500 {
+        if props.content.len() > 1000 {
             return Err(DatabaseError::ContentTooLong);
         }
 

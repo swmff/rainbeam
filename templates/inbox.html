@@ -100,24 +100,7 @@
                                 style="--size: 20px"
                             />
 
-                            <!-- prettier-ignore -->
-                            <!-- anonymous user display -->
-                            {{ author_tag.2 }}
-                            <span
-                                class="notification"
-                                title="Question author tag"
-                            >
-                                <!-- prettier-ignore -->
-                                {% if author_tag.1.len() <= 32 %}
-                                <!-- generate a fake short tag, showing the user's real username would ruin the fun -->
-                                <!-- prettier-ignore -->
-                                {{ crate::database::Database::fake_short_tag(author_tag.1) }}
-                                {% else %}
-                                <!-- show real short tag -->
-                                <!-- prettier-ignore -->
-                                {{ crate::database::Database::short_tag(author_tag.1) }}
-                                {% endif %}
-                            </span>
+                            <span>{{ author_tag.2 }}</span>
                             {% endif %}
                         </b>
 
@@ -184,7 +167,7 @@
                         class="w-full"
                         placeholder="Type your response!"
                         minlength="1"
-                        maxlength="500"
+                        maxlength="1000"
                         required
                         name="content"
                         id="content-{{ question.id }}"
