@@ -330,7 +330,14 @@ pub async fn profile_request(
 
             for id in pinned.split(",") {
                 match database.get_response(id.to_string()).await {
-                    Ok(response) => out.push(response),
+                    Ok(response) => {
+                        if response.0.author != other.username {
+                            // don't allow us to pin responses from other users
+                            continue;
+                        }
+
+                        out.push(response)
+                    }
                     Err(_) => continue,
                 }
             }
