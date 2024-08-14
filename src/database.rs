@@ -520,11 +520,18 @@ impl Database {
             props.content = props.content.replace("![", "[").replace("<img", "<bimg");
         }
 
+        // check markdown content
+        let markdown = xsu_util::ui::render_markdown(&props.content);
+
+        if markdown.trim().len() == 0 {
+            return Err(DatabaseError::ContentTooShort);
+        }
+
         // ...
         let question = Question {
             author,
             recipient: props.recipient,
-            content: props.content,
+            content: props.content.trim().to_string(),
             id: utility::random_id(),
             timestamp: utility::unix_epoch_timestamp(),
         };
@@ -1046,11 +1053,18 @@ impl Database {
             return Err(DatabaseError::NotAllowed);
         }
 
+        // check markdown content
+        let markdown = xsu_util::ui::render_markdown(&props.content);
+
+        if markdown.trim().len() == 0 {
+            return Err(DatabaseError::ContentTooShort);
+        }
+
         // ...
         let response = QuestionResponse {
             author: author.username,
             question: question.clone(),
-            content: props.content,
+            content: props.content.trim().to_string(),
             id: utility::random_id(),
             timestamp: utility::unix_epoch_timestamp(),
         };
@@ -1460,11 +1474,18 @@ impl Database {
             return Err(DatabaseError::NotAllowed);
         }
 
+        // check markdown content
+        let markdown = xsu_util::ui::render_markdown(&props.content);
+
+        if markdown.trim().len() == 0 {
+            return Err(DatabaseError::ContentTooShort);
+        }
+
         // ...
         let comment = ResponseComment {
             author: author.username,
             response: response.id.clone(),
-            content: props.content,
+            content: props.content.trim().to_string(),
             id: utility::random_id(),
             timestamp: utility::unix_epoch_timestamp(),
         };
