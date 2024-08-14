@@ -496,8 +496,8 @@
         alert("Unpinned!");
     }
 </script>
-
+{% endif %} {% endif %}
 <!-- prettier-ignore -->
 {% let profile = other.clone() %}
 {% include "components/theming.html" %}
-{% endif %} {% endif %} {% call super() %} {% endblock %}
+{% call super() %} {% endblock %}
