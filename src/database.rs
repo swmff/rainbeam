@@ -245,7 +245,7 @@ impl Database {
                         // get the number of responses the question has
                         self.base
                             .cachedb
-                            .get(format!("xsulib.sparker.question_response_count:{}", id))
+                            .get(format!("xsulib.sparkler.question_response_count:{}", id))
                             .await
                             .unwrap_or(String::from("0"))
                             .parse::<i32>()
@@ -304,7 +304,7 @@ impl Database {
                         // get the number of responses the question has
                         self.base
                             .cachedb
-                            .get(format!("xsulib.sparker.question_response_count:{}", id))
+                            .get(format!("xsulib.sparkler.question_response_count:{}", id))
                             .await
                             .unwrap_or(String::from("0"))
                             .parse::<i32>()
@@ -387,7 +387,7 @@ impl Database {
                         // get the number of responses the question has
                         self.base
                             .cachedb
-                            .get(format!("xsulib.sparker.question_response_count:{}", id))
+                            .get(format!("xsulib.sparkler.question_response_count:{}", id))
                             .await
                             .unwrap_or(String::from("0"))
                             .parse::<i32>()
@@ -413,7 +413,7 @@ impl Database {
         if let Some(count) = self
             .base
             .cachedb
-            .get(format!("xsulib.sparker.global_questions_count:{}", author))
+            .get(format!("xsulib.sparkler.global_questions_count:{}", author))
             .await
         {
             return count.parse::<usize>().unwrap_or(0);
@@ -429,7 +429,7 @@ impl Database {
         self.base
             .cachedb
             .set(
-                format!("xsulib.sparker.global_question_count:{}", author),
+                format!("xsulib.sparkler.global_question_count:{}", author),
                 count.to_string(),
             )
             .await;
@@ -561,7 +561,7 @@ impl Database {
                     self.base
                         .cachedb
                         .incr(format!(
-                            "xsulib.sparker.global_question_count:{}",
+                            "xsulib.sparkler.global_question_count:{}",
                             question.author
                         ))
                         .await;
@@ -637,7 +637,7 @@ impl Database {
                     self.base
                         .cachedb
                         .remove(format!(
-                            "xsulib.sparker.question_response_count:{}",
+                            "xsulib.sparkler.question_response_count:{}",
                             question.id
                         ))
                         .await;
@@ -646,7 +646,7 @@ impl Database {
                     self.base
                         .cachedb
                         .decr(format!(
-                            "xsulib.sparker.global_question_count:{}",
+                            "xsulib.sparkler.global_question_count:{}",
                             question.author
                         ))
                         .await;
@@ -851,7 +851,7 @@ impl Database {
         if let Some(count) = self
             .base
             .cachedb
-            .get(format!("xsulib.sparker.response_count:{}", author))
+            .get(format!("xsulib.sparkler.response_count:{}", author))
             .await
         {
             return count.parse::<usize>().unwrap_or(0);
@@ -867,7 +867,7 @@ impl Database {
         self.base
             .cachedb
             .set(
-                format!("xsulib.sparker.response_count:{}", author),
+                format!("xsulib.sparkler.response_count:{}", author),
                 count.to_string(),
             )
             .await;
@@ -1131,7 +1131,7 @@ impl Database {
                     self.base
                         .cachedb
                         .incr(format!(
-                            "xsulib.sparker.question_response_count:{}",
+                            "xsulib.sparkler.question_response_count:{}",
                             question.id
                         ))
                         .await;
@@ -1139,7 +1139,10 @@ impl Database {
                     // bump response count
                     self.base
                         .cachedb
-                        .incr(format!("xsulib.sparker.response_count:{}", response.author))
+                        .incr(format!(
+                            "xsulib.sparkler.response_count:{}",
+                            response.author
+                        ))
                         .await;
 
                     return Ok(());
@@ -1172,7 +1175,10 @@ impl Database {
                         // bump response count
                         self.base
                             .cachedb
-                            .incr(format!("xsulib.sparker.response_count:{}", response.author))
+                            .incr(format!(
+                                "xsulib.sparkler.response_count:{}",
+                                response.author
+                            ))
                             .await;
 
                         // return
@@ -1320,7 +1326,10 @@ impl Database {
                 // decr response count
                 self.base
                     .cachedb
-                    .decr(format!("xsulib.sparker.response_count:{}", response.author))
+                    .decr(format!(
+                        "xsulib.sparkler.response_count:{}",
+                        response.author
+                    ))
                     .await;
 
                 // decr global question response count
@@ -1328,7 +1337,7 @@ impl Database {
                     self.base
                         .cachedb
                         .decr(format!(
-                            "xsulib.sparker.question_response_count:{}",
+                            "xsulib.sparkler.question_response_count:{}",
                             response.question.id
                         ))
                         .await;
@@ -1490,7 +1499,7 @@ impl Database {
         if let Some(count) = self
             .base
             .cachedb
-            .get(format!("xsulib.sparker.comment_count:{}", id))
+            .get(format!("xsulib.sparkler.comment_count:{}", id))
             .await
         {
             return count.parse::<usize>().unwrap_or(0);
@@ -1506,7 +1515,7 @@ impl Database {
         self.base
             .cachedb
             .set(
-                format!("xsulib.sparker.comment_count:{}", id),
+                format!("xsulib.sparkler.comment_count:{}", id),
                 count.to_string(),
             )
             .await;
@@ -1618,7 +1627,7 @@ impl Database {
                 // bump comment count
                 self.base
                     .cachedb
-                    .incr(format!("xsulib.sparker.comment_count:{}", response.id))
+                    .incr(format!("xsulib.sparkler.comment_count:{}", response.id))
                     .await;
 
                 // return
@@ -1682,7 +1691,10 @@ impl Database {
                 // decr response count
                 self.base
                     .cachedb
-                    .decr(format!("xsulib.sparker.comment_count:{}", comment.response))
+                    .decr(format!(
+                        "xsulib.sparkler.comment_count:{}",
+                        comment.response
+                    ))
                     .await;
 
                 // return
