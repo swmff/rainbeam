@@ -40,7 +40,7 @@
             });
     });
 
-    app.define("do_i_know_you", function ({$}) {
+    app.define("do_i_know_you", function ({ $ }) {
         if (window.localStorage.getItem("me")) {
             globalThis.username = window.localStorage.getItem("me");
             return true;
@@ -104,6 +104,29 @@
                 dropdown.removeAttribute("open");
             }
         });
+    });
+
+    app.define("hook.character_counter", function (_, event) {
+        let target = event.target;
+
+        while (!target.matches("textarea, input")) {
+            target = target.parentElement;
+        }
+
+        const counter = document.getElementById(`${target.id}:counter`);
+        counter.innerText = `${target.value.length}/${target.getAttribute("maxlength")}`;
+    });
+
+    app.define("hook.character_counter.init", function (_, event) {
+        for (const element of Array.from(
+            document.querySelectorAll("[hook=counter]") || [],
+        )) {
+            const counter = document.getElementById(`${element.id}:counter`);
+            counter.innerText = `0/${element.getAttribute("maxlength")}`;
+            element.addEventListener("keyup", (e) =>
+                app["hook.character_counter"](e),
+            );
+        }
     });
 
     // adomonition

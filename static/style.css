@@ -731,6 +731,7 @@ dialog::backdrop {
     font-family: monospace;
     font-size: 10px;
     border-radius: calc(var(--radius) / 2);
+    height: max-content;
 }
 
 .notification.camo {

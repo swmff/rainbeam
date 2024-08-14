@@ -103,7 +103,10 @@
                             <!-- prettier-ignore -->
                             <!-- anonymous user display -->
                             {{ author_tag.2 }}
-                            <span class="notification">
+                            <span
+                                class="notification"
+                                title="Question author tag"
+                            >
                                 <!-- prettier-ignore -->
                                 {% if author_tag.1.len() <= 32 %}
                                 <!-- generate a fake short tag, showing the user's real username would ruin the fun -->
@@ -184,13 +187,15 @@
                         maxlength="500"
                         required
                         name="content"
-                        id="content"
+                        id="content-{{ question.id }}"
+                        hook="counter"
                     ></textarea>
 
-                    <div
-                        class="flex w-full gap-1"
-                        style="justify-content: right"
-                    >
+                    <div class="flex justify-between w-full gap-1">
+                        <span
+                            id="content-{{ question.id }}:counter"
+                            class="notification item"
+                        ></span>
                         <button class="round-lg primary bold">Submit</button>
                     </div>
                 </form>

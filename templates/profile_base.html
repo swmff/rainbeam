@@ -350,12 +350,15 @@
                             required
                             name="content"
                             id="content"
+                            hook="counter"
                         ></textarea>
 
                         <!-- prettier-ignore -->
                         <div class="flex justify-between w-full gap-1">
+                        <div class="footernav items-center gap-2">
+                            <span id="content:counter" class="notification item"></span>
                             {% if profile.is_some() && (disallow_anonymous == false) %}
-                            <div class="checkbox_container">
+                            <div class="checkbox_container item">
                                 <input
                                     type="checkbox"
                                     name="anonymous"
@@ -369,6 +372,7 @@
                             {% else %}
                             <div></div>
                             {% endif %}
+                            </div>
 
                             <button class="round-lg primary bold">Ask</button>
                         </div>
@@ -511,7 +515,9 @@
                     res.message || "Question asked!",
                 ]);
 
-                e.target.reset();
+                if (res.success === true) {
+                    e.target.reset();
+                }
             });
     });
 

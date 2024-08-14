@@ -107,12 +107,14 @@ block head %}
                         required
                         name="content"
                         id="content"
+                        hook="counter"
                     ></textarea>
 
-                    <div
-                        class="flex w-full gap-1"
-                        style="justify-content: right"
-                    >
+                    <div class="flex justify-between w-full gap-1">
+                        <span
+                            id="content:counter"
+                            class="notification item"
+                        ></span>
                         <button class="round-lg primary bold">Submit</button>
                     </div>
                 </form>
@@ -160,7 +162,12 @@ block head %}
                     .getElementById(`question:${question}`)
                     .setAttribute("disabled", "fully");
 
-                e.target.reset();
+                if (res.success === true) {
+                    e.target.reset();
+                    document
+                        .getElementById(`question:${question}`)
+                        .removeAttribute("disabled");
+                }
             });
     }
 </script>

@@ -264,8 +264,10 @@
             (() => {
                 const app = ns("app");
                 app.clean_date_codes();
-                app["hook.dropdown.init"](window);
                 app.link_filter();
+
+                app["hook.dropdown.init"](window);
+                app["hook.character_counter.init"]();
             })();
         </script>
 

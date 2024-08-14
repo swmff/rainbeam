@@ -1456,7 +1456,7 @@ impl Database {
         }
 
         // check content length
-        if props.content.len() > 250 {
+        if props.content.len() > 500 {
             return Err(DatabaseError::ContentTooLong);
         }
 

@@ -87,10 +87,14 @@ endblock %} {% block head %}
                         required
                         name="content"
                         id="content"
+                        hook="counter"
                     ></textarea>
 
                     <div class="flex justify-between w-full gap-1">
-                        <div></div>
+                        <span
+                            id="content:counter"
+                            class="notification item"
+                        ></span>
                         <button class="round-lg primary bold">Ask</button>
                     </div>
                 </form>
@@ -122,7 +126,9 @@ endblock %} {% block head %}
                     res.message || "Question asked!",
                 ]);
 
-                e.target.reset();
+                if (res.success === true) {
+                    e.target.reset();
+                }
             });
     });
 </script>
