@@ -52,6 +52,11 @@ endblock %} {% block nav_left %} {% if profile.is_some() %}
     {% endif %}
 </a>
 {% endif %} {% endblock %} {% block content %}
+<!-- prettier-ignore -->
+{% if let Some(profile) = profile %}
+    {% include "components/theming.html" %}
+{% endif %}
+
 <article class="flex flex-collapse gap-2">
     <div
         id="settings_nav"
@@ -85,6 +90,38 @@ endblock %} {% block nav_left %} {% if profile.is_some() %}
     // handle update
     globalThis.update_kv = (key, value) => {
         metadata.kv[key] = value;
+
+        // live theme
+        if (key.startsWith("sparkler:color_")) {
+            const real_key = key.replace("sparkler:", "");
+            const css_var = real_key.replace("_", "-");
+            value = value
+                .replaceAll(";", "")
+                .replaceAll("}", "")
+                .replaceAll("<", "%lt;")
+                .replaceAll(">", "%gt;");
+
+            // check for existing stylesheet
+            const existing = document.getElementById(
+                `sparkler_live:${real_key}`,
+            );
+
+            if (existing) {
+                if (value === "") {
+                    // use default
+                    existing.remove();
+                    return;
+                }
+
+                existing.innerHTML = `:root, * { --${css_var}: ${value} !important }`;
+            } else {
+                const stylesheets = document.getElementById("stylesheets");
+                const stylesheet = document.createElement("style");
+                stylesheet.id = `sparkler_live:${real_key}`;
+                stylesheet.innerHTML = `:root, * { --${css_var}: ${value} !important }`;
+                stylesheets.appendChild(stylesheet);
+            }
+        }
     };
 
     // prefill

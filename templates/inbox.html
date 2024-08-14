@@ -214,4 +214,9 @@
             });
     }
 </script>
+
+<!-- prettier-ignore -->
+{% if let Some(profile) = profile %}
+    {% include "components/theming.html" %}
+{% endif %}
 {% call super() %} {% endblock %}
