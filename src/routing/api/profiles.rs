@@ -1,18 +1,17 @@
 use crate::database::Database;
 use crate::model::DatabaseError;
-use axum::body::Bytes;
-use axum::routing::post;
-use axum::Json;
+use axum_extra::extract::CookieJar;
 use hcaptcha::Hcaptcha;
 use std::{fs::File, io::Read};
-use xsu_authman::model::NotificationCreate;
+use xsu_authman::model::{NotificationCreate, UserFollow};
 use xsu_dataman::DefaultReturn;
 
 use axum::response::IntoResponse;
 use axum::{
+    body::Bytes,
     extract::{Path, State},
-    routing::get,
-    Router,
+    routing::{get, post},
+    Json, Router,
 };
 
 pub fn routes(database: Database) -> Router {
@@ -20,6 +19,7 @@ pub fn routes(database: Database) -> Router {
         .route("/:username/avatar", get(avatar_request))
         .route("/:username/banner", get(banner_request))
         .route("/:username/report", post(report_request))
+        .route("/:username/follow", post(follow_request))
         // ...
         .with_state(database)
 }
@@ -202,6 +202,109 @@ pub async fn report_request(
         Err(_) => Json(DefaultReturn {
             success: false,
             message: DatabaseError::NotFound.to_string(),
+            payload: (),
+        }),
+    }
+}
+
+/// Toggle following on the given user
+pub async fn follow_request(
+    jar: CookieJar,
+    Path(username): Path<String>,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    // get user from token
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(e) => {
+                return Json(DefaultReturn {
+                    success: false,
+                    message: e.to_string(),
+                    payload: (),
+                });
+            }
+        },
+        None => {
+            return Json(DefaultReturn {
+                success: false,
+                message: DatabaseError::NotAllowed.to_string(),
+                payload: (),
+            });
+        }
+    };
+
+    // check block status
+    let attempting_to_follow = match database
+        .auth
+        .get_profile_by_username(username.to_owned())
+        .await
+    {
+        Ok(ua) => ua,
+        Err(_) => {
+            return Json(DefaultReturn {
+                success: false,
+                message: DatabaseError::NotFound.to_string(),
+                payload: (),
+            })
+        }
+    };
+
+    if attempting_to_follow
+        .metadata
+        .kv
+        .get("sparkler:block_list")
+        .unwrap_or(&String::new())
+        .contains(&format!("<@{}>", auth_user.username))
+    {
+        // remove the user follow and return
+        // blocked users cannot follow the people who blocked them!
+        match database
+            .auth
+            .force_remove_user_follow(&mut UserFollow {
+                user: auth_user.username,
+                following: username,
+            })
+            .await
+        {
+            Ok(_) => {
+                return Json(DefaultReturn {
+                    success: true,
+                    message: "Acceptable".to_string(),
+                    payload: (),
+                })
+            }
+            Err(e) => {
+                return Json(DefaultReturn {
+                    success: false,
+                    message: e.to_string(),
+                    payload: (),
+                })
+            }
+        }
+    }
+
+    // return
+    match database
+        .auth
+        .toggle_user_follow(&mut UserFollow {
+            user: auth_user.username,
+            following: username,
+        })
+        .await
+    {
+        Ok(_) => Json(DefaultReturn {
+            success: true,
+            message: "Acceptable".to_string(),
+            payload: (),
+        }),
+        Err(e) => Json(DefaultReturn {
+            success: false,
+            message: e.to_string(),
             payload: (),
         }),
     }

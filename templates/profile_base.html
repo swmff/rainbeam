@@ -522,7 +522,7 @@
     });
 
     function follow() {
-        fetch(`/api/auth/profile/{{ other.username }}/follow`, {
+        fetch(`/api/v1/profiles/{{ other.username }}/follow`, {
             method: "POST",
         })
             .then((res) => res.json())

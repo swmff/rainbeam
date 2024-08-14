@@ -269,7 +269,7 @@ select {
         background 0.15s,
         outline 0.08s,
         outline-color 0.15s;
-    color: inherit;
+    color: var(--color-text-lowered);
 }
 
 input.secondary,

@@ -1525,7 +1525,7 @@ impl Database {
                                 // we're only going to show 50 characters of the response in the notification
                                 comment.content.clone().chars().take(50).collect::<String>()
                             ),
-                            address: format!("/response/{}", response.id),
+                            address: format!("/comment/{}", comment.id),
                             recipient: response.author,
                         })
                         .await
