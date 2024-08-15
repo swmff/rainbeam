@@ -404,7 +404,7 @@ impl Database {
         &self,
         author: String,
         page: i32,
-    ) -> Result<Vec<(Question, i32)>> {
+    ) -> Result<Vec<(Question, usize)>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -421,7 +421,7 @@ impl Database {
             .await
         {
             Ok(p) => {
-                let mut out: Vec<(Question, i32)> = Vec::new();
+                let mut out: Vec<(Question, usize)> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
@@ -452,8 +452,13 @@ impl Database {
                             .get(format!("xsulib.sparkler.question_response_count:{}", id))
                             .await
                             .unwrap_or(String::from("0"))
-                            .parse::<i32>()
-                            .unwrap_or(0),
+                            .parse::<usize>()
+                            .unwrap_or(
+                                self.get_responses_by_question(id)
+                                    .await
+                                    .unwrap_or(Vec::new())
+                                    .len(),
+                            ),
                     ));
                 }
 

@@ -725,7 +725,7 @@ struct ProfileQuestionsTemplate {
     unread: usize,
     notifs: usize,
     other: Profile,
-    questions: Vec<(Question, i32)>,
+    questions: Vec<(Question, usize)>,
     questions_count: usize,
     response_count: usize,
     followers_count: usize,
