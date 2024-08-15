@@ -1,6 +1,7 @@
 use crate::config::Config;
 use crate::model::{
-    CommentCreate, QuestionCreate, QuestionResponse, ResponseComment, ResponseCreate,
+    anonymous_profile, global_profile, CommentCreate, QuestionCreate, QuestionResponse,
+    ResponseComment, ResponseCreate,
 };
 use crate::model::{DatabaseError, Question};
 
@@ -77,16 +78,259 @@ impl Database {
         .await;
     }
 
-    // ...
+    // migrations
+
+    /// Migrate legacy database entries that are using usernames instead of IDs
+    pub async fn migrate_ghsa_gc85_x5qp_77qq(&self) -> Result<()> {
+        // xresponses
+
+        // MIGRATION:
+        // we also need to change "author" to an ID instead of their username
+
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "SELECT * FROM \"xresponses\""
+        } else {
+            "SELECT * FROM \"xresponses\""
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query).fetch_all(c).await {
+            Ok(p) => {
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+
+                    let id = res.get("id").unwrap().to_string();
+                    let author = res.get("author").unwrap().to_string();
+
+                    // UPDATE
+                    let query: String =
+                        if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+                            "UPDATE \"xresponses\" SET \"author\" = ? WHERE \"id\" = ?"
+                        } else {
+                            "UPDATE \"xresponses\" SET (\"author\") = ($1) WHERE \"id\" = $2"
+                        }
+                        .to_string();
+
+                    let c = &self.base.db.client;
+                    if let Err(_) = sqlquery(&query)
+                        .bind::<&String>(&self.get_profile(author).await.unwrap().id)
+                        .bind::<&String>(&id)
+                        .execute(c)
+                        .await
+                    {
+                        return Err(DatabaseError::Other);
+                    }
+                }
+            }
+            Err(_) => return Err(DatabaseError::Other),
+        };
+
+        // xquestions
+
+        // MIGRATION:
+        // author and recipient columns need to be changed to use an ID instead of a username
+
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "SELECT * FROM \"xquestions\""
+        } else {
+            "SELECT * FROM \"xquestions\""
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query).fetch_all(c).await {
+            Ok(p) => {
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+
+                    let id = res.get("id").unwrap().to_string();
+                    let recipient = res.get("recipient").unwrap().to_string();
+                    let author = res.get("author").unwrap().to_string();
+
+                    // UPDATE
+                    let query: String =
+                        if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+                            "UPDATE \"xquestions\" SET \"recipient\" = ?, \"author\" = ? WHERE \"id\" = ?"
+                        } else {
+                            "UPDATE \"xquestions\" SET (\"recipient\", \"author\") = ($1, $2) WHERE \"id\" = $3"
+                        }
+                        .to_string();
+
+                    let c = &self.base.db.client;
+                    if let Err(_) = sqlquery(&query)
+                        .bind::<&String>(&match self.get_profile(recipient).await {
+                            Ok(ua) => ua.id,
+                            Err(e) => {
+                                println!("{:?} ({})", e, id);
+                                continue;
+                            }
+                        })
+                        .bind::<&String>(&self.get_profile(author).await.unwrap().id)
+                        .bind::<&String>(&id)
+                        .execute(c)
+                        .await
+                    {
+                        return Err(DatabaseError::Other);
+                    }
+                }
+            }
+            Err(_) => return Err(DatabaseError::Other),
+        };
+
+        // xcomments
+
+        // MIGRATION:
+        // author column need to be changed to use an ID instead of a username
+
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "SELECT * FROM \"xcomments\""
+        } else {
+            "SELECT * FROM \"xcomments\""
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query).fetch_all(c).await {
+            Ok(p) => {
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+
+                    let id = res.get("id").unwrap().to_string();
+                    let author = res.get("author").unwrap().to_string();
+
+                    // UPDATE
+                    let query: String =
+                        if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+                            "UPDATE \"xcomments\" SET \"author\" = ? WHERE \"id\" = ?"
+                        } else {
+                            "UPDATE \"xcomments\" SET (\"author\") = ($1) WHERE \"id\" = $2"
+                        }
+                        .to_string();
+
+                    let c = &self.base.db.client;
+                    if let Err(_) = sqlquery(&query)
+                        .bind::<&String>(&self.get_profile(author).await.unwrap().id)
+                        .bind::<&String>(&id)
+                        .execute(c)
+                        .await
+                    {
+                        return Err(DatabaseError::Other);
+                    }
+                }
+            }
+            Err(_) => return Err(DatabaseError::Other),
+        };
+
+        // xfollows
+
+        // MIGRATION:
+        // user and following columns need to be changed to use an ID instead of a username
+
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "SELECT * FROM \"xfollows\""
+        } else {
+            "SELECT * FROM \"xfollows\""
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query).fetch_all(c).await {
+            Ok(p) => {
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+
+                    let user = res.get("user").unwrap().to_string();
+                    let following = res.get("following").unwrap().to_string();
+
+                    // UPDATE
+                    let query: String =
+                        if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+                            "UPDATE \"xfollows\" SET \"user\" = ?, \"following\" = ? WHERE \"user\" = ? AND \"following\" = ?"
+                        } else {
+                            "UPDATE \"xfollows\" SET (\"user\", \"following\") = ($1, $2) WHERE \"user\" = $3 AND \"following\" = $4"
+                        }
+                        .to_string();
+
+                    let c = &self.base.db.client;
+                    if let Err(_) = sqlquery(&query)
+                        .bind::<&String>(&self.get_profile(user.clone()).await.unwrap().id)
+                        .bind::<&String>(&self.get_profile(following.clone()).await.unwrap().id)
+                        .bind::<&String>(&user)
+                        .bind::<&String>(&following)
+                        .execute(c)
+                        .await
+                    {
+                        return Err(DatabaseError::Other);
+                    }
+                }
+            }
+            Err(_) => return Err(DatabaseError::Other),
+        };
+
+        // xnotifications
+
+        // MIGRATION:
+        // recipient column need to be changed to use an ID instead of a username
+
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "SELECT * FROM \"xnotifications\""
+        } else {
+            "SELECT * FROM \"xnotifications\""
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query).fetch_all(c).await {
+            Ok(p) => {
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+
+                    let id = res.get("id").unwrap().to_string();
+                    let recipient = res.get("recipient").unwrap().to_string();
+
+                    // UPDATE
+                    let query: String =
+                        if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+                            "UPDATE \"xnotifications\" SET \"recipient\" = ? WHERE \"id\" = ?"
+                        } else {
+                            "UPDATE \"xnotifications\" SET (\"recipient\") = ($1) WHERE \"id\" = $2"
+                        }
+                        .to_string();
+
+                    let c = &self.base.db.client;
+                    if let Err(_) = sqlquery(&query)
+                        .bind::<&String>(&self.get_profile(recipient).await.unwrap().id)
+                        .bind::<&String>(&id)
+                        .execute(c)
+                        .await
+                    {
+                        return Err(DatabaseError::Other);
+                    }
+                }
+            }
+            Err(_) => return Err(DatabaseError::Other),
+        };
+
+        // finished
+        Ok(())
+    }
+
+    // anonymous tag
 
     /// Get the tag of an anonymous username
     ///
     /// # Returns
-    /// `(is anonymous, tag, username)`
-    pub fn anonymous_tag(input: &str) -> (bool, String, String) {
+    /// `(is anonymous, tag, username, input)`
+    pub fn anonymous_tag(input: &str) -> (bool, String, String, String) {
         if (input != "anonymous") && !input.starts_with("anonymous#") {
             // not anonymous
-            return (false, String::new(), String::new());
+            return (false, String::new(), String::new(), input.to_string());
         }
 
         // anonymous questions from BEFORE the anonymous tag update will just have the "anonymous" tag
@@ -95,6 +339,7 @@ impl Database {
             true,
             split.get(1).unwrap_or(&"unknown").to_string(),
             split.get(0).unwrap().to_string(),
+            input.to_string(),
         )
     }
 
@@ -107,6 +352,36 @@ impl Database {
         (format!("anonymous#{tag}"), tag)
     }
 
+    // profiles
+
+    /// Fetch a profile correctly
+    pub async fn get_profile(&self, mut id: String) -> Result<Profile> {
+        if id.starts_with("ANSWERED:") {
+            // we use the "ANSWERED" prefix whenever we answer a question so it doesn't show up in inboxes
+            id = id.replace("ANSWERED:", "");
+        }
+
+        if id == "@" {
+            return Ok(global_profile());
+        } else if id.starts_with("anonymous#") | (id == "anonymous") | (id == "#") {
+            let tag = Database::anonymous_tag(&id);
+            return Ok(anonymous_profile(tag.3));
+        }
+
+        // handle legacy IDs (usernames)
+        if id.len() <= 32 {
+            return match self.auth.get_profile_by_username(id).await {
+                Ok(ua) => Ok(ua),
+                Err(_) => Err(DatabaseError::Other),
+            };
+        }
+
+        match self.auth.get_profile_by_id(id).await {
+            Ok(ua) => Ok(ua),
+            Err(_) => Err(DatabaseError::Other),
+        }
+    }
+
     // questions
 
     /// Get an existing question
@@ -114,6 +389,61 @@ impl Database {
     /// ## Arguments:
     /// * `id`
     pub async fn get_question(&self, id: String) -> Result<Question> {
+        // legacy migration
+        if id.starts_with("{") {
+            let question = serde_json::from_str::<serde_json::Value>(&id).unwrap();
+
+            return Ok(Question {
+                author: match self
+                    .get_profile(
+                        question
+                            .get("author")
+                            .unwrap()
+                            .to_string()
+                            .trim_matches(|c| c == '"')
+                            .to_string(),
+                    )
+                    .await
+                {
+                    Ok(ua) => ua,
+                    Err(e) => return Err(e),
+                },
+                recipient: match self
+                    .get_profile(
+                        question
+                            .get("recipient")
+                            .unwrap()
+                            .to_string()
+                            .trim_matches(|c| c == '"')
+                            .to_string(),
+                    )
+                    .await
+                {
+                    Ok(ua) => ua,
+                    Err(e) => return Err(e),
+                },
+                content: question
+                    .get("content")
+                    .unwrap()
+                    .to_string()
+                    .trim_matches(|c| c == '"')
+                    .to_string(),
+                id: question
+                    .get("id")
+                    .unwrap()
+                    .to_string()
+                    .trim_matches(|c| c == '"')
+                    .to_string(),
+                timestamp: question
+                    .get("timestamp")
+                    .unwrap()
+                    .to_string()
+                    .trim_matches(|c| c == '"')
+                    .parse::<u128>()
+                    .unwrap(),
+            });
+        }
+
         // check in cache
         match self
             .base
@@ -137,13 +467,35 @@ impl Database {
         let c = &self.base.db.client;
         let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
             Ok(p) => self.base.textify_row(p, Vec::new()).0,
-            Err(_) => return Err(DatabaseError::NotFound),
+            Err(_) => {
+                let tag = self.create_anonymous();
+
+                return Ok(Question {
+                    author: anonymous_profile(tag.1.clone()),
+                    recipient: anonymous_profile(tag.1),
+                    content: "<lost question>".to_string(),
+                    id: "".to_string(),
+                    timestamp: 0,
+                });
+            }
         };
 
         // return
         let question = Question {
-            author: res.get("author").unwrap().to_string(),
-            recipient: res.get("recipient").unwrap().to_string(),
+            author: match self
+                .get_profile(res.get("author").unwrap().to_string())
+                .await
+            {
+                Ok(ua) => ua,
+                Err(e) => return Err(e),
+            },
+            recipient: match self
+                .get_profile(res.get("recipient").unwrap().to_string())
+                .await
+            {
+                Ok(ua) => ua,
+                Err(e) => return Err(e),
+            },
             content: res.get("content").unwrap().to_string(),
             id: res.get("id").unwrap().to_string(),
             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
@@ -188,8 +540,20 @@ impl Database {
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
                     out.push(Question {
-                        author: res.get("author").unwrap().to_string(),
-                        recipient: res.get("recipient").unwrap().to_string(),
+                        author: match self
+                            .get_profile(res.get("author").unwrap().to_string())
+                            .await
+                        {
+                            Ok(ua) => ua,
+                            Err(e) => return Err(e),
+                        },
+                        recipient: match self
+                            .get_profile(res.get("recipient").unwrap().to_string())
+                            .await
+                        {
+                            Ok(ua) => ua,
+                            Err(e) => return Err(e),
+                        },
                         content: res.get("content").unwrap().to_string(),
                         id: res.get("id").unwrap().to_string(),
                         timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
@@ -236,8 +600,20 @@ impl Database {
                     let id = res.get("id").unwrap().to_string();
                     out.push((
                         Question {
-                            author: res.get("author").unwrap().to_string(),
-                            recipient: res.get("recipient").unwrap().to_string(),
+                            author: match self
+                                .get_profile(res.get("author").unwrap().to_string())
+                                .await
+                            {
+                                Ok(ua) => ua,
+                                Err(e) => return Err(e),
+                            },
+                            recipient: match self
+                                .get_profile(res.get("recipient").unwrap().to_string())
+                                .await
+                            {
+                                Ok(ua) => ua,
+                                Err(e) => return Err(e),
+                            },
                             content: res.get("content").unwrap().to_string(),
                             id: res.get("id").unwrap().to_string(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
@@ -295,8 +671,20 @@ impl Database {
                     let id = res.get("id").unwrap().to_string();
                     out.push((
                         Question {
-                            author: res.get("author").unwrap().to_string(),
-                            recipient: res.get("recipient").unwrap().to_string(),
+                            author: match self
+                                .get_profile(res.get("author").unwrap().to_string())
+                                .await
+                            {
+                                Ok(ua) => ua,
+                                Err(e) => return Err(e),
+                            },
+                            recipient: match self
+                                .get_profile(res.get("recipient").unwrap().to_string())
+                                .await
+                            {
+                                Ok(ua) => ua,
+                                Err(e) => return Err(e),
+                            },
                             content: res.get("content").unwrap().to_string(),
                             id: res.get("id").unwrap().to_string(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
@@ -352,7 +740,7 @@ impl Database {
         let mut query_string = String::new();
 
         for follow in following {
-            query_string.push_str(&format!(" OR \"author\" = '{}'", follow.following));
+            query_string.push_str(&format!(" OR \"author\" = '{}'", follow.2.id));
         }
 
         // pull from database
@@ -366,7 +754,7 @@ impl Database {
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query)
-            .bind::<&String>(&user.username.to_lowercase())
+            .bind::<&String>(&user.id.to_lowercase())
             .fetch_all(c)
             .await
         {
@@ -378,8 +766,20 @@ impl Database {
                     let id = res.get("id").unwrap().to_string();
                     out.push((
                         Question {
-                            author: res.get("author").unwrap().to_string(),
-                            recipient: res.get("recipient").unwrap().to_string(),
+                            author: match self
+                                .get_profile(res.get("author").unwrap().to_string())
+                                .await
+                            {
+                                Ok(ua) => ua,
+                                Err(e) => return Err(e),
+                            },
+                            recipient: match self
+                                .get_profile(res.get("recipient").unwrap().to_string())
+                                .await
+                            {
+                                Ok(ua) => ua,
+                                Err(e) => return Err(e),
+                            },
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
@@ -529,8 +929,14 @@ impl Database {
 
         // ...
         let question = Question {
-            author,
-            recipient: props.recipient,
+            author: match self.get_profile(author).await {
+                Ok(ua) => ua,
+                Err(e) => return Err(e),
+            },
+            recipient: match self.get_profile(props.recipient).await {
+                Ok(ua) => ua,
+                Err(e) => return Err(e),
+            },
             content: props.content.trim().to_string(),
             id: utility::random_id(),
             timestamp: utility::unix_epoch_timestamp(),
@@ -547,8 +953,8 @@ impl Database {
 
         let c = &self.base.db.client;
         match sqlquery(&query)
-            .bind::<&String>(&question.author)
-            .bind::<&String>(&question.recipient)
+            .bind::<&String>(&question.author.id)
+            .bind::<&String>(&question.recipient.id)
             .bind::<&String>(&question.content)
             .bind::<&String>(&question.id)
             .bind::<&String>(&question.timestamp.to_string())
@@ -557,12 +963,12 @@ impl Database {
         {
             Ok(_) => {
                 // incr questions count
-                if question.recipient == "@" {
+                if question.recipient.username == "@" {
                     self.base
                         .cachedb
                         .incr(format!(
                             "xsulib.sparkler.global_question_count:{}",
-                            question.author
+                            question.author.username
                         ))
                         .await;
                 }
@@ -589,7 +995,7 @@ impl Database {
         };
 
         // check username
-        if (user.username != question.recipient) && (user.username != question.author) {
+        if (user.id != question.recipient.id) && (user.id != question.author.id) {
             // check permission
             let group = match self.auth.get_group_by_id(user.group).await {
                 Ok(g) => g,
@@ -614,7 +1020,7 @@ impl Database {
         match sqlquery(&query).bind::<&String>(&id).execute(c).await {
             Ok(_) => {
                 // remove all responses if this is a global question
-                if question.recipient == "@" {
+                if question.recipient.username == "@" {
                     // delete responses
                     let query: String =
                         if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
@@ -647,7 +1053,7 @@ impl Database {
                         .cachedb
                         .decr(format!(
                             "xsulib.sparkler.global_question_count:{}",
-                            question.author
+                            question.author.username
                         ))
                         .await;
                 }
@@ -671,7 +1077,7 @@ impl Database {
     ///
     /// ## Arguments:
     /// * `id`
-    pub async fn get_response(&self, id: String) -> Result<(QuestionResponse, usize)> {
+    pub async fn get_response(&self, id: String) -> Result<(Question, QuestionResponse, usize)> {
         // check in cache
         match self
             .base
@@ -680,7 +1086,7 @@ impl Database {
             .await
         {
             Some(c) => {
-                match serde_json::from_str::<(QuestionResponse, usize)>(c.as_str()) {
+                match serde_json::from_str::<(Question, QuestionResponse, usize)>(c.as_str()) {
                     Ok(r) => return Ok(r),
                     Err(_) => {
                         // we're storing a bad version that couldn't deserialize, we don't need that...
@@ -711,11 +1117,14 @@ impl Database {
 
         // return
         let response = QuestionResponse {
-            author: res.get("author").unwrap().to_string(),
-            question: match serde_json::from_str(res.get("question").unwrap()) {
-                Ok(q) => q,
-                Err(_) => return Err(DatabaseError::FailedToDeserialize),
+            author: match self
+                .get_profile(res.get("author").unwrap().to_string())
+                .await
+            {
+                Ok(ua) => ua,
+                Err(e) => return Err(e),
             },
+            question: res.get("question").unwrap().to_string(),
             content: res.get("content").unwrap().to_string(),
             id: res.get("id").unwrap().to_string(),
             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
@@ -731,7 +1140,14 @@ impl Database {
             .await;
 
         // return
-        Ok((response, self.get_comment_count_by_response(id).await))
+        Ok((
+            match self.get_question(response.question.clone()).await {
+                Ok(q) => q,
+                Err(e) => return Err(e),
+            },
+            response,
+            self.get_comment_count_by_response(id).await,
+        ))
     }
 
     /// Get all responses by their author
@@ -741,7 +1157,7 @@ impl Database {
     pub async fn get_responses_by_author(
         &self,
         author: String,
-    ) -> Result<Vec<(QuestionResponse, usize)>> {
+    ) -> Result<Vec<(Question, QuestionResponse, usize)>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -758,19 +1174,27 @@ impl Database {
             .await
         {
             Ok(p) => {
-                let mut out: Vec<(QuestionResponse, usize)> = Vec::new();
+                let mut out: Vec<(Question, QuestionResponse, usize)> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
+                    let question = res.get("question").unwrap().to_string();
                     let id = res.get("id").unwrap().to_string();
 
                     out.push((
+                        match self.get_question(question.clone()).await {
+                            Ok(q) => q,
+                            Err(e) => return Err(e),
+                        },
                         QuestionResponse {
-                            author: res.get("author").unwrap().to_string(),
-                            question: match serde_json::from_str(res.get("question").unwrap()) {
-                                Ok(q) => q,
-                                Err(_) => return Err(DatabaseError::FailedToDeserialize),
+                            author: match self
+                                .get_profile(res.get("author").unwrap().to_string())
+                                .await
+                            {
+                                Ok(ua) => ua,
+                                Err(e) => return Err(e),
                             },
+                            question,
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
@@ -796,7 +1220,7 @@ impl Database {
         &self,
         author: String,
         page: i32,
-    ) -> Result<Vec<(QuestionResponse, usize)>> {
+    ) -> Result<Vec<(Question, QuestionResponse, usize)>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -812,19 +1236,27 @@ impl Database {
             .await
         {
             Ok(p) => {
-                let mut out: Vec<(QuestionResponse, usize)> = Vec::new();
+                let mut out: Vec<(Question, QuestionResponse, usize)> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
+                    let question = res.get("question").unwrap().to_string();
                     let id = res.get("id").unwrap().to_string();
 
                     out.push((
+                        match self.get_question(question.clone()).await {
+                            Ok(q) => q,
+                            Err(e) => return Err(e),
+                        },
                         QuestionResponse {
-                            author: res.get("author").unwrap().to_string(),
-                            question: match serde_json::from_str(res.get("question").unwrap()) {
-                                Ok(q) => q,
-                                Err(_) => return Err(DatabaseError::FailedToDeserialize),
+                            author: match self
+                                .get_profile(res.get("author").unwrap().to_string())
+                                .await
+                            {
+                                Ok(ua) => ua,
+                                Err(e) => return Err(e),
                             },
+                            question,
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
@@ -835,7 +1267,7 @@ impl Database {
 
                 out
             }
-            Err(_) => return Err(DatabaseError::NotFound),
+            Err(_) => return Err(DatabaseError::Other),
         };
 
         // return
@@ -882,7 +1314,7 @@ impl Database {
     pub async fn get_responses_by_following(
         &self,
         user: String,
-    ) -> Result<Vec<(QuestionResponse, usize)>> {
+    ) -> Result<Vec<(Question, QuestionResponse, usize)>> {
         // get following
         let following = match self.auth.get_following(user.clone()).await {
             Ok(f) => f,
@@ -892,7 +1324,7 @@ impl Database {
         // check user permissions
         // returning NotAllowed here will block them from viewing their timeline
         // we don't want to waste resources on rule breakers
-        let user = match self.auth.get_profile_by_username(user.clone()).await {
+        let user = match self.auth.get_profile_by_id(user.clone()).await {
             Ok(ua) => ua,
             Err(_) => return Err(DatabaseError::NotFound),
         };
@@ -906,7 +1338,7 @@ impl Database {
         let mut query_string = String::new();
 
         for follow in following {
-            query_string.push_str(&format!(" OR \"author\" = '{}'", follow.following));
+            query_string.push_str(&format!(" OR \"author\" = '{}'", follow.2.id));
         }
 
         // pull from database
@@ -920,24 +1352,32 @@ impl Database {
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query)
-            .bind::<&String>(&user.username.to_lowercase())
+            .bind::<&String>(&user.id.to_lowercase())
             .fetch_all(c)
             .await
         {
             Ok(p) => {
-                let mut out: Vec<(QuestionResponse, usize)> = Vec::new();
+                let mut out: Vec<(Question, QuestionResponse, usize)> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
+                    let question = res.get("question").unwrap().to_string();
                     let id = res.get("id").unwrap().to_string();
 
                     out.push((
+                        match self.get_question(question.clone()).await {
+                            Ok(q) => q,
+                            Err(e) => return Err(e),
+                        },
                         QuestionResponse {
-                            author: res.get("author").unwrap().to_string(),
-                            question: match serde_json::from_str(res.get("question").unwrap()) {
-                                Ok(q) => q,
-                                Err(_) => return Err(DatabaseError::FailedToDeserialize),
+                            author: match self
+                                .get_profile(res.get("author").unwrap().to_string())
+                                .await
+                            {
+                                Ok(ua) => ua,
+                                Err(e) => return Err(e),
                             },
+                            question,
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
@@ -962,36 +1402,40 @@ impl Database {
     pub async fn get_responses_by_question(
         &self,
         id: String,
-    ) -> Result<Vec<(QuestionResponse, usize)>> {
+    ) -> Result<Vec<(Question, QuestionResponse, usize)>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            "SELECT * FROM \"xresponses\" WHERE \"question\" LIKE ? ORDER BY \"timestamp\" DESC"
+            "SELECT * FROM \"xresponses\" WHERE \"question\" = ? ORDER BY \"timestamp\" DESC"
         } else {
-            "SELECT * FROM \"xresponses\" WHERE \"question\" LIKE $1 ORDER BY \"timestamp\" DESC"
+            "SELECT * FROM \"xresponses\" WHERE \"question\" = $1 ORDER BY \"timestamp\" DESC"
         }
         .to_string();
 
         let c = &self.base.db.client;
-        let res = match sqlquery(&query)
-            .bind::<&String>(&format!("%\"id\":\"{}\"%", id))
-            .fetch_all(c)
-            .await
-        {
+        let res = match sqlquery(&query).bind::<&String>(&id).fetch_all(c).await {
             Ok(p) => {
-                let mut out: Vec<(QuestionResponse, usize)> = Vec::new();
+                let mut out: Vec<(Question, QuestionResponse, usize)> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
+                    let question = res.get("question").unwrap().to_string();
                     let id = res.get("id").unwrap().to_string();
 
                     out.push((
+                        match self.get_question(question.clone()).await {
+                            Ok(q) => q,
+                            Err(e) => return Err(e),
+                        },
                         QuestionResponse {
-                            author: res.get("author").unwrap().to_string(),
-                            question: match serde_json::from_str(res.get("question").unwrap()) {
-                                Ok(q) => q,
-                                Err(_) => return Err(DatabaseError::FailedToDeserialize),
+                            author: match self
+                                .get_profile(res.get("author").unwrap().to_string())
+                                .await
+                            {
+                                Ok(ua) => ua,
+                                Err(e) => return Err(e),
                             },
+                            question,
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
@@ -1024,8 +1468,8 @@ impl Database {
         };
 
         // check permissions
-        if question.recipient != "@" {
-            if question.recipient != author {
+        if question.recipient.username != "@" {
+            if question.recipient.id != author {
                 // cannot respond to a question not asked to us
                 return Err(DatabaseError::NotAllowed);
             }
@@ -1043,9 +1487,9 @@ impl Database {
         }
 
         // check author permissions
-        let author = match self.auth.get_profile_by_username(author.clone()).await {
+        let author = match self.get_profile(author.clone()).await {
             Ok(ua) => ua,
-            Err(_) => return Err(DatabaseError::NotFound),
+            Err(e) => return Err(e),
         };
 
         if author.group == -1 {
@@ -1062,8 +1506,8 @@ impl Database {
 
         // ...
         let response = QuestionResponse {
-            author: author.username,
-            question: question.clone(),
+            author,
+            question: question.id,
             content: props.content.trim().to_string(),
             id: utility::random_id(),
             timestamp: utility::unix_epoch_timestamp(),
@@ -1080,11 +1524,8 @@ impl Database {
 
         let c = &self.base.db.client;
         match sqlquery(&query)
-            .bind::<&String>(&response.author)
-            .bind::<&String>(&match serde_json::to_string(&response.question) {
-                Ok(s) => s,
-                Err(_) => return Err(DatabaseError::FailedToSerialize),
-            })
+            .bind::<&String>(&response.author.id)
+            .bind::<&String>(&response.question)
             .bind::<&String>(&response.content)
             .bind::<&String>(&response.id)
             .bind::<&String>(&response.timestamp.to_string())
@@ -1093,19 +1534,19 @@ impl Database {
         {
             Ok(_) => {
                 // create notification
-                let tag = Database::anonymous_tag(&question.author);
+                let tag = Database::anonymous_tag(&question.author.username);
 
-                if (question.recipient != question.author) && tag.0 == false {
+                if (question.recipient.id != question.author.id) && tag.0 == false {
                     if let Err(_) = self
                         .auth
                         .create_notification(NotificationCreate {
                             title: format!(
                                 "[@{}](/@{}) responded to a question you asked!",
-                                response.author, response.author
+                                response.author.username, response.author.username
                             ),
                             content: format!(
                                 "{}: \"{}...\"",
-                                response.author,
+                                response.author.username,
                                 // we're only going to show 50 characters of the response in the notification
                                 response
                                     .content
@@ -1115,7 +1556,7 @@ impl Database {
                                     .collect::<String>()
                             ),
                             address: format!("/response/{}", response.id),
-                            recipient: question.author,
+                            recipient: question.author.id,
                         })
                         .await
                     {
@@ -1124,7 +1565,7 @@ impl Database {
                 }
 
                 // handle global questions
-                if question.recipient == "@" {
+                if question.recipient.username == "@" {
                     // this is a global ask, we need to respond to it and then just move on
 
                     // bump question response count
@@ -1132,7 +1573,7 @@ impl Database {
                         .cachedb
                         .incr(format!(
                             "xsulib.sparkler.question_response_count:{}",
-                            question.id
+                            response.question
                         ))
                         .await;
 
@@ -1141,51 +1582,43 @@ impl Database {
                         .cachedb
                         .incr(format!(
                             "xsulib.sparkler.response_count:{}",
-                            response.author
+                            response.author.username
                         ))
                         .await;
 
                     return Ok(());
+                } else {
+                    // change recipient so it doesn't show up in inbox
+                    let query: String =
+                        if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+                            "UPDATE \"xquestions\" SET \"recipient\" = ? WHERE \"id\" = ?"
+                        } else {
+                            "UPDATE \"xquestions\" SET (\"recipient\") = ($1) WHERE \"id\" = $2"
+                        }
+                        .to_string();
+
+                    let c = &self.base.db.client;
+                    if let Err(_) = sqlquery(&query)
+                        .bind::<&String>(&format!("ANSWERED:{}", question.recipient.id))
+                        .bind::<&String>(&response.question)
+                        .execute(c)
+                        .await
+                    {
+                        return Err(DatabaseError::Other);
+                    }
                 }
 
-                // ...
+                // bump response count
+                self.base
+                    .cachedb
+                    .incr(format!(
+                        "xsulib.sparkler.response_count:{}",
+                        response.author.username
+                    ))
+                    .await;
 
-                // delete question
-                let query: String =
-                    if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
-                        "DELETE FROM \"xquestions\" WHERE \"id\" = ?"
-                    } else {
-                        "DELETE FROM \"xquestions\" WHERE \"id\" = $1"
-                    }
-                    .to_string();
-
-                let c = &self.base.db.client;
-                match sqlquery(&query)
-                    .bind::<&String>(&props.question)
-                    .execute(c)
-                    .await
-                {
-                    Ok(_) => {
-                        // remove from cache
-                        self.base
-                            .cachedb
-                            .remove(format!("xsulib.sparkler.question:{}", props.question))
-                            .await;
-
-                        // bump response count
-                        self.base
-                            .cachedb
-                            .incr(format!(
-                                "xsulib.sparkler.response_count:{}",
-                                response.author
-                            ))
-                            .await;
-
-                        // return
-                        Ok(())
-                    }
-                    Err(_) => Err(DatabaseError::Other),
-                }
+                // return
+                Ok(())
             }
             Err(_) => Err(DatabaseError::Other),
         }
@@ -1225,7 +1658,7 @@ impl Database {
             return Err(DatabaseError::NotAllowed);
         }
 
-        if user.username != response.author {
+        if user.id != response.author.id {
             // check permission
             let group = match self.auth.get_group_by_id(user.group).await {
                 Ok(g) => g,
@@ -1282,12 +1715,12 @@ impl Database {
     pub async fn delete_response(&self, id: String, user: Profile) -> Result<()> {
         // make sure response exists
         let response = match self.get_response(id.clone()).await {
-            Ok(q) => q.0,
+            Ok(q) => q,
             Err(e) => return Err(e),
         };
 
         // check username
-        if user.username != response.author {
+        if user.id != response.1.author.id {
             // check permission
             let group = match self.auth.get_group_by_id(user.group).await {
                 Ok(g) => g,
@@ -1328,17 +1761,17 @@ impl Database {
                     .cachedb
                     .decr(format!(
                         "xsulib.sparkler.response_count:{}",
-                        response.author
+                        response.1.author.id
                     ))
                     .await;
 
                 // decr global question response count
-                if response.question.recipient == "@" {
+                if response.0.recipient.username == "@" {
                     self.base
                         .cachedb
                         .decr(format!(
                             "xsulib.sparkler.question_response_count:{}",
-                            response.question.id
+                            response.0.id
                         ))
                         .await;
                 }
@@ -1385,7 +1818,13 @@ impl Database {
 
         // return
         let comment = ResponseComment {
-            author: res.get("author").unwrap().to_string(),
+            author: match self
+                .get_profile(res.get("author").unwrap().to_string())
+                .await
+            {
+                Ok(ua) => ua,
+                Err(e) => return Err(e),
+            },
             response: res.get("response").unwrap().to_string(),
             content: res.get("content").unwrap().to_string(),
             id: res.get("id").unwrap().to_string(),
@@ -1427,7 +1866,13 @@ impl Database {
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
                     out.push(ResponseComment {
-                        author: res.get("author").unwrap().to_string(),
+                        author: match self
+                            .get_profile(res.get("author").unwrap().to_string())
+                            .await
+                        {
+                            Ok(ua) => ua,
+                            Err(e) => return Err(e),
+                        },
                         response: res.get("response").unwrap().to_string(),
                         content: res.get("content").unwrap().to_string(),
                         id: res.get("id").unwrap().to_string(),
@@ -1473,7 +1918,13 @@ impl Database {
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
                     out.push(ResponseComment {
-                        author: res.get("author").unwrap().to_string(),
+                        author: match self
+                            .get_profile(res.get("author").unwrap().to_string())
+                            .await
+                        {
+                            Ok(ua) => ua,
+                            Err(e) => return Err(e),
+                        },
                         response: res.get("response").unwrap().to_string(),
                         content: res.get("content").unwrap().to_string(),
                         id: res.get("id").unwrap().to_string(),
@@ -1533,7 +1984,7 @@ impl Database {
     pub async fn create_comment(&self, props: CommentCreate, author: String) -> Result<()> {
         // make sure the response exists
         let response = match self.get_response(props.response.clone()).await {
-            Ok(q) => q.0,
+            Ok(q) => q.1,
             Err(e) => return Err(e),
         };
 
@@ -1573,7 +2024,7 @@ impl Database {
 
         // ...
         let comment = ResponseComment {
-            author: author.username,
+            author,
             response: response.id.clone(),
             content: props.content.trim().to_string(),
             id: utility::random_id(),
@@ -1591,7 +2042,7 @@ impl Database {
 
         let c = &self.base.db.client;
         match sqlquery(&query)
-            .bind::<&String>(&comment.author)
+            .bind::<&String>(&comment.author.id)
             .bind::<&String>(&comment.response)
             .bind::<&String>(&comment.content)
             .bind::<&String>(&comment.id)
@@ -1601,22 +2052,22 @@ impl Database {
         {
             Ok(_) => {
                 // create notification
-                if response.author != comment.author {
+                if response.author.id != comment.author.id {
                     if let Err(_) = self
                         .auth
                         .create_notification(NotificationCreate {
                             title: format!(
                                 "[@{}](/@{}) commented on a response you created!",
-                                comment.author, comment.author
+                                comment.author.username, comment.author.username
                             ),
                             content: format!(
                                 "{}: \"{}...\"",
-                                comment.author,
+                                comment.author.username,
                                 // we're only going to show 50 characters of the response in the notification
                                 comment.content.clone().chars().take(50).collect::<String>()
                             ),
                             address: format!("/comment/{}", comment.id),
-                            recipient: response.author,
+                            recipient: response.author.id,
                         })
                         .await
                     {
@@ -1652,7 +2103,7 @@ impl Database {
         };
 
         // check username
-        if user.username != comment.author {
+        if user.id != comment.author.id {
             // check permission
             let group = match self.auth.get_group_by_id(user.group).await {
                 Ok(g) => g,

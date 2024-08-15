@@ -40,7 +40,7 @@ pub async fn create_request(
             .get_profile_by_unhashed(c.value_trimmed().to_string())
             .await
         {
-            Ok(ua) => ua.username,
+            Ok(ua) => ua.id,
             Err(_) => return Json(DatabaseError::NotAllowed.into()),
         },
         None => return Json(DatabaseError::NotAllowed.into()),

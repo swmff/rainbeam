@@ -259,15 +259,15 @@ pub async fn follow_request(
         .kv
         .get("sparkler:block_list")
         .unwrap_or(&String::new())
-        .contains(&format!("<@{}>", auth_user.username))
+        .contains(&format!("<@{}>", auth_user.id))
     {
         // remove the user follow and return
         // blocked users cannot follow the people who blocked them!
         match database
             .auth
             .force_remove_user_follow(&mut UserFollow {
-                user: auth_user.username,
-                following: username,
+                user: auth_user.id,
+                following: attempting_to_follow.id,
             })
             .await
         {
@@ -292,8 +292,8 @@ pub async fn follow_request(
     match database
         .auth
         .toggle_user_follow(&mut UserFollow {
-            user: auth_user.username,
-            following: username,
+            user: auth_user.id,
+            following: attempting_to_follow.id,
         })
         .await
     {

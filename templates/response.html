@@ -60,7 +60,7 @@ block head %}
         {% let is_pinned = false %}
         {% let show_pin_button = false %}
         {% let do_not_render_question = false %}
-        {% let response = (response.clone(), 0) %}
+        {% let response = (question.clone(), response.clone(), 0) %}
         {% let show_comments = false %}
         {% include "components/response.html" %}
 
@@ -153,7 +153,7 @@ block head %}
 
 <!-- author actions -->
 <!-- prettier-ignore -->
-{% if profile.username == response.author %}
+{% if profile.id == response.author.id %}
 <dialog id="edit_dialog">
     <form class="inner flex flex-col gap-2" onsubmit="edit(event)">
         <!-- prettier-ignore -->

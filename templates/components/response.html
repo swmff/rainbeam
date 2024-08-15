@@ -1,4 +1,5 @@
-{% let comment_count = response.1 %} {% let response = response.0.clone() %}
+{% let question = response.0.clone() %} {% let comment_count = response.2 %} {%
+let response = response.1.clone() %}
 <div class="card-nest w-full shadow" id="response:{{ response.id }}">
     {% if do_not_render_question == false %}
     <div class="card flex flex-col gap-1">
@@ -6,21 +7,28 @@
             <div class="footernav">
                 <b class="flex items-center gap-2 item">
                     <!-- prettier-ignore -->
-                    {% let author_tag = crate::database::Database::anonymous_tag(response.question.author.as_ref()) %}
+                    {% let author_tag = crate::database::Database::anonymous_tag(question.author.username.as_ref()) %}
                     {% if author_tag.0 == false %}
                     <img
-                        title="{{ response.question.author }}'s avatar"
-                        src="/api/v1/profiles/{{ response.question.author }}/avatar"
+                        title="{{ question.author.username }}'s avatar"
+                        src="/api/v1/profiles/{{ question.author.username }}/avatar"
                         alt=""
                         class="avatar round-sm"
                         style="--size: 20px"
                     />
 
                     <a
-                        href="/@{{ response.question.author }}"
+                        href="/@{{ question.author.username }}"
                         style="color: inherit"
                     >
-                        {{ response.question.author }}
+                        <!-- prettier-ignore -->
+                        {% let display_name = question.author.metadata.kv.get("sparkler:display_name") %}
+
+                        {% if let Some(display_name) = display_name %}
+                            {{ display_name }}
+                        {% else %}
+                            {{ question.author.username }}
+                        {% endif %}
                     </a>
                     {% else %}
                     <!-- TODO: proxy this -->
@@ -28,7 +36,7 @@
                     (avatar.is_empty()) | (!avatar.starts_with("https://")) %}
                     <!-- default avatar, setting set but blank or unsafe -->
                     <img
-                        title="{{ response.question.author }}'s avatar"
+                        title="{{ question.author.username }}'s avatar"
                         src="/static/images/default-avatar.svg"
                         alt=""
                         class="avatar round-sm"
@@ -46,7 +54,7 @@
                     {% endif %} {% else %}
                     <!-- default avatar, setting not set -->
                     <img
-                        title="{{ response.question.author }}'s avatar"
+                        title="{{ question.author.username }}'s avatar"
                         src="/static/images/default-avatar.svg"
                         alt=""
                         class="avatar round-sm"
@@ -63,7 +71,7 @@
                     {% endif %}
                 </b>
 
-                <span class="date item">{{ response.question.timestamp }}</span>
+                <span class="date item">{{ question.timestamp }}</span>
 
                 {% if is_pinned == true %}
                 <span class="item" title="This question/response is pinned">
@@ -81,10 +89,10 @@
                         ></path>
                     </svg>
                 </span>
-                {% endif %} {% if response.question.recipient == "@" %}
+                {% endif %} {% if question.recipient.id == "@" %}
                 <a
                     class="button item primary"
-                    href="/question/{{ response.question.id }}"
+                    href="/question/{{ question.id }}"
                     title="Global question"
                     style="height: 24px; min-height: 24px; padding: 0.25rem"
                 >
@@ -107,7 +115,7 @@
 
         <!-- prettier-ignore -->
         <span class="question_content">
-            {{ xsu_util::ui::render_markdown(response.question.content)|safe }}
+            {{ xsu_util::ui::render_markdown(question.content)|safe }}
         </span>
     </div>
     {% endif %}
@@ -124,15 +132,25 @@
             <div class="footernav flex-wrap">
                 <b class="flex items-center gap-2">
                     <img
-                        title="{{ response.author }}'s avatar"
-                        src="/api/v1/profiles/{{ response.author }}/avatar"
+                        title="{{ response.author.username }}'s avatar"
+                        src="/api/v1/profiles/{{ response.author.username }}/avatar"
                         alt=""
                         class="avatar round-sm"
                         style="--size: 20px"
                     />
 
-                    <a href="/@{{ response.author }}" style="color: inherit">
-                        {{ response.author }}
+                    <a
+                        href="/@{{ response.author.username }}"
+                        style="color: inherit"
+                    >
+                        <!-- prettier-ignore -->
+                        {% let display_name = response.author.metadata.kv.get("sparkler:display_name") %}
+
+                        {% if let Some(display_name) = display_name %}
+                            {{ display_name }}
+                        {% else %}
+                            {{ response.author.username }}
+                        {% endif %}
                     </a>
                 </b>
 
@@ -187,8 +205,8 @@
                     </button>
 
                     <div class="inner shadow-md w-content" exclude="dropdown">
-                        {% if let Some(profile) = profile %} {% if
-                        profile.username == response.author %}
+                        {% if let Some(profile) = profile %} {% if profile.id ==
+                        response.author.id %}
                         <!-- actions for the profile owner only -->
                         <b class="title">Manage</b>
 
