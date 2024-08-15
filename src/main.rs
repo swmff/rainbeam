@@ -38,7 +38,7 @@ pub async fn main() {
     database.init().await;
 
     if config.migration == true {
-        database.migrate_ghsa_gc85_x5qp_77qq().await.unwrap();
+        // database.migrate_ghsa_gc85_x5qp_77qq().await.unwrap(); // MIGRATION: c8f94a27b1ec3ef171cdc0b8bcf57b8af034e31b
         std::process::exit(0);
     }
 

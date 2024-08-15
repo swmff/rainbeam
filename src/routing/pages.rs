@@ -367,10 +367,10 @@ pub async fn profile_request(
             other: other.clone(),
             responses,
             response_count: database
-                .get_response_count_by_author(username.clone())
+                .get_response_count_by_author(other.id.clone())
                 .await,
             questions_count: database
-                .get_global_questions_count_by_author(username.clone())
+                .get_global_questions_count_by_author(other.id.clone())
                 .await,
             followers_count: database.auth.get_followers_count(other.id.clone()).await,
             following_count: database.auth.get_following_count(other.id.clone()).await,
@@ -517,10 +517,10 @@ pub async fn followers_request(
             notifs,
             other: other.clone(),
             response_count: database
-                .get_response_count_by_author(username.clone())
+                .get_response_count_by_author(other.id.clone())
                 .await,
             questions_count: database
-                .get_global_questions_count_by_author(username.clone())
+                .get_global_questions_count_by_author(other.id.clone())
                 .await,
             followers: database
                 .auth
@@ -671,10 +671,10 @@ pub async fn following_request(
             notifs,
             other: other.clone(),
             response_count: database
-                .get_response_count_by_author(username.clone())
+                .get_response_count_by_author(other.id.clone())
                 .await,
             questions_count: database
-                .get_global_questions_count_by_author(username.clone())
+                .get_global_questions_count_by_author(other.id.clone())
                 .await,
             followers_count: database.auth.get_followers_count(other.id.clone()).await,
             following_count: database.auth.get_following_count(other.id.clone()).await,
@@ -834,10 +834,10 @@ pub async fn profile_questions_request(
             other: other.clone(),
             questions,
             questions_count: database
-                .get_global_questions_count_by_author(username.clone())
+                .get_global_questions_count_by_author(other.id.clone())
                 .await,
             response_count: database
-                .get_response_count_by_author(username.clone())
+                .get_response_count_by_author(other.id.clone())
                 .await,
             followers_count: database.auth.get_followers_count(other.id.clone()).await,
             following_count: database.auth.get_following_count(other.id.clone()).await,
