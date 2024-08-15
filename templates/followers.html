@@ -25,8 +25,8 @@
     <div class="card-nest w-full">
         <div class="card" style="padding: 0">
             <img
-                title="{{ card.user }}'s banner"
-                src="/api/v1/profiles/{{card.user }}/banner"
+                title="{{ card.1.username }}'s banner"
+                src="/api/v1/profiles/{{card.1.username }}/banner"
                 alt=""
                 class="shadow round"
                 style="
@@ -42,15 +42,15 @@
 
         <div class="card flex gap-2">
             <img
-                title="{{ card.user }}'s avatar"
-                src="/api/v1/profiles/{{ card.user }}/avatar"
+                title="{{ card.1.username }}'s avatar"
+                src="/api/v1/profiles/{{ card.1.username }}/avatar"
                 alt=""
                 class="avatar shadow-md"
                 style="--size: 80px; margin: -50px 0.5rem 0"
             />
 
             <h3 class="no-margin">
-                <a href="/@{{ card.user }}">{{ card.user }}</a>
+                <a href="/@{{ card.1.username }}">{{ card.1.username }}</a>
             </h3>
         </div>
     </div>

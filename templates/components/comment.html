@@ -11,15 +11,18 @@
         <div class="footernav">
             <b class="flex items-center gap-2 item">
                 <img
-                    title="{{ comment.author }}'s avatar"
-                    src="/api/v1/profiles/{{ comment.author }}/avatar"
+                    title="{{ comment.author.username }}'s avatar"
+                    src="/api/v1/profiles/{{ comment.author.username }}/avatar"
                     alt=""
                     class="avatar round-sm"
                     style="--size: 20px"
                 />
 
-                <a href="/@{{ comment.author }}" style="color: inherit">
-                    {{ comment.author }}
+                <a
+                    href="/@{{ comment.author.username }}"
+                    style="color: inherit"
+                >
+                    {{ comment.author.username }}
                 </a>
             </b>
 
@@ -48,8 +51,8 @@
                 </button>
 
                 <div class="inner shadow-md w-content" exclude="dropdown">
-                    {% if let Some(profile) = profile %} {% if profile.username
-                    == comment.author %}
+                    {% if let Some(profile) = profile %} {% if profile.id ==
+                    comment.author.id %}
                     <!-- actions for the profile owner only -->
                     <b class="title">Manage</b>
 

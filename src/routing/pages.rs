@@ -1,4 +1,5 @@
 use askama_axum::Template;
+use axum::debug_handler;
 use axum::extract::{Path, Query};
 use axum::http::status::StatusCode;
 use axum::response::IntoResponse;
@@ -42,10 +43,11 @@ struct TimelineTemplate {
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
-    responses: Vec<(QuestionResponse, usize)>,
+    responses: Vec<(Question, QuestionResponse, usize)>,
 }
 
 /// GET /
+#[debug_handler]
 pub async fn homepage_request(
     jar: CookieJar,
     State(database): State<Database>,
@@ -64,23 +66,17 @@ pub async fn homepage_request(
 
     // timeline
     if let Some(ref ua) = auth_user {
-        let unread = match database
-            .get_questions_by_recipient(ua.username.to_owned())
-            .await
-        {
+        let unread = match database.get_questions_by_recipient(ua.id.to_owned()).await {
             Ok(unread) => unread.len(),
             Err(_) => 0,
         };
 
         let notifs = database
             .auth
-            .get_notification_count_by_recipient(ua.username.to_owned())
+            .get_notification_count_by_recipient(ua.id.to_owned())
             .await;
 
-        let responses = match database
-            .get_responses_by_following(ua.username.to_owned())
-            .await
-        {
+        let responses = match database.get_responses_by_following(ua.id.to_owned()).await {
             Ok(responses) => responses,
             Err(e) => return Html(e.to_html(database)),
         };
@@ -235,14 +231,14 @@ struct ProfileTemplate {
     unread: usize,
     notifs: usize,
     other: Profile,
-    responses: Vec<(QuestionResponse, usize)>,
+    responses: Vec<(Question, QuestionResponse, usize)>,
     response_count: usize,
     questions_count: usize,
     followers_count: usize,
     following_count: usize,
     is_following: bool,
     metadata: String,
-    pinned: Option<Vec<(QuestionResponse, usize)>>,
+    pinned: Option<Vec<(Question, QuestionResponse, usize)>>,
     page: i32,
     // ...
     lock_profile: bool,
@@ -272,10 +268,7 @@ pub async fn profile_request(
     };
 
     let unread = if let Some(ref ua) = auth_user {
-        match database
-            .get_questions_by_recipient(ua.username.to_owned())
-            .await
-        {
+        match database.get_questions_by_recipient(ua.id.to_owned()).await {
             Ok(unread) => unread.len(),
             Err(_) => 0,
         }
@@ -286,7 +279,7 @@ pub async fn profile_request(
     let notifs = if let Some(ref ua) = auth_user {
         database
             .auth
-            .get_notification_count_by_recipient(ua.username.to_owned())
+            .get_notification_count_by_recipient(ua.id.to_owned())
             .await
     } else {
         0
@@ -304,7 +297,7 @@ pub async fn profile_request(
     let is_following = if let Some(ref ua) = auth_user {
         match database
             .auth
-            .get_follow(ua.username.to_owned(), other.username.clone())
+            .get_follow(ua.id.to_owned(), other.id.clone())
             .await
         {
             Ok(_) => true,
@@ -315,11 +308,11 @@ pub async fn profile_request(
     };
 
     let responses = match database
-        .get_responses_by_author_paginated(other.username.to_owned(), query.page)
+        .get_responses_by_author_paginated(other.id.to_owned(), query.page)
         .await
     {
         Ok(responses) => responses,
-        Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        Err(e) => return Html(e.to_html(database)),
     };
 
     let pinned = if let Some(pinned) = other.metadata.kv.get("sparkler:pinned") {
@@ -331,7 +324,7 @@ pub async fn profile_request(
             for id in pinned.split(",") {
                 match database.get_response(id.to_string()).await {
                     Ok(response) => {
-                        if response.0.author != other.username {
+                        if response.0.author.id != other.id {
                             // don't allow us to pin responses from other users
                             continue;
                         }
@@ -379,8 +372,8 @@ pub async fn profile_request(
             questions_count: database
                 .get_global_questions_count_by_author(username.clone())
                 .await,
-            followers_count: database.auth.get_followers_count(username.clone()).await,
-            following_count: database.auth.get_following_count(username.clone()).await,
+            followers_count: database.auth.get_followers_count(other.id.clone()).await,
+            following_count: database.auth.get_following_count(other.id.clone()).await,
             is_following,
             metadata: serde_json::to_string(&other.metadata).unwrap(),
             pinned,
@@ -426,7 +419,7 @@ struct FollowersTemplate {
     other: Profile,
     response_count: usize,
     questions_count: usize,
-    followers: Vec<UserFollow>,
+    followers: Vec<(UserFollow, Profile, Profile)>,
     followers_count: usize,
     following_count: usize,
     is_following: bool,
@@ -460,10 +453,7 @@ pub async fn followers_request(
     };
 
     let unread = if let Some(ref ua) = auth_user {
-        match database
-            .get_questions_by_recipient(ua.username.to_owned())
-            .await
-        {
+        match database.get_questions_by_recipient(ua.id.to_owned()).await {
             Ok(unread) => unread.len(),
             Err(_) => 0,
         }
@@ -474,7 +464,7 @@ pub async fn followers_request(
     let notifs = if let Some(ref ua) = auth_user {
         database
             .auth
-            .get_notification_count_by_recipient(ua.username.to_owned())
+            .get_notification_count_by_recipient(ua.id.to_owned())
             .await
     } else {
         0
@@ -492,7 +482,7 @@ pub async fn followers_request(
     let is_following = if let Some(ref ua) = auth_user {
         match database
             .auth
-            .get_follow(ua.username.to_owned(), other.username.clone())
+            .get_follow(ua.id.to_owned(), other.id.clone())
             .await
         {
             Ok(_) => true,
@@ -534,11 +524,11 @@ pub async fn followers_request(
                 .await,
             followers: database
                 .auth
-                .get_followers_paginated(username.clone(), query.page)
+                .get_followers_paginated(other.id.clone(), query.page)
                 .await
-                .unwrap_or(Vec::new()),
-            followers_count: database.auth.get_followers_count(username.clone()).await,
-            following_count: database.auth.get_following_count(username.clone()).await,
+                .unwrap(),
+            followers_count: database.auth.get_followers_count(other.id.clone()).await,
+            following_count: database.auth.get_following_count(other.id.clone()).await,
             is_following,
             metadata: serde_json::to_string(&other.metadata).unwrap(),
             page: query.page,
@@ -584,7 +574,7 @@ struct FollowingTemplate {
     response_count: usize,
     questions_count: usize,
     followers_count: usize,
-    following: Vec<UserFollow>,
+    following: Vec<(UserFollow, Profile, Profile)>,
     following_count: usize,
     is_following: bool,
     metadata: String,
@@ -617,10 +607,7 @@ pub async fn following_request(
     };
 
     let unread = if let Some(ref ua) = auth_user {
-        match database
-            .get_questions_by_recipient(ua.username.to_owned())
-            .await
-        {
+        match database.get_questions_by_recipient(ua.id.to_owned()).await {
             Ok(unread) => unread.len(),
             Err(_) => 0,
         }
@@ -631,7 +618,7 @@ pub async fn following_request(
     let notifs = if let Some(ref ua) = auth_user {
         database
             .auth
-            .get_notification_count_by_recipient(ua.username.to_owned())
+            .get_notification_count_by_recipient(ua.id.to_owned())
             .await
     } else {
         0
@@ -649,7 +636,7 @@ pub async fn following_request(
     let is_following = if let Some(ref ua) = auth_user {
         match database
             .auth
-            .get_follow(ua.username.to_owned(), other.username.clone())
+            .get_follow(ua.id.to_owned(), other.id.clone())
             .await
         {
             Ok(_) => true,
@@ -689,13 +676,13 @@ pub async fn following_request(
             questions_count: database
                 .get_global_questions_count_by_author(username.clone())
                 .await,
-            followers_count: database.auth.get_followers_count(username.clone()).await,
-            following_count: database.auth.get_following_count(username.clone()).await,
+            followers_count: database.auth.get_followers_count(other.id.clone()).await,
+            following_count: database.auth.get_following_count(other.id.clone()).await,
             following: database
                 .auth
-                .get_following_paginated(username, query.page)
+                .get_following_paginated(other.id, query.page)
                 .await
-                .unwrap_or(Vec::new()),
+                .unwrap(),
             is_following,
             metadata: serde_json::to_string(&other.metadata).unwrap(),
             page: query.page,
@@ -774,10 +761,7 @@ pub async fn profile_questions_request(
     };
 
     let unread = if let Some(ref ua) = auth_user {
-        match database
-            .get_questions_by_recipient(ua.username.to_owned())
-            .await
-        {
+        match database.get_questions_by_recipient(ua.id.to_owned()).await {
             Ok(unread) => unread.len(),
             Err(_) => 0,
         }
@@ -788,7 +772,7 @@ pub async fn profile_questions_request(
     let notifs = if let Some(ref ua) = auth_user {
         database
             .auth
-            .get_notification_count_by_recipient(ua.username.to_owned())
+            .get_notification_count_by_recipient(ua.id.to_owned())
             .await
     } else {
         0
@@ -806,7 +790,7 @@ pub async fn profile_questions_request(
     let is_following = if let Some(ref ua) = auth_user {
         match database
             .auth
-            .get_follow(ua.username.to_owned(), other.username.clone())
+            .get_follow(ua.id.to_owned(), other.id.clone())
             .await
         {
             Ok(_) => true,
@@ -817,7 +801,7 @@ pub async fn profile_questions_request(
     };
 
     let questions = match database
-        .get_global_questions_by_author_paginated(other.username.to_owned(), query.page)
+        .get_global_questions_by_author_paginated(other.id.to_owned(), query.page)
         .await
     {
         Ok(responses) => responses,
@@ -855,8 +839,8 @@ pub async fn profile_questions_request(
             response_count: database
                 .get_response_count_by_author(username.clone())
                 .await,
-            followers_count: database.auth.get_followers_count(username.clone()).await,
-            following_count: database.auth.get_following_count(username.clone()).await,
+            followers_count: database.auth.get_followers_count(other.id.clone()).await,
+            following_count: database.auth.get_following_count(other.id.clone()).await,
             is_following,
             metadata: serde_json::to_string(&other.metadata).unwrap(),
             page: query.page,
@@ -899,7 +883,7 @@ struct GlobalQuestionTemplate {
     unread: usize,
     notifs: usize,
     question: Question,
-    responses: Vec<(QuestionResponse, usize)>,
+    responses: Vec<(Question, QuestionResponse, usize)>,
 }
 
 /// GET /question/:id
@@ -921,10 +905,7 @@ pub async fn global_question_request(
     };
 
     let unread = if let Some(ref ua) = auth_user {
-        match database
-            .get_questions_by_recipient(ua.username.to_owned())
-            .await
-        {
+        match database.get_questions_by_recipient(ua.id.to_owned()).await {
             Ok(unread) => unread.len(),
             Err(_) => 0,
         }
@@ -935,7 +916,7 @@ pub async fn global_question_request(
     let notifs = if let Some(ref ua) = auth_user {
         database
             .auth
-            .get_notification_count_by_recipient(ua.username.to_owned())
+            .get_notification_count_by_recipient(ua.id.to_owned())
             .await
     } else {
         0
@@ -972,6 +953,7 @@ struct ResponseTemplate {
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
+    question: Question,
     response: QuestionResponse,
     comments: Vec<ResponseComment>,
     page: i32,
@@ -999,10 +981,7 @@ pub async fn response_request(
     };
 
     let unread = if let Some(ref ua) = auth_user {
-        match database
-            .get_questions_by_recipient(ua.username.to_owned())
-            .await
-        {
+        match database.get_questions_by_recipient(ua.id.to_owned()).await {
             Ok(unread) => unread.len(),
             Err(_) => 0,
         }
@@ -1013,7 +992,7 @@ pub async fn response_request(
     let notifs = if let Some(ref ua) = auth_user {
         database
             .auth
-            .get_notification_count_by_recipient(ua.username.to_owned())
+            .get_notification_count_by_recipient(ua.id.to_owned())
             .await
     } else {
         0
@@ -1038,7 +1017,8 @@ pub async fn response_request(
             profile: auth_user,
             unread,
             notifs,
-            response: response.0,
+            question: response.0,
+            response: response.1,
             comments,
             page: query.page,
             anonymous_username: Some("anonymous".to_string()), // TODO: fetch recipient setting
@@ -1057,6 +1037,7 @@ struct CommentTemplate {
     unread: usize,
     notifs: usize,
     comment: ResponseComment,
+    question: Question,
     response: QuestionResponse,
     comment_count: usize,
     anonymous_username: Option<String>,
@@ -1082,10 +1063,7 @@ pub async fn comment_request(
     };
 
     let unread = if let Some(ref ua) = auth_user {
-        match database
-            .get_questions_by_recipient(ua.username.to_owned())
-            .await
-        {
+        match database.get_questions_by_recipient(ua.id.to_owned()).await {
             Ok(unread) => unread.len(),
             Err(_) => 0,
         }
@@ -1096,7 +1074,7 @@ pub async fn comment_request(
     let notifs = if let Some(ref ua) = auth_user {
         database
             .auth
-            .get_notification_count_by_recipient(ua.username.to_owned())
+            .get_notification_count_by_recipient(ua.id.to_owned())
             .await
     } else {
         0
@@ -1119,8 +1097,9 @@ pub async fn comment_request(
             unread,
             notifs,
             comment,
-            response: response.0,
-            comment_count: response.1,
+            question: response.0,
+            response: response.1,
+            comment_count: response.2,
             anonymous_username: Some("anonymous".to_string()), // TODO: fetch recipient setting
             anonymous_avatar: None,
         }
@@ -1153,7 +1132,7 @@ pub async fn inbox_request(jar: CookieJar, State(database): State<Database>) -> 
     };
 
     let unread = match database
-        .get_questions_by_recipient(auth_user.username.to_owned())
+        .get_questions_by_recipient(auth_user.id.to_owned())
         .await
     {
         Ok(unread) => unread,
@@ -1162,7 +1141,7 @@ pub async fn inbox_request(jar: CookieJar, State(database): State<Database>) -> 
 
     let notifs = database
         .auth
-        .get_notification_count_by_recipient(auth_user.username.to_owned())
+        .get_notification_count_by_recipient(auth_user.id.to_owned())
         .await;
 
     Html(
@@ -1205,7 +1184,7 @@ pub async fn global_timeline_request(
     };
 
     let unread = match database
-        .get_questions_by_recipient(auth_user.username.to_owned())
+        .get_questions_by_recipient(auth_user.id.to_owned())
         .await
     {
         Ok(unread) => unread.len(),
@@ -1214,11 +1193,11 @@ pub async fn global_timeline_request(
 
     let notifs = database
         .auth
-        .get_notification_count_by_recipient(auth_user.username.to_owned())
+        .get_notification_count_by_recipient(auth_user.id.to_owned())
         .await;
 
     let questions = match database
-        .get_global_questions_by_following(auth_user.username.clone())
+        .get_global_questions_by_following(auth_user.id.clone())
         .await
     {
         Ok(r) => r,
@@ -1245,7 +1224,7 @@ struct ComposeTemplate {
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
-    following: Vec<UserFollow>,
+    following: Vec<(UserFollow, Profile, Profile)>,
 }
 
 /// GET /inbox/compose
@@ -1266,7 +1245,7 @@ pub async fn compose_request(
     };
 
     let unread = match database
-        .get_questions_by_recipient(auth_user.username.to_owned())
+        .get_questions_by_recipient(auth_user.id.to_owned())
         .await
     {
         Ok(unread) => unread.len(),
@@ -1275,7 +1254,7 @@ pub async fn compose_request(
 
     let notifs = database
         .auth
-        .get_notification_count_by_recipient(auth_user.username.to_owned())
+        .get_notification_count_by_recipient(auth_user.id.to_owned())
         .await;
 
     Html(
@@ -1283,9 +1262,9 @@ pub async fn compose_request(
             config: database.server_options,
             following: database
                 .auth
-                .get_following(auth_user.username.clone())
+                .get_following(auth_user.id.clone())
                 .await
-                .unwrap_or(Vec::new()),
+                .unwrap(),
             profile: Some(auth_user),
             unread,
             notifs,
@@ -1323,7 +1302,7 @@ pub async fn account_settings_request(
     };
 
     let unread = match database
-        .get_questions_by_recipient(auth_user.username.to_owned())
+        .get_questions_by_recipient(auth_user.id.to_owned())
         .await
     {
         Ok(unread) => unread.len(),
@@ -1332,7 +1311,7 @@ pub async fn account_settings_request(
 
     let notifs = database
         .auth
-        .get_notification_count_by_recipient(auth_user.username.to_owned())
+        .get_notification_count_by_recipient(auth_user.id.to_owned())
         .await;
 
     Html(
@@ -1376,7 +1355,7 @@ pub async fn profile_settings_request(
     };
 
     let unread = match database
-        .get_questions_by_recipient(auth_user.username.to_owned())
+        .get_questions_by_recipient(auth_user.id.to_owned())
         .await
     {
         Ok(unread) => unread.len(),
@@ -1385,7 +1364,7 @@ pub async fn profile_settings_request(
 
     let notifs = database
         .auth
-        .get_notification_count_by_recipient(auth_user.username.to_owned())
+        .get_notification_count_by_recipient(auth_user.id.to_owned())
         .await;
 
     Html(
@@ -1429,7 +1408,7 @@ pub async fn privacy_settings_request(
     };
 
     let unread = match database
-        .get_questions_by_recipient(auth_user.username.to_owned())
+        .get_questions_by_recipient(auth_user.id.to_owned())
         .await
     {
         Ok(unread) => unread.len(),
@@ -1438,7 +1417,7 @@ pub async fn privacy_settings_request(
 
     let notifs = database
         .auth
-        .get_notification_count_by_recipient(auth_user.username.to_owned())
+        .get_notification_count_by_recipient(auth_user.id.to_owned())
         .await;
 
     Html(
@@ -1481,7 +1460,7 @@ pub async fn notifications_request(
     };
 
     let unread = match database
-        .get_questions_by_recipient(auth_user.username.to_owned())
+        .get_questions_by_recipient(auth_user.id.to_owned())
         .await
     {
         Ok(unread) => unread.len(),
@@ -1490,7 +1469,7 @@ pub async fn notifications_request(
 
     let notifs = match database
         .auth
-        .get_notifications_by_recipient(auth_user.username.to_owned())
+        .get_notifications_by_recipient(auth_user.id.to_owned())
         .await
     {
         Ok(r) => r,
@@ -1548,7 +1527,7 @@ pub async fn reports_request(
 
     // ...
     let unread = match database
-        .get_questions_by_recipient(auth_user.username.to_owned())
+        .get_questions_by_recipient(auth_user.id.to_owned())
         .await
     {
         Ok(unread) => unread.len(),
@@ -1600,10 +1579,7 @@ pub async fn report_request(jar: CookieJar, State(database): State<Database>) ->
     };
 
     let unread = if let Some(ref ua) = auth_user {
-        match database
-            .get_questions_by_recipient(ua.username.to_owned())
-            .await
-        {
+        match database.get_questions_by_recipient(ua.id.to_owned()).await {
             Ok(unread) => unread.len(),
             Err(_) => 0,
         }
@@ -1614,7 +1590,7 @@ pub async fn report_request(jar: CookieJar, State(database): State<Database>) ->
     let notifs = if let Some(ref ua) = auth_user {
         database
             .auth
-            .get_notification_count_by_recipient(ua.username.to_owned())
+            .get_notification_count_by_recipient(ua.id.to_owned())
             .await
     } else {
         0

@@ -6,6 +6,7 @@ use axum::{
 };
 
 use serde::{Deserialize, Serialize};
+use xsu_authman::model::{Profile, ProfileMetadata};
 use xsu_dataman::DefaultReturn;
 
 use crate::database::Database;
@@ -14,9 +15,9 @@ use crate::database::Database;
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Question {
     /// The author of the question; "anonymous" marks the question as an anonymous question
-    pub author: String,
+    pub author: Profile,
     /// The recipient of the question; cannot be anonymous
-    pub recipient: String,
+    pub recipient: Profile,
     /// The content of the question
     pub content: String,
     /// The ID of the question
@@ -29,9 +30,9 @@ pub struct Question {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct QuestionResponse {
     /// The author of the response; cannot be anonymous
-    pub author: String,
-    /// The question this response is replying to
-    pub question: Question,
+    pub author: Profile,
+    /// The ID question this response is replying to
+    pub question: String,
     /// The content of the response
     pub content: String,
     /// The ID of the response
@@ -44,7 +45,7 @@ pub struct QuestionResponse {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ResponseComment {
     /// The author of the comment; cannot be anonymous
-    pub author: String,
+    pub author: Profile,
     /// ID of the response this comment is replying to
     pub response: String,
     /// The content of the comment
@@ -53,6 +54,32 @@ pub struct ResponseComment {
     pub id: String,
     /// The time this comment was created
     pub timestamp: u128,
+}
+
+/// Global user profile
+pub fn global_profile() -> Profile {
+    Profile {
+        username: "@".to_string(),
+        id: "@".to_string(),
+        password: String::new(),
+        tokens: Vec::new(),
+        group: 0,
+        joined: 0,
+        metadata: ProfileMetadata::default(),
+    }
+}
+
+/// Anonymous user profile
+pub fn anonymous_profile(tag: String) -> Profile {
+    Profile {
+        username: "anonymous".to_string(),
+        id: tag,
+        password: String::new(),
+        tokens: Vec::new(),
+        group: 0,
+        joined: 0,
+        metadata: ProfileMetadata::default(),
+    }
 }
 
 // props
@@ -82,9 +109,8 @@ pub struct CommentCreate {
 }
 
 /// General API errors
+#[derive(Debug)]
 pub enum DatabaseError {
-    FailedToDeserialize,
-    FailedToSerialize,
     ContentTooShort,
     ContentTooLong,
     NotAllowed,
@@ -97,12 +123,6 @@ impl DatabaseError {
     pub fn to_string(&self) -> String {
         use DatabaseError::*;
         match self {
-            FailedToDeserialize => {
-                String::from("Failed to deserialize field! Please report this as a bug.")
-            }
-            FailedToSerialize => {
-                String::from("Failed to serialize field! Please report this as a bug.")
-            }
             ContentTooShort => String::from("Content too short!"),
             ContentTooLong => String::from("Content too long!"),
             NotAllowed => String::from("You are not allowed to do this!"),

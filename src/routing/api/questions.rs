@@ -1,5 +1,5 @@
 use crate::database::Database;
-use crate::model::{DatabaseError, QuestionCreate};
+use crate::model::{anonymous_profile, DatabaseError, QuestionCreate};
 use xsu_dataman::DefaultReturn;
 
 use axum::response::IntoResponse;
@@ -39,11 +39,11 @@ pub async fn create_request(
         {
             Ok(ua) => {
                 was_not_anonymous = true;
-                ua.username
+                ua
             }
-            Err(_) => String::from("anonymous"),
+            Err(_) => anonymous_profile(database.create_anonymous().0),
         },
-        None => String::from("anonymous"),
+        None => anonymous_profile(database.create_anonymous().0),
     };
 
     let existing_tag = match jar.get("__Secure-Question-Tag") {
@@ -54,27 +54,24 @@ pub async fn create_request(
     // get correct username
     let use_anonymous_anyways = req.anonymous; // this is the "Hide your name" field
 
-    let username = if use_anonymous_anyways {
-        if !existing_tag.is_empty() {
-            // this will use the tag we already got when creating this question
-            format!("anonymous#{existing_tag}")
+    if (auth_user.username == "anonymous") | use_anonymous_anyways {
+        let tag = if was_not_anonymous && use_anonymous_anyways {
+            // use real username as tag
+            format!("anonymous#{}", auth_user.username)
+        } else if !existing_tag.is_empty() {
+            // use existing tag
+            existing_tag
+        } else if !was_not_anonymous {
+            // use id as tag
+            auth_user.id
         } else {
-            // this will make us generate a new tag and send it as a cookie
-            "anonymous".to_string()
-        }
-    } else {
-        auth_user.clone()
-    };
-
-    if username == "anonymous" {
-        // add tag
-        let tag = if was_not_anonymous {
-            // use the user's real username as their tag
-            // this allows us to detect authenticated users who are breaking rules as anonymous
-            (format!("anonymous#{auth_user}"), auth_user)
-        } else {
-            // create a random tag
-            database.create_anonymous()
+            // use username as tag
+            if auth_user.username == "anonymous" {
+                // anonymous uses id!
+                auth_user.id
+            } else {
+                auth_user.username
+            }
         };
 
         // create as anonymous
@@ -85,12 +82,12 @@ pub async fn create_request(
                     "Set-Cookie".to_string(),
                     format!(
                         "__Secure-Question-Tag={}; SameSite=Lax; Secure; Path=/; HostOnly=true; HttpOnly=true; Max-Age={}",
-                        tag.1,
+                        tag,
                         60 * 60 * 24 * 365
                     ),
                 ),
             ],
-            Json(match database.create_question(req, username).await {
+            Json(match database.create_question(req, tag).await {
                 Ok(r) => DefaultReturn {
                     success: true,
                     message: String::new(),
@@ -109,12 +106,12 @@ pub async fn create_request(
                 "Set-Cookie".to_string(),
                 format!(
                     "__Secure-Question-Tag={}; SameSite=Lax; Secure; Path=/; HostOnly=true; HttpOnly=true; Max-Age={}",
-                    username.replace("anonymous#", ""),
+                    auth_user.username.replace("anonymous#", ""),
                     60 * 60 * 24 * 365
                 ),
             ),
         ],
-        Json(match database.create_question(req, username).await {
+        Json(match database.create_question(req, auth_user.id).await {
             Ok(r) => DefaultReturn {
                 success: true,
                 message: String::new(),

@@ -73,8 +73,8 @@ endblock %} {% block head %}
                         </option>
                         <option value="@">Global question</option>
                         {% for follow in following %}
-                        <option value="{{ follow.following }}">
-                            {{ follow.following }}
+                        <option value="{{ follow.2.username }}">
+                            {{ follow.2.username }}
                         </option>
                         {% endfor %}
                     </select>

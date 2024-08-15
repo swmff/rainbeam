@@ -37,6 +37,11 @@ pub async fn main() {
     .await;
     database.init().await;
 
+    if config.migration == true {
+        database.migrate_ghsa_gc85_x5qp_77qq().await.unwrap();
+        std::process::exit(0);
+    }
+
     // create app
     let app = Router::new()
         // api

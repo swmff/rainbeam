@@ -75,25 +75,25 @@
                     <div class="footernav">
                         <b class="flex items-center gap-2 item">
                             <!-- prettier-ignore -->
-                            {% let author_tag = crate::database::Database::anonymous_tag(question.author.as_ref()) %}
+                            {% let author_tag = crate::database::Database::anonymous_tag(question.author.username.as_ref()) %}
                             {% if author_tag.0 == false %}
                             <img
-                                title="{{ question.author }}'s avatar"
-                                src="/api/v1/profiles/{{ question.author }}/avatar"
+                                title="{{ question.author.username }}'s avatar"
+                                src="/api/v1/profiles/{{ question.author.username }}/avatar"
                                 alt=""
                                 class="avatar round-sm"
                                 style="--size: 20px"
                             />
 
                             <a
-                                href="/@{{ question.author }}"
+                                href="/@{{ question.author.username }}"
                                 style="color: inherit"
                             >
-                                {{ question.author }}
+                                {{ question.author.username }}
                             </a>
                             {% else %}
                             <img
-                                title="{{ question.author }}'s avatar"
+                                title="{{ question.author.username }}'s avatar"
                                 src="/static/images/default-avatar.svg"
                                 alt=""
                                 class="avatar round-sm"
