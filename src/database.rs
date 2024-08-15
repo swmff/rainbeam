@@ -1366,7 +1366,7 @@ impl Database {
                         .cachedb
                         .incr(format!(
                             "xsulib.sparkler.response_count:{}",
-                            response.author.username
+                            response.author.id
                         ))
                         .await;
 
@@ -1397,7 +1397,7 @@ impl Database {
                     .cachedb
                     .incr(format!(
                         "xsulib.sparkler.response_count:{}",
-                        response.author.username
+                        response.author.id
                     ))
                     .await;
 
