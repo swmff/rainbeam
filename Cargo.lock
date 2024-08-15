@@ -1960,8 +1960,9 @@ dependencies = [
 
 [[package]]
 name = "sparkler"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
+ "ammonia",
  "askama",
  "askama_axum",
  "axum",
@@ -2993,11 +2994,12 @@ dependencies = [
 
 [[package]]
 name = "xsu-util"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "ammonia",
  "hex_fmt",
  "pulldown-cmark",
+ "rand",
  "serde",
  "sha2",
  "uuid",

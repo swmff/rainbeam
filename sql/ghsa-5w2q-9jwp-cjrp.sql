@@ -1,0 +1,1 @@
+ALTER TABLE "xprofiles" ADD COLUMN "salt" TEXT DEFAULT '';

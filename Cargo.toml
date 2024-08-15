@@ -1,6 +1,6 @@
 [package]
 name = "sparkler"
-version = "0.4.0"
+version = "0.4.1"
 edition = "2021"
 authors = ["trisuaso", "swmff"]
 description = "Ask, share, socialize!"
@@ -34,6 +34,7 @@ serde_json = "1.0.120"
 regex = "1.10.5"
 mime_guess = "2.0.5"
 hcaptcha = "2.4.6"
+ammonia = "4.0.0"
 
 [[bin]]
 path = "src/main.rs"

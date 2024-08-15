@@ -7,8 +7,9 @@ use axum::routing::get;
 use axum::{extract::State, response::Html, Router};
 use axum_extra::extract::CookieJar;
 
+use ammonia::Builder;
 use serde::{Deserialize, Serialize};
-use xsu_authman::model::{Notification, Permission, Profile, UserFollow};
+use xsu_authman::model::{Notification, Permission, Profile, ProfileMetadata, UserFollow};
 
 use crate::config::Config;
 use crate::database::Database;
@@ -223,6 +224,14 @@ pub fn color_escape(color: &&&String) -> String {
         .replace("{", "")
 }
 
+/// Clean profile metadata
+pub fn clean_metadata(metadata: &ProfileMetadata) -> String {
+    Builder::default()
+        .rm_tags(&["img", "a", "span", "p", "h1", "h2", "h3", "h4", "h5", "h6"])
+        .clean(&serde_json::to_string(&metadata).unwrap())
+        .to_string()
+}
+
 #[derive(Template)]
 #[template(path = "profile.html")]
 struct ProfileTemplate {
@@ -390,7 +399,7 @@ pub async fn profile_request(
             following_count: database.auth.get_following_count(other.id.clone()).await,
             is_following,
             is_following_you,
-            metadata: serde_json::to_string(&other.metadata).unwrap(),
+            metadata: clean_metadata(&other.metadata),
             pinned,
             page: query.page,
             // ...
@@ -560,7 +569,7 @@ pub async fn followers_request(
             following_count: database.auth.get_following_count(other.id.clone()).await,
             is_following,
             is_following_you,
-            metadata: serde_json::to_string(&other.metadata).unwrap(),
+            metadata: clean_metadata(&other.metadata),
             page: query.page,
             // ...
             lock_profile: other
@@ -729,7 +738,7 @@ pub async fn following_request(
                 .unwrap(),
             is_following,
             is_following_you,
-            metadata: serde_json::to_string(&other.metadata).unwrap(),
+            metadata: clean_metadata(&other.metadata),
             page: query.page,
             // ...
             lock_profile: other
@@ -902,7 +911,7 @@ pub async fn profile_questions_request(
             following_count: database.auth.get_following_count(other.id.clone()).await,
             is_following,
             is_following_you,
-            metadata: serde_json::to_string(&other.metadata).unwrap(),
+            metadata: clean_metadata(&other.metadata),
             page: query.page,
             // ...
             lock_profile: other
@@ -1377,7 +1386,7 @@ pub async fn account_settings_request(
     Html(
         AccountSettingsTemplate {
             config: database.server_options,
-            metadata: serde_json::to_string(&auth_user.metadata).unwrap(),
+            metadata: clean_metadata(&auth_user.metadata),
             profile: Some(auth_user),
             unread,
             notifs,
@@ -1430,7 +1439,7 @@ pub async fn profile_settings_request(
     Html(
         ProfileSettingsTemplate {
             config: database.server_options,
-            metadata: serde_json::to_string(&auth_user.metadata).unwrap(),
+            metadata: clean_metadata(&auth_user.metadata),
             profile: Some(auth_user),
             unread,
             notifs,
@@ -1483,7 +1492,7 @@ pub async fn privacy_settings_request(
     Html(
         PrivacySettingsTemplate {
             config: database.server_options,
-            metadata: serde_json::to_string(&auth_user.metadata).unwrap(),
+            metadata: clean_metadata(&auth_user.metadata),
             profile: Some(auth_user),
             unread,
             notifs,

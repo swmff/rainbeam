@@ -64,6 +64,16 @@ pub async fn avatar_request(
         None => "",
     };
 
+    if avatar_url.starts_with(&database.server_options.host) {
+        return (
+            [("Content-Type", "image/svg+xml")],
+            Bytes::copy_from_slice(&read_image(
+                database.server_options.static_dir,
+                "default-avatar.svg".to_string(),
+            )),
+        );
+    }
+
     // get profile image
     if avatar_url.is_empty() {
         return (
@@ -119,6 +129,16 @@ pub async fn banner_request(
         Some(r) => r,
         None => "",
     };
+
+    if banner_url.starts_with(&database.server_options.host) {
+        return (
+            [("Content-Type", "image/svg+xml")],
+            Bytes::copy_from_slice(&read_image(
+                database.server_options.static_dir,
+                "default-banner.svg".to_string(),
+            )),
+        );
+    }
 
     // get profile image
     if banner_url.is_empty() {

@@ -127,6 +127,10 @@ endblock %} {% block nav_left %} {% if profile.is_some() %}
     // prefill
     setTimeout(() => {
         for (const [key, value] of Object.entries(metadata.kv)) {
+            if (key.length === 0) {
+                continue;
+            }
+
             if (document.getElementById(key)) {
                 document.getElementById(key).value = value;
 

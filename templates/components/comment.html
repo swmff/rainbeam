@@ -22,7 +22,14 @@
                     href="/@{{ comment.author.username }}"
                     style="color: inherit"
                 >
-                    {{ comment.author.username }}
+                    <!-- prettier-ignore -->
+                    {% let display_name = comment.author.metadata.kv.get("sparkler:display_name") %}
+
+                    {% if let Some(display_name) = display_name %}
+                        {{ display_name }}
+                    {% else %}
+                        {{ comment.author.username }}
+                    {% endif %}
                 </a>
             </b>
 
