@@ -1,7 +1,7 @@
 use crate::config::Config;
 use crate::model::{
     anonymous_profile, global_profile, CommentCreate, QuestionCreate, QuestionResponse,
-    ResponseComment, ResponseCreate,
+    RefQuestion, ResponseComment, ResponseCreate,
 };
 use crate::model::{DatabaseError, Question};
 
@@ -208,7 +208,30 @@ impl Database {
             .get(format!("xsulib.sparkler.question:{}", id))
             .await
         {
-            Some(c) => return Ok(serde_json::from_str::<Question>(c.as_str()).unwrap()),
+            Some(c) => match serde_json::from_str::<RefQuestion>(c.as_str()) {
+                Ok(q) => {
+                    return Ok(Question {
+                        author: match self.get_profile(q.author).await {
+                            Ok(ua) => ua,
+                            Err(e) => return Err(e),
+                        },
+                        recipient: match self.get_profile(q.recipient).await {
+                            Ok(ua) => ua,
+                            Err(e) => return Err(e),
+                        },
+                        content: q.content,
+                        id: q.id,
+                        timestamp: q.timestamp,
+                    })
+                }
+                Err(_) => {
+                    // remove bad entry and continue to fetch from database
+                    self.base
+                        .cachedb
+                        .remove(format!("xsulib.sparkler.question:{}", id))
+                        .await;
+                }
+            },
             None => (),
         };
 
@@ -263,7 +286,7 @@ impl Database {
             .cachedb
             .set(
                 format!("xsulib.sparkler.question:{}", id),
-                serde_json::to_string::<Question>(&question).unwrap(),
+                serde_json::to_string::<RefQuestion>(&RefQuestion::from(question.clone())).unwrap(),
             )
             .await;
 

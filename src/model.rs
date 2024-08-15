@@ -26,6 +26,33 @@ pub struct Question {
     pub timestamp: u128,
 }
 
+/// A question structure with ID references to profiles instead of the profiles
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct RefQuestion {
+    /// The author of the question; "anonymous" marks the question as an anonymous question
+    pub author: String,
+    /// The recipient of the question; cannot be anonymous
+    pub recipient: String,
+    /// The content of the question
+    pub content: String,
+    /// The ID of the question
+    pub id: String,
+    /// The time this question was asked
+    pub timestamp: u128,
+}
+
+impl From<Question> for RefQuestion {
+    fn from(value: Question) -> Self {
+        Self {
+            author: value.author.id,
+            recipient: value.recipient.id,
+            content: value.content,
+            id: value.id,
+            timestamp: value.timestamp,
+        }
+    }
+}
+
 /// A response structure
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct QuestionResponse {
