@@ -26,6 +26,18 @@ pub struct Question {
     pub timestamp: u128,
 }
 
+impl Question {
+    pub fn lost(tag: (String, String)) -> Self {
+        Self {
+            author: anonymous_profile(tag.1.clone()),
+            recipient: anonymous_profile(tag.1),
+            content: "<lost question>".to_string(),
+            id: "".to_string(),
+            timestamp: 0,
+        }
+    }
+}
+
 /// A question structure with ID references to profiles instead of the profiles
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct RefQuestion {

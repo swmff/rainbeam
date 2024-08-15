@@ -249,14 +249,7 @@ impl Database {
             Ok(p) => self.base.textify_row(p, Vec::new()).0,
             Err(_) => {
                 let tag = self.create_anonymous();
-
-                return Ok(Question {
-                    author: anonymous_profile(tag.1.clone()),
-                    recipient: anonymous_profile(tag.1),
-                    content: "<lost question>".to_string(),
-                    id: "".to_string(),
-                    timestamp: 0,
-                });
+                return Ok(Question::lost(tag));
             }
         };
 
@@ -1103,7 +1096,7 @@ impl Database {
         // get following
         let following = match self.auth.get_following(user.clone()).await {
             Ok(f) => f,
-            Err(_) => return Err(DatabaseError::NotFound),
+            Err(_) => Vec::new(),
         };
 
         // check user permissions
@@ -1111,7 +1104,7 @@ impl Database {
         // we don't want to waste resources on rule breakers
         let user = match self.auth.get_profile_by_id(user.clone()).await {
             Ok(ua) => ua,
-            Err(_) => return Err(DatabaseError::NotFound),
+            Err(_) => anonymous_profile(self.create_anonymous().1),
         };
 
         if user.group == -1 {
@@ -1152,7 +1145,10 @@ impl Database {
                     out.push((
                         match self.get_question(question.clone()).await {
                             Ok(q) => q,
-                            Err(e) => return Err(e),
+                            Err(_) => {
+                                let tag = self.create_anonymous();
+                                Question::lost(tag)
+                            }
                         },
                         QuestionResponse {
                             author: match self
@@ -1160,7 +1156,10 @@ impl Database {
                                 .await
                             {
                                 Ok(ua) => ua,
-                                Err(e) => return Err(e),
+                                Err(_) => {
+                                    let tag = self.create_anonymous();
+                                    anonymous_profile(tag.1)
+                                }
                             },
                             question,
                             content: res.get("content").unwrap().to_string(),
@@ -1173,7 +1172,7 @@ impl Database {
 
                 out
             }
-            Err(_) => return Err(DatabaseError::NotFound),
+            Err(_) => return Err(DatabaseError::Other),
         };
 
         // return

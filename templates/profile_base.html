@@ -268,7 +268,7 @@
                                 return;
                             }
 
-                            fetch("/api/auth/profile/{{ other.username }}", {
+                            fetch("/api/auth/profile/{{ other.id }}", {
                                 method: "DELETE",
                             })
                                 .then((res) => res.json())
