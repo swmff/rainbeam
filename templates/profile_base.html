@@ -120,6 +120,10 @@
                 </h3>
 
                 <h4 class="no-margin" style="font-weight: normal; opacity: 50%">{{ other.username }}</h4>
+
+                {% if is_following_you == true %}
+                <span class="notification notif-invert ff-inherit fs-md bold">Follows you</span>
+                {% endif %}
             </div>
 
             <!-- prettier-ignore -->

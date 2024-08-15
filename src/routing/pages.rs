@@ -237,6 +237,7 @@ struct ProfileTemplate {
     followers_count: usize,
     following_count: usize,
     is_following: bool,
+    is_following_you: bool,
     metadata: String,
     pinned: Option<Vec<(Question, QuestionResponse, usize)>>,
     page: i32,
@@ -298,6 +299,19 @@ pub async fn profile_request(
         match database
             .auth
             .get_follow(ua.id.to_owned(), other.id.clone())
+            .await
+        {
+            Ok(_) => true,
+            Err(_) => false,
+        }
+    } else {
+        false
+    };
+
+    let is_following_you = if let Some(ref ua) = auth_user {
+        match database
+            .auth
+            .get_follow(other.id.clone(), ua.id.to_owned())
             .await
         {
             Ok(_) => true,
@@ -375,6 +389,7 @@ pub async fn profile_request(
             followers_count: database.auth.get_followers_count(other.id.clone()).await,
             following_count: database.auth.get_following_count(other.id.clone()).await,
             is_following,
+            is_following_you,
             metadata: serde_json::to_string(&other.metadata).unwrap(),
             pinned,
             page: query.page,
@@ -423,6 +438,7 @@ struct FollowersTemplate {
     followers_count: usize,
     following_count: usize,
     is_following: bool,
+    is_following_you: bool,
     metadata: String,
     page: i32,
     // ...
@@ -492,6 +508,19 @@ pub async fn followers_request(
         false
     };
 
+    let is_following_you = if let Some(ref ua) = auth_user {
+        match database
+            .auth
+            .get_follow(other.id.clone(), ua.id.to_owned())
+            .await
+        {
+            Ok(_) => true,
+            Err(_) => false,
+        }
+    } else {
+        false
+    };
+
     let posting_as = if let Some(ref ua) = auth_user {
         ua.username.clone()
     } else {
@@ -530,6 +559,7 @@ pub async fn followers_request(
             followers_count: database.auth.get_followers_count(other.id.clone()).await,
             following_count: database.auth.get_following_count(other.id.clone()).await,
             is_following,
+            is_following_you,
             metadata: serde_json::to_string(&other.metadata).unwrap(),
             page: query.page,
             // ...
@@ -577,6 +607,7 @@ struct FollowingTemplate {
     following: Vec<(UserFollow, Profile, Profile)>,
     following_count: usize,
     is_following: bool,
+    is_following_you: bool,
     metadata: String,
     page: i32,
     // ...
@@ -646,6 +677,19 @@ pub async fn following_request(
         false
     };
 
+    let is_following_you = if let Some(ref ua) = auth_user {
+        match database
+            .auth
+            .get_follow(other.id.clone(), ua.id.to_owned())
+            .await
+        {
+            Ok(_) => true,
+            Err(_) => false,
+        }
+    } else {
+        false
+    };
+
     let posting_as = if let Some(ref ua) = auth_user {
         ua.username.clone()
     } else {
@@ -684,6 +728,7 @@ pub async fn following_request(
                 .await
                 .unwrap(),
             is_following,
+            is_following_you,
             metadata: serde_json::to_string(&other.metadata).unwrap(),
             page: query.page,
             // ...
@@ -731,6 +776,7 @@ struct ProfileQuestionsTemplate {
     followers_count: usize,
     following_count: usize,
     is_following: bool,
+    is_following_you: bool,
     metadata: String,
     page: i32,
     // ...
@@ -800,6 +846,19 @@ pub async fn profile_questions_request(
         false
     };
 
+    let is_following_you = if let Some(ref ua) = auth_user {
+        match database
+            .auth
+            .get_follow(other.id.clone(), ua.id.to_owned())
+            .await
+        {
+            Ok(_) => true,
+            Err(_) => false,
+        }
+    } else {
+        false
+    };
+
     let questions = match database
         .get_global_questions_by_author_paginated(other.id.to_owned(), query.page)
         .await
@@ -842,6 +901,7 @@ pub async fn profile_questions_request(
             followers_count: database.auth.get_followers_count(other.id.clone()).await,
             following_count: database.auth.get_following_count(other.id.clone()).await,
             is_following,
+            is_following_you,
             metadata: serde_json::to_string(&other.metadata).unwrap(),
             page: query.page,
             // ...

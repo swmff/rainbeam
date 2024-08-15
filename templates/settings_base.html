@@ -94,7 +94,7 @@ endblock %} {% block nav_left %} {% if profile.is_some() %}
         // live theme
         if (key.startsWith("sparkler:color_")) {
             const real_key = key.replace("sparkler:", "");
-            const css_var = real_key.replace("_", "-");
+            const css_var = real_key.replaceAll("_", "-");
             value = value
                 .replaceAll(";", "")
                 .replaceAll("}", "")

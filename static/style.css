@@ -742,6 +742,10 @@ dialog::backdrop {
     padding: 0;
 }
 
+.notification.notif-invert:not(:is(.dark *)) {
+    filter: invert(1);
+}
+
 .question_content p,
 .response_content p,
 .comment_content p,
@@ -944,4 +948,12 @@ dialog::backdrop {
 
 .fade {
     opacity: 75%;
+}
+
+.ff-inherit {
+    font-family: inherit;
+}
+
+.fs-md {
+    font-size: 12px;
 }
