@@ -27,14 +27,23 @@ pub struct Question {
 }
 
 impl Question {
-    pub fn lost(tag: (String, String)) -> Self {
+    pub fn lost(author: String, recipient: String, content: String, timestamp: u128) -> Self {
         Self {
-            author: anonymous_profile(tag.1.clone()),
-            recipient: anonymous_profile(tag.1),
-            content: "<lost question>".to_string(),
+            author: anonymous_profile(author),
+            recipient: anonymous_profile(recipient),
+            content,
             id: "".to_string(),
-            timestamp: 0,
+            timestamp,
         }
+    }
+
+    pub fn unknown() -> Self {
+        Self::lost(
+            "anonymous".to_string(),
+            String::new(),
+            "<lost question>".to_string(),
+            0,
+        )
     }
 }
 

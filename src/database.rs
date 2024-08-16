@@ -215,16 +215,24 @@ impl Database {
                             Ok(ua) => ua,
                             Err(e) => {
                                 println!("({}) LOSTQ A:UID {}", e.to_string(), q.author);
-                                let tag = self.create_anonymous();
-                                return Ok(Question::lost(tag));
+                                return Ok(Question::lost(
+                                    q.author,
+                                    q.recipient,
+                                    q.content,
+                                    q.timestamp,
+                                ));
                             }
                         },
                         recipient: match self.get_profile(q.recipient.clone()).await {
                             Ok(ua) => ua,
                             Err(e) => {
                                 println!("({}) LOSTQ R:UID {}", e.to_string(), q.recipient);
-                                let tag = self.create_anonymous();
-                                return Ok(Question::lost(tag));
+                                return Ok(Question::lost(
+                                    q.author,
+                                    q.recipient,
+                                    q.content,
+                                    q.timestamp,
+                                ));
                             }
                         },
                         content: q.content,
@@ -255,10 +263,7 @@ impl Database {
         let c = &self.base.db.client;
         let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
             Ok(p) => self.base.textify_row(p, Vec::new()).0,
-            Err(_) => {
-                let tag = self.create_anonymous();
-                return Ok(Question::lost(tag));
-            }
+            Err(_) => return Ok(Question::unknown()),
         };
 
         // return
@@ -1243,10 +1248,7 @@ impl Database {
                     out.push((
                         match self.get_question(question.clone()).await {
                             Ok(q) => q,
-                            Err(_) => {
-                                let tag = self.create_anonymous();
-                                Question::lost(tag)
-                            }
+                            Err(_) => Question::unknown(),
                         },
                         QuestionResponse {
                             author: match self
