@@ -64,7 +64,11 @@ let response = response.1.clone() %}
 
                     <!-- prettier-ignore -->
                     {% if let Some(username) = anonymous_username %}
-                        {{ username }}
+                        {% if username.is_empty() %}
+                            anonymous
+                        {% else %}
+                            {{ username }}
+                        {% endif %}
                     {% else %}
                         anonymous
                     {% endif %}

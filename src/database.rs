@@ -211,13 +211,21 @@ impl Database {
             Some(c) => match serde_json::from_str::<RefQuestion>(c.as_str()) {
                 Ok(q) => {
                     return Ok(Question {
-                        author: match self.get_profile(q.author).await {
+                        author: match self.get_profile(q.author.clone()).await {
                             Ok(ua) => ua,
-                            Err(e) => return Err(e),
+                            Err(e) => {
+                                println!("({}) LOSTQ A:UID {}", e.to_string(), q.author);
+                                let tag = self.create_anonymous();
+                                return Ok(Question::lost(tag));
+                            }
                         },
-                        recipient: match self.get_profile(q.recipient).await {
+                        recipient: match self.get_profile(q.recipient.clone()).await {
                             Ok(ua) => ua,
-                            Err(e) => return Err(e),
+                            Err(e) => {
+                                println!("({}) LOSTQ R:UID {}", e.to_string(), q.recipient);
+                                let tag = self.create_anonymous();
+                                return Ok(Question::lost(tag));
+                            }
                         },
                         content: q.content,
                         id: q.id,
@@ -951,6 +959,62 @@ impl Database {
         ))
     }
 
+    /// Get an existing response by the question ID and response author
+    ///
+    /// ## Arguments:
+    /// * `question`
+    /// * `author`
+    pub async fn get_response_by_question_and_author(
+        &self,
+        question: String,
+        author: String,
+    ) -> Result<(Question, QuestionResponse, usize)> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "SELECT * FROM \"xresponses\" WHERE \"question\" = ? AND \"author\" = ?"
+        } else {
+            "SELECT * FROM \"xresponses\" WHERE \"question\" = $1 AND \"author\" = $2"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query)
+            .bind::<&String>(&question)
+            .bind::<&String>(&author)
+            .fetch_one(c)
+            .await
+        {
+            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        let response = QuestionResponse {
+            author: match self
+                .get_profile(res.get("author").unwrap().to_string())
+                .await
+            {
+                Ok(ua) => ua,
+                Err(e) => return Err(e),
+            },
+            question: res.get("question").unwrap().to_string(),
+            content: res.get("content").unwrap().to_string(),
+            id: res.get("id").unwrap().to_string(),
+            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+        };
+
+        // return
+        Ok((
+            match self.get_question(response.question.clone()).await {
+                Ok(q) => q,
+                Err(e) => return Err(e),
+            },
+            response,
+            self.get_comment_count_by_response(question).await,
+        ))
+    }
+
     /// Get all responses by their author
     ///
     /// ## Arguments:
@@ -1293,7 +1357,22 @@ impl Database {
             }
         } else {
             // TODO: check author privacy settings
-        }
+            let tag = Database::anonymous_tag(&author);
+
+            if tag.0 {
+                // anonymous users cannot answer global questions
+                return Err(DatabaseError::NotAllowed);
+            }
+
+            // make sure we didn't already answer this
+            if let Ok(_) = self
+                .get_response_by_question_and_author(question.id.clone(), author.clone())
+                .await
+            {
+                // cannot answer the same global question twice
+                return Err(DatabaseError::NotAllowed);
+            };
+        };
 
         // check content length
         if props.content.len() > 1000 {
