@@ -549,14 +549,14 @@ impl Database {
                                 .await
                             {
                                 Ok(ua) => ua,
-                                Err(e) => return Err(e),
+                                Err(_) => continue,
                             },
                             recipient: match self
                                 .get_profile(res.get("recipient").unwrap().to_string())
                                 .await
                             {
                                 Ok(ua) => ua,
-                                Err(e) => return Err(e),
+                                Err(_) => continue,
                             },
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
@@ -672,8 +672,15 @@ impl Database {
                 return Err(DatabaseError::NotAllowed);
             }
 
-            if block_list.contains(&format!("<@{author}>")) {
-                return Err(DatabaseError::NotAllowed);
+            if tag.0 == false {
+                let author = match self.get_profile(author.clone()).await {
+                    Ok(ua) => ua,
+                    Err(e) => return Err(e),
+                };
+
+                if block_list.contains(&format!("<@{}>", author.username)) {
+                    return Err(DatabaseError::NotAllowed);
+                }
             }
         } else {
             // anonymous users cannot ask global questions
