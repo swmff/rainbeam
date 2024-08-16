@@ -936,7 +936,7 @@ impl Database {
                 .await
             {
                 Ok(ua) => ua,
-                Err(e) => return Err(e),
+                Err(_) => anonymous_profile("anonymous".to_string()),
             },
             question: res.get("question").unwrap().to_string(),
             content: res.get("content").unwrap().to_string(),
@@ -957,7 +957,7 @@ impl Database {
         Ok((
             match self.get_question(response.question.clone()).await {
                 Ok(q) => q,
-                Err(e) => return Err(e),
+                Err(_) => Question::unknown(),
             },
             response,
             self.get_comment_count_by_response(id).await,
@@ -1001,7 +1001,7 @@ impl Database {
                 .await
             {
                 Ok(ua) => ua,
-                Err(e) => return Err(e),
+                Err(_) => anonymous_profile("anonymous".to_string()),
             },
             question: res.get("question").unwrap().to_string(),
             content: res.get("content").unwrap().to_string(),
@@ -1013,7 +1013,7 @@ impl Database {
         Ok((
             match self.get_question(response.question.clone()).await {
                 Ok(q) => q,
-                Err(e) => return Err(e),
+                Err(_) => Question::unknown(),
             },
             response,
             self.get_comment_count_by_response(question).await,
@@ -1054,7 +1054,7 @@ impl Database {
                     out.push((
                         match self.get_question(question.clone()).await {
                             Ok(q) => q,
-                            Err(e) => return Err(e),
+                            Err(_) => Question::unknown(),
                         },
                         QuestionResponse {
                             author: match self
@@ -1062,7 +1062,7 @@ impl Database {
                                 .await
                             {
                                 Ok(ua) => ua,
-                                Err(e) => return Err(e),
+                                Err(_) => anonymous_profile("anonymous".to_string()),
                             },
                             question,
                             content: res.get("content").unwrap().to_string(),
@@ -1118,7 +1118,7 @@ impl Database {
                             Ok(q) => q,
                             Err(e) => {
                                 println!("({}) QID {}", e.to_string(), question);
-                                continue;
+                                Question::unknown()
                             }
                         },
                         QuestionResponse {
@@ -1134,7 +1134,7 @@ impl Database {
                                         res.get("author").unwrap().to_string()
                                     );
 
-                                    continue;
+                                    anonymous_profile("anonymous".to_string())
                                 }
                             },
                             question,
@@ -1256,10 +1256,7 @@ impl Database {
                                 .await
                             {
                                 Ok(ua) => ua,
-                                Err(_) => {
-                                    let tag = self.create_anonymous();
-                                    anonymous_profile(tag.1)
-                                }
+                                Err(_) => anonymous_profile("anonymous".to_string()),
                             },
                             question,
                             content: res.get("content").unwrap().to_string(),
@@ -1309,7 +1306,7 @@ impl Database {
                     out.push((
                         match self.get_question(question.clone()).await {
                             Ok(q) => q,
-                            Err(e) => return Err(e),
+                            Err(_) => Question::unknown(),
                         },
                         QuestionResponse {
                             author: match self
@@ -1317,7 +1314,7 @@ impl Database {
                                 .await
                             {
                                 Ok(ua) => ua,
-                                Err(e) => return Err(e),
+                                Err(_) => anonymous_profile("anonymous".to_string()),
                             },
                             question,
                             content: res.get("content").unwrap().to_string(),
