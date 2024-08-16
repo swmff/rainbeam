@@ -230,6 +230,9 @@ pub fn clean_metadata(metadata: &ProfileMetadata) -> String {
         .rm_tags(&["img", "a", "span", "p", "h1", "h2", "h3", "h4", "h5", "h6"])
         .clean(&serde_json::to_string(&metadata).unwrap())
         .to_string()
+        .replace("&lt;", "<")
+        .replace("&gt;", ">")
+        .replace("&amp;", "&")
 }
 
 #[derive(Template)]
