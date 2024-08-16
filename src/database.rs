@@ -549,14 +549,30 @@ impl Database {
                                 .await
                             {
                                 Ok(ua) => ua,
-                                Err(_) => continue,
+                                Err(e) => {
+                                    println!(
+                                        "({}) UID {}",
+                                        e.to_string(),
+                                        res.get("author").unwrap().to_string()
+                                    );
+
+                                    continue;
+                                }
                             },
                             recipient: match self
                                 .get_profile(res.get("recipient").unwrap().to_string())
                                 .await
                             {
                                 Ok(ua) => ua,
-                                Err(_) => continue,
+                                Err(e) => {
+                                    println!(
+                                        "({}) UID {}",
+                                        e.to_string(),
+                                        res.get("recipient").unwrap().to_string()
+                                    );
+
+                                    continue;
+                                }
                             },
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
@@ -575,7 +591,7 @@ impl Database {
 
                 out
             }
-            Err(_) => return Err(DatabaseError::NotFound),
+            Err(_) => return Err(DatabaseError::Other),
         };
 
         // return
@@ -1031,7 +1047,10 @@ impl Database {
                     out.push((
                         match self.get_question(question.clone()).await {
                             Ok(q) => q,
-                            Err(e) => return Err(e),
+                            Err(e) => {
+                                println!("({}) QID {}", e.to_string(), question);
+                                continue;
+                            }
                         },
                         QuestionResponse {
                             author: match self
@@ -1039,7 +1058,15 @@ impl Database {
                                 .await
                             {
                                 Ok(ua) => ua,
-                                Err(e) => return Err(e),
+                                Err(e) => {
+                                    println!(
+                                        "({}) UID {}",
+                                        e.to_string(),
+                                        res.get("author").unwrap().to_string()
+                                    );
+
+                                    continue;
+                                }
                             },
                             question,
                             content: res.get("content").unwrap().to_string(),

@@ -1333,7 +1333,7 @@ pub async fn compose_request(
                 .auth
                 .get_following(auth_user.id.clone())
                 .await
-                .unwrap(),
+                .unwrap_or(Vec::new()),
             profile: Some(auth_user),
             unread,
             notifs,
