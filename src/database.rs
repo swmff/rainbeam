@@ -1719,7 +1719,7 @@ impl Database {
                 .await
             {
                 Ok(ua) => ua,
-                Err(e) => return Err(e),
+                Err(_) => anonymous_profile("anonymous".to_string()),
             },
             response: res.get("response").unwrap().to_string(),
             content: res.get("content").unwrap().to_string(),
@@ -1767,7 +1767,7 @@ impl Database {
                             .await
                         {
                             Ok(ua) => ua,
-                            Err(e) => return Err(e),
+                            Err(_) => anonymous_profile("anonymous".to_string()),
                         },
                         response: res.get("response").unwrap().to_string(),
                         content: res.get("content").unwrap().to_string(),
@@ -1819,7 +1819,7 @@ impl Database {
                             .await
                         {
                             Ok(ua) => ua,
-                            Err(e) => return Err(e),
+                            Err(_) => anonymous_profile("anonymous".to_string()),
                         },
                         response: res.get("response").unwrap().to_string(),
                         content: res.get("content").unwrap().to_string(),
