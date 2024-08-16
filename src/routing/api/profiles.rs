@@ -85,13 +85,19 @@ pub async fn avatar_request(
         );
     }
 
+    let guessed_mime = mime_guess::from_path(avatar_url)
+        .first_raw()
+        .unwrap_or("application/octet-stream");
+
     match database.auth.http.get(avatar_url).send().await {
         Ok(r) => (
             [(
                 "Content-Type",
-                mime_guess::from_path(avatar_url)
-                    .first_raw()
-                    .unwrap_or("application/octet-stream"),
+                if guessed_mime == "text/html" {
+                    "text/plain"
+                } else {
+                    guessed_mime
+                },
             )],
             r.bytes().await.unwrap(),
         ),
@@ -151,13 +157,19 @@ pub async fn banner_request(
         );
     }
 
+    let guessed_mime = mime_guess::from_path(banner_url)
+        .first_raw()
+        .unwrap_or("application/octet-stream");
+
     match database.auth.http.get(banner_url).send().await {
         Ok(r) => (
             [(
                 "Content-Type",
-                mime_guess::from_path(banner_url)
-                    .first_raw()
-                    .unwrap_or("application/octet-stream"),
+                if guessed_mime == "text/html" {
+                    "text/plain"
+                } else {
+                    guessed_mime
+                },
             )],
             r.bytes().await.unwrap(),
         ),

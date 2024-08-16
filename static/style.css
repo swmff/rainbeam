@@ -389,6 +389,11 @@ fieldset:hover {
     box-shadow: none;
 }
 
+.card.secondary {
+    background: var(--color-lowered);
+    color: var(--color-text-lowered) !important;
+}
+
 legend,
 label {
     font-weight: bold;

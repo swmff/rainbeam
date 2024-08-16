@@ -57,8 +57,13 @@ block head %}
 <article>
     <main class="flex flex-col gap-2">
         <!-- question -->
-        <div class="card-nest w-full shadow" id="question:{{ question.id }}">
-            <div class="card flex flex-col gap-1">
+        <div
+            class="{% if !already_responded %}card-nest{% endif %} w-full shadow"
+            id="question:{{ question.id }}"
+        >
+            <div
+                class="{% if already_responded %}secondary{% endif %} card flex flex-col gap-1"
+            >
                 <div
                     class="flex items-center justify-between gap-1 question_title"
                 >
@@ -95,6 +100,7 @@ block head %}
                 </span>
             </div>
 
+            {% if !already_responded %}
             <div class="card">
                 <form
                     class="flex flex-col gap-2"
@@ -120,7 +126,12 @@ block head %}
                     </div>
                 </form>
             </div>
+            {% endif %}
         </div>
+
+        {% if already_responded %}
+        <p class="fade">You've already responded to this question!</p>
+        {% endif %}
 
         <hr />
         <!-- responses -->

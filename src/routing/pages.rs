@@ -956,6 +956,7 @@ struct GlobalQuestionTemplate {
     notifs: usize,
     question: Question,
     responses: Vec<(Question, QuestionResponse, usize)>,
+    already_responded: bool,
 }
 
 /// GET /question/:id
@@ -1007,6 +1008,14 @@ pub async fn global_question_request(
     Html(
         GlobalQuestionTemplate {
             config: database.server_options.clone(),
+            already_responded: if let Some(ref ua) = auth_user {
+                database
+                    .get_response_by_question_and_author(id.clone(), ua.id.clone())
+                    .await
+                    .is_ok()
+            } else {
+                false
+            },
             profile: auth_user,
             unread,
             notifs,
