@@ -72,6 +72,12 @@
         <style id="sparkler_live:color_text_primary">:root, * { --color-text-primary: {{ color }} !important }</style>
     {% endif %}
 {% endif %}
+{% if let Some(color) = profile.metadata.kv.get("sparkler:color_shadow") %}
+    {% let color = crate::routing::pages::color_escape(color) %}
+    {% if !color.is_empty() %}
+        <style id="sparkler_live:color_shadow">:root, * { --color-shadow: {{ color }} !important }</style>
+    {% endif %}
+{% endif %}
 </div>
 
 <script type="text/plain" id="theme">

@@ -268,7 +268,7 @@
     </div>
 
     <div class="flex flex-col gap-1">
-        <label for="sparkler:color_primary">Text primary</label>
+        <label for="sparkler:color_text_primary">Text primary</label>
 
         <input
             name="sparkler:color_text_primary"
@@ -279,6 +279,18 @@
         <p class="fade">
             Text color used on elements using the primary color as a background.
         </p>
+    </div>
+
+    <div class="flex flex-col gap-1">
+        <label for="sparkler:color_shadow">Shadow</label>
+
+        <input
+            name="sparkler:color_shadow"
+            id="sparkler:color_shadow"
+            onchange="update_kv('sparkler:color_shadow', event.target.value)"
+        />
+
+        <p class="fade">Color used for shadows.</p>
     </div>
 </div>
 {% call super() %} {% endblock %}
