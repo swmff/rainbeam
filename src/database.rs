@@ -655,7 +655,7 @@ impl Database {
             return Err(DatabaseError::ContentTooShort);
         }
 
-        if props.content.len() > 250 {
+        if props.content.len() > 500 {
             return Err(DatabaseError::ContentTooLong);
         }
 
@@ -1538,6 +1538,15 @@ impl Database {
             Ok(q) => q.0,
             Err(e) => return Err(e),
         };
+
+        // check time
+        let now = xsu_util::unix_epoch_timestamp();
+        let diff = now - response.timestamp;
+        let two_hours = 7200000;
+
+        if diff >= two_hours {
+            return Err(DatabaseError::OutOfTime);
+        }
 
         // check content length
         if content.len() > 1000 {

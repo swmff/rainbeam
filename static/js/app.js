@@ -25,6 +25,11 @@
                 continue;
             }
 
+            element.setAttribute(
+                "title",
+                new Date(parseInt(element.innerText)).toLocaleString(),
+            );
+
             element.innerText = new Date(
                 parseInt(element.innerText),
             ).toLocaleDateString();
