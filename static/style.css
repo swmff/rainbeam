@@ -969,3 +969,11 @@ dialog::backdrop {
 .fs-md {
     font-size: 12px;
 }
+
+[align="center"] {
+    text-align: center;
+}
+
+[align="right"] {
+    text-align: right;
+}

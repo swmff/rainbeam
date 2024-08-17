@@ -19,4 +19,4 @@ subs:
 
 pull:
     git pull
-    git submodule update
+    just subs
