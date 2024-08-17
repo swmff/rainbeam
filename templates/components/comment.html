@@ -123,6 +123,10 @@
                         Open
                     </a>
 
+                    <!-- prettier-ignore -->
+                    {% if let Some(profile) = profile %} 
+                    {% if profile.id != comment.author.id %}
+                    <!-- actions for users that ARE NOT the author -->
                     <a
                         href="javascript:trigger('reports:bootstrap', ['comments', '{{ comment.id }}'])"
                     >
@@ -140,6 +144,7 @@
                         </svg>
                         Report
                     </a>
+                    {% endif %} {% endif %}
                 </div>
             </div>
         </div>

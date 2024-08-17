@@ -259,6 +259,7 @@ struct ProfileTemplate {
     require_account: bool,
     is_blocked: bool,
     is_powerful: bool, // if you are a site manager
+    is_self: bool,
 }
 
 /// GET /@:username
@@ -387,7 +388,7 @@ pub async fn profile_request(
     Html(
         ProfileTemplate {
             config: database.server_options.clone(),
-            profile: auth_user,
+            profile: auth_user.clone(),
             unread,
             notifs,
             other: other.clone(),
@@ -430,6 +431,11 @@ pub async fn profile_request(
                 false
             },
             is_powerful,
+            is_self: if let Some(ref profile) = auth_user {
+                profile.id == other.id
+            } else {
+                false
+            },
         }
         .render()
         .unwrap(),
@@ -459,6 +465,7 @@ struct FollowersTemplate {
     require_account: bool,
     is_blocked: bool,
     is_powerful: bool,
+    is_self: bool,
 }
 
 /// GET /@:username/followers
@@ -553,7 +560,7 @@ pub async fn followers_request(
     Html(
         FollowersTemplate {
             config: database.server_options.clone(),
-            profile: auth_user,
+            profile: auth_user.clone(),
             unread,
             notifs,
             other: other.clone(),
@@ -599,6 +606,11 @@ pub async fn followers_request(
                 false
             },
             is_powerful,
+            is_self: if let Some(ref profile) = auth_user {
+                profile.id == other.id
+            } else {
+                false
+            },
         }
         .render()
         .unwrap(),
@@ -628,6 +640,7 @@ struct FollowingTemplate {
     require_account: bool,
     is_blocked: bool,
     is_powerful: bool,
+    is_self: bool,
 }
 
 /// GET /@:username/following
@@ -722,7 +735,7 @@ pub async fn following_request(
     Html(
         FollowingTemplate {
             config: database.server_options.clone(),
-            profile: auth_user,
+            profile: auth_user.clone(),
             unread,
             notifs,
             other: other.clone(),
@@ -736,7 +749,7 @@ pub async fn following_request(
             following_count: database.auth.get_following_count(other.id.clone()).await,
             following: database
                 .auth
-                .get_following_paginated(other.id, query.page)
+                .get_following_paginated(other.id.clone(), query.page)
                 .await
                 .unwrap(),
             is_following,
@@ -768,6 +781,11 @@ pub async fn following_request(
                 false
             },
             is_powerful,
+            is_self: if let Some(ref profile) = auth_user {
+                profile.id == other.id
+            } else {
+                false
+            },
         }
         .render()
         .unwrap(),
@@ -797,6 +815,7 @@ struct ProfileQuestionsTemplate {
     require_account: bool,
     is_blocked: bool,
     is_powerful: bool,
+    is_self: bool,
 }
 
 /// GET /@:username/questions
@@ -899,7 +918,7 @@ pub async fn profile_questions_request(
     Html(
         ProfileQuestionsTemplate {
             config: database.server_options.clone(),
-            profile: auth_user,
+            profile: auth_user.clone(),
             unread,
             notifs,
             other: other.clone(),
@@ -941,6 +960,11 @@ pub async fn profile_questions_request(
                 false
             },
             is_powerful,
+            is_self: if let Some(ref profile) = auth_user {
+                profile.id == other.id
+            } else {
+                false
+            },
         }
         .render()
         .unwrap(),

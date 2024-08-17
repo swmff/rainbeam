@@ -437,10 +437,7 @@
         </span>
 
         <div class="flex gap-2">
-            <button
-                class="primary bold"
-                onclick="document.getElementById('warning_dialog').close()"
-            >
+            <button class="primary bold" onclick="trigger('warnings:accept')">
                 Continue
             </button>
             <a href="/" class="button bold">Cancel</a>
@@ -448,10 +445,19 @@
     </div>
 </dialog>
 
+<!-- prettier-ignore -->
+{% if !is_self %}
+{% let warning_hash = xsu_util::hash::hash(warning.to_string()) %}
 <script>
-    document.getElementById("warning_dialog").showModal();
+    setTimeout(() => {
+        const dialogs = ns("dialogs");
+        dialogs.add("warning_dialog");
+
+        const warnings = ns("warnings");
+        warnings.open("{{ other.id }}", "{{ warning_hash }}");
+    }, 100);
 </script>
-{% endif %} {% endif %}
+{% endif %} {% endif %} {% endif %}
 
 <script>
     document.getElementById("question_form").addEventListener("submit", (e) => {

@@ -333,6 +333,10 @@ let response = response.1.clone() %}
                             Open
                         </a>
 
+                        <!-- prettier-ignore -->
+                        {% if let Some(profile) = profile %} 
+                        {% if profile.id != response.author.id %}
+                        <!-- actions for users that ARE NOT the author -->
                         <a
                             href="javascript:trigger('reports:bootstrap', ['responses', '{{ response.id }}'])"
                         >
@@ -350,6 +354,7 @@ let response = response.1.clone() %}
                             </svg>
                             Report
                         </a>
+                        {% endif %} {% endif %}
                     </div>
                 </div>
             </div>

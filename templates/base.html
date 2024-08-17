@@ -255,6 +255,9 @@
         <div id="page">{% block content %}{% endblock %}</div>
 
         <script>
+            use("dialogs", () => {});
+            use("warnings", () => {});
+
             use("questions", () => {});
             use("responses", () => {});
             use("comments", () => {});
