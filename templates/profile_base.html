@@ -422,7 +422,8 @@
     </div>
 </article>
 
-{% if let Some(warning) = other.metadata.kv.get("sparkler:warning") %}
+{% if let Some(warning) = other.metadata.kv.get("sparkler:warning") %} {% if
+!warning.is_empty() %}
 <dialog id="warning_dialog">
     <div class="inner flex flex-col gap-2">
         <span class="fade">This profile has published this warning:</span>
@@ -450,7 +451,7 @@
 <script>
     document.getElementById("warning_dialog").showModal();
 </script>
-{% endif %}
+{% endif %} {% endif %}
 
 <script>
     document.getElementById("question_form").addEventListener("submit", (e) => {
