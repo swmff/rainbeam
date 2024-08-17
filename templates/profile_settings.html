@@ -20,6 +20,22 @@
     </div>
 
     <div class="flex flex-col gap-1">
+        <label for="sparkler:warning">Profile warning</label>
+
+        <textarea
+            name="sparkler:warning"
+            id="sparkler:warning"
+            onchange="update_kv('sparkler:warning', event.target.value)"
+        ></textarea>
+
+        <p class="fade">
+            This will show a warning on your profile when people visit it.
+            People will be given the option to continue to your profile or go
+            the Sparkler homepage. Set this to nothing to disable it!
+        </p>
+    </div>
+
+    <div class="flex flex-col gap-1">
         <label for="sparkler:anonymous_username">Anonymous username</label>
 
         <input

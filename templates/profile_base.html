@@ -422,6 +422,36 @@
     </div>
 </article>
 
+{% if let Some(warning) = other.metadata.kv.get("sparkler:warning") %}
+<dialog id="warning_dialog">
+    <div class="inner flex flex-col gap-2">
+        <span class="fade">This profile has published this warning:</span>
+
+        <hr />
+        <p>{{ warning }}</p>
+
+        <hr />
+        <span class="fade">
+            Press "Continue" if you wish to view this profile.
+        </span>
+
+        <div class="flex gap-2">
+            <button
+                class="primary bold"
+                onclick="document.getElementById('warning_dialog').close()"
+            >
+                Continue
+            </button>
+            <a href="/" class="button bold">Cancel</a>
+        </div>
+    </div>
+</dialog>
+
+<script>
+    document.getElementById("warning_dialog").showModal();
+</script>
+{% endif %}
+
 <script>
     document.getElementById("question_form").addEventListener("submit", (e) => {
         e.preventDefault();
