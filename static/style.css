@@ -47,7 +47,7 @@ body {
 
 #page {
     background: var(--color-surface);
-    padding: 0.5rem;
+    padding: 0;
 }
 
 main {
@@ -65,6 +65,10 @@ article {
 }
 
 @media (min-width: 768px) {
+    #page {
+        padding: 0.5rem;
+    }
+
     main {
         width: calc(
             /* 1rem to account for both sides of the #page padding */ 80ch +
