@@ -12,7 +12,9 @@
 
         <!-- actions -->
         <div class="flex gap-2">
+            {% if !notif.address.is_empty() %}
             <a class="button primary bold" href="{{ notif.address }}">Open</a>
+            {% endif %}
 
             <button
                 class="button bold"

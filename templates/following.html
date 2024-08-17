@@ -18,7 +18,13 @@
     Following
     <b class="notification">{{ following_count }}</b>
 </a>
-{% endblock %} {% block panel %}
+
+{% if is_powerful %}
+<a href="/@{{ other.username }}/warnings">
+    Warnings
+    <b class="notification">Mod</b>
+</a>
+{% endif %} {% endblock %} {% block panel %}
 <!-- followers -->
 <div id="following" class="flex flex-col items-center gap-2">
     {% for card in following %}

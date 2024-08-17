@@ -9,7 +9,7 @@ use axum_extra::extract::CookieJar;
 
 use ammonia::Builder;
 use serde::{Deserialize, Serialize};
-use xsu_authman::model::{Notification, Permission, Profile, ProfileMetadata, UserFollow};
+use xsu_authman::model::{Notification, Permission, Profile, ProfileMetadata, UserFollow, Warning};
 
 use crate::config::Config;
 use crate::database::Database;
@@ -985,6 +985,164 @@ pub async fn profile_questions_request(
 }
 
 #[derive(Template)]
+#[template(path = "profile_warnings.html")]
+struct WarningsTemplate {
+    config: Config,
+    profile: Option<Profile>,
+    unread: usize,
+    notifs: usize,
+    other: Profile,
+    warnings: Vec<Warning>,
+    response_count: usize,
+    questions_count: usize,
+    followers_count: usize,
+    following_count: usize,
+    is_following: bool,
+    is_following_you: bool,
+    metadata: String,
+    // ...
+    lock_profile: bool,
+    disallow_anonymous: bool,
+    require_account: bool,
+    is_blocked: bool,
+    is_powerful: bool,
+    is_self: bool,
+}
+
+/// GET /@:username/warnings
+pub async fn profile_warnings_request(
+    jar: CookieJar,
+    Path(username): Path<String>,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => return Html(DatabaseError::NotAllowed.to_html(database)),
+        },
+        None => return Html(DatabaseError::NotAllowed.to_html(database)),
+    };
+
+    let unread = match database
+        .get_questions_by_recipient(auth_user.to_owned().id)
+        .await
+    {
+        Ok(unread) => unread.len(),
+        Err(_) => 0,
+    };
+
+    let notifs = database
+        .auth
+        .get_notification_count_by_recipient(auth_user.to_owned().id)
+        .await;
+
+    let other = match database
+        .auth
+        .get_profile_by_username(username.clone())
+        .await
+    {
+        Ok(ua) => ua,
+        Err(_) => return Html(DatabaseError::NotFound.to_html(database)),
+    };
+
+    let is_following = match database
+        .auth
+        .get_follow(auth_user.id.to_owned(), other.id.clone())
+        .await
+    {
+        Ok(_) => true,
+        Err(_) => false,
+    };
+
+    let is_following_you = match database
+        .auth
+        .get_follow(other.id.clone(), auth_user.id.to_owned())
+        .await
+    {
+        Ok(_) => true,
+        Err(_) => false,
+    };
+
+    let posting_as = auth_user.username.clone();
+
+    let is_powerful = {
+        let group = match database.auth.get_group_by_id(auth_user.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        group.permissions.contains(&Permission::Manager)
+    };
+
+    if !is_powerful {
+        return Html(DatabaseError::NotAllowed.to_html(database));
+    }
+
+    let warnings = match database
+        .auth
+        .get_warnings_by_recipient(other.id.clone(), auth_user.clone())
+        .await
+    {
+        Ok(r) => r,
+        Err(_) => return Html(DatabaseError::Other.to_html(database)),
+    };
+
+    Html(
+        WarningsTemplate {
+            config: database.server_options.clone(),
+            profile: Some(auth_user.clone()),
+            unread,
+            notifs,
+            other: other.clone(),
+            warnings,
+            response_count: database
+                .get_response_count_by_author(other.id.clone())
+                .await,
+            questions_count: database
+                .get_global_questions_count_by_author(other.id.clone())
+                .await,
+            followers_count: database.auth.get_followers_count(other.id.clone()).await,
+            following_count: database.auth.get_following_count(other.id.clone()).await,
+            is_following,
+            is_following_you,
+            metadata: clean_metadata(&other.metadata),
+            // ...
+            lock_profile: other
+                .metadata
+                .kv
+                .get("sparkler:lock_profile")
+                .unwrap_or(&"false".to_string())
+                == "true",
+            disallow_anonymous: other
+                .metadata
+                .kv
+                .get("sparkler:disallow_anonymous")
+                .unwrap_or(&"false".to_string())
+                == "true",
+            require_account: other
+                .metadata
+                .kv
+                .get("sparkler:require_account")
+                .unwrap_or(&"false".to_string())
+                == "true",
+            is_blocked: if let Some(block_list) = other.metadata.kv.get("sparkler:block_list") {
+                block_list.contains(&format!("<@{posting_as}>"))
+            } else {
+                false
+            },
+            is_powerful,
+            is_self: auth_user.id == other.id,
+        }
+        .render()
+        .unwrap(),
+    )
+}
+
+#[derive(Template)]
 #[template(path = "global_question.html")]
 struct GlobalQuestionTemplate {
     config: Config,
@@ -1793,6 +1951,7 @@ pub async fn routes(database: Database) -> Router {
         .route("/response/:id", get(response_request))
         .route("/comment/:id", get(comment_request))
         // profiles
+        .route("/@:username/warnings", get(profile_warnings_request)) // staff
         .route("/@:username/questions", get(profile_questions_request))
         .route("/@:username/following", get(following_request))
         .route("/@:username/followers", get(followers_request))

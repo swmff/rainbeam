@@ -133,15 +133,11 @@ block head %}
                     res.message || "Comment posted!",
                 ]);
 
-                document
-                    .getElementById("comment_field")
-                    .setAttribute("disabled", "fully");
-
                 if (res.success === true) {
                     e.target.reset();
                     document
-                        .getElementById(`question:${question}`)
-                        .removeAttribute("disabled");
+                        .getElementById("comment_field")
+                        .setAttribute("disabled", "fully");
                 }
             });
     }
