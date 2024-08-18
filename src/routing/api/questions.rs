@@ -1,5 +1,6 @@
 use crate::database::Database;
 use crate::model::{anonymous_profile, DatabaseError, QuestionCreate};
+use xsu_authman::model::ProfileMetadata;
 use xsu_dataman::DefaultReturn;
 
 use axum::response::IntoResponse;
@@ -128,10 +129,29 @@ pub async fn get_request(
     State(database): State<Database>,
 ) -> impl IntoResponse {
     Json(match database.get_question(id).await {
-        Ok(r) => DefaultReturn {
+        Ok(mut r) => DefaultReturn {
             success: true,
             message: String::new(),
-            payload: Some(r),
+            payload: {
+                // hide anonymous author id
+                if r.author.id.starts_with("anonymous#") {
+                    r.author.id = "anonymous".to_string()
+                }
+
+                // hide tokens, password, salt, and metadata
+                r.author.password = String::new();
+                r.author.salt = String::new();
+                r.author.tokens = Vec::new();
+                r.author.metadata = ProfileMetadata::default();
+
+                r.recipient.password = String::new();
+                r.recipient.salt = String::new();
+                r.recipient.tokens = Vec::new();
+                r.recipient.metadata = ProfileMetadata::default();
+
+                // return
+                Some(r)
+            },
         },
         Err(e) => e.into(),
     })

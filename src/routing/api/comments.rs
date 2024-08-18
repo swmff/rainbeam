@@ -1,7 +1,7 @@
 use crate::database::Database;
 use crate::model::{CommentCreate, DatabaseError};
 use hcaptcha::Hcaptcha;
-use xsu_authman::model::NotificationCreate;
+use xsu_authman::model::{NotificationCreate, ProfileMetadata};
 use xsu_dataman::DefaultReturn;
 
 use axum::response::IntoResponse;
@@ -61,10 +61,18 @@ pub async fn get_request(
     State(database): State<Database>,
 ) -> impl IntoResponse {
     Json(match database.get_comment(id).await {
-        Ok(r) => DefaultReturn {
+        Ok(mut r) => DefaultReturn {
             success: true,
             message: String::new(),
-            payload: Some(r),
+            payload: {
+                // hide tokens, password, salt, and metadata
+                r.author.salt = String::new();
+                r.author.tokens = Vec::new();
+                r.author.metadata = ProfileMetadata::default();
+
+                // return
+                Some(r)
+            },
         },
         Err(e) => e.into(),
     })

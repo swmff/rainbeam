@@ -2,7 +2,7 @@ use crate::database::Database;
 use crate::model::{DatabaseError, ResponseCreate, ResponseEdit};
 use axum::routing::put;
 use hcaptcha::Hcaptcha;
-use xsu_authman::model::NotificationCreate;
+use xsu_authman::model::{NotificationCreate, ProfileMetadata};
 use xsu_dataman::DefaultReturn;
 
 use axum::response::IntoResponse;
@@ -63,10 +63,34 @@ pub async fn get_request(
     State(database): State<Database>,
 ) -> impl IntoResponse {
     Json(match database.get_response(id).await {
-        Ok(r) => DefaultReturn {
+        Ok(mut r) => DefaultReturn {
             success: true,
             message: String::new(),
-            payload: Some(r),
+            payload: {
+                // hide anonymous author id
+                if r.0.author.id.starts_with("anonymous#") {
+                    r.0.author.id = "anonymous".to_string()
+                }
+
+                // hide tokens, password, salt, and metadata
+                r.0.author.password = String::new();
+                r.0.author.salt = String::new();
+                r.0.author.tokens = Vec::new();
+                r.0.author.metadata = ProfileMetadata::default();
+
+                r.0.recipient.password = String::new();
+                r.0.recipient.salt = String::new();
+                r.0.recipient.tokens = Vec::new();
+                r.0.recipient.metadata = ProfileMetadata::default();
+
+                r.1.author.password = String::new();
+                r.1.author.salt = String::new();
+                r.1.author.tokens = Vec::new();
+                r.1.author.metadata = ProfileMetadata::default();
+
+                // return
+                Some(r)
+            },
         },
         Err(e) => e.into(),
     })
