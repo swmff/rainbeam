@@ -249,6 +249,11 @@ a.button.secondary:hover {
     background: var(--color-raised);
 }
 
+button.reaction.active {
+    background: var(--color-primary);
+    color: var(--color-text-primary);
+}
+
 textarea {
     width: 100%;
     resize: vertical;
@@ -641,7 +646,11 @@ img {
     --size: 50px;
     border-radius: var(--radius);
     width: var(--size);
+    min-width: var(--size);
+    max-width: var(--size);
     height: var(--size);
+    min-height: var(--size);
+    max-height: var(--size);
     object-fit: cover;
 }
 

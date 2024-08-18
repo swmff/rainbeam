@@ -1,4 +1,4 @@
-{% extends "profile_base.html" %} {% block pillmenu %}
+{% extends "base.html" %} {% block pillmenu %}
 <a href="/@{{ other.username }}" class="active">
     Answers
     <b class="notification">{{ response_count }}</b>
@@ -9,6 +9,7 @@
     <b class="notification">{{ questions_count }}</b>
 </a>
 
+{% if !hide_social %}
 <a href="/@{{ other.username }}/followers">
     Followers
     <b class="notification">{{ followers_count }}</b>
@@ -18,8 +19,7 @@
     Following
     <b class="notification">{{ following_count }}</b>
 </a>
-
-{% if is_powerful %}
+{% endif %} {% if is_powerful %}
 <a href="/@{{ other.username }}/warnings">
     Warnings
     <b class="notification">Mod</b>
@@ -39,7 +39,7 @@
             {% let show_pin_button = true %}
             {% let do_not_render_question = false %}
             {% let show_comments = true %}
-            {% include "components/response.html" %}
+            {% include "../components/response.html" %}
         {% endfor %}
     <hr />
     {% endif %}
@@ -51,7 +51,7 @@
         {% let show_pin_button = true %}
         {% let do_not_render_question = false %}
         {% let show_comments = true %}
-        {% include "components/response.html" %} 
+        {% include "../components/response.html" %} 
     {% endfor %}
 
     <!-- pagination buttons -->

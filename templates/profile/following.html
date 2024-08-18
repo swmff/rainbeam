@@ -1,4 +1,4 @@
-{% extends "profile_base.html" %} {% block pillmenu %}
+{% extends "base.html" %} {% block pillmenu %}
 <a href="/@{{ other.username }}">
     Answers
     <b class="notification">{{ response_count }}</b>
@@ -9,12 +9,12 @@
     <b class="notification">{{ questions_count }}</b>
 </a>
 
-<a href="/@{{ other.username }}/followers" class="active">
+<a href="/@{{ other.username }}/followers">
     Followers
     <b class="notification">{{ followers_count }}</b>
 </a>
 
-<a href="/@{{ other.username }}/following">
+<a href="/@{{ other.username }}/following" class="active">
     Following
     <b class="notification">{{ following_count }}</b>
 </a>
@@ -26,13 +26,13 @@
 </a>
 {% endif %} {% endblock %} {% block panel %}
 <!-- followers -->
-<div id="followers" class="flex flex-col items-center gap-2">
-    {% for card in followers %}
+<div id="following" class="flex flex-col items-center gap-2">
+    {% for card in following %}
     <div class="card-nest w-full">
         <div class="card" style="padding: 0">
             <img
-                title="{{ card.1.username }}'s banner"
-                src="/api/v1/profiles/{{card.1.username }}/banner"
+                title="{{ card.2.username }}'s banner"
+                src="/api/v1/profiles/{{card.2.username }}/banner"
                 alt=""
                 class="shadow round"
                 style="
@@ -48,28 +48,28 @@
 
         <div class="card flex gap-2">
             <img
-                title="{{ card.1.username }}'s avatar"
-                src="/api/v1/profiles/{{ card.1.username }}/avatar"
+                title="{{ card.2.username }}'s avatar"
+                src="/api/v1/profiles/{{ card.2.username }}/avatar"
                 alt=""
                 class="avatar shadow-md"
                 style="--size: 80px; margin: -50px 0.5rem 0"
             />
 
             <h3 class="no-margin">
-                <a href="/@{{ card.1.username }}">{{ card.1.username }}</a>
+                <a href="/@{{ card.2.username }}">{{ card.2.username }}</a>
             </h3>
         </div>
     </div>
     {% endfor %}
 
     <!-- pagination buttons -->
-    {% if followers_count != 0 %}
+    {% if following_count != 0 %}
     <div class="flex justify-between gap-2 w-full">
         {% if page > 0 %}
         <a class="button secondary" href="?page={{ page - 1 }}">Previous</a>
         {% else %}
         <div></div>
-        {% endif %} {% if followers.len() != 0 %}
+        {% endif %} {% if following.len() != 0 %}
         <a class="button secondary" href="?page={{ page + 1 }}">Next</a>
         {% endif %}
     </div>

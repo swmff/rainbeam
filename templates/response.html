@@ -60,11 +60,26 @@ block head %}
         {% let is_pinned = false %}
         {% let show_pin_button = false %}
         {% let do_not_render_question = false %}
-        {% let response = (question.clone(), response.clone(), 0) %}
+        {% let response = (question.clone(), response.clone(), 0, reactions.len()) %}
         {% let show_comments = false %}
         {% include "components/response.html" %}
 
         <hr />
+        <h5 id="reactions">Reactions</h5>
+        <div id="reactions" class="flex gap-2 flex-wrap w-full">
+            {% for reaction in reactions %}
+            <img
+                title="{{ reaction.user.username }}'s avatar"
+                src="/api/v1/profiles/{{ reaction.user.username }}/avatar"
+                alt="@{{ reaction.user.username }}"
+                class="avatar round-sm"
+                style="--size: 20px"
+            />
+            {% endfor %}
+        </div>
+
+        <hr />
+        <h5 id="comments">Comments</h5>
         <div class="card-nest w-full shadow" id="comment_field">
             <div class="card flex flex-col gap-1">Leave a comment</div>
 
@@ -189,9 +204,14 @@ block head %}
 </dialog>
 
 <script>
-    if (window.location.search === "?edit") {
-        document.getElementById("edit_dialog").showModal();
-    }
+    setTimeout(() => {
+        const dialogs = ns("dialogs");
+        dialogs.add("edit_dialog");
+
+        if (window.location.search === "?edit") {
+            dialogs.get("edit_dialog").open();
+        }
+    }, 100);
 
     function edit(e) {
         e.preventDefault();
@@ -218,4 +238,71 @@ block head %}
             });
     }
 </script>
-{% endif %} {% endif %} {% call super() %} {% endblock %}
+{% endif %}
+<dialog id="react_dialog">
+    {% if !has_reacted %}
+    <div class="inner flex flex-col gap-2">
+        <p>
+            Are you sure you wish to
+            <b>add</b>
+            a reaction to this response?
+        </p>
+        <p></p>
+
+        <hr />
+        <div class="flex gap-2">
+            <button
+                class="primary bold"
+                onclick="trigger('reactions:create', ['{{ response.id }}'])"
+            >
+                Confirm
+            </button>
+            <button
+                class="bold"
+                onclick="document.getElementById('react_dialog').close(); window.close()"
+                type="button"
+            >
+                Cancel
+            </button>
+        </div>
+    </div>
+    {% else %}
+    <div class="inner flex flex-col gap-2">
+        <p>
+            Are you sure you wish to
+            <b>remove</b>
+            your reaction to this response?
+        </p>
+        <p></p>
+
+        <hr />
+        <div class="flex gap-2">
+            <button
+                class="primary bold"
+                onclick="trigger('reactions:delete', ['{{ response.id }}'])"
+            >
+                Confirm
+            </button>
+            <button
+                class="bold"
+                onclick="document.getElementById('react_dialog').close(); window.close()"
+                type="button"
+            >
+                Cancel
+            </button>
+        </div>
+    </div>
+    {% endif %}
+</dialog>
+
+<script>
+    setTimeout(() => {
+        const dialogs = ns("dialogs");
+        dialogs.add("react_dialog");
+
+        if (window.location.search === "?react") {
+            dialogs.get("react_dialog").open();
+        }
+    }, 100);
+</script>
+{% endif %} {% call super() %} {% endblock %}

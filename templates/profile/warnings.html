@@ -1,4 +1,4 @@
-{% extends "profile_base.html" %} {% block pillmenu %}
+{% extends "base.html" %} {% block pillmenu %}
 <a href="/@{{ other.username }}">
     Answers
     <b class="notification">{{ response_count }}</b>
@@ -9,6 +9,7 @@
     <b class="notification">{{ questions_count }}</b>
 </a>
 
+{% if !hide_social %}
 <a href="/@{{ other.username }}/followers">
     Followers
     <b class="notification">{{ followers_count }}</b>
@@ -18,8 +19,7 @@
     Following
     <b class="notification">{{ following_count }}</b>
 </a>
-
-{% if is_powerful %}
+{% endif %} {% if is_powerful %}
 <a href="/@{{ other.username }}/warnings" class="active">
     Warnings
     <b class="notification">Mod</b>
@@ -55,7 +55,7 @@
 
     <!-- prettier-ignore -->
     {% for warning in warnings %}
-        {% include "components/warning.html" %}
+        {% include "../components/warning.html" %}
     {% endfor %}
 </div>
 

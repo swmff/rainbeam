@@ -7,18 +7,18 @@
         }
 
         fetch(`/api/v1/responses/${id}`, {
-                method: "DELETE",
-            })
-                .then((res) => res.json())
-                .then((res) => {
-                    trigger("app:shout", [
-                        res.success ? "tip" : "caution",
-                        res.message || "Response deleted!",
-                    ]);
+            method: "DELETE",
+        })
+            .then((res) => res.json())
+            .then((res) => {
+                trigger("app:shout", [
+                    res.success ? "tip" : "caution",
+                    res.message || "Response deleted!",
+                ]);
 
-                    document
-                        .getElementById(`response:${id}`)
-                        .setAttribute("disabled", "fully");
-                });
+                document
+                    .getElementById(`response:${id}`)
+                    .setAttribute("disabled", "fully");
+            });
     });
 })();

@@ -1,4 +1,4 @@
-{% extends "settings_base.html" %} {% block sidenav %}
+{% extends "base.html" %} {% block sidenav %}
 <a href="/settings">Account</a>
 <a href="/settings/profile">Profile</a>
 <a class="active" href="/settings/privacy">Privacy</a>
@@ -47,6 +47,19 @@
 
         <label for="sparkler:require_account" class="normal">
             Require an account to ask questions on your profile
+        </label>
+    </div>
+
+    <div class="checkbox_container">
+        <input
+            type="checkbox"
+            name="sparkler:private_social"
+            id="sparkler:private_social"
+            onchange="update_kv('sparkler:private_social', event.target.checked.toString())"
+        />
+
+        <label for="sparkler:private_social" class="normal">
+            Keep your socials private (followers/following)
         </label>
     </div>
 

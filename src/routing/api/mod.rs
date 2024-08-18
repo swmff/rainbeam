@@ -1,6 +1,7 @@
 pub mod comments;
 pub mod profiles;
 pub mod questions;
+pub mod reactions;
 pub mod responses;
 
 use crate::database::Database;
@@ -20,6 +21,7 @@ pub fn routes(database: Database) -> Router {
         .nest("/questions", questions::routes(database.clone()))
         .nest("/responses", responses::routes(database.clone()))
         .nest("/comments", comments::routes(database.clone()))
+        .nest("/reactions", reactions::routes(database.clone()))
         .nest("/profiles", profiles::routes(database.clone()))
     // .nest("/comments", comments::routes(database.clone()))
 }

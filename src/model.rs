@@ -89,7 +89,7 @@ pub struct QuestionResponse {
     pub timestamp: u128,
 }
 
-/// A response structure
+/// A comment structure
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ResponseComment {
     /// The author of the comment; cannot be anonymous
@@ -101,6 +101,17 @@ pub struct ResponseComment {
     /// The ID of the comment
     pub id: String,
     /// The time this comment was created
+    pub timestamp: u128,
+}
+
+/// A reaction structure
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Reaction {
+    /// The reactor of the reaction; cannot be anonymous
+    pub user: Profile,
+    /// ID of the asset this reaction is on (response, comment, etc.)
+    pub asset: String,
+    /// The time this reaction was created
     pub timestamp: u128,
 }
 

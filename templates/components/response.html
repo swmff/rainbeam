@@ -1,5 +1,5 @@
 {% let question = response.0.clone() %} {% let comment_count = response.2 %} {%
-let response = response.1.clone() %}
+let reaction_count = response.3 %} {% let response = response.1.clone() %}
 <div class="card-nest w-full shadow" id="response:{{ response.id }}">
     {% if do_not_render_question == false %}
     <div class="card flex flex-col gap-1">
@@ -164,12 +164,35 @@ let response = response.1.clone() %}
             <div
                 class="flex justify-between gap-2 {% if show_comments != false %}sm:w-full{% endif %}"
             >
+                <!-- reactions -->
+                <a
+                    href="/response/{{ response.id }}?react"
+                    title="{{ reaction_count }} reactions"
+                    class="button w-full"
+                    target="_blank"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 16 16"
+                        width="16"
+                        height="16"
+                        aria-label="Smiley symbol"
+                        class="icon"
+                    >
+                        <path
+                            d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm3.82 1.636a.75.75 0 0 1 1.038.175l.007.009c.103.118.22.222.35.31.264.178.683.37 1.285.37.602 0 1.02-.192 1.285-.371.13-.088.247-.192.35-.31l.007-.008a.75.75 0 0 1 1.222.87l-.022-.015c.02.013.021.015.021.015v.001l-.001.002-.002.003-.005.007-.014.019a2.066 2.066 0 0 1-.184.213c-.16.166-.338.316-.53.445-.63.418-1.37.638-2.127.629-.946 0-1.652-.308-2.126-.63a3.331 3.331 0 0 1-.715-.657l-.014-.02-.005-.006-.002-.003v-.002h-.001l.613-.432-.614.43a.75.75 0 0 1 .183-1.044ZM12 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM5 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm5.25 2.25.592.416a97.71 97.71 0 0 0-.592-.416Z"
+                        ></path>
+                    </svg>
+
+                    <span class="notification camo">{{ reaction_count }}</span>
+                </a>
+
                 <!-- comments -->
                 {% if show_comments != false %}
                 <a
                     href="/response/{{ response.id }}"
                     title="{{ comment_count }} comments"
-                    class="button"
+                    class="button w-full"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -189,8 +212,9 @@ let response = response.1.clone() %}
                 {% endif %}
 
                 <!-- options -->
-                <div class="dropdown">
+                <div class="dropdown w-full">
                     <button
+                        class="w-full"
                         onclick="trigger('app:hook.dropdown', [event])"
                         exclude="dropdown"
                     >

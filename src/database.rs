@@ -1,6 +1,6 @@
 use crate::config::Config;
 use crate::model::{
-    anonymous_profile, global_profile, CommentCreate, QuestionCreate, QuestionResponse,
+    anonymous_profile, global_profile, CommentCreate, QuestionCreate, QuestionResponse, Reaction,
     RefQuestion, ResponseComment, ResponseCreate,
 };
 use crate::model::{DatabaseError, Question};
@@ -71,6 +71,17 @@ impl Database {
                 response  TEXT,
                 content   TEXT,
                 id        TEXT,
+                timestamp TEXT
+            )",
+        )
+        .execute(c)
+        .await;
+
+        // create reactions table
+        let _ = sqlquery(
+            "CREATE TABLE IF NOT EXISTS \"xreactions\" (
+                user      TEXT,
+                asset     TEXT,
                 timestamp TEXT
             )",
         )
@@ -648,7 +659,7 @@ impl Database {
     ///
     /// ## Arguments:
     /// * `props` - [`QuestionCreate`]
-    /// * `author` - the username of the user creating the question
+    /// * `author` - the ID of the user creating the question
     pub async fn create_question(&self, mut props: QuestionCreate, author: String) -> Result<()> {
         // check content length
         if props.content.trim().len() < 2 {
@@ -891,7 +902,10 @@ impl Database {
     ///
     /// ## Arguments:
     /// * `id`
-    pub async fn get_response(&self, id: String) -> Result<(Question, QuestionResponse, usize)> {
+    pub async fn get_response(
+        &self,
+        id: String,
+    ) -> Result<(Question, QuestionResponse, usize, usize)> {
         // check in cache
         match self
             .base
@@ -900,7 +914,8 @@ impl Database {
             .await
         {
             Some(c) => {
-                match serde_json::from_str::<(Question, QuestionResponse, usize)>(c.as_str()) {
+                match serde_json::from_str::<(Question, QuestionResponse, usize, usize)>(c.as_str())
+                {
                     Ok(r) => return Ok(r),
                     Err(_) => {
                         // we're storing a bad version that couldn't deserialize, we don't need that...
@@ -960,7 +975,8 @@ impl Database {
                 Err(_) => Question::unknown(),
             },
             response,
-            self.get_comment_count_by_response(id).await,
+            self.get_comment_count_by_response(id.clone()).await,
+            self.get_reaction_count_by_asset(id).await,
         ))
     }
 
@@ -973,7 +989,7 @@ impl Database {
         &self,
         question: String,
         author: String,
-    ) -> Result<(Question, QuestionResponse, usize)> {
+    ) -> Result<(Question, QuestionResponse, usize, usize)> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -1015,8 +1031,10 @@ impl Database {
                 Ok(q) => q,
                 Err(_) => Question::unknown(),
             },
-            response,
-            self.get_comment_count_by_response(question).await,
+            response.clone(),
+            self.get_comment_count_by_response(response.id.clone())
+                .await,
+            self.get_reaction_count_by_asset(response.id).await,
         ))
     }
 
@@ -1027,7 +1045,7 @@ impl Database {
     pub async fn get_responses_by_author(
         &self,
         author: String,
-    ) -> Result<Vec<(Question, QuestionResponse, usize)>> {
+    ) -> Result<Vec<(Question, QuestionResponse, usize, usize)>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -1044,7 +1062,7 @@ impl Database {
             .await
         {
             Ok(p) => {
-                let mut out: Vec<(Question, QuestionResponse, usize)> = Vec::new();
+                let mut out: Vec<(Question, QuestionResponse, usize, usize)> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
@@ -1069,7 +1087,8 @@ impl Database {
                             id: id.clone(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
                         },
-                        self.get_comment_count_by_response(id).await,
+                        self.get_comment_count_by_response(id.clone()).await,
+                        self.get_reaction_count_by_asset(id).await,
                     ));
                 }
 
@@ -1090,7 +1109,7 @@ impl Database {
         &self,
         author: String,
         page: i32,
-    ) -> Result<Vec<(Question, QuestionResponse, usize)>> {
+    ) -> Result<Vec<(Question, QuestionResponse, usize, usize)>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -1106,7 +1125,7 @@ impl Database {
             .await
         {
             Ok(p) => {
-                let mut out: Vec<(Question, QuestionResponse, usize)> = Vec::new();
+                let mut out: Vec<(Question, QuestionResponse, usize, usize)> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
@@ -1116,10 +1135,7 @@ impl Database {
                     out.push((
                         match self.get_question(question.clone()).await {
                             Ok(q) => q,
-                            Err(e) => {
-                                println!("({}) QID {}", e.to_string(), question);
-                                Question::unknown()
-                            }
+                            Err(_) => Question::unknown(),
                         },
                         QuestionResponse {
                             author: match self
@@ -1127,22 +1143,15 @@ impl Database {
                                 .await
                             {
                                 Ok(ua) => ua,
-                                Err(e) => {
-                                    println!(
-                                        "({}) UID {}",
-                                        e.to_string(),
-                                        res.get("author").unwrap().to_string()
-                                    );
-
-                                    anonymous_profile("anonymous".to_string())
-                                }
+                                Err(_) => anonymous_profile("anonymous".to_string()),
                             },
                             question,
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
                         },
-                        self.get_comment_count_by_response(id).await,
+                        self.get_comment_count_by_response(id.clone()).await,
+                        self.get_reaction_count_by_asset(id).await,
                     ));
                 }
 
@@ -1195,7 +1204,7 @@ impl Database {
     pub async fn get_responses_by_following(
         &self,
         user: String,
-    ) -> Result<Vec<(Question, QuestionResponse, usize)>> {
+    ) -> Result<Vec<(Question, QuestionResponse, usize, usize)>> {
         // get following
         let following = match self.auth.get_following(user.clone()).await {
             Ok(f) => f,
@@ -1238,7 +1247,7 @@ impl Database {
             .await
         {
             Ok(p) => {
-                let mut out: Vec<(Question, QuestionResponse, usize)> = Vec::new();
+                let mut out: Vec<(Question, QuestionResponse, usize, usize)> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
@@ -1263,7 +1272,8 @@ impl Database {
                             id: id.clone(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
                         },
-                        self.get_comment_count_by_response(id).await,
+                        self.get_comment_count_by_response(id.clone()).await,
+                        self.get_reaction_count_by_asset(id).await,
                     ));
                 }
 
@@ -1283,7 +1293,7 @@ impl Database {
     pub async fn get_responses_by_question(
         &self,
         id: String,
-    ) -> Result<Vec<(Question, QuestionResponse, usize)>> {
+    ) -> Result<Vec<(Question, QuestionResponse, usize, usize)>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -1296,7 +1306,7 @@ impl Database {
         let c = &self.base.db.client;
         let res = match sqlquery(&query).bind::<&String>(&id).fetch_all(c).await {
             Ok(p) => {
-                let mut out: Vec<(Question, QuestionResponse, usize)> = Vec::new();
+                let mut out: Vec<(Question, QuestionResponse, usize, usize)> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
@@ -1321,7 +1331,8 @@ impl Database {
                             id: id.clone(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
                         },
-                        self.get_comment_count_by_response(id).await,
+                        self.get_comment_count_by_response(id.clone()).await,
+                        self.get_reaction_count_by_asset(id).await,
                     ));
                 }
 
@@ -1340,7 +1351,7 @@ impl Database {
     ///
     /// ## Arguments:
     /// * `props` - [`ResponseCreate`]
-    /// * `author` - the username of the user creating the response
+    /// * `author` - the ID of the user creating the response
     pub async fn create_response(&self, props: ResponseCreate, author: String) -> Result<()> {
         // make sure the question exists
         let question = match self.get_question(props.question.clone()).await {
@@ -1643,7 +1654,7 @@ impl Database {
             return Err(DatabaseError::NotAllowed);
         }
 
-        // delete question
+        // delete response
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
             "DELETE FROM \"xresponses\" WHERE \"id\" = ?"
@@ -1688,7 +1699,7 @@ impl Database {
         };
     }
 
-    // responses
+    // comments
 
     /// Get an existing comment
     ///
@@ -1881,11 +1892,11 @@ impl Database {
 
     /// Create a new comment
     ///
-    /// Responses can only be created by non-anonymous users
+    /// Comments can only be created by non-anonymous users.
     ///
     /// ## Arguments:
     /// * `props` - [`CommentCreate`]
-    /// * `author` - the username of the user creating the comment
+    /// * `author` - the ID of the user creating the comment
     pub async fn create_comment(&self, props: CommentCreate, author: String) -> Result<()> {
         // make sure the response exists
         let response = match self.get_response(props.response.clone()).await {
@@ -2026,7 +2037,7 @@ impl Database {
             return Err(DatabaseError::NotAllowed);
         }
 
-        // delete question
+        // delete comment
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
             "DELETE FROM \"xcomments\" WHERE \"id\" = ?"
@@ -2051,6 +2062,279 @@ impl Database {
                         "xsulib.sparkler.comment_count:{}",
                         comment.response
                     ))
+                    .await;
+
+                // return
+                return Ok(());
+            }
+            Err(_) => return Err(DatabaseError::Other),
+        };
+    }
+
+    // reactions
+
+    /// Get an existing reaction
+    ///
+    /// ## Arguments:
+    /// * `user` - the ID of the user
+    /// * `asset` - the ID of the asset
+    pub async fn get_reaction(&self, user: String, asset: String) -> Result<Reaction> {
+        // check in cache
+        match self
+            .base
+            .cachedb
+            .get(format!("xsulib.sparkler.reaction:{}:{}", user, asset))
+            .await
+        {
+            Some(c) => return Ok(serde_json::from_str::<Reaction>(c.as_str()).unwrap()),
+            None => (),
+        };
+
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "SELECT * FROM \"xreactions\" WHERE \"user\" = ? AND \"asset\" = ?"
+        } else {
+            "SELECT * FROM \"xreactions\" WHERE \"user\" = $1 AND \"asset\" = $2"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query)
+            .bind::<&String>(&user)
+            .bind::<&String>(&asset)
+            .fetch_one(c)
+            .await
+        {
+            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        let reaction = Reaction {
+            user: match self.get_profile(res.get("user").unwrap().to_string()).await {
+                Ok(ua) => ua,
+                Err(_) => anonymous_profile("anonymous".to_string()),
+            },
+            asset: res.get("asset").unwrap().to_string(),
+            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+        };
+
+        // store in cache
+        self.base
+            .cachedb
+            .set(
+                format!("xsulib.sparkler.reaction:{}:{}", user, asset),
+                serde_json::to_string::<Reaction>(&reaction).unwrap(),
+            )
+            .await;
+
+        // return
+        Ok(reaction)
+    }
+
+    /// Get all reactions by their asset ID
+    ///
+    /// ## Arguments:
+    /// * `asset`
+    pub async fn get_reactions_by_asset(&self, id: String) -> Result<Vec<Reaction>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "SELECT * FROM \"xreactions\" WHERE \"asset\" = ? ORDER BY \"timestamp\" DESC"
+        } else {
+            "SELECT * FROM \"xreactions\" WHERE \"asset\" = $1 ORDER BY \"timestamp\" DESC"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query).bind::<&String>(&id).fetch_all(c).await {
+            Ok(p) => {
+                let mut out: Vec<Reaction> = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+                    out.push(Reaction {
+                        user: match self.get_profile(res.get("user").unwrap().to_string()).await {
+                            Ok(ua) => ua,
+                            Err(_) => continue,
+                        },
+                        asset: res.get("asset").unwrap().to_string(),
+                        timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                    });
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        Ok(res)
+    }
+
+    /// Get the number of reactions by their asset ID
+    ///
+    /// ## Arguments:
+    /// * `id`
+    pub async fn get_reaction_count_by_asset(&self, id: String) -> usize {
+        // attempt to fetch from cache
+        if let Some(count) = self
+            .base
+            .cachedb
+            .get(format!("xsulib.sparkler.reaction_count:{}", id))
+            .await
+        {
+            return count.parse::<usize>().unwrap_or(0);
+        };
+
+        // fetch from database
+        let count = self
+            .get_reactions_by_asset(id.clone())
+            .await
+            .unwrap_or(Vec::new())
+            .len();
+
+        self.base
+            .cachedb
+            .set(
+                format!("xsulib.sparkler.reaction_count:{}", id),
+                count.to_string(),
+            )
+            .await;
+
+        count
+    }
+
+    /// Create a new reaction
+    ///
+    /// Reactions can only be created by non-anonymous users.
+    ///
+    /// ## Arguments:
+    /// * `id` - the ID of the asset
+    /// * `author` - the ID of the user creating the reaction
+    pub async fn create_reaction(&self, id: String, author: String) -> Result<()> {
+        let tag = Database::anonymous_tag(&author);
+
+        if tag.0 {
+            // anonymous users cannot comment
+            return Err(DatabaseError::NotAllowed);
+        }
+
+        // make sure reaction doesn't already exist
+        if let Ok(_) = self.get_reaction(author.clone(), id.clone()).await {
+            return Err(DatabaseError::NotAllowed);
+        }
+
+        // check author permissions
+        let author = match self.auth.get_profile_by_username(author.clone()).await {
+            Ok(ua) => ua,
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        if author.group == -1 {
+            // group -1 (even if it exists) is for marking users as banned
+            return Err(DatabaseError::NotAllowed);
+        }
+
+        // ...
+        let reaction = Reaction {
+            user: author,
+            asset: id,
+            timestamp: utility::unix_epoch_timestamp(),
+        };
+
+        // create response
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "INSERT INTO \"xreactions\" VALUES (?, ?, ?)"
+        } else {
+            "INSERT INTO \"xreactions\" VALEUS ($1, $2, $3)"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query)
+            .bind::<&String>(&reaction.user.id)
+            .bind::<&String>(&reaction.asset)
+            .bind::<&String>(&reaction.timestamp.to_string())
+            .execute(c)
+            .await
+        {
+            Ok(_) => {
+                // bump reaction count
+                self.base
+                    .cachedb
+                    .incr(format!("xsulib.sparkler.reaction_count:{}", reaction.asset))
+                    .await;
+
+                // return
+                return Ok(());
+            }
+            Err(_) => return Err(DatabaseError::Other),
+        };
+    }
+
+    /// Delete an existing reaction
+    ///
+    /// Reactions can only be deleted by their author.
+    ///
+    /// ## Arguments:
+    /// * `id` - the ID of the reaction
+    /// * `user` - the user doing this
+    pub async fn delete_reaction(&self, id: String, user: Profile) -> Result<()> {
+        // make sure reaction exists
+        let reaction = match self.get_reaction(user.id.clone(), id.clone()).await {
+            Ok(q) => q,
+            Err(e) => return Err(e),
+        };
+
+        // check username
+        if user.id != reaction.user.id {
+            // check permission
+            let group = match self.auth.get_group_by_id(user.group).await {
+                Ok(g) => g,
+                Err(_) => return Err(DatabaseError::Other),
+            };
+
+            if !group.permissions.contains(&Permission::Manager) {
+                return Err(DatabaseError::NotAllowed);
+            }
+        }
+
+        // check user permissions
+        if user.group == -1 {
+            // group -1 (even if it exists) is for marking users as banned
+            return Err(DatabaseError::NotAllowed);
+        }
+
+        // delete reaction
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "DELETE FROM \"xreactions\" WHERE \"user\" = ? AND \"asset\" = ?"
+        } else {
+            "DELETE FROM \"xreactions\" WHERE \"user\" = $1 AND \"asset\" = $2"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query)
+            .bind::<&String>(&user.id)
+            .bind::<&String>(&id)
+            .execute(c)
+            .await
+        {
+            Ok(_) => {
+                // remove from cache
+                self.base
+                    .cachedb
+                    .remove(format!("xsulib.sparkler.reaction:{}:{}", user.id, id))
+                    .await;
+
+                // decr response count
+                self.base
+                    .cachedb
+                    .decr(format!("xsulib.sparkler.reaction_count:{}", id))
                     .await;
 
                 // return
