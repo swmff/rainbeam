@@ -1,8 +1,10 @@
 {% extends "base.html" %} {% block sidenav %}
 <a class="active" href="/settings">Account</a>
+<a href="/settings/sessions">Sessions</a>
 <a href="/settings/profile">Profile</a>
 <a href="/settings/privacy">Privacy</a>
 {% endblock %} {% block panel %}
+
 <div class="flex flex-col gap-2">
     <div class="flex flex-col gap-1">
         <label for="sparkler:display_name">Display name</label>

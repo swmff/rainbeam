@@ -642,6 +642,14 @@ img {
     vertical-align: middle;
 }
 
+img.emoji {
+    height: 1em;
+    width: 1em;
+    margin: 0 0.05em 0 0.1em;
+    vertical-align: -0.1em;
+    display: inline-block;
+}
+
 .avatar {
     --size: 50px;
     border-radius: var(--radius);
@@ -985,4 +993,12 @@ dialog::backdrop {
 
 [align="right"] {
     text-align: right;
+}
+
+.red {
+    color: #dc2626;
+}
+
+.red:is(.dark *) {
+    color: #fca5a5;
 }

@@ -925,6 +925,7 @@ pub async fn routes(database: Database) -> Router {
         .route("/@:username", get(profile::profile_request))
         // settings
         .route("/settings", get(settings::account_settings))
+        .route("/settings/sessions", get(settings::sessions_settings))
         .route("/settings/profile", get(settings::profile_settings))
         .route("/settings/privacy", get(settings::privacy_settings))
         // auth
