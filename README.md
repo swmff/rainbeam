@@ -43,4 +43,6 @@ After you have created your first account, you'll need to manually create a perm
 
 ## Contributing
 
-You can view information about contributing to Sparkler [here](https://github.com/swmff/sparkler/blob/master/CONTRIBUTING.md), as well as the contributor code of conduct [here](https://github.com/swmff/sparkler/blob/master/CODE_OF_CONDUCT.md)!
+You can view information about contributing to Sparkler [here](https://github.com/swmff/sparkler/blob/master/.github/CONTRIBUTING.md), as well as the contributor code of conduct [here](https://github.com/swmff/sparkler/blob/master/.github/CODE_OF_CONDUCT.md)!
+
+You can view security information [here](https://github.com/swmff/sparkler/blob/master/SECURITY.md).
