@@ -1,3 +1,4 @@
+pub mod circles;
 pub mod comments;
 pub mod profiles;
 pub mod questions;
@@ -22,6 +23,7 @@ pub fn routes(database: Database) -> Router {
         .nest("/responses", responses::routes(database.clone()))
         .nest("/comments", comments::routes(database.clone()))
         .nest("/reactions", reactions::routes(database.clone()))
+        .nest("/circles", circles::routes(database.clone()))
         .nest("/profiles", profiles::routes(database.clone()))
     // .nest("/comments", comments::routes(database.clone()))
 }

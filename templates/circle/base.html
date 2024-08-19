@@ -1,28 +1,28 @@
-{% extends "../base.html" %} {% block title %}{{ other.username }} - {{
-config.name }}{% endblock %} {% block head %}
+{% extends "../base.html" %} {% block title %}{{ circle.name }} - {{ config.name
+}}{% endblock %} {% block head %}
 <!-- prettier-ignore -->
-{% if let Some(biography) = other.metadata.kv.get("sparkler:biography") %}
-<meta name="og:title" content="{{ other.username }}" />
-<meta name="og:url" content="{{ config.host }}/@{{ other.username }}" />
+{% if let Some(biography) = circle.metadata.kv.get("sparkler:biography") %}
+<meta name="og:title" content="{{ circle.name }}" />
+<meta name="og:url" content="{{ config.host }}/@{{ circle.name }}" />
 
 <meta property="og:type" content="profile" />
-<meta property="profile:username" content="{{ other.username }}" />
+<meta property="profile:username" content="{{ circle.name }}" />
 
 <meta
     name="og:image"
-    content="{{ config.host }}/api/v1/profiles/{{ other.username }}/avatar"
+    content="{{ config.host }}/api/v1/circles/{{ circle.name }}/avatar"
 />
 
 <meta
     name="twitter:image"
-    content="{{ config.host }}/api/v1/profiles/{{ other.username }}/avatar"
+    content="{{ config.host }}/api/v1/circles/{{ circle.name }}/avatar"
 />
 
 <meta name="twitter:card" content="summary" />
-<meta name="twitter:title" content="Ask me something!" />
+<meta name="twitter:title" content="Ask us something!" />
 <meta
     name="twitter:description"
-    content="Ask @{{ other.username }} something on {{ config.name }}!"
+    content="Ask the members of @{{ circle.name }} something on {{ config.name }}!"
 />
 
 {% let biography = biography.replace("\"", "\\\\\"") %}
@@ -83,8 +83,8 @@ config.name }}{% endblock %} {% block head %}
 {% endif %} {% endblock %} {% block content %}
 <article class="flex flex-col gap-4">
     <img
-        title="{{ other.username }}'s banner"
-        src="/api/v1/profiles/{{ other.username }}/banner"
+        title="{{ circle.name }}'s banner"
+        src="/api/v1/profiles/{{ circle.name }}/banner"
         alt=""
         class="shadow round"
         style="
@@ -102,8 +102,8 @@ config.name }}{% endblock %} {% block head %}
             style="width: 20rem; padding-top: 0; height: max-content"
         >
             <img
-                title="{{ other.username }}'s avatar"
-                src="/api/v1/profiles/{{ other.username }}/avatar"
+                title="{{ circle.name }}'s avatar"
+                src="/api/v1/profiles/{{ circle.name }}/avatar"
                 alt=""
                 class="avatar shadow-md"
                 style="--size: 160px; margin: -80px auto 0"
@@ -112,56 +112,34 @@ config.name }}{% endblock %} {% block head %}
             <!-- prettier-ignore -->
             <div id="names">
                 <h3 class="no-margin">
-                    {% if let Some(display_name) = other.metadata.kv.get("sparkler:display_name") %}
+                    {% if let Some(display_name) = circle.metadata.kv.get("sparkler:display_name") %}
                         {{ display_name }}
                     {% else %}
-                        {{ other.username }}
+                        {{ circle.name }}
                     {% endif %}
                 </h3>
 
-                <h4 class="no-margin" style="font-weight: normal; opacity: 50%">{{ other.username }}</h4>
-
-                {% if is_following_you == true %}
-                <span class="notification notif-invert ff-inherit fs-md bold">Follows you</span>
-                {% endif %}
+                <h4 class="no-margin" style="font-weight: normal; opacity: 50%">{{ circle.name }}</h4>
             </div>
 
             <!-- prettier-ignore -->
             <div id="biography">
-                {% if let Some(biography) = other.metadata.kv.get("sparkler:biography") %}
+                {% if let Some(biography) = circle.metadata.kv.get("sparkler:biography") %}
                     {{ xsu_util::ui::render_markdown(biography)|safe }}
                 {% endif %}
             </div>
 
             <!-- buttons -->
             {% if let Some(profile) = profile %} {% if profile.username ==
-            other.username %}
+            circle.owner.username %}
             <!-- options for account owner -->
             <!-- <hr /> -->
             <a
                 class="button round-lg w-full bold primary"
-                href="/settings/profile"
+                href="/circles/@{{ circle.name }}/settings"
             >
-                Edit Profile
+                Edit Circle
             </a>
-            {% else %}
-            <!-- follow, unfollow -->
-            {% if !is_following %}
-            <button
-                class="round-lg w-full bold primary"
-                onclick="follow()"
-                id="follow_button"
-            >
-                Follow
-            </button>
-            {% else %}
-            <button
-                class="round-lg w-full bold"
-                onclick="follow()"
-                id="follow_button"
-            >
-                Unfollow
-            </button>
             {% endif %}
 
             <!-- actions -->
@@ -187,28 +165,10 @@ config.name }}{% endblock %} {% block head %}
                 </button>
 
                 <div class="inner shadow-md w-content left" exclude="dropdown">
-                    <b class="title">This user</b>
-                    <a
-                        href="/settings/privacy?block={{ other.username }}#sparkler:block_somebody"
-                        target="_blank"
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 16 16"
-                            width="16"
-                            height="16"
-                            aria-label="Blocked symbol"
-                            class="icon"
-                        >
-                            <path
-                                d="M4.467.22a.749.749 0 0 1 .53-.22h6.006c.199 0 .389.079.53.22l4.247 4.247c.141.14.22.331.22.53v6.006a.749.749 0 0 1-.22.53l-4.247 4.247a.749.749 0 0 1-.53.22H4.997a.749.749 0 0 1-.53-.22L.22 11.533a.749.749 0 0 1-.22-.53V4.997c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.308v5.384L5.308 14.5h5.384l3.808-3.808V5.308L10.692 1.5ZM4 7.75A.75.75 0 0 1 4.75 7h6.5a.75.75 0 0 1 0 1.5h-6.5A.75.75 0 0 1 4 7.75Z"
-                            ></path>
-                        </svg>
-                        Block
-                    </a>
+                    <b class="title">This circle</b>
                     <a
                         href="#"
-                        onclick="trigger('app:copy_text', ['{{ other.id }}'])"
+                        onclick="trigger('app:copy_text', ['{{ circle.id }}'])"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -228,7 +188,7 @@ config.name }}{% endblock %} {% block head %}
                         Copy ID
                     </a>
                     <a
-                        href="javascript:trigger('reports:bootstrap', ['profiles', '{{ other.username }}'])"
+                        href="javascript:trigger('reports:bootstrap', ['circles', '{{ circle.id }}'])"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -246,7 +206,7 @@ config.name }}{% endblock %} {% block head %}
                     </a>
                     {% if is_powerful %}
                     <!-- for managers ONLY -->
-                    <a href="javascript:delete_account()">
+                    <a href="javascript:delete_circle()">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 16 16"
@@ -263,12 +223,12 @@ config.name }}{% endblock %} {% block head %}
                     </a>
 
                     <script>
-                        function delete_account() {
+                        function delete_circle() {
                             if (!confirm("Are you sure you want to do this?")) {
                                 return;
                             }
 
-                            fetch("/api/auth/profile/{{ other.id }}", {
+                            fetch("/api/v1/circles/{{ circle.id }}", {
                                 method: "DELETE",
                             })
                                 .then((res) => res.json())
@@ -284,25 +244,9 @@ config.name }}{% endblock %} {% block head %}
                         }
                     </script>
                     {% endif %}
-                    <b class="title">Your account</b>
-                    <a href="/settings/privacy#sparkler:block_list">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 16 16"
-                            width="16"
-                            height="16"
-                            aria-label="Lock symbol"
-                            class="icon"
-                        >
-                            <path
-                                d="M4 4a4 4 0 0 1 8 0v2h.25c.966 0 1.75.784 1.75 1.75v5.5A1.75 1.75 0 0 1 12.25 15h-8.5A1.75 1.75 0 0 1 2 13.25v-5.5C2 6.784 2.784 6 3.75 6H4Zm8.25 3.5h-8.5a.25.25 0 0 0-.25.25v5.5c0 .138.112.25.25.25h8.5a.25.25 0 0 0 .25-.25v-5.5a.25.25 0 0 0-.25-.25ZM10.5 6V4a2.5 2.5 0 1 0-5 0v2Z"
-                            ></path>
-                        </svg>
-                        Manage block list
-                    </a>
                 </div>
             </div>
-            {% endif %} {% else %}
+            {% else %}
             <!-- anonymous actions -->
             <div class="dropdown">
                 <button
@@ -326,9 +270,9 @@ config.name }}{% endblock %} {% block head %}
                 </button>
 
                 <div class="inner shadow-md w-content left" exclude="dropdown">
-                    <b class="title">This user</b>
+                    <b class="title">This circle</b>
                     <a
-                        href="javascript:trigger('reports:bootstrap', ['profiles', '{{ other.username }}'])"
+                        href="javascript:trigger('reports:bootstrap', ['circles', '{{ circle.id }}'])"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -355,7 +299,7 @@ config.name }}{% endblock %} {% block head %}
             <div class="card-nest w-full shadow">
                 <!-- prettier-ignore -->
                 <div class="card motivational_header">
-                    {% if let Some(header) = other.metadata.kv.get("sparkler:motivational_header") %}
+                    {% if let Some(header) = circle.metadata.kv.get("sparkler:motivational_header") %}
                         {{ xsu_util::ui::render_markdown(header)|safe }}
                     {% else %}
                         Ask a question
@@ -403,9 +347,9 @@ config.name }}{% endblock %} {% block head %}
                         </div>
                     </form>
                     {% else %}
-                    <b>This profile does not allow anonymous questions.</b>
+                    <b>This circle does not allow anonymous questions.</b>
                     {% endif %} {% else %}
-                    <b>This profile is not currently accepting questions.</b>
+                    <b>This circle is not currently accepting questions.</b>
                     {% endif %}
                 </div>
             </div>
@@ -424,18 +368,18 @@ config.name }}{% endblock %} {% block head %}
     </div>
 </article>
 
-{% if let Some(warning) = other.metadata.kv.get("sparkler:warning") %} {% if
+{% if let Some(warning) = circle.metadata.kv.get("sparkler:warning") %} {% if
 !warning.is_empty() %}
 <dialog id="warning_dialog">
     <div class="inner flex flex-col gap-2">
-        <span class="fade">This profile has published this warning:</span>
+        <span class="fade">This circle has published this warning:</span>
 
         <hr />
         <p>{{ warning }}</p>
 
         <hr />
         <span class="fade">
-            Press "Continue" if you wish to view this profile.
+            Press "Continue" if you wish to view this circle.
         </span>
 
         <div class="flex gap-2">
@@ -448,7 +392,7 @@ config.name }}{% endblock %} {% block head %}
 </dialog>
 
 <!-- prettier-ignore -->
-{% if !is_self %}
+{% if !is_member %}
 {% let warning_hash = xsu_util::hash::hash(warning.to_string()) %}
 <script>
     setTimeout(() => {
@@ -456,7 +400,7 @@ config.name }}{% endblock %} {% block head %}
         dialogs.add("warning_dialog");
 
         const warnings = ns("warnings");
-        warnings.open("{{ other.id }}", "{{ warning_hash }}");
+        warnings.open("{{ circle.id }}", "{{ warning_hash }}");
     }, 100);
 </script>
 {% endif %} {% endif %} {% endif %}
@@ -470,7 +414,7 @@ config.name }}{% endblock %} {% block head %}
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                recipient: "{{ other.id }}",
+                recipient: "@{{ circle.name }}",
                 content: e.target.content.value,
                 anonymous: (e.target.anonymous || { checked: true }).checked,
             }),
@@ -487,33 +431,9 @@ config.name }}{% endblock %} {% block head %}
                 }
             });
     });
-
-    function follow() {
-        fetch(`/api/v1/profiles/{{ other.username }}/follow`, {
-            method: "POST",
-        })
-            .then((res) => res.json())
-            .then((res) => {
-                trigger("app:shout", [
-                    res.success ? "tip" : "caution",
-                    res.message || "Toggled user follow!",
-                ]);
-
-                // swap button
-                const button = document.getElementById("follow_button");
-
-                if (button.innerText === "Follow") {
-                    button.classList.remove("primary");
-                    button.innerText = "Unfollow";
-                } else {
-                    button.classList.add("primary");
-                    button.innerText = "Follow";
-                }
-            });
-    }
 </script>
 
-{% if let Some(profile) = profile %} {% if profile.username == other.username %}
+{% if is_member %}
 <script type="application/json" id="metadata">
     {{ metadata|safe }}
 </script>
@@ -523,7 +443,7 @@ config.name }}{% endblock %} {% block head %}
 
     async function save_metadata() {
         const res = await (
-            await fetch("/api/auth/profile/{{ profile.username }}/metadata", {
+            await fetch("/api/v1/circles/{{ circle.id }}/metadata", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -560,8 +480,8 @@ config.name }}{% endblock %} {% block head %}
         alert("Unpinned!");
     }
 </script>
-{% endif %} {% endif %}
+{% endif %}
 <!-- prettier-ignore -->
-{% let profile = other.clone() %}
-{% include "components/theming.html" %}
+{% let profile = circle.clone() %}
+{% include "../components/theming.html" %}
 {% call super() %} {% endblock %}

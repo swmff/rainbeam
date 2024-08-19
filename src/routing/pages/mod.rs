@@ -15,6 +15,7 @@ use crate::config::Config;
 use crate::database::Database;
 use crate::model::{DatabaseError, Question, QuestionResponse, Reaction, ResponseComment};
 
+mod circles;
 mod profile;
 mod settings;
 
@@ -923,6 +924,27 @@ pub async fn routes(database: Database) -> Router {
         .route("/@:username/following", get(profile::following_request))
         .route("/@:username/followers", get(profile::followers_request))
         .route("/@:username", get(profile::profile_request))
+        // circles
+        .route("/circles", get(circles::circles_request))
+        .route("/circles/new", get(circles::new_circle_request))
+        .route(
+            "/circles/@:name/settings/privacy",
+            get(circles::privacy_settings_request),
+        )
+        .route(
+            "/circles/@:name/settings",
+            get(circles::profile_settings_request),
+        )
+        .route("/circles/@:name/inbox", get(circles::inbox_request))
+        .route(
+            "/circles/@:name/memberlist/accept",
+            get(circles::accept_invite_request),
+        )
+        .route(
+            "/circles/@:name/memberlist",
+            get(circles::memberlist_request),
+        )
+        .route("/circles/@:name", get(circles::profile_request))
         // settings
         .route("/settings", get(settings::account_settings))
         .route("/settings/sessions", get(settings::sessions_settings))

@@ -8,3 +8,5 @@ ALTER TABLE "xcomments" CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general
 ALTER TABLE "xnotifications" CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 ALTER TABLE "xwarnings" CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 ALTER TABLE "xreactions" CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+ALTER TABLE "xcircles" CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+ALTER TABLE "xcircle_memberships" CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;

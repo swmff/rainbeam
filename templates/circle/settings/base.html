@@ -1,5 +1,5 @@
-{% extends "../base.html" %} {% block title %}Settings - {{ config.name }}{%
-endblock %} {% block nav_left %} {% if profile.is_some() %}
+{% extends "../../base.html" %} {% block title %}Circle settings - {{
+config.name }}{% endblock %} {% block nav_left %} {% if profile.is_some() %}
 <a class="button" href="/">
     <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -53,9 +53,8 @@ endblock %} {% block nav_left %} {% if profile.is_some() %}
 </a>
 {% endif %} {% endblock %} {% block content %}
 <!-- prettier-ignore -->
-{% if let Some(profile) = profile %}
-    {% include "components/theming.html" %}
-{% endif %}
+{% let profile = circle.clone() %}
+{% include "../../components/theming.html" %}
 
 <article class="flex flex-collapse gap-2">
     <div
@@ -68,6 +67,7 @@ endblock %} {% block nav_left %} {% if profile.is_some() %}
             top: calc(56px + 0.5rem);
         "
     >
+        <b class="title">Circle settings</b>
         {% block sidenav %}{% endblock %}
     </div>
 
@@ -86,8 +86,6 @@ endblock %} {% block nav_left %} {% if profile.is_some() %}
 <script type="application/json" id="my_metadata">
     {{ metadata|safe }}
 </script>
-
-{% let profile = profile.as_ref().unwrap() %}
 
 <script>
     let metadata = JSON.parse(document.getElementById("my_metadata").innerHTML);
@@ -155,18 +153,15 @@ endblock %} {% block nav_left %} {% if profile.is_some() %}
             e.preventDefault();
 
             const res = await (
-                await fetch(
-                    "/api/auth/profile/{{ profile.username }}/metadata",
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({
-                            metadata,
-                        }),
+                await fetch("/api/v1/circles/{{ circle.id }}/metadata", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
                     },
-                )
+                    body: JSON.stringify({
+                        metadata,
+                    }),
+                })
             ).json();
 
             trigger("app:shout", [

@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use askama_axum::Template;
 use axum::{
     http::StatusCode,
@@ -5,6 +7,7 @@ use axum::{
     Json,
 };
 
+use hcaptcha::Hcaptcha;
 use serde::{Deserialize, Serialize};
 use xsu_authman::model::{Profile, ProfileMetadata};
 use xsu_dataman::DefaultReturn;
@@ -115,6 +118,65 @@ pub struct Reaction {
     pub timestamp: u128,
 }
 
+/// The status of a user's membership in a [`Circle`]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+pub enum MembershipStatus {
+    /// A user who has received an invite to a circle, but has not yet accepted
+    Pending,
+    /// An active member of a circle
+    Active,
+    /// Not pending or an active member
+    Inactive,
+}
+
+/// The stored version of a user's membership in a [`Circle`]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct CircleMembership {
+    /// The ID of the user
+    pub user: String,
+    /// The ID of the circle
+    pub circle: String,
+    /// The status of the user's membership in the circle
+    pub membership: MembershipStatus,
+    /// The time the membership was last updated
+    pub timestamp: u128,
+}
+
+/// A circle structure
+///
+/// Circles allow you to post global questions to them (recipient `@circle`),
+/// as well as define a custom avatar URL, banner URL, and define a custom theme
+///
+/// Users can also ask a question and send it to the circle's inbox.
+/// This question can then be replied to by anybody in the circle.
+///
+/// Users can be invited to a circle by the circle's owner. Users are added to the `xcircle_memberships`
+/// table with a [`MembershipStatus`] of `Pending`. Users can accept through a notification that is sent
+/// to their account, which will then change their [`MembershipStatus`] to `Active`.
+///
+/// Active members can post to the circle through the compose form. Memberships can always be managed
+/// by the owner of the circle, who can remove anybody they want from the circle.
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Circle {
+    /// The name of the circle
+    pub name: String,
+    /// The ID of the circle
+    pub id: String,
+    /// The owner of the circle
+    pub owner: Profile,
+    /// The metadata of the circle
+    pub metadata: CircleMetadata,
+    /// The time the circle was created
+    pub timestamp: u128,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct CircleMetadata {
+    pub kv: HashMap<String, String>,
+}
+
+// ...
+
 /// Global user profile
 pub fn global_profile() -> Profile {
     Profile {
@@ -169,14 +231,27 @@ pub struct CommentCreate {
     pub content: String,
 }
 
+#[derive(Serialize, Deserialize, Debug, Hcaptcha)]
+pub struct CircleCreate {
+    pub name: String,
+    #[captcha]
+    pub token: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct EditCircleMetadata {
+    pub metadata: CircleMetadata,
+}
+
 /// General API errors
 #[derive(Debug)]
 pub enum DatabaseError {
     ContentTooShort,
     ContentTooLong,
+    InvalidName,
     NotAllowed,
+    ValueError,
     OutOfTime,
-    // ValueError,
     NotFound,
     Other,
 }
@@ -187,11 +262,12 @@ impl DatabaseError {
         match self {
             ContentTooShort => String::from("Content too short!"),
             ContentTooLong => String::from("Content too long!"),
+            InvalidName => String::from("This name cannot be used!"),
             NotAllowed => String::from("You are not allowed to do this!"),
+            ValueError => String::from("One of the field values given is invalid!"),
             OutOfTime => {
                 String::from("You can only edit a response within the first 2 hours of posting it!")
             }
-            // ValueError => String::from("One of the field values given is invalid!"),
             NotFound => {
                 String::from("Nothing with this path exists or you do not have access to it!")
             }

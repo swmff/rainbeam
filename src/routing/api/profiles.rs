@@ -24,7 +24,7 @@ pub fn routes(database: Database) -> Router {
         .with_state(database)
 }
 
-fn read_image(static_dir: String, image: String) -> Vec<u8> {
+pub fn read_image(static_dir: String, image: String) -> Vec<u8> {
     let mut bytes = Vec::new();
 
     for byte in File::open(format!("{static_dir}/images/{image}",))

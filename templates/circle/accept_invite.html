@@ -1,0 +1,47 @@
+{% extends "base.html" %} {% block pillmenu %}
+<a href="/circles/@{{ circle.name }}">
+    Answers
+    <b class="notification">{{ response_count }}</b>
+</a>
+
+<a href="/circles/@{{ circle.name }}/memberlist" class="active">
+    Members
+    <b class="notification">{{ member_count }}</b>
+</a>
+
+{% if is_member %}
+<a href="/circles/@{{ circle.name }}/inbox">
+    Inbox
+    <b class="notification">{{ inbox_count }}</b>
+</a>
+
+<a href="/circles/@{{ circle.name }}/settings">Settings</a>
+{% endif %} {% endblock %} {% block panel %}
+<!-- memberlist -->
+<div id="memberlist" class="flex flex-col gap-4">
+    <div class="card">
+        <p>
+            Are you sure you would like to join this circle? You can be removed
+            at any point by the circle owner.
+        </p>
+
+        <hr />
+        <button class="primary bold" onclick="accept_invite()">Confirm</button>
+    </div>
+
+    <script>
+        function accept_invite() {
+            fetch(`/api/v1/circles/{{ circle.id }}/accept_invite`, {
+                method: "POST",
+            })
+                .then((res) => res.json())
+                .then((res) => {
+                    trigger("app:shout", [
+                        res.success ? "tip" : "caution",
+                        res.success ? "Joined circle!" : res.message,
+                    ]);
+                });
+        }
+    </script>
+</div>
+{% call super() %} {% endblock %}

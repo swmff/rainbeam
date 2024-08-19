@@ -48,6 +48,9 @@ body {
 #page {
     background: var(--color-surface);
     padding: 0;
+    display: flex;
+    justify-content: center;
+    max-width: 100%;
 }
 
 main {
@@ -56,12 +59,29 @@ main {
     max-width: 100%;
 }
 
+@media (min-width: 768px) {
+    main {
+        width: calc(80ch + 1rem);
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+}
+
 article {
     width: 100%;
     margin: auto;
     max-width: 100%;
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
+}
+
+.content_container {
+    margin: auto;
+    width: 100%;
+}
+
+@media screen and (min-width: 500px) {
+    .content_container {
+        max-width: 540px;
+    }
 }
 
 @media (min-width: 768px) {
@@ -69,42 +89,20 @@ article {
         padding: 0.5rem;
     }
 
-    main {
-        width: calc(
-            /* 1rem to account for both sides of the #page padding */ 80ch +
-                1rem
-        );
-    }
-
-    article {
-        padding-left: 22dvw;
-        padding-right: 22dvw;
-    }
-
-    nav {
-        padding: 0.25rem 22dvw !important;
+    .content_container {
+        max-width: 720px;
     }
 }
 
-@media screen and (max-width: 1200px) {
-    article {
-        padding-left: 12dvw;
-        padding-right: 12dvw;
+@media (min-width: 900px) {
+    .content_container {
+        max-width: 960px;
     }
 
-    nav {
-        padding: 0.25rem 12dvw !important;
-    }
-}
-
-@media screen and (max-width: 600px) {
-    article {
-        padding-left: 0.5rem;
-        padding-right: 0.5rem;
-    }
-
-    nav {
-        padding: 0.25rem 0.5rem !important;
+    @media (min-width: 1200px) {
+        .content_container {
+            max-width: 1100px;
+        }
     }
 }
 
@@ -128,7 +126,12 @@ hr {
     margin-top: 0.75rem;
     margin-bottom: 0.75rem;
     border: 0;
-    border-top: solid 1px var(--color-lowered);
+    border-top: solid 1px var(--color-super-lowered);
+}
+
+hr.small {
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
 }
 
 p,
@@ -495,22 +498,22 @@ nav {
     color: var(--color-text-primary) !important;
     width: 100%;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    justify-content: center;
     color: var(--color-text);
     position: sticky;
     top: 0;
     z-index: 6374;
+    padding: 0.25rem;
 }
 
-@media screen and (max-width: 900px) {
-    nav {
-        padding: 0.25rem;
-    }
+nav .content_container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 nav:last-of-type {
-    margin-bottom: 0.2rem;
+    margin-bottom: 1rem;
 }
 
 nav button,
@@ -710,6 +713,7 @@ dialog::backdrop {
     border-radius: var(--radius);
     right: 0;
     width: 10rem;
+    min-width: 10rem;
     padding: 0.5rem 0;
     color: var(--color-text-raised);
 }
@@ -738,7 +742,7 @@ dialog::backdrop {
 .dropdown .inner a {
     width: 100%;
     padding: 0.25rem 1rem;
-    transition: background 0.08s;
+    transition: background 0.05s;
     text-decoration: none;
     display: flex;
     align-items: center;
@@ -791,15 +795,25 @@ dialog::backdrop {
     flex-direction: column;
     border-radius: var(--radius);
     user-select: none;
+    position: sticky;
 }
 
 .sidenav a {
     text-decoration: none;
     padding: 0.5rem 1rem;
     width: 100%;
-    color: var(--color-text);
+    color: var(--color-text-raised);
     background: var(--color-super-raised);
     border-radius: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.sidenav .title {
+    padding: 0.5rem 1rem 0.25rem;
+    color: var(--color-text-raised);
+    background: var(--color-super-raised);
 }
 
 .sidenav a:hover {
@@ -811,7 +825,8 @@ dialog::backdrop {
     color: var(--color-text-primary);
 }
 
-.sidenav a:first-child {
+.sidenav:not(:has(.title:first-child)) a:first-child,
+.sidenav .title:first-child {
     border-top-left-radius: var(--radius);
     border-top-right-radius: var(--radius);
 }
@@ -831,7 +846,7 @@ dialog::backdrop {
     text-decoration: none;
     padding: 0.5rem 1rem;
     width: 100%;
-    color: var(--color-text);
+    color: var(--color-text-raised);
     background: var(--color-super-raised);
     border-radius: 0;
     display: flex;
@@ -863,6 +878,25 @@ dialog::backdrop {
 .h-captcha {
     display: flex;
     justify-content: center;
+}
+
+@media screen and (max-width: 900px) {
+    .pillmenu.convertible {
+        /* convert into a sidemenu */
+        flex-direction: column;
+    }
+
+    .pillmenu.convertible a:first-child {
+        border-top-left-radius: var(--radius);
+        border-top-right-radius: var(--radius);
+        border-bottom-left-radius: 0;
+    }
+
+    .pillmenu.convertible a:last-child {
+        border-top-right-radius: 0;
+        border-bottom-left-radius: var(--radius);
+        border-bottom-right-radius: var(--radius);
+    }
 }
 
 /* utility */
@@ -898,6 +932,10 @@ dialog::backdrop {
     gap: 0.5rem;
 }
 
+.gap-4 {
+    gap: 1rem;
+}
+
 .mobile {
     display: none !important;
 }
@@ -909,6 +947,10 @@ dialog::backdrop {
 
     .mobile {
         display: flex !important;
+    }
+
+    .sm\:static {
+        position: static !important;
     }
 
     .mobile.flex {

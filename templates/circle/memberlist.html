@@ -1,0 +1,135 @@
+{% extends "base.html" %} {% block pillmenu %}
+<a href="/circles/@{{ circle.name }}">
+    Answers
+    <b class="notification">{{ response_count }}</b>
+</a>
+
+<a href="/circles/@{{ circle.name }}/memberlist" class="active">
+    Members
+    <b class="notification">{{ member_count }}</b>
+</a>
+
+{% if is_member %}
+<a href="/circles/@{{ circle.name }}/inbox">
+    Inbox
+    <b class="notification">{{ inbox_count }}</b>
+</a>
+
+<a href="/circles/@{{ circle.name }}/settings">Settings</a>
+{% endif %} {% endblock %} {% block panel %}
+<!-- memberlist -->
+<div id="memberlist" class="flex flex-col gap-4">
+    {% if is_owner %}
+    <div class="flex justify-between gap-2">
+        <div></div>
+        <button onclick="send_invite()" class="bold">
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 16 16"
+                width="16"
+                height="16"
+                aria-label="Person plus symbol"
+                class="icon"
+            >
+                <path
+                    d="M7.9 8.548h-.001a5.528 5.528 0 0 1 3.1 4.659.75.75 0 1 1-1.498.086A4.01 4.01 0 0 0 5.5 9.5a4.01 4.01 0 0 0-4.001 3.793.75.75 0 1 1-1.498-.085 5.527 5.527 0 0 1 3.1-4.66 3.5 3.5 0 1 1 4.799 0ZM13.25 0a.75.75 0 0 1 .75.75V2h1.25a.75.75 0 0 1 0 1.5H14v1.25a.75.75 0 0 1-1.5 0V3.5h-1.25a.75.75 0 0 1 0-1.5h1.25V.75a.75.75 0 0 1 .75-.75ZM5.5 4a2 2 0 1 0-.001 3.999A2 2 0 0 0 5.5 4Z"
+                ></path>
+            </svg>
+            Invite sombody
+        </button>
+
+        <script>
+            function send_invite() {
+                const user = prompt("Username:");
+
+                if (!user) {
+                    return;
+                }
+
+                fetch(`/api/v1/circles/{{ circle.id }}/invite/${user}`, {
+                    method: "POST",
+                })
+                    .then((res) => res.json())
+                    .then((res) => {
+                        trigger("app:shout", [
+                            res.success ? "tip" : "caution",
+                            res.success ? "Invite sent!" : res.message,
+                        ]);
+                    });
+            }
+        </script>
+    </div>
+    {% endif %} {% for card in members %}
+    <div class="card-nest w-full">
+        <div class="card" style="padding: 0">
+            <img
+                title="{{ card.username }}'s banner"
+                src="/api/v1/profiles/{{card.username }}/banner"
+                alt=""
+                class="shadow round"
+                style="
+                    width: 100%;
+                    min-height: 80px;
+                    max-height: 80px;
+                    object-fit: cover;
+                    border-bottom-left-radius: 0 !important;
+                    border-bottom-right-radius: 0 !important;
+                "
+            />
+        </div>
+
+        <div class="card flex gap-2">
+            <img
+                title="{{ card.username }}'s avatar"
+                src="/api/v1/profiles/{{ card.username }}/avatar"
+                alt=""
+                class="avatar shadow-md"
+                style="--size: 80px; margin: -50px 0.5rem 0"
+            />
+
+            <h3 class="no-margin">
+                <a href="/@{{ card.username }}">{{ card.username }}</a>
+            </h3>
+
+            {% if is_owner %}
+            <button onclick="kick_member('{{ card.id }}')">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 16 16"
+                    width="16"
+                    height="16"
+                    aria-label="Trash symbol"
+                    class="icon"
+                >
+                    <path
+                        d="M11 1.75V3h2.25a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75ZM4.496 6.675l.66 6.6a.25.25 0 0 0 .249.225h5.19a.25.25 0 0 0 .249-.225l.66-6.6a.75.75 0 0 1 1.492.149l-.66 6.6A1.748 1.748 0 0 1 10.595 15h-5.19a1.75 1.75 0 0 1-1.741-1.575l-.66-6.6a.75.75 0 1 1 1.492-.15ZM6.5 1.75V3h3V1.75a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25Z"
+                    ></path>
+                </svg>
+                Kick
+            </button>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if is_owner %}
+<script>
+    function kick_member(id) {
+        if (!confirm("Are you sure you want to do this?")) {
+            return;
+        }
+
+        fetch(`/api/v1/circles/{{ circle.id }}/kick/${id}`, {
+            method: "POST",
+        })
+            .then((res) => res.json())
+            .then((res) => {
+                trigger("app:shout", [
+                    res.success ? "tip" : "caution",
+                    res.success ? "Member kicked!" : res.message,
+                ]);
+            });
+    }
+</script>
+{% endif %} {% call super() %} {% endblock %}
