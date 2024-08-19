@@ -1,7 +1,7 @@
 use ammonia::Builder;
 use askama_axum::Template;
 use axum::extract::{Path, Query};
-use axum::response::IntoResponse;
+use axum::response::{IntoResponse, Redirect};
 use axum::{extract::State, response::Html};
 use axum_extra::extract::CookieJar;
 
@@ -131,6 +131,10 @@ pub async fn new_circle_request(
         .render()
         .unwrap(),
     )
+}
+
+pub async fn profile_redirect_request(Path(name): Path<String>) -> impl IntoResponse {
+    Redirect::to(&format!("/+{name}"))
 }
 
 #[derive(Template)]

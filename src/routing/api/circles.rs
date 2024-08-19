@@ -401,7 +401,7 @@ pub async fn avatar_request(
     State(database): State<Database>,
 ) -> impl IntoResponse {
     // get user
-    let circle = match database.get_circle(name).await {
+    let circle = match database.get_circle_by_name(name).await {
         Ok(ua) => ua,
         Err(_) => {
             return (
@@ -473,7 +473,7 @@ pub async fn banner_request(
     State(database): State<Database>,
 ) -> impl IntoResponse {
     // get user
-    let circle = match database.get_circle(name).await {
+    let circle = match database.get_circle_by_name(name).await {
         Ok(ua) => ua,
         Err(_) => {
             return (

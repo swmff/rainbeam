@@ -944,7 +944,8 @@ pub async fn routes(database: Database) -> Router {
             "/circles/@:name/memberlist",
             get(circles::memberlist_request),
         )
-        .route("/circles/@:name", get(circles::profile_request))
+        .route("/circles/@:name", get(circles::profile_redirect_request))
+        .route("/+:name", get(circles::profile_request))
         // settings
         .route("/settings", get(settings::account_settings))
         .route("/settings/sessions", get(settings::sessions_settings))
