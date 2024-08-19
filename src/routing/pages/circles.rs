@@ -159,6 +159,7 @@ struct ProfileTemplate {
     is_blocked: bool,
     is_powerful: bool,
     is_member: bool,
+    is_owner: bool,
 }
 
 /// GET /circles/@:name
@@ -258,7 +259,10 @@ pub async fn profile_request(
         false
     };
 
+    let mut is_owner = false;
     let is_member = if let Some(ref profile) = auth_user {
+        is_owner = profile.id == circle.owner.id;
+
         database
             .get_user_circle_membership(profile.id.clone(), circle.id.clone())
             .await
@@ -311,6 +315,7 @@ pub async fn profile_request(
             },
             is_powerful,
             is_member,
+            is_owner,
         }
         .render()
         .unwrap(),
@@ -491,6 +496,7 @@ struct AcceptInviteTemplate {
     is_blocked: bool,
     is_powerful: bool,
     is_member: bool,
+    is_owner: bool,
 }
 
 /// GET /circles/@:name/memberlist/accept
@@ -558,7 +564,11 @@ pub async fn accept_invite_request(
     } else {
         false
     };
+
+    let mut is_owner = false;
     let is_member = if let Some(ref profile) = auth_user {
+        is_owner = profile.id == circle.owner.id;
+
         database
             .get_user_circle_membership(profile.id.clone(), circle.id.clone())
             .await
@@ -612,6 +622,7 @@ pub async fn accept_invite_request(
             },
             is_powerful,
             is_member,
+            is_owner,
         }
         .render()
         .unwrap(),
@@ -637,6 +648,7 @@ struct InboxTemplate {
     is_blocked: bool,
     is_powerful: bool,
     is_member: bool,
+    is_owner: bool,
 }
 
 /// GET /circles/@:name/inbox
@@ -697,7 +709,10 @@ pub async fn inbox_request(
         false
     };
 
+    let mut is_owner = false;
     let is_member = if let Some(ref profile) = auth_user {
+        is_owner = profile.id == circle.owner.id;
+
         database
             .get_user_circle_membership(profile.id.clone(), circle.id.clone())
             .await
@@ -759,6 +774,7 @@ pub async fn inbox_request(
             },
             is_powerful,
             is_member,
+            is_owner,
         }
         .render()
         .unwrap(),

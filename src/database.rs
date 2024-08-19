@@ -3117,7 +3117,7 @@ impl Database {
 
                         let c = &self.base.db.client;
                         match sqlquery(&query)
-                            .bind::<&String>(&format!(r"%\%{}%", circle.id))
+                            .bind::<&String>(&format!(r"%{}", circle.id))
                             .execute(c)
                             .await
                         {
