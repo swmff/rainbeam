@@ -1,5 +1,67 @@
 <div class="flex flex-col gap-2">
     <div class="flex flex-col gap-1">
+        <label for="sparkler:display_name">Display name</label>
+
+        <input
+            name="sparkler:display_name"
+            id="sparkler:display_name"
+            onchange="update_kv('sparkler:display_name', event.target.value)"
+        />
+
+        <p class="fade">
+            Your display name is shown about your username on your profile and
+            can be used to have a name that is not bound by character limits!
+        </p>
+    </div>
+
+    <div class="flex flex-col gap-1">
+        <label for="sparkler:biography">Biography</label>
+
+        <textarea
+            name="sparkler:biography"
+            id="sparkler:biography"
+            onchange="update_kv('sparkler:biography', event.target.value)"
+        ></textarea>
+
+        <p class="fade">A short description about you. Supports Markdown.</p>
+    </div>
+
+    <hr />
+    <div class="flex flex-col gap-1">
+        <label for="sparkler:avatar_url">Avatar URL</label>
+
+        <input
+            type="url"
+            name="sparkler:avatar_url"
+            id="sparkler:avatar_url"
+            onchange="update_kv('sparkler:avatar_url', event.target.value)"
+        />
+
+        <p class="fade">
+            Hosting images is expensive and annoying, so instead you save a link
+            to your desired image and we'll proxy it and show it on your
+            profile!
+        </p>
+    </div>
+
+    <div class="flex flex-col gap-1">
+        <label for="sparkler:banner_url">Banner URL</label>
+
+        <input
+            type="url"
+            name="sparkler:banner_url"
+            id="sparkler:banner_url"
+            onchange="update_kv('sparkler:banner_url', event.target.value)"
+        />
+
+        <p class="fade">
+            Same deal as the avatar! This is the big thing at the top of your
+            profile.
+        </p>
+    </div>
+
+    <hr />
+    <div class="flex flex-col gap-1">
         <label for="sparkler:motivational_header">Motivational header</label>
 
         <input
