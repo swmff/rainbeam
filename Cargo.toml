@@ -19,7 +19,7 @@ askama = { version = "0.12.1", features = ["with-axum"] }
 askama_axum = "0.4.0"
 axum = { version = "0.7.5", features = ["macros", "form"] }
 axum-extra = { version = "0.9.3", features = ["cookie"] }
-reqwest = { version = "0.12.5", features = ["json"] }
+reqwest = { version = "0.12.5", features = ["json", "stream"] }
 serde = { version = "1.0.203", features = ["derive"] }
 tokio = { version = "1.38.0", features = ["macros", "rt-multi-thread"] }
 toml = "0.8.14"
@@ -35,6 +35,9 @@ regex = "1.10.5"
 mime_guess = "2.0.5"
 hcaptcha = "2.4.6"
 ammonia = "4.0.0"
+futures-util = "0.3.30"
+tokio-stream = "0.1.15"
+futures = "0.3.30"
 
 [[bin]]
 path = "src/main.rs"

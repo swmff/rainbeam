@@ -2,7 +2,7 @@ use super::profiles::read_image;
 use crate::database::Database;
 use askama_axum::IntoResponse;
 use axum::{
-    body::Bytes,
+    body::Body,
     extract::{Query, State},
     routing::get,
     Router,
@@ -31,7 +31,7 @@ pub async fn external_image_request(
     if image_url.starts_with(&database.server_options.host) {
         return (
             [("Content-Type", "image/svg+xml")],
-            Bytes::copy_from_slice(&read_image(
+            Body::from(read_image(
                 database.server_options.static_dir,
                 "default-banner.svg".to_string(),
             )),
@@ -42,7 +42,7 @@ pub async fn external_image_request(
     if image_url.is_empty() {
         return (
             [("Content-Type", "image/svg+xml")],
-            Bytes::copy_from_slice(&read_image(
+            Body::from(read_image(
                 database.server_options.static_dir,
                 "default-banner.svg".to_string(),
             )),
@@ -54,7 +54,7 @@ pub async fn external_image_request(
         .unwrap_or("application/octet-stream");
 
     match database.auth.http.get(image_url).send().await {
-        Ok(r) => (
+        Ok(stream) => (
             [(
                 "Content-Type",
                 if guessed_mime == "text/html" {
@@ -63,11 +63,11 @@ pub async fn external_image_request(
                     guessed_mime
                 },
             )],
-            r.bytes().await.unwrap(),
+            Body::from_stream(stream.bytes_stream()),
         ),
         Err(_) => (
             [("Content-Type", "image/svg+xml")],
-            Bytes::copy_from_slice(&read_image(
+            Body::from(read_image(
                 database.server_options.static_dir,
                 "default-banner.svg".to_string(),
             )),

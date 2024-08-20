@@ -8,7 +8,7 @@ use xsu_dataman::DefaultReturn;
 
 use axum::response::IntoResponse;
 use axum::{
-    body::Bytes,
+    body::Body,
     extract::{Path, State},
     routing::{get, post},
     Json, Router,
@@ -50,7 +50,7 @@ pub async fn avatar_request(
         Err(_) => {
             return (
                 [("Content-Type", "image/svg+xml")],
-                Bytes::copy_from_slice(&read_image(
+                Body::from(read_image(
                     database.server_options.static_dir,
                     "default-avatar.svg".to_string(),
                 )),
@@ -67,7 +67,7 @@ pub async fn avatar_request(
     if avatar_url.starts_with(&database.server_options.host) {
         return (
             [("Content-Type", "image/svg+xml")],
-            Bytes::copy_from_slice(&read_image(
+            Body::from(read_image(
                 database.server_options.static_dir,
                 "default-avatar.svg".to_string(),
             )),
@@ -78,7 +78,7 @@ pub async fn avatar_request(
     if avatar_url.is_empty() {
         return (
             [("Content-Type", "image/svg+xml")],
-            Bytes::copy_from_slice(&read_image(
+            Body::from(read_image(
                 database.server_options.static_dir,
                 "default-avatar.svg".to_string(),
             )),
@@ -90,7 +90,7 @@ pub async fn avatar_request(
         .unwrap_or("application/octet-stream");
 
     match database.auth.http.get(avatar_url).send().await {
-        Ok(r) => (
+        Ok(stream) => (
             [(
                 "Content-Type",
                 if guessed_mime == "text/html" {
@@ -99,11 +99,11 @@ pub async fn avatar_request(
                     guessed_mime
                 },
             )],
-            r.bytes().await.unwrap(),
+            Body::from_stream(stream.bytes_stream()),
         ),
         Err(_) => (
             [("Content-Type", "image/svg+xml")],
-            Bytes::copy_from_slice(&read_image(
+            Body::from(read_image(
                 database.server_options.static_dir,
                 "default-avatar.svg".to_string(),
             )),
@@ -122,7 +122,7 @@ pub async fn banner_request(
         Err(_) => {
             return (
                 [("Content-Type", "image/svg+xml")],
-                Bytes::copy_from_slice(&read_image(
+                Body::from(read_image(
                     database.server_options.static_dir,
                     "default-banner.svg".to_string(),
                 )),
@@ -139,7 +139,7 @@ pub async fn banner_request(
     if banner_url.starts_with(&database.server_options.host) {
         return (
             [("Content-Type", "image/svg+xml")],
-            Bytes::copy_from_slice(&read_image(
+            Body::from(read_image(
                 database.server_options.static_dir,
                 "default-banner.svg".to_string(),
             )),
@@ -150,7 +150,7 @@ pub async fn banner_request(
     if banner_url.is_empty() {
         return (
             [("Content-Type", "image/svg+xml")],
-            Bytes::copy_from_slice(&read_image(
+            Body::from(read_image(
                 database.server_options.static_dir,
                 "default-banner.svg".to_string(),
             )),
@@ -162,7 +162,7 @@ pub async fn banner_request(
         .unwrap_or("application/octet-stream");
 
     match database.auth.http.get(banner_url).send().await {
-        Ok(r) => (
+        Ok(stream) => (
             [(
                 "Content-Type",
                 if guessed_mime == "text/html" {
@@ -171,11 +171,11 @@ pub async fn banner_request(
                     guessed_mime
                 },
             )],
-            r.bytes().await.unwrap(),
+            Body::from_stream(stream.bytes_stream()),
         ),
         Err(_) => (
             [("Content-Type", "image/svg+xml")],
-            Bytes::copy_from_slice(&read_image(
+            Body::from(read_image(
                 database.server_options.static_dir,
                 "default-banner.svg".to_string(),
             )),
