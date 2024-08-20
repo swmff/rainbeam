@@ -4,6 +4,7 @@ pub mod profiles;
 pub mod questions;
 pub mod reactions;
 pub mod responses;
+pub mod util;
 
 use crate::database::Database;
 use axum::Router;
@@ -19,11 +20,11 @@ pub struct CreateReport {
 
 pub fn routes(database: Database) -> Router {
     Router::new()
+        .nest("/util", util::routes(database.clone()))
         .nest("/questions", questions::routes(database.clone()))
         .nest("/responses", responses::routes(database.clone()))
         .nest("/comments", comments::routes(database.clone()))
         .nest("/reactions", reactions::routes(database.clone()))
         .nest("/circles", circles::routes(database.clone()))
         .nest("/profiles", profiles::routes(database.clone()))
-    // .nest("/comments", comments::routes(database.clone()))
 }

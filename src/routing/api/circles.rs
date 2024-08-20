@@ -29,6 +29,7 @@ pub fn routes(database: Database) -> Router {
         .route("/:id/accept_invite", post(accept_invite_request))
         .route("/:id/invite/:username", post(send_invite_request))
         .route("/:id/kick/:username", post(kick_member_request))
+        .route("/:id/leave", post(leave_request))
         // as a profile
         .route("/:name/avatar", get(avatar_request))
         .route("/:name/banner", get(banner_request))
@@ -285,6 +286,58 @@ pub async fn kick_member_request(
         Ok(ua) => ua,
         Err(e) => return Json(e.into()),
     };
+
+    if user.id == circle.owner.id {
+        return Json(DatabaseError::NotAllowed.into());
+    }
+
+    // ...
+    Json(
+        match database
+            .set_user_circle_membership(user.id, id, MembershipStatus::Inactive, false)
+            .await
+        {
+            Ok(r) => DefaultReturn {
+                success: true,
+                message: String::new(),
+                payload: Some(r),
+            },
+            Err(e) => e.into(),
+        },
+    )
+}
+
+/// Leave a the circle
+pub async fn leave_request(
+    jar: CookieJar,
+    Path(id): Path<String>,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    // get user from token
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => {
+                return Json(DatabaseError::NotAllowed.into());
+            }
+        },
+        None => {
+            return Json(DatabaseError::NotAllowed.into());
+        }
+    };
+
+    // get circle
+    let circle = match database.get_circle(id.clone()).await {
+        Ok(c) => c,
+        Err(e) => return Json(e.into()),
+    };
+
+    // get user
+    let user = auth_user;
 
     if user.id == circle.owner.id {
         return Json(DatabaseError::NotAllowed.into());

@@ -30,10 +30,9 @@ let reaction_count = response.3 %} {% let response = response.1.clone() %}
                             {{ question.author.username }}
                         {% endif %}
                     </a>
-                    {% else %}
-                    <!-- TODO: proxy this -->
-                    {% if let Some(avatar) = anonymous_avatar %} {% if
-                    (avatar.is_empty()) | (!avatar.starts_with("https://")) %}
+                    {% else %} {% if let Some(avatar) = anonymous_avatar %} {%
+                    if (avatar.is_empty()) | (!avatar.starts_with("https://"))
+                    %}
                     <!-- default avatar, setting set but blank or unsafe -->
                     <img
                         title="{{ question.author.username }}'s avatar"
@@ -46,7 +45,7 @@ let reaction_count = response.3 %} {% let response = response.1.clone() %}
                     <!-- anonymous avatar, setting set and valid -->
                     <img
                         title="This profile's anonymous avatar"
-                        src="{{ avatar }}"
+                        src="/api/util/ext/image?img={{ avatar }}"
                         alt=""
                         class="avatar round-sm"
                         style="--size: 20px"

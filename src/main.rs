@@ -46,6 +46,7 @@ pub async fn main() {
     let app = Router::new()
         // api
         .nest_service("/api/auth", AuthApi::routes(auth_database.clone()))
+        .nest("/api/util", routing::api::util::routes(database.clone()))
         .nest("/api/v1", routing::api::routes(database.clone()))
         // pages
         .nest("/", routing::pages::routes(database.clone()).await)

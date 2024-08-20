@@ -1,0 +1,76 @@
+use super::profiles::read_image;
+use crate::database::Database;
+use askama_axum::IntoResponse;
+use axum::{
+    body::Bytes,
+    extract::{Query, State},
+    routing::get,
+    Router,
+};
+use serde::{Deserialize, Serialize};
+
+pub fn routes(database: Database) -> Router {
+    Router::new()
+        .route("/ext/image", get(external_image_request))
+        // ...
+        .with_state(database.clone())
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct ExternalImageQuery {
+    pub img: String,
+}
+
+/// Proxy an external image
+pub async fn external_image_request(
+    Query(props): Query<ExternalImageQuery>,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    let image_url = &props.img;
+
+    if image_url.starts_with(&database.server_options.host) {
+        return (
+            [("Content-Type", "image/svg+xml")],
+            Bytes::copy_from_slice(&read_image(
+                database.server_options.static_dir,
+                "default-banner.svg".to_string(),
+            )),
+        );
+    }
+
+    // get profile image
+    if image_url.is_empty() {
+        return (
+            [("Content-Type", "image/svg+xml")],
+            Bytes::copy_from_slice(&read_image(
+                database.server_options.static_dir,
+                "default-banner.svg".to_string(),
+            )),
+        );
+    }
+
+    let guessed_mime = mime_guess::from_path(image_url)
+        .first_raw()
+        .unwrap_or("application/octet-stream");
+
+    match database.auth.http.get(image_url).send().await {
+        Ok(r) => (
+            [(
+                "Content-Type",
+                if guessed_mime == "text/html" {
+                    "text/plain"
+                } else {
+                    guessed_mime
+                },
+            )],
+            r.bytes().await.unwrap(),
+        ),
+        Err(_) => (
+            [("Content-Type", "image/svg+xml")],
+            Bytes::copy_from_slice(&read_image(
+                database.server_options.static_dir,
+                "default-banner.svg".to_string(),
+            )),
+        ),
+    }
+}
