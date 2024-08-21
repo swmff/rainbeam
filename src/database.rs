@@ -306,7 +306,7 @@ impl Database {
                 .await
             {
                 Ok(ua) => ua,
-                Err(_) => anonymous_profile(res.get("recipient").unwrap().to_string()),
+                Err(_) => anonymous_profile(res.get("author").unwrap().to_string()),
             },
             recipient: match self
                 .get_profile(res.get("recipient").unwrap().to_string())

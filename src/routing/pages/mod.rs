@@ -239,6 +239,7 @@ pub fn color_escape(color: &&&String) -> String {
         .replace(">", "%gt;")
         .replace("}", "")
         .replace("{", "")
+        .replace("url(\"", "url(\"/api/util/ext/image?img=")
 }
 
 /// Clean profile metadata
