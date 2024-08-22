@@ -41,6 +41,10 @@ You can provide a Markdown file for `/site/about` by creating `static/site/about
 
 After you have created your first account, you'll need to manually create a permissions group in the database so that you can mark the account as a `Manager`. The manager permission allows you to delete accounts, responses, comments, and questions. You can also view profile warnings and reports with this permission. You can view an example SQL query to do this [here](https://github.com/swmff/sparkler/blob/master/sql/manager.sql)!
 
+### Account registration
+
+To open your instance up for free account registration, you'll need to set `registration_enabled` to `true` in `~/.config/xsu-apps/sparkler/config.toml`.
+
 ## Contributing
 
 You can view information about contributing to Sparkler [here](https://github.com/swmff/sparkler/blob/master/.github/CONTRIBUTING.md), as well as the contributor code of conduct [here](https://github.com/swmff/sparkler/blob/master/.github/CODE_OF_CONDUCT.md)!

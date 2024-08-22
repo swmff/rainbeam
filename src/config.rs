@@ -19,6 +19,9 @@ pub struct Config {
     pub static_dir: String,
     /// HCaptcha configuration
     pub captcha: HCaptchaConfig,
+    /// If new profile registration is enabled
+    #[serde(default)]
+    pub registration_enabled: bool,
     /// The origin of the public server (ex: "https://sparkler.cc")
     ///
     /// Used in embeds and links.
@@ -37,6 +40,7 @@ impl Default for Config {
             description: "Simple Q&A".to_string(),
             static_dir: String::new(),
             captcha: HCaptchaConfig::default(),
+            registration_enabled: true,
             host: String::new(),
             migration: false,
         }

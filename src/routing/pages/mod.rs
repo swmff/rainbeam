@@ -203,6 +203,11 @@ pub async fn sign_up_request(
     jar: CookieJar,
     State(database): State<Database>,
 ) -> impl IntoResponse {
+    if database.server_options.registration_enabled == false {
+        return Html(DatabaseError::NotAllowed.to_html(database));
+    }
+
+    // ...
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth

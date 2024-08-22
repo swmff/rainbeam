@@ -24,6 +24,7 @@ pub async fn main() {
         DataConf::get_config().connection, // pull connection config from config file
         xsu_authman::ServerOptions {
             captcha: config.captcha.clone(),
+            registration_enabled: config.registration_enabled,
         },
     )
     .await;
