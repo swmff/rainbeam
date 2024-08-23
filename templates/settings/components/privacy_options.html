@@ -134,14 +134,21 @@
     }
 
     function block() {
+        const username = document.getElementById(
+            "sparkler:block_somebody",
+        ).value;
+
         document.getElementById("sparkler:block_list").value +=
-            `<@${document.getElementById("sparkler:block_somebody").value}>\n`;
+            `<@${username}>\n`;
 
         document.getElementById("sparkler:block_somebody").value = "";
         update_kv(
             "sparkler:block_list",
             document.getElementById("sparkler:block_list").value,
         );
+
+        // force unfollow
+        fetch(`/api/v1/profiles/${username}/unfollow`, { method: "POST" });
 
         // close dialog
         document.getElementById("block_dialog").close();

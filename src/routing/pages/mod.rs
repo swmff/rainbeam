@@ -238,24 +238,31 @@ pub struct ProfileQuery {
 
 /// Escape profile colors
 pub fn color_escape(color: &&&String) -> String {
-    color
-        .replace(";", "")
-        .replace("<", "&lt;")
-        .replace(">", "%gt;")
-        .replace("}", "")
-        .replace("{", "")
-        .replace("url(\"", "url(\"/api/util/ext/image?img=")
+    remove_tags(
+        &color
+            .replace(";", "")
+            .replace("<", "&lt;")
+            .replace(">", "%gt;")
+            .replace("}", "")
+            .replace("{", "")
+            .replace("url(\"", "url(\"/api/util/ext/image?img="),
+    )
 }
 
 /// Clean profile metadata
-pub fn clean_metadata(metadata: &ProfileMetadata) -> String {
+pub fn remove_tags(input: &str) -> String {
     Builder::default()
         .rm_tags(&["img", "a", "span", "p", "h1", "h2", "h3", "h4", "h5", "h6"])
-        .clean(&serde_json::to_string(&metadata).unwrap())
+        .clean(input)
         .to_string()
         .replace("&lt;", "<")
         .replace("&gt;", ">")
         .replace("&amp;", "&")
+}
+
+/// Clean profile metadata
+pub fn clean_metadata(metadata: &ProfileMetadata) -> String {
+    remove_tags(&serde_json::to_string(&metadata).unwrap())
 }
 
 #[derive(Template)]

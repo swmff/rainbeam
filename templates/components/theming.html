@@ -3,79 +3,79 @@
 {% if let Some(color) = profile.metadata.kv.get("sparkler:color_surface") %}
     {% let color = crate::routing::pages::color_escape(color) %}
     {% if !color.is_empty() %}
-        <style id="sparkler_live:color_surface">:root, * { --color-surface: {{ color }} !important }</style>
+        <style id="sparkler_live:color_surface">:root, * { --color-surface: {{ color|safe }} !important }</style>
     {% endif %}
 {% endif %}
 {% if let Some(color) = profile.metadata.kv.get("sparkler:color_lowered") %}
     {% let color = crate::routing::pages::color_escape(color) %}
     {% if !color.is_empty() %}
-        <style id="sparkler_live:color_lowered">:root, * { --color-lowered: {{ color }} !important }</style>
+        <style id="sparkler_live:color_lowered">:root, * { --color-lowered: {{ color|safe }} !important }</style>
     {% endif %}
 {% endif %}
 {% if let Some(color) = profile.metadata.kv.get("sparkler:color_super_lowered") %}
     {% let color = crate::routing::pages::color_escape(color) %}
     {% if !color.is_empty() %}
-        <style id="sparkler_live:color_super_lowered">:root, * { --color-super-lowered: {{ color }} !important }</style>
+        <style id="sparkler_live:color_super_lowered">:root, * { --color-super-lowered: {{ color|safe }} !important }</style>
     {% endif %}
 {% endif %}
 {% if let Some(color) = profile.metadata.kv.get("sparkler:color_raised") %}
     {% let color = crate::routing::pages::color_escape(color) %}
     {% if !color.is_empty() %}
-        <style id="sparkler_live:color_raised">:root, * { --color-raised: {{ color }} !important }</style>
+        <style id="sparkler_live:color_raised">:root, * { --color-raised: {{ color|safe }} !important }</style>
     {% endif %}
 {% endif %}
 {% if let Some(color) = profile.metadata.kv.get("sparkler:color_super_raised") %}
     {% let color = crate::routing::pages::color_escape(color) %}
     {% if !color.is_empty() %}
-        <style id="sparkler_live:color_super_raised">:root, * { --color-super-raised: {{ color }} !important }</style>
+        <style id="sparkler_live:color_super_raised">:root, * { --color-super-raised: {{ color|safe }} !important }</style>
     {% endif %}
 {% endif %}
 {% if let Some(color) = profile.metadata.kv.get("sparkler:color_text") %}
     {% let color = crate::routing::pages::color_escape(color) %}
     {% if !color.is_empty() %}
-        <style id="sparkler_live:color_text">:root, * { --color-text: {{ color }} !important }</style>
+        <style id="sparkler_live:color_text">:root, * { --color-text: {{ color|safe }} !important }</style>
     {% endif %}
 {% endif %}
 {% if let Some(color) = profile.metadata.kv.get("sparkler:color_text_raised") %}
     {% let color = crate::routing::pages::color_escape(color) %}
     {% if !color.is_empty() %}
-        <style id="sparkler_live:color_text_raised">:root, * { --color-text-raised: {{ color }} !important }</style>
+        <style id="sparkler_live:color_text_raised">:root, * { --color-text-raised: {{ color|safe }} !important }</style>
     {% endif %}
 {% endif %}
 {% if let Some(color) = profile.metadata.kv.get("sparkler:color_text_lowered") %}
     {% let color = crate::routing::pages::color_escape(color) %}
     {% if !color.is_empty() %}
-        <style id="sparkler_live:color_text_lowered">:root, * { --color-text-lowered: {{ color }} !important }</style>
+        <style id="sparkler_live:color_text_lowered">:root, * { --color-text-lowered: {{ color|safe }} !important }</style>
     {% endif %}
 {% endif %}
 {% if let Some(color) = profile.metadata.kv.get("sparkler:color_link") %}
     {% let color = crate::routing::pages::color_escape(color) %}
     {% if !color.is_empty() %}
-        <style id="sparkler_live:color_link">:root, * { --color-link: {{ color }} !important }</style>
+        <style id="sparkler_live:color_link">:root, * { --color-link: {{ color|safe }} !important }</style>
     {% endif %}
 {% endif %}
 {% if let Some(color) = profile.metadata.kv.get("sparkler:color_primary") %}
     {% let color = crate::routing::pages::color_escape(color) %}
     {% if !color.is_empty() %}
-        <style id="sparkler_live:color_primary">:root, * { --color-primary: {{ color }} !important }</style>
+        <style id="sparkler_live:color_primary">:root, * { --color-primary: {{ color|safe }} !important }</style>
     {% endif %}
 {% endif %}
 {% if let Some(color) = profile.metadata.kv.get("sparkler:color_primary_lowered") %}
     {% let color = crate::routing::pages::color_escape(color) %}
     {% if !color.is_empty() %}
-        <style id="sparkler_live:color_primary_lowered">:root, * { --color-primary-lowered: {{ color }} !important }</style>
+        <style id="sparkler_live:color_primary_lowered">:root, * { --color-primary-lowered: {{ color|safe }} !important }</style>
     {% endif %}
 {% endif %}
 {% if let Some(color) = profile.metadata.kv.get("sparkler:color_text_primary") %}
     {% let color = crate::routing::pages::color_escape(color) %}
     {% if !color.is_empty() %}
-        <style id="sparkler_live:color_text_primary">:root, * { --color-text-primary: {{ color }} !important }</style>
+        <style id="sparkler_live:color_text_primary">:root, * { --color-text-primary: {{ color|safe }} !important }</style>
     {% endif %}
 {% endif %}
 {% if let Some(color) = profile.metadata.kv.get("sparkler:color_shadow") %}
     {% let color = crate::routing::pages::color_escape(color) %}
     {% if !color.is_empty() %}
-        <style id="sparkler_live:color_shadow">:root, * { --color-shadow: {{ color }} !important }</style>
+        <style id="sparkler_live:color_shadow">:root, * { --color-shadow: {{ color|safe }} !important }</style>
     {% endif %}
 {% endif %}
 </div>
