@@ -149,6 +149,7 @@
 
         // force unfollow
         fetch(`/api/v1/profiles/${username}/unfollow`, { method: "POST" });
+        fetch(`/api/v1/profiles/${username}/unfollow-me`, { method: "POST" });
 
         // close dialog
         document.getElementById("block_dialog").close();

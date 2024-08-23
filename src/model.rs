@@ -105,6 +105,8 @@ pub struct ResponseComment {
     pub id: String,
     /// The time this comment was created
     pub timestamp: u128,
+    /// The ID of the comment this comment is replying to
+    pub reply: Option<Box<ResponseComment>>,
 }
 
 /// A reaction structure
@@ -229,6 +231,8 @@ pub struct ResponseEdit {
 pub struct CommentCreate {
     pub response: String,
     pub content: String,
+    #[serde(default)]
+    pub reply: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Hcaptcha)]

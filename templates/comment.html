@@ -57,6 +57,25 @@ block head %}
 <article>
     <main class="flex flex-col gap-2">
         <!-- response -->
+        {% if comment.0.reply.is_none() %}
+        <h5 id="response" class="flex items-center gap-1">
+            Response
+            <a title="Unfold comment" href="/response/{{ response.1.id }}">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 16 16"
+                    width="16"
+                    height="16"
+                    aria-label="Unfold symbol"
+                    class="icon"
+                >
+                    <path
+                        d="m8.177.677 2.896 2.896a.25.25 0 0 1-.177.427H8.75v1.25a.75.75 0 0 1-1.5 0V4H5.104a.25.25 0 0 1-.177-.427L7.823.677a.25.25 0 0 1 .354 0ZM7.25 10.75a.75.75 0 0 1 1.5 0V12h2.146a.25.25 0 0 1 .177.427l-2.896 2.896a.25.25 0 0 1-.354 0l-2.896-2.896A.25.25 0 0 1 5.104 12H7.25v-1.25Zm-5-2a.75.75 0 0 0 0-1.5h-.5a.75.75 0 0 0 0 1.5h.5ZM6 8a.75.75 0 0 1-.75.75h-.5a.75.75 0 0 1 0-1.5h.5A.75.75 0 0 1 6 8Zm2.25.75a.75.75 0 0 0 0-1.5h-.5a.75.75 0 0 0 0 1.5h.5ZM12 8a.75.75 0 0 1-.75.75h-.5a.75.75 0 0 1 0-1.5h.5A.75.75 0 0 1 12 8Zm2.25.75a.75.75 0 0 0 0-1.5h-.5a.75.75 0 0 0 0 1.5h.5Z"
+                    ></path>
+                </svg>
+            </a>
+        </h5>
+        <!-- show original response -->
         <!-- prettier-ignore -->
         {% let is_pinned = false %}
         {% let show_pin_button = false %}
@@ -64,20 +83,125 @@ block head %}
         {% let response = (question.clone(), response.clone(), 0, reaction_count) %}
         {% let show_comments = false %}
         {% include "components/response.html" %}
+        {% endif %}
 
-        <hr />
-        <!-- single comment -->
-        {% include "components/comment.html" %}
-
-        <!-- link to all comments -->
-        <div class="flex justify-center w-full">
-            <a href="/response/{{ response.id }}" class="button bold">
-                Show all comments
-                <span class="notification">{{ comment_count }}</span>
+        <!-- reply -->
+        <!-- prettier-ignore -->
+        {% if let Some(comment) = comment.0.reply %} 
+        {% let comment = (comment, 0) %}
+        <h5 id="comment" class="flex items-center gap-1">
+            Replying to
+            <a title="Unfold comment" href="/comment/{{ comment.0.id }}">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 16 16"
+                    width="16"
+                    height="16"
+                    aria-label="Unfold symbol"
+                    class="icon"
+                >
+                    <path
+                        d="m8.177.677 2.896 2.896a.25.25 0 0 1-.177.427H8.75v1.25a.75.75 0 0 1-1.5 0V4H5.104a.25.25 0 0 1-.177-.427L7.823.677a.25.25 0 0 1 .354 0ZM7.25 10.75a.75.75 0 0 1 1.5 0V12h2.146a.25.25 0 0 1 .177.427l-2.896 2.896a.25.25 0 0 1-.354 0l-2.896-2.896A.25.25 0 0 1 5.104 12H7.25v-1.25Zm-5-2a.75.75 0 0 0 0-1.5h-.5a.75.75 0 0 0 0 1.5h.5ZM6 8a.75.75 0 0 1-.75.75h-.5a.75.75 0 0 1 0-1.5h.5A.75.75 0 0 1 6 8Zm2.25.75a.75.75 0 0 0 0-1.5h-.5a.75.75 0 0 0 0 1.5h.5ZM12 8a.75.75 0 0 1-.75.75h-.5a.75.75 0 0 1 0-1.5h.5A.75.75 0 0 1 12 8Zm2.25.75a.75.75 0 0 0 0-1.5h-.5a.75.75 0 0 0 0 1.5h.5Z"
+                    ></path>
+                </svg>
             </a>
+        </h5>
+        {% let show_replies = false %} {% include "components/comment.html" %}
+        {% endif %}
+
+        <!-- single comment -->
+        <div class="flex gap-4">
+            <div class="thread_line"></div>
+            <div class="flex flex-col gap-2 w-full">
+                <h5 id="comment">Comment</h5>
+                {% let show_replies = false %} {% include
+                "components/comment.html" %}
+            </div>
+        </div>
+
+        <!-- replies -->
+        <hr />
+        <h5 id="replies">Replies</h5>
+        <div class="card-nest w-full shadow" id="comment_field">
+            <div class="card flex flex-col gap-1">Add a reply</div>
+
+            <div class="card">
+                <form
+                    class="flex flex-col gap-2"
+                    onsubmit="comment(event, '{{ response.id }}')"
+                >
+                    <textarea
+                        class="w-full"
+                        placeholder="Type your reply!"
+                        minlength="1"
+                        maxlength="500"
+                        required
+                        name="content"
+                        id="content"
+                        hook="counter"
+                    ></textarea>
+
+                    <div class="flex justify-between w-full gap-1">
+                        <span
+                            id="content:counter"
+                            class="notification item"
+                        ></span>
+                        <button class="round-lg primary bold">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- prettier-ignore -->
+        {% for reply in replies %}
+            {% let comment = reply %}
+            {% let show_replies = true %}
+            {% include "components/comment.html" %}
+        {% endfor %}
+
+        <!-- pagination buttons -->
+        <div class="flex justify-between gap-2 w-full">
+            {% if page > 0 %}
+            <a class="button secondary" href="?page={{ page - 1 }}">Previous</a>
+            {% else %}
+            <div></div>
+            {% endif %} {% if replies.len() != 0 %}
+            <a class="button secondary" href="?page={{ page + 1 }}">Next</a>
+            {% endif %}
         </div>
     </main>
 </article>
+
+<script>
+    function comment(e, response) {
+        e.preventDefault();
+        fetch("/api/v1/comments", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                response,
+                content: e.target.content.value,
+                reply: "{{ comment.0.id }}",
+            }),
+        })
+            .then((res) => res.json())
+            .then((res) => {
+                trigger("app:shout", [
+                    res.success ? "tip" : "caution",
+                    res.message || "Comment posted!",
+                ]);
+
+                if (res.success === true) {
+                    e.target.reset();
+                    document
+                        .getElementById("comment_field")
+                        .setAttribute("disabled", "fully");
+                }
+            });
+    }
+</script>
 
 <!-- prettier-ignore -->
 {% if let Some(profile) = profile %}

@@ -766,7 +766,7 @@ dialog::backdrop {
 }
 
 .notification.camo {
-    background: inherit;
+    background: transparent;
     color: inherit;
     font-family: inherit;
     font-size: 12px;
@@ -787,6 +787,14 @@ dialog::backdrop {
 .warning_content p {
     margin: 0;
     white-space: pre-wrap;
+}
+
+.thread_line {
+    display: block;
+    border-radius: var(--radius);
+    background: var(--color-super-lowered);
+    /* height: 100%; */
+    width: 5px;
 }
 
 .sidenav {

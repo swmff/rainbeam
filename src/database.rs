@@ -1,3 +1,4 @@
+use async_recursion::async_recursion;
 use std::collections::HashMap;
 
 use crate::config::Config;
@@ -74,7 +75,8 @@ impl Database {
                 response  TEXT,
                 content   TEXT,
                 id        TEXT,
-                timestamp TEXT
+                timestamp TEXT,
+                reply     TEXT
             )",
         )
         .execute(c)
@@ -1835,7 +1837,8 @@ impl Database {
     ///
     /// # Arguments
     /// * `id`
-    pub async fn get_comment(&self, id: String) -> Result<ResponseComment> {
+    #[async_recursion]
+    pub async fn get_comment(&self, id: String) -> Result<(ResponseComment, usize)> {
         // check in cache
         match self
             .base
@@ -1843,7 +1846,12 @@ impl Database {
             .get(format!("xsulib.sparkler.comment:{}", id))
             .await
         {
-            Some(c) => return Ok(serde_json::from_str::<ResponseComment>(c.as_str()).unwrap()),
+            Some(c) => {
+                return Ok((
+                    serde_json::from_str::<ResponseComment>(c.as_str()).unwrap(),
+                    self.get_reply_count_by_comment(id).await,
+                ))
+            }
             None => (),
         };
 
@@ -1863,6 +1871,7 @@ impl Database {
         };
 
         // return
+        let reply = res.get("reply").unwrap().to_string();
         let comment = ResponseComment {
             author: match self
                 .get_profile(res.get("author").unwrap().to_string())
@@ -1875,6 +1884,14 @@ impl Database {
             content: res.get("content").unwrap().to_string(),
             id: res.get("id").unwrap().to_string(),
             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+            reply: if reply.is_empty() {
+                None
+            } else {
+                match Box::pin(self.get_comment(reply)).await {
+                    Ok(r) => Some(Box::new(r.0)),
+                    Err(_) => None,
+                }
+            },
         };
 
         // store in cache
@@ -1887,14 +1904,17 @@ impl Database {
             .await;
 
         // return
-        Ok(comment)
+        Ok((comment, self.get_reply_count_by_comment(id).await))
     }
 
     /// Get all comments by their response ID
     ///
     /// # Arguments
     /// * `id`
-    pub async fn get_comments_by_response(&self, id: String) -> Result<Vec<ResponseComment>> {
+    pub async fn get_comments_by_response(
+        &self,
+        id: String,
+    ) -> Result<Vec<(ResponseComment, usize)>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -1907,23 +1927,38 @@ impl Database {
         let c = &self.base.db.client;
         let res = match sqlquery(&query).bind::<&String>(&id).fetch_all(c).await {
             Ok(p) => {
-                let mut out: Vec<ResponseComment> = Vec::new();
+                let mut out: Vec<(ResponseComment, usize)> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    out.push(ResponseComment {
-                        author: match self
-                            .get_profile(res.get("author").unwrap().to_string())
-                            .await
-                        {
-                            Ok(ua) => ua,
-                            Err(_) => anonymous_profile("anonymous".to_string()),
+
+                    let reply = res.get("reply").unwrap().to_string();
+                    let id = res.get("id").unwrap().to_string();
+
+                    out.push((
+                        ResponseComment {
+                            author: match self
+                                .get_profile(res.get("author").unwrap().to_string())
+                                .await
+                            {
+                                Ok(ua) => ua,
+                                Err(_) => anonymous_profile("anonymous".to_string()),
+                            },
+                            response: res.get("response").unwrap().to_string(),
+                            content: res.get("content").unwrap().to_string(),
+                            id: id.clone(),
+                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            reply: if reply.is_empty() {
+                                None
+                            } else {
+                                match self.get_comment(reply).await {
+                                    Ok(r) => Some(Box::new(r.0)),
+                                    Err(_) => None,
+                                }
+                            },
                         },
-                        response: res.get("response").unwrap().to_string(),
-                        content: res.get("content").unwrap().to_string(),
-                        id: res.get("id").unwrap().to_string(),
-                        timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-                    });
+                        self.get_reply_count_by_comment(id).await,
+                    ));
                 }
 
                 out
@@ -1943,7 +1978,7 @@ impl Database {
         &self,
         id: String,
         page: i32,
-    ) -> Result<Vec<ResponseComment>> {
+    ) -> Result<Vec<(ResponseComment, usize)>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -1959,23 +1994,38 @@ impl Database {
             .await
         {
             Ok(p) => {
-                let mut out: Vec<ResponseComment> = Vec::new();
+                let mut out: Vec<(ResponseComment, usize)> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    out.push(ResponseComment {
-                        author: match self
-                            .get_profile(res.get("author").unwrap().to_string())
-                            .await
-                        {
-                            Ok(ua) => ua,
-                            Err(_) => anonymous_profile("anonymous".to_string()),
+
+                    let reply = res.get("reply").unwrap().to_string();
+                    let id = res.get("id").unwrap().to_string();
+
+                    out.push((
+                        ResponseComment {
+                            author: match self
+                                .get_profile(res.get("author").unwrap().to_string())
+                                .await
+                            {
+                                Ok(ua) => ua,
+                                Err(_) => anonymous_profile("anonymous".to_string()),
+                            },
+                            response: res.get("response").unwrap().to_string(),
+                            content: res.get("content").unwrap().to_string(),
+                            id: id.clone(),
+                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            reply: if reply.is_empty() {
+                                None
+                            } else {
+                                match self.get_comment(reply).await {
+                                    Ok(r) => Some(Box::new(r.0)),
+                                    Err(_) => None,
+                                }
+                            },
                         },
-                        response: res.get("response").unwrap().to_string(),
-                        content: res.get("content").unwrap().to_string(),
-                        id: res.get("id").unwrap().to_string(),
-                        timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-                    });
+                        self.get_reply_count_by_comment(id).await,
+                    ));
                 }
 
                 out
@@ -2013,6 +2063,170 @@ impl Database {
             .cachedb
             .set(
                 format!("xsulib.sparkler.comment_count:{}", id),
+                count.to_string(),
+            )
+            .await;
+
+        count
+    }
+
+    /// Get all replies by their comment ID
+    ///
+    /// # Arguments
+    /// * `id`
+    #[async_recursion]
+    pub async fn get_replies_by_comment(
+        &self,
+        id: String,
+    ) -> Result<Vec<(ResponseComment, usize)>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "SELECT * FROM \"xcomments\" WHERE \"reply\" = ? ORDER BY \"timestamp\" DESC"
+        } else {
+            "SELECT * FROM \"xcomments\" WHERE \"reply\" = $1 ORDER BY \"timestamp\" DESC"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query).bind::<&String>(&id).fetch_all(c).await {
+            Ok(p) => {
+                let mut out: Vec<(ResponseComment, usize)> = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+
+                    let reply = res.get("reply").unwrap().to_string();
+                    let id = res.get("id").unwrap().to_string();
+
+                    out.push((
+                        ResponseComment {
+                            author: match self
+                                .get_profile(res.get("author").unwrap().to_string())
+                                .await
+                            {
+                                Ok(ua) => ua,
+                                Err(_) => anonymous_profile("anonymous".to_string()),
+                            },
+                            response: res.get("response").unwrap().to_string(),
+                            content: res.get("content").unwrap().to_string(),
+                            id: id.clone(),
+                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            reply: if reply.is_empty() {
+                                None
+                            } else {
+                                match self.get_comment(reply).await {
+                                    Ok(r) => Some(Box::new(r.0)),
+                                    Err(_) => None,
+                                }
+                            },
+                        },
+                        self.get_reply_count_by_comment(id).await,
+                    ));
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        Ok(res)
+    }
+
+    /// Get all replies by their comment ID, 50 at a time
+    ///
+    /// # Arguments
+    /// * `id`
+    pub async fn get_replies_by_comment_paginated(
+        &self,
+        id: String,
+        page: i32,
+    ) -> Result<Vec<(ResponseComment, usize)>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            format!("SELECT * FROM \"xcomments\" WHERE \"reply\" = ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        } else {
+            format!("SELECT * FROM \"xcomments\" WHERE \"reply\" = $1 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        };
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query)
+            .bind::<&String>(&id.to_lowercase())
+            .fetch_all(c)
+            .await
+        {
+            Ok(p) => {
+                let mut out: Vec<(ResponseComment, usize)> = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+
+                    let reply = res.get("reply").unwrap().to_string();
+                    let id = res.get("id").unwrap().to_string();
+
+                    out.push((
+                        ResponseComment {
+                            author: match self
+                                .get_profile(res.get("author").unwrap().to_string())
+                                .await
+                            {
+                                Ok(ua) => ua,
+                                Err(_) => anonymous_profile("anonymous".to_string()),
+                            },
+                            response: res.get("response").unwrap().to_string(),
+                            content: res.get("content").unwrap().to_string(),
+                            id: id.clone(),
+                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            reply: if reply.is_empty() {
+                                None
+                            } else {
+                                match self.get_comment(reply).await {
+                                    Ok(r) => Some(Box::new(r.0)),
+                                    Err(_) => None,
+                                }
+                            },
+                        },
+                        self.get_reply_count_by_comment(id).await,
+                    ));
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        Ok(res)
+    }
+
+    /// Get the number of replies by their comment ID
+    ///
+    /// # Arguments
+    /// * `id`
+    pub async fn get_reply_count_by_comment(&self, id: String) -> usize {
+        // attempt to fetch from cache
+        if let Some(count) = self
+            .base
+            .cachedb
+            .get(format!("xsulib.sparkler.reply_count:{}", id))
+            .await
+        {
+            return count.parse::<usize>().unwrap_or(0);
+        };
+
+        // fetch from database
+        let count = self
+            .get_replies_by_comment(id.clone())
+            .await
+            .unwrap_or(Vec::new())
+            .len();
+
+        self.base
+            .cachedb
+            .set(
+                format!("xsulib.sparkler.reply_count:{}", id),
                 count.to_string(),
             )
             .await;
@@ -2075,14 +2289,15 @@ impl Database {
             content: props.content.trim().to_string(),
             id: utility::random_id(),
             timestamp: utility::unix_epoch_timestamp(),
+            reply: None,
         };
 
         // create response
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            "INSERT INTO \"xcomments\" VALUES (?, ?, ?, ?, ?)"
+            "INSERT INTO \"xcomments\" VALUES (?, ?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xcomments\" VALEUS ($1, $2, $3, $4, $5)"
+            "INSERT INTO \"xcomments\" VALEUS ($1, $2, $3, $4, $5, $6)"
         }
         .to_string();
 
@@ -2093,12 +2308,48 @@ impl Database {
             .bind::<&String>(&comment.content)
             .bind::<&String>(&comment.id)
             .bind::<&String>(&comment.timestamp.to_string())
+            .bind::<&String>(&props.reply)
             .execute(c)
             .await
         {
             Ok(_) => {
                 // create notification
-                if response.author.id != comment.author.id {
+                if !props.reply.is_empty() {
+                    // send notification
+                    let reply = match self.get_comment(props.reply.clone()).await {
+                        Ok(r) => r.0,
+                        Err(e) => return Err(e),
+                    };
+
+                    if reply.author.id != comment.author.id {
+                        if let Err(_) = self
+                            .auth
+                            .create_notification(NotificationCreate {
+                                title: format!(
+                                    "[@{}](/@{}) replied to a comment you created!",
+                                    comment.author.username, comment.author.username
+                                ),
+                                content: format!(
+                                    "{}: \"{}...\"",
+                                    comment.author.username,
+                                    // we're only going to show 50 characters of the response in the notification
+                                    comment.content.clone().chars().take(50).collect::<String>()
+                                ),
+                                address: format!("/comment/{}", comment.id),
+                                recipient: reply.author.id,
+                            })
+                            .await
+                        {
+                            return Err(DatabaseError::Other);
+                        };
+                    }
+
+                    // bump reply count
+                    self.base
+                        .cachedb
+                        .incr(format!("xsulib.sparkler.reply_count:{}", props.reply))
+                        .await;
+                } else if response.author.id != comment.author.id {
                     if let Err(_) = self
                         .auth
                         .create_notification(NotificationCreate {
@@ -2144,7 +2395,7 @@ impl Database {
     pub async fn delete_comment(&self, id: String, user: Profile) -> Result<()> {
         // make sure comment exists
         let comment = match self.get_comment(id.clone()).await {
-            Ok(q) => q,
+            Ok(q) => q.0,
             Err(e) => return Err(e),
         };
 
@@ -2193,6 +2444,14 @@ impl Database {
                         comment.response
                     ))
                     .await;
+
+                // decr reply count
+                if comment.reply.is_some() {
+                    self.base
+                        .cachedb
+                        .incr(format!("xsulib.sparkler.reply_count:{}", comment.id))
+                        .await;
+                }
 
                 // return
                 return Ok(());

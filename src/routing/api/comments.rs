@@ -66,9 +66,9 @@ pub async fn get_request(
             message: String::new(),
             payload: {
                 // hide tokens, password, salt, and metadata
-                r.author.salt = String::new();
-                r.author.tokens = Vec::new();
-                r.author.metadata = ProfileMetadata::default();
+                r.0.author.salt = String::new();
+                r.0.author.tokens = Vec::new();
+                r.0.author.metadata = ProfileMetadata::default();
 
                 // return
                 Some(r)

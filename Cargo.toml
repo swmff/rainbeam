@@ -1,6 +1,6 @@
 [package]
 name = "sparkler"
-version = "0.6.1"
+version = "0.6.2"
 edition = "2021"
 authors = ["trisuaso", "swmff"]
 description = "Ask, share, socialize!"
@@ -38,6 +38,7 @@ ammonia = "4.0.0"
 futures-util = "0.3.30"
 tokio-stream = "0.1.15"
 futures = "0.3.30"
+async-recursion = "1.1.1"
 
 [[bin]]
 path = "src/main.rs"

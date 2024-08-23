@@ -367,7 +367,7 @@ struct ResponseTemplate {
     notifs: usize,
     question: Question,
     response: QuestionResponse,
-    comments: Vec<ResponseComment>,
+    comments: Vec<(ResponseComment, usize)>,
     reactions: Vec<Reaction>,
     page: i32,
     anonymous_username: Option<String>,
@@ -476,10 +476,11 @@ struct CommentTemplate {
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
-    comment: ResponseComment,
+    comment: (ResponseComment, usize),
+    replies: Vec<(ResponseComment, usize)>,
+    page: i32,
     question: Question,
     response: QuestionResponse,
-    comment_count: usize,
     reaction_count: usize,
     anonymous_username: Option<String>,
     anonymous_avatar: Option<String>,
@@ -491,6 +492,7 @@ pub async fn comment_request(
     jar: CookieJar,
     Path(id): Path<String>,
     State(database): State<Database>,
+    Query(props): Query<ProfileQuery>,
 ) -> impl IntoResponse {
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
@@ -527,9 +529,17 @@ pub async fn comment_request(
         Err(e) => return Html(e.to_html(database)),
     };
 
-    let response = match database.get_response(comment.response.clone()).await {
+    let response = match database.get_response(comment.0.response.clone()).await {
         Ok(r) => r,
         Err(e) => return Html(e.to_html(database)),
+    };
+
+    let replies = match database
+        .get_replies_by_comment_paginated(comment.0.id.clone(), props.page.clone())
+        .await
+    {
+        Ok(r) => r,
+        Err(_) => Vec::new(),
     };
 
     let is_powerful = if let Some(ref ua) = auth_user {
@@ -550,9 +560,10 @@ pub async fn comment_request(
             unread,
             notifs,
             comment,
+            replies,
+            page: props.page,
             question: response.0,
             response: response.1,
-            comment_count: response.2,
             reaction_count: response.3,
             anonymous_username: Some("anonymous".to_string()), // TODO: fetch recipient setting
             anonymous_avatar: None,
