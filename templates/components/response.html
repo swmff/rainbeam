@@ -170,11 +170,10 @@ let reaction_count = response.3 %} {% let response = response.1.clone() %}
                 class="flex justify-between gap-2 {% if show_comments != false %}sm:w-full{% endif %}"
             >
                 <!-- reactions -->
-                <a
-                    href="/response/{{ response.id }}?react"
+                <button
                     title="{{ reaction_count }} reactions"
-                    class="button w-full"
-                    target="_blank"
+                    class="w-full"
+                    onclick="trigger('reactions:toggle', ['{{ response.id }}'])"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -190,7 +189,7 @@ let reaction_count = response.3 %} {% let response = response.1.clone() %}
                     </svg>
 
                     <span class="notification camo">{{ reaction_count }}</span>
-                </a>
+                </button>
 
                 <!-- comments -->
                 {% if show_comments != false %}

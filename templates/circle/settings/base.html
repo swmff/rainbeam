@@ -164,9 +164,9 @@ config.name }}{% endblock %} {% block nav_left %} {% if profile.is_some() %}
                 })
             ).json();
 
-            trigger("app:shout", [
-                res.success ? "tip" : "caution",
-                res.message || "Settings saved!",
+            trigger("app:toast", [
+                res.success ? "success" : "error",
+                res.success ? "Settings saved!" : res.message,
             ]);
         });
 </script>

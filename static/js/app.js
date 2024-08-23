@@ -170,6 +170,45 @@
         app.shout(secret_type, search.get("ANNC"));
     }
 
+    // toast
+    app.define("toast", function (_, type, content) {
+        let time_until_remove = 5; // seconds
+        
+        const element = document.createElement("div");
+        element.id = "toast";
+        element.classList.add(type);
+        element.classList.add("toast");
+        element.innerHTML = content
+            .replaceAll("<", "&lt")
+            .replaceAll(">", "&gt;");
+
+        document.getElementById("toast_zone").prepend(element);
+
+        const timer = document.createElement("span");
+        element.appendChild(timer);
+
+        timer.innerText = `(${time_until_remove})`;
+        timer.classList.add("timer");
+
+        // start timer
+        setTimeout(() => {
+            clearInterval(count_interval);
+
+            // run animation
+            element.style.animation = "fadeout ease-in-out 1 500ms forwards running";
+
+            // remove
+            setTimeout(() => {
+                toast.remove();
+            }, 500); // animation plays for 1 second
+        }, time_until_remove * 1000);
+
+        const count_interval = setInterval(() => {
+            time_until_remove -= 1;
+            timer.innerText = `(${time_until_remove})`;
+        }, 1000);
+    });
+
     // link filter
     app.define("link_filter", function (_) {
         for (const anchor of Array.from(document.querySelectorAll("a"))) {

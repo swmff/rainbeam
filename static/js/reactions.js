@@ -7,13 +7,10 @@
         })
             .then((res) => res.json())
             .then((res) => {
-                // trigger("app:shout", [
-                //     res.success ? "tip" : "caution",
-                //     res.message || "Reaction added!",
-                // ]);
-
-                alert(res.message || "Reaction added!");
-                window.close();
+                trigger("app:toast", [
+                    res.success ? "success" : "error",
+                    res.message || "Reaction added!",
+                ]);
             });
     });
 
@@ -23,13 +20,32 @@
         })
             .then((res) => res.json())
             .then((res) => {
-                // trigger("app:shout", [
-                //     res.success ? "tip" : "caution",
-                //     res.message || "Reaction removed!",
-                // ]);
-
-                alert(res.message || "Reaction removed!");
-                window.close();
+                trigger("app:toast", [
+                    res.success ? "success" : "error",
+                    res.message || "Reaction removed!",
+                ]);
             });
+    });
+
+    self.define("has-reacted", function (_, id) {
+        return new Promise((resolve, _) => {
+            fetch(`/api/v1/reactions/${id}`, {
+                method: "GET",
+            })
+                .then((res) => res.json())
+                .then((res) => {
+                    return resolve(res.success);
+                });
+        });
+    });
+
+    self.define("toggle", async function ({ $ }, id) {
+        const remove = (await $["has-reacted"](id)) == true;
+
+        if (remove) {
+            return $.delete(id);
+        } else {
+            return $.create(id);
+        }
     });
 })();

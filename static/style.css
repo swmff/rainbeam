@@ -907,6 +907,70 @@ dialog::backdrop {
     }
 }
 
+#toast_zone {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+    position: fixed;
+    top: calc(56px + 0.5rem); /* under nav */
+    right: 0.5rem;
+    z-index: 5;
+    width: max-content;
+}
+
+.toast {
+    box-shadow: 0 0 8px var(--color-shadow);
+    min-width: 15rem;
+    max-width: 25rem;
+    width: max-content;
+    border-radius: var(--radius);
+    padding: 0.5rem 1rem;
+    animation: popin ease-in-out 1 0.15s running;
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.toast.success {
+    background: rgb(41, 81, 56);
+    color: rgb(134, 239, 172);
+}
+
+.toast.error {
+    background: rgb(81, 41, 41);
+    color: rgb(239, 134, 134);
+}
+
+.toast .timer {
+    font-family: monospace;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@keyframes popin {
+    from {
+        transform: scale(0);
+    }
+
+    to {
+        transform: scale(1);
+    }
+}
+
+@keyframes fadeout {
+    from {
+        opacity: 100%;
+        transform: scale(1);
+    }
+
+    to {
+        opacity: 0%;
+        transform: scale(0);
+    }
+}
+
 /* utility */
 .flex {
     display: flex;

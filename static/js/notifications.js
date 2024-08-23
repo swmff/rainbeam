@@ -11,9 +11,9 @@
         })
             .then((res) => res.json())
             .then((res) => {
-                trigger("app:shout", [
-                    res.success ? "tip" : "caution",
-                    res.message || "Notification deleted!",
+                trigger("app:toast", [
+                    res.success ? "success" : "error",
+                    res.success ? "Notification deleted!" : res.message,
                 ]);
 
                 document
@@ -32,9 +32,9 @@
         })
             .then((res) => res.json())
             .then((res) => {
-                trigger("app:shout", [
-                    res.success ? "tip" : "caution",
-                    res.message || "Notifications cleared!",
+                trigger("app:toast", [
+                    res.success ? "success" : "error",
+                    res.success ? "Notifications cleared!" : res.message,
                 ]);
             });
     });

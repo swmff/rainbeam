@@ -11,9 +11,9 @@
         })
             .then((res) => res.json())
             .then((res) => {
-                trigger("app:shout", [
-                    res.success ? "tip" : "caution",
-                    res.message || "Comment deleted!",
+                trigger("app:toast", [
+                    res.success ? "success" : "error",
+                    res.success ? "Comment deleted!" : res.message,
                 ]);
 
                 document
