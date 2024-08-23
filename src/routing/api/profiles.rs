@@ -21,7 +21,7 @@ pub fn routes(database: Database) -> Router {
         .route("/:username/report", post(report_request))
         .route("/:username/follow", post(follow_request))
         .route("/:username/unfollow", post(unfollow_request)) // force unfollow
-        .route("/:username/unfollow-me", get(unfollow_me_request)) // force them to unfollow you
+        .route("/:username/unfollow-me", post(unfollow_me_request)) // force them to unfollow you
         // ...
         .with_state(database)
 }
