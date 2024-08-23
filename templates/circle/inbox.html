@@ -23,7 +23,7 @@
                     <b class="flex items-center gap-2 item">
                         <!-- prettier-ignore -->
                         {% let author_tag = crate::database::Database::anonymous_tag(question.author.username.as_ref()) %}
-                            {% if author_tag.0 == false %}
+                        {% if author_tag.0 == false %}
                         <img
                             title="{{ question.author.username }}'s avatar"
                             src="/api/v1/profiles/{{ question.author.username }}/avatar"
@@ -36,9 +36,19 @@
                             href="/@{{ question.author.username }}"
                             style="color: inherit"
                         >
-                            {{ question.author.username }}
+                            <!-- prettier-ignore -->
+                            {% let display_name = question.author.metadata.kv.get("sparkler:display_name") %}
+
+                            {% if let Some(display_name) = display_name %}
+                                {{ display_name }}
+                            {% else %}
+                                {{ question.author.username }}
+                            {% endif %}
                         </a>
-                        {% else %}
+                        {% else %} {% if let Some(avatar) = anonymous_avatar %}
+                        {% if (avatar.is_empty()) |
+                        (!avatar.starts_with("https://")) %}
+                        <!-- default avatar, setting set but blank or unsafe -->
                         <img
                             title="{{ question.author.username }}'s avatar"
                             src="/static/images/default-avatar.svg"
@@ -46,8 +56,36 @@
                             class="avatar round-sm"
                             style="--size: 20px"
                         />
+                        {% else %}
+                        <!-- anonymous avatar, setting set and valid -->
+                        <img
+                            title="This profile's anonymous avatar"
+                            src="/api/util/ext/image?img={{ avatar }}"
+                            alt=""
+                            class="avatar round-sm"
+                            style="--size: 20px"
+                        />
+                        {% endif %} {% else %}
+                        <!-- default avatar, setting not set -->
+                        <img
+                            title="{{ question.author.username }}'s avatar"
+                            src="/static/images/default-avatar.svg"
+                            alt=""
+                            class="avatar round-sm"
+                            style="--size: 20px"
+                        />
+                        {% endif %}
 
-                        <span>{{ author_tag.2 }}</span>
+                        <!-- prettier-ignore -->
+                        {% if let Some(username) = anonymous_username %}
+                            {% if username.is_empty() %}
+                                anonymous
+                            {% else %}
+                                {{ username }}
+                            {% endif %}
+                        {% else %}
+                            anonymous
+                        {% endif %}
                         {% endif %}
                     </b>
 

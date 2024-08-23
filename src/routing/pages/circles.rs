@@ -641,6 +641,8 @@ struct InboxTemplate {
     response_count: usize,
     member_count: usize,
     metadata: String,
+    anonymous_username: Option<String>,
+    anonymous_avatar: Option<String>,
     // ...
     lock_profile: bool,
     disallow_anonymous: bool,
@@ -748,6 +750,22 @@ pub async fn inbox_request(
                 .get_circle_memberships_count(circle.id.clone())
                 .await,
             metadata: clean_metadata(&circle.metadata),
+            anonymous_username: Some(
+                circle
+                    .metadata
+                    .kv
+                    .get("sparkler:anonymous_username")
+                    .unwrap_or(&"anonymous".to_string())
+                    .to_string(),
+            ),
+            anonymous_avatar: Some(
+                circle
+                    .metadata
+                    .kv
+                    .get("sparkler:anonymous_avatar")
+                    .unwrap_or(&"/static/images/default-avatar.svg".to_string())
+                    .to_string(),
+            ),
             // ...
             lock_profile: circle
                 .metadata

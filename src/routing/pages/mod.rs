@@ -570,6 +570,8 @@ struct InboxTemplate {
     profile: Option<Profile>,
     unread: Vec<Question>,
     notifs: usize,
+    anonymous_username: Option<String>,
+    anonymous_avatar: Option<String>,
 }
 
 /// GET /inbox
@@ -602,9 +604,25 @@ pub async fn inbox_request(jar: CookieJar, State(database): State<Database>) -> 
     Html(
         InboxTemplate {
             config: database.server_options,
-            profile: Some(auth_user),
             unread,
             notifs,
+            anonymous_username: Some(
+                auth_user
+                    .metadata
+                    .kv
+                    .get("sparkler:anonymous_username")
+                    .unwrap_or(&"anonymous".to_string())
+                    .to_string(),
+            ),
+            anonymous_avatar: Some(
+                auth_user
+                    .metadata
+                    .kv
+                    .get("sparkler:anonymous_avatar")
+                    .unwrap_or(&"/static/images/default-avatar.svg".to_string())
+                    .to_string(),
+            ),
+            profile: Some(auth_user),
         }
         .render()
         .unwrap(),
