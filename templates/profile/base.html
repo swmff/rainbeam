@@ -472,7 +472,7 @@ config.name }}{% endblock %} {% block head %}
             body: JSON.stringify({
                 recipient: "{{ other.id }}",
                 content: e.target.content.value,
-                anonymous: (e.target.anonymous || { checked: true }).checked,
+                anonymous: (e.target.anonymous || { checked: false }).checked,
             }),
         })
             .then((res) => res.json())
