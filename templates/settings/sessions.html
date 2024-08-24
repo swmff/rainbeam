@@ -47,46 +47,48 @@
 </script>
 
 <script>
-    const tokens = JSON.parse(document.getElementById("tokens").innerText);
+    (() => {
+        const tokens = JSON.parse(document.getElementById("tokens").innerText);
 
-    globalThis.remove_session = (id) => {
-        if (
-            !confirm(
-                "Are you sure you want to do this? When you save your sessions, the browser using this token will be logged out.",
-            )
-        ) {
-            return;
-        }
+        globalThis.remove_session = (id) => {
+            if (
+                !confirm(
+                    "Are you sure you want to do this? When you save your sessions, the browser using this token will be logged out.",
+                )
+            ) {
+                return;
+            }
 
-        tokens.splice(tokens.indexOf(id), 1);
-        document.getElementById(`session:${id}`).remove();
-    };
+            tokens.splice(tokens.indexOf(id), 1);
+            document.getElementById(`session:${id}`).remove();
+        };
 
-    globalThis.save_sessions = async () => {
-        if (
-            !confirm(
-                "Are you sure you want to do this? All removed sessions will be logged out.",
-            )
-        ) {
-            return;
-        }
+        globalThis.save_sessions = async () => {
+            if (
+                !confirm(
+                    "Are you sure you want to do this? All removed sessions will be logged out.",
+                )
+            ) {
+                return;
+            }
 
-        const res = await (
-            await fetch("/api/auth/me/tokens", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    tokens,
-                }),
-            })
-        ).json();
+            const res = await (
+                await fetch("/api/auth/me/tokens", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        tokens,
+                    }),
+                })
+            ).json();
 
-        trigger("app:toast", [
-            res.success ? "success" : "error",
-            res.success ? "Sessions saved!" : res.message,
-        ]);
-    };
+            trigger("app:toast", [
+                res.success ? "success" : "error",
+                res.success ? "Sessions saved!" : res.message,
+            ]);
+        };
+    })();
 </script>
 {% call super() %} {% endblock %}

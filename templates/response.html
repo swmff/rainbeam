@@ -134,30 +134,15 @@ block head %}
 <script>
     function comment(e, response) {
         e.preventDefault();
-        fetch("/api/v1/comments", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                response,
-                content: e.target.content.value,
-            }),
-        })
-            .then((res) => res.json())
-            .then((res) => {
-                trigger("app:shout", [
-                    res.success ? "tip" : "caution",
-                    res.message || "Comment posted!",
-                ]);
 
-                if (res.success === true) {
-                    e.target.reset();
-                    document
-                        .getElementById("comment_field")
-                        .setAttribute("disabled", "fully");
-                }
-            });
+        trigger("comments:create", [
+            response,
+            e.target.content.value,
+            undefined,
+        ]).then((_) => {
+            // reset if successful
+            e.target.reset();
+        });
     }
 </script>
 

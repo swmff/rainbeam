@@ -81,86 +81,88 @@
 {% let profile = profile.as_ref().unwrap() %}
 
 <script>
-    globalThis.update_theme = (theme) => {
-        window.localStorage.setItem("theme", theme);
-        document.documentElement.setAttribute("class", theme);
-    };
+    (() => {
+        globalThis.update_theme = (theme) => {
+            window.localStorage.setItem("theme", theme);
+            document.documentElement.setAttribute("class", theme);
+        };
 
-    globalThis.update_theme_preference = (pref) => {
-        window.localStorage.setItem("theme-pref", pref);
-    };
+        globalThis.update_theme_preference = (pref) => {
+            window.localStorage.setItem("theme-pref", pref);
+        };
 
-    // fill current theme
-    const current = window.localStorage.getItem("theme");
+        // fill current theme
+        const current = window.localStorage.getItem("theme");
 
-    if (document.getElementById(current)) {
-        document.getElementById(current).setAttribute("selected", "true");
-    }
+        if (document.getElementById(current)) {
+            document.getElementById(current).setAttribute("selected", "true");
+        }
 
-    // fill current theme preference
-    const pref = window.localStorage.getItem("theme-pref");
+        // fill current theme preference
+        const pref = window.localStorage.getItem("theme-pref");
 
-    if (document.getElementById(pref)) {
-        document.getElementById(pref).setAttribute("selected", "true");
-    }
+        if (document.getElementById(pref)) {
+            document.getElementById(pref).setAttribute("selected", "true");
+        }
 
-    // change password
-    document
-        .getElementById("change_password")
-        .addEventListener("submit", (e) => {
-            e.preventDefault();
-            fetch("/api/auth/profile/{{ profile.username }}/password", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    password: e.target.current_password.value,
-                    new_password: e.target.new_password.value,
-                }),
-            })
-                .then((res) => res.json())
-                .then((res) => {
-                    trigger("app:shout", [
-                        res.success ? "tip" : "caution",
-                        res.message || "Password changed!",
-                    ]);
+        // change password
+        document
+            .getElementById("change_password")
+            .addEventListener("submit", (e) => {
+                e.preventDefault();
+                fetch("/api/auth/profile/{{ profile.username }}/password", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        password: e.target.current_password.value,
+                        new_password: e.target.new_password.value,
+                    }),
+                })
+                    .then((res) => res.json())
+                    .then((res) => {
+                        trigger("app:shout", [
+                            res.success ? "tip" : "caution",
+                            res.message || "Password changed!",
+                        ]);
 
-                    window.location.href = "#top";
-                    e.target.reset();
-                });
-        });
+                        window.location.href = "#top";
+                        e.target.reset();
+                    });
+            });
 
-    // delete account
-    document
-        .getElementById("delete_account")
-        .addEventListener("submit", (e) => {
-            e.preventDefault();
+        // delete account
+        document
+            .getElementById("delete_account")
+            .addEventListener("submit", (e) => {
+                e.preventDefault();
 
-            if (!confirm("Are you 100% sure you want to do this?")) {
-                return;
-            }
+                if (!confirm("Are you 100% sure you want to do this?")) {
+                    return;
+                }
 
-            fetch("/api/auth/me/delete", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    password: e.target.current_password.value,
-                }),
-            })
-                .then((res) => res.json())
-                .then((res) => {
-                    trigger("app:shout", [
-                        res.success ? "tip" : "caution",
-                        res.message || "Profile deleted, goodbye!",
-                    ]);
+                fetch("/api/auth/me/delete", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        password: e.target.current_password.value,
+                    }),
+                })
+                    .then((res) => res.json())
+                    .then((res) => {
+                        trigger("app:shout", [
+                            res.success ? "tip" : "caution",
+                            res.message || "Profile deleted, goodbye!",
+                        ]);
 
-                    window.location.href = "#top";
-                    window.localStorage.removeItem("me");
-                    e.target.reset();
-                });
-        });
+                        window.location.href = "#top";
+                        window.localStorage.removeItem("me");
+                        e.target.reset();
+                    });
+            });
+    })();
 </script>
 {% call super() %} {% endblock %}

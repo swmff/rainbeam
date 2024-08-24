@@ -215,6 +215,10 @@
     // link filter
     app.define("link_filter", function (_) {
         for (const anchor of Array.from(document.querySelectorAll("a"))) {
+            if (anchor.href.length === 0) {
+                continue;
+            }
+            
             const url = new URL(anchor.href);
             if (
                 anchor.href.startsWith("/") ||

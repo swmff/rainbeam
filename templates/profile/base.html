@@ -505,46 +505,52 @@ config.name }}{% endblock %} {% block head %}
 </script>
 
 <script>
-    let metadata = JSON.parse(document.getElementById("metadata").innerHTML);
-
-    async function save_metadata() {
-        const res = await (
-            await fetch("/api/auth/profile/{{ profile.username }}/metadata", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    metadata,
-                }),
-            })
-        ).json();
-
-        trigger("app:toast", [
-            res.success ? "success" : "error",
-            res.success ? "Settings saved!" : res.message,
-        ]);
-    }
-
-    function pin_response(id) {
-        if (!metadata.kv["sparkler:pinned"]) {
-            metadata.kv["sparkler:pinned"] = "";
-        }
-
-        metadata.kv["sparkler:pinned"] += `${id},`;
-        save_metadata();
-        trigger("app:toast", ["success", "Response pinned!"]);
-    }
-
-    function unpin_response(id) {
-        metadata.kv["sparkler:pinned"] = metadata.kv["sparkler:pinned"].replace(
-            `${id},`,
-            "",
+    (() => {
+        let metadata = JSON.parse(
+            document.getElementById("metadata").innerHTML,
         );
 
-        save_metadata();
-        trigger("app:toast", ["success", "Response unpinned!"]);
-    }
+        globalThis.save_metadata = async function () {
+            const res = await (
+                await fetch(
+                    "/api/auth/profile/{{ profile.username }}/metadata",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            metadata,
+                        }),
+                    },
+                )
+            ).json();
+
+            trigger("app:toast", [
+                res.success ? "success" : "error",
+                res.success ? "Settings saved!" : res.message,
+            ]);
+        };
+
+        globalThis.pin_response = function (id) {
+            if (!metadata.kv["sparkler:pinned"]) {
+                metadata.kv["sparkler:pinned"] = "";
+            }
+
+            metadata.kv["sparkler:pinned"] += `${id},`;
+            save_metadata();
+            trigger("app:toast", ["success", "Response pinned!"]);
+        };
+
+        globalThis.unpin_response = function (id) {
+            metadata.kv["sparkler:pinned"] = metadata.kv[
+                "sparkler:pinned"
+            ].replace(`${id},`, "");
+
+            save_metadata();
+            trigger("app:toast", ["success", "Response unpinned!"]);
+        };
+    })();
 </script>
 {% endif %} {% endif %}
 <!-- prettier-ignore -->

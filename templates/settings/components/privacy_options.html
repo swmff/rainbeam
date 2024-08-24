@@ -115,61 +115,65 @@
 </dialog>
 
 <script>
-    function block_dialog() {
-        // check if this user is already blocked
-        if (
-            document
-                .getElementById("sparkler:block_list")
-                .value.includes(
-                    `<@${document.getElementById("sparkler:block_somebody").value}>`,
-                )
-        ) {
-            alert("This user is already blocked!");
-            window.close(); // if this was a popup, close window
-            return;
+    (() => {
+        globalThis.block_dialog = function () {
+            // check if this user is already blocked
+            if (
+                document
+                    .getElementById("sparkler:block_list")
+                    .value.includes(
+                        `<@${document.getElementById("sparkler:block_somebody").value}>`,
+                    )
+            ) {
+                alert("This user is already blocked!");
+                window.close(); // if this was a popup, close window
+                return;
+            }
+
+            // show confirmation
+            document.getElementById("block_dialog").showModal();
+        };
+
+        globalThis.block = function () {
+            const username = document.getElementById(
+                "sparkler:block_somebody",
+            ).value;
+
+            document.getElementById("sparkler:block_list").value +=
+                `<@${username}>\n`;
+
+            document.getElementById("sparkler:block_somebody").value = "";
+            update_kv(
+                "sparkler:block_list",
+                document.getElementById("sparkler:block_list").value,
+            );
+
+            // force unfollow
+            fetch(`/api/v1/profiles/${username}/unfollow`, { method: "POST" });
+            fetch(`/api/v1/profiles/${username}/unfollow-me`, {
+                method: "POST",
+            });
+
+            // close dialog
+            document.getElementById("block_dialog").close();
+            document.querySelector("#submit_form button").click(); // save metadata
+
+            setTimeout(() => {
+                alert("User blocked.");
+                window.close();
+            }, 100);
+        };
+
+        // fill block_somebody
+        const search = new URLSearchParams(window.location.search);
+
+        if (search.get("block")) {
+            setTimeout(() => {
+                document.getElementById("sparkler:block_somebody").value =
+                    search.get("block");
+
+                block_dialog();
+            }, 100);
         }
-
-        // show confirmation
-        document.getElementById("block_dialog").showModal();
-    }
-
-    function block() {
-        const username = document.getElementById(
-            "sparkler:block_somebody",
-        ).value;
-
-        document.getElementById("sparkler:block_list").value +=
-            `<@${username}>\n`;
-
-        document.getElementById("sparkler:block_somebody").value = "";
-        update_kv(
-            "sparkler:block_list",
-            document.getElementById("sparkler:block_list").value,
-        );
-
-        // force unfollow
-        fetch(`/api/v1/profiles/${username}/unfollow`, { method: "POST" });
-        fetch(`/api/v1/profiles/${username}/unfollow-me`, { method: "POST" });
-
-        // close dialog
-        document.getElementById("block_dialog").close();
-        document.querySelector("#submit_form button").click(); // save metadata
-
-        setTimeout(() => {
-            alert("User blocked.");
-            window.close();
-        }, 100);
-    }
-
-    // fill block_somebody
-    const search = new URLSearchParams(window.location.search);
-
-    if (search.get("block")) {
-        setTimeout(() => {
-            document.getElementById("sparkler:block_somebody").value =
-                search.get("block");
-
-            block_dialog();
-        }, 100);
-    }
+    })();
 </script>

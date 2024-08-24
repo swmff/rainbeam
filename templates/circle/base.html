@@ -513,46 +513,49 @@
 </script>
 
 <script>
-    let metadata = JSON.parse(document.getElementById("metadata").innerHTML);
-
-    async function save_metadata() {
-        const res = await (
-            await fetch("/api/v1/circles/{{ circle.id }}/metadata", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    metadata,
-                }),
-            })
-        ).json();
-
-        trigger("app:shout", [
-            res.success ? "tip" : "caution",
-            res.message || "Settings saved!",
-        ]);
-    }
-
-    function pin_response(id) {
-        if (!metadata.kv["sparkler:pinned"]) {
-            metadata.kv["sparkler:pinned"] = "";
-        }
-
-        metadata.kv["sparkler:pinned"] += `${id},`;
-        save_metadata();
-        alert("Pinned!");
-    }
-
-    function unpin_response(id) {
-        metadata.kv["sparkler:pinned"] = metadata.kv["sparkler:pinned"].replace(
-            `${id},`,
-            "",
+    (() => {
+        let metadata = JSON.parse(
+            document.getElementById("metadata").innerHTML,
         );
 
-        save_metadata();
-        alert("Unpinned!");
-    }
+        globalThis.save_metadata = async function () {
+            const res = await (
+                await fetch("/api/v1/circles/{{ circle.id }}/metadata", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        metadata,
+                    }),
+                })
+            ).json();
+
+            trigger("app:shout", [
+                res.success ? "tip" : "caution",
+                res.message || "Settings saved!",
+            ]);
+        };
+
+        globalThis.pin_response = function (id) {
+            if (!metadata.kv["sparkler:pinned"]) {
+                metadata.kv["sparkler:pinned"] = "";
+            }
+
+            metadata.kv["sparkler:pinned"] += `${id},`;
+            save_metadata();
+            alert("Pinned!");
+        };
+
+        globalThis.unpin_response = function (id) {
+            metadata.kv["sparkler:pinned"] = metadata.kv[
+                "sparkler:pinned"
+            ].replace(`${id},`, "");
+
+            save_metadata();
+            alert("Unpinned!");
+        };
+    })();
 </script>
 {% endif %}
 <!-- prettier-ignore -->

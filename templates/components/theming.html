@@ -87,17 +87,19 @@
 </script>
 
 <script>
-    // theme preference
-    const theme_pref = window.localStorage.getItem("theme-pref") || "yes";
+    (() => {
+        // theme preference
+        const theme_pref = window.localStorage.getItem("theme-pref") || "yes";
 
-    if (theme_pref === "no") {
-        document.getElementById("stylesheets").remove(); // remove custom theme stuff
-    }
+        if (theme_pref === "no") {
+            document.getElementById("stylesheets").remove(); // remove custom theme stuff
+        }
 
-    // profile theme
-    const profile_theme = document.getElementById("theme").innerText.trim();
+        // profile theme
+        const profile_theme = document.getElementById("theme").innerText.trim();
 
-    if (profile_theme !== "" && theme_pref !== "no") {
-        document.documentElement.setAttribute("class", profile_theme);
-    }
+        if (profile_theme !== "" && theme_pref !== "no") {
+            document.documentElement.setAttribute("class", profile_theme);
+        }
+    })();
 </script>

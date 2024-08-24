@@ -57,30 +57,32 @@ endblock %} {% block nav_left %} {% if profile.is_some() %}
     {% include "components/theming.html" %}
 {% endif %}
 
-<article class="flex flex-collapse gap-2">
-    <div
-        id="settings_nav"
-        class="sidenav sm:static sm:w-full shadow"
-        style="
-            width: 20rem;
-            padding-top: 0;
-            height: max-content;
-            top: calc(56px + 0.5rem);
-        "
-    >
-        {% block sidenav %}{% endblock %}
-    </div>
+<article>
+    <turbo-frame id="settings" class="flex flex-collapse gap-2">
+        <div
+            id="settings_nav"
+            class="sidenav sm:static sm:w-full shadow"
+            style="
+                width: 20rem;
+                padding-top: 0;
+                height: max-content;
+                top: calc(56px + 0.5rem);
+            "
+        >
+            {% block sidenav %}{% endblock %}
+        </div>
 
-    <section id="settings_content" class="card flex flex-col gap-2 w-full">
-        <div id="admonition_zone"></div>
+        <section id="settings_content" class="card flex flex-col gap-2 w-full">
+            <div id="admonition_zone"></div>
 
-        {% block panel %}{% endblock %}
+            {% block panel %}{% endblock %}
 
-        <hr />
-        <form id="submit_form">
-            <button class="primary bold">Save changes</button>
-        </form>
-    </section>
+            <hr />
+            <form id="submit_form">
+                <button class="primary bold">Save changes</button>
+            </form>
+        </section>
+    </turbo-frame>
 </article>
 
 <script type="application/json" id="my_metadata">
@@ -90,89 +92,93 @@ endblock %} {% block nav_left %} {% if profile.is_some() %}
 {% let profile = profile.as_ref().unwrap() %}
 
 <script>
-    let metadata = JSON.parse(document.getElementById("my_metadata").innerHTML);
+    (() => {
+        let metadata = JSON.parse(
+            document.getElementById("my_metadata").innerHTML,
+        );
 
-    // handle update
-    globalThis.update_kv = (key, value) => {
-        metadata.kv[key] = value;
+        // handle update
+        globalThis.update_kv = (key, value) => {
+            metadata.kv[key] = value;
 
-        // live theme
-        if (key.startsWith("sparkler:color_")) {
-            const real_key = key.replace("sparkler:", "");
-            const css_var = real_key.replaceAll("_", "-");
-            value = value
-                .replaceAll(";", "")
-                .replaceAll("}", "")
-                .replaceAll("<", "%lt;")
-                .replaceAll(">", "%gt;");
+            // live theme
+            if (key.startsWith("sparkler:color_")) {
+                const real_key = key.replace("sparkler:", "");
+                const css_var = real_key.replaceAll("_", "-");
+                value = value
+                    .replaceAll(";", "")
+                    .replaceAll("}", "")
+                    .replaceAll("<", "%lt;")
+                    .replaceAll(">", "%gt;");
 
-            // check for existing stylesheet
-            const existing = document.getElementById(
-                `sparkler_live:${real_key}`,
-            );
+                // check for existing stylesheet
+                const existing = document.getElementById(
+                    `sparkler_live:${real_key}`,
+                );
 
-            if (existing) {
-                if (value === "") {
-                    // use default
-                    existing.remove();
-                    return;
-                }
+                if (existing) {
+                    if (value === "") {
+                        // use default
+                        existing.remove();
+                        return;
+                    }
 
-                existing.innerHTML = `:root, * { --${css_var}: ${value} !important }`;
-            } else {
-                const stylesheets = document.getElementById("stylesheets");
-                const stylesheet = document.createElement("style");
-                stylesheet.id = `sparkler_live:${real_key}`;
-                stylesheet.innerHTML = `:root, * { --${css_var}: ${value} !important }`;
-                stylesheets.appendChild(stylesheet);
-            }
-        }
-    };
-
-    // prefill
-    setTimeout(() => {
-        for (const [key, value] of Object.entries(metadata.kv)) {
-            if (key.length === 0) {
-                continue;
-            }
-
-            if (document.getElementById(key)) {
-                document.getElementById(key).value = value;
-
-                if (value === "true") {
-                    document
-                        .getElementById(key)
-                        .setAttribute("checked", "true");
+                    existing.innerHTML = `:root, * { --${css_var}: ${value} !important }`;
+                } else {
+                    const stylesheets = document.getElementById("stylesheets");
+                    const stylesheet = document.createElement("style");
+                    stylesheet.id = `sparkler_live:${real_key}`;
+                    stylesheet.innerHTML = `:root, * { --${css_var}: ${value} !important }`;
+                    stylesheets.appendChild(stylesheet);
                 }
             }
-        }
-    }, 50);
+        };
 
-    // handle submit
-    document
-        .getElementById("submit_form")
-        .addEventListener("submit", async (e) => {
-            e.preventDefault();
+        // prefill
+        setTimeout(() => {
+            for (const [key, value] of Object.entries(metadata.kv)) {
+                if (key.length === 0) {
+                    continue;
+                }
 
-            const res = await (
-                await fetch(
-                    "/api/auth/profile/{{ profile.username }}/metadata",
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
+                if (document.getElementById(key)) {
+                    document.getElementById(key).value = value;
+
+                    if (value === "true") {
+                        document
+                            .getElementById(key)
+                            .setAttribute("checked", "true");
+                    }
+                }
+            }
+        }, 50);
+
+        // handle submit
+        document
+            .getElementById("submit_form")
+            .addEventListener("submit", async (e) => {
+                e.preventDefault();
+
+                const res = await (
+                    await fetch(
+                        "/api/auth/profile/{{ profile.username }}/metadata",
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                metadata,
+                            }),
                         },
-                        body: JSON.stringify({
-                            metadata,
-                        }),
-                    },
-                )
-            ).json();
+                    )
+                ).json();
 
-            trigger("app:toast", [
-                res.success ? "success" : "error",
-                res.success ? "Settings saved!" : res.message,
-            ]);
-        });
+                trigger("app:toast", [
+                    res.success ? "success" : "error",
+                    res.success ? "Settings saved!" : res.message,
+                ]);
+            });
+    })();
 </script>
 {% call super() %} {% endblock %}
