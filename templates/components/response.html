@@ -127,6 +127,8 @@ let reaction_count = response.3 %} {% let response = response.1.clone() %}
             {{ xsu_util::ui::render_markdown(question.content)|safe }}
         </span>
     </div>
+    {% else %}
+    <div class="card" style="display: none"></div>
     {% endif %}
 
     <div class="card flex flex-col gap-1 response_body">
@@ -136,7 +138,7 @@ let reaction_count = response.3 %} {% let response = response.1.clone() %}
         </span>
 
         <div
-            class="flex justify-between items-center {% if show_comments != false %}flex-collapse{% endif %} {% if do_not_render_question == false %}sm:items-start{% endif %} gap-1 response_title"
+            class="flex justify-between items-center {% if show_comments != false %}flex-collapse{% endif %} sm:items-start gap-1 response_title"
         >
             <div class="footernav flex-wrap">
                 <b class="flex items-center gap-2">

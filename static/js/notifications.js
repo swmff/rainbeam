@@ -16,9 +16,7 @@
                     res.success ? "Notification deleted!" : res.message,
                 ]);
 
-                document
-                    .getElementById(`notif:${id}`)
-                    .setAttribute("disabled", "fully");
+                app.smooth_remove(document.getElementById(`notif:${id}`), 500);
             });
     });
 

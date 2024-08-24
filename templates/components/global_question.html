@@ -114,6 +114,7 @@ question = question.clone().0 %}
     </div>
 
     <div class="card flex gap-2">
+        <!-- reactions -->
         <button
             title="{{ reaction_count }} reactions"
             onclick="trigger('reactions:toggle', ['{{ question.id }}'])"
@@ -134,6 +135,7 @@ question = question.clone().0 %}
             <span class="notification camo">{{ reaction_count }}</span>
         </button>
 
+        <!-- responses -->
         <a
             href="/question/{{ question.id }}"
             class="button item"

@@ -88,7 +88,7 @@ block head %}
         <!-- reply -->
         <!-- prettier-ignore -->
         {% if let Some(comment) = comment.0.reply %} 
-        {% let comment = (comment, 0) %}
+        {% let comment = (comment, 0, 0) %}
         <h5 id="comment" class="flex items-center gap-1">
             Replying to
             <a title="Unfold comment" href="/comment/{{ comment.0.id }}">

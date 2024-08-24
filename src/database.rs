@@ -1668,7 +1668,7 @@ impl Database {
     ) -> Result<()> {
         // make sure the response exists
         let response = match self.get_response(id.clone()).await {
-            Ok(q) => q.0,
+            Ok(q) => q.1,
             Err(e) => return Err(e),
         };
 
@@ -1833,7 +1833,7 @@ impl Database {
     /// # Arguments
     /// * `id`
     #[async_recursion]
-    pub async fn get_comment(&self, id: String) -> Result<(ResponseComment, usize)> {
+    pub async fn get_comment(&self, id: String) -> Result<(ResponseComment, usize, usize)> {
         // check in cache
         match self
             .base
@@ -1844,7 +1844,8 @@ impl Database {
             Some(c) => {
                 return Ok((
                     serde_json::from_str::<ResponseComment>(c.as_str()).unwrap(),
-                    self.get_reply_count_by_comment(id).await,
+                    self.get_reply_count_by_comment(id.clone()).await,
+                    self.get_reaction_count_by_asset(id).await,
                 ))
             }
             None => (),
@@ -1899,7 +1900,11 @@ impl Database {
             .await;
 
         // return
-        Ok((comment, self.get_reply_count_by_comment(id).await))
+        Ok((
+            comment,
+            self.get_reply_count_by_comment(id.clone()).await,
+            self.get_reaction_count_by_asset(id).await,
+        ))
     }
 
     /// Get all comments by their response ID
@@ -1909,7 +1914,7 @@ impl Database {
     pub async fn get_comments_by_response(
         &self,
         id: String,
-    ) -> Result<Vec<(ResponseComment, usize)>> {
+    ) -> Result<Vec<(ResponseComment, usize, usize)>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -1922,7 +1927,7 @@ impl Database {
         let c = &self.base.db.client;
         let res = match sqlquery(&query).bind::<&String>(&id).fetch_all(c).await {
             Ok(p) => {
-                let mut out: Vec<(ResponseComment, usize)> = Vec::new();
+                let mut out: Vec<(ResponseComment, usize, usize)> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
@@ -1952,7 +1957,8 @@ impl Database {
                                 }
                             },
                         },
-                        self.get_reply_count_by_comment(id).await,
+                        self.get_reply_count_by_comment(id.clone()).await,
+                        self.get_reaction_count_by_asset(id).await,
                     ));
                 }
 
@@ -1973,7 +1979,7 @@ impl Database {
         &self,
         id: String,
         page: i32,
-    ) -> Result<Vec<(ResponseComment, usize)>> {
+    ) -> Result<Vec<(ResponseComment, usize, usize)>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -1989,7 +1995,7 @@ impl Database {
             .await
         {
             Ok(p) => {
-                let mut out: Vec<(ResponseComment, usize)> = Vec::new();
+                let mut out: Vec<(ResponseComment, usize, usize)> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
@@ -2019,7 +2025,8 @@ impl Database {
                                 }
                             },
                         },
-                        self.get_reply_count_by_comment(id).await,
+                        self.get_reply_count_by_comment(id.clone()).await,
+                        self.get_reaction_count_by_asset(id).await,
                     ));
                 }
 
@@ -2073,7 +2080,7 @@ impl Database {
     pub async fn get_replies_by_comment(
         &self,
         id: String,
-    ) -> Result<Vec<(ResponseComment, usize)>> {
+    ) -> Result<Vec<(ResponseComment, usize, usize)>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -2086,7 +2093,7 @@ impl Database {
         let c = &self.base.db.client;
         let res = match sqlquery(&query).bind::<&String>(&id).fetch_all(c).await {
             Ok(p) => {
-                let mut out: Vec<(ResponseComment, usize)> = Vec::new();
+                let mut out: Vec<(ResponseComment, usize, usize)> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
@@ -2116,7 +2123,8 @@ impl Database {
                                 }
                             },
                         },
-                        self.get_reply_count_by_comment(id).await,
+                        self.get_reply_count_by_comment(id.clone()).await,
+                        self.get_reaction_count_by_asset(id).await,
                     ));
                 }
 
@@ -2137,7 +2145,7 @@ impl Database {
         &self,
         id: String,
         page: i32,
-    ) -> Result<Vec<(ResponseComment, usize)>> {
+    ) -> Result<Vec<(ResponseComment, usize, usize)>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -2153,7 +2161,7 @@ impl Database {
             .await
         {
             Ok(p) => {
-                let mut out: Vec<(ResponseComment, usize)> = Vec::new();
+                let mut out: Vec<(ResponseComment, usize, usize)> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
@@ -2183,7 +2191,8 @@ impl Database {
                                 }
                             },
                         },
-                        self.get_reply_count_by_comment(id).await,
+                        self.get_reply_count_by_comment(id.clone()).await,
+                        self.get_reaction_count_by_asset(id).await,
                     ));
                 }
 
@@ -2446,6 +2455,11 @@ impl Database {
                         .cachedb
                         .incr(format!("xsulib.sparkler.reply_count:{}", comment.id))
                         .await;
+                }
+
+                // clear reactions
+                if let Err(e) = self.clear_reactions(id).await {
+                    return Err(e);
                 }
 
                 // return
