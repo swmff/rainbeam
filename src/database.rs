@@ -397,7 +397,7 @@ impl Database {
     pub async fn get_global_questions_by_author(
         &self,
         author: String,
-    ) -> Result<Vec<(Question, i32)>> {
+    ) -> Result<Vec<(Question, usize, usize)>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -414,78 +414,7 @@ impl Database {
             .await
         {
             Ok(p) => {
-                let mut out: Vec<(Question, i32)> = Vec::new();
-
-                for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
-                    let id = res.get("id").unwrap().to_string();
-                    out.push((
-                        Question {
-                            author: match self
-                                .get_profile(res.get("author").unwrap().to_string())
-                                .await
-                            {
-                                Ok(ua) => ua,
-                                Err(e) => return Err(e),
-                            },
-                            recipient: match self
-                                .get_profile(res.get("recipient").unwrap().to_string())
-                                .await
-                            {
-                                Ok(ua) => ua,
-                                Err(e) => return Err(e),
-                            },
-                            content: res.get("content").unwrap().to_string(),
-                            id: res.get("id").unwrap().to_string(),
-                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-                        },
-                        // get the number of responses the question has
-                        self.base
-                            .cachedb
-                            .get(format!("xsulib.sparkler.question_response_count:{}", id))
-                            .await
-                            .unwrap_or(String::from("0"))
-                            .parse::<i32>()
-                            .unwrap_or(0),
-                    ));
-                }
-
-                out
-            }
-            Err(_) => return Err(DatabaseError::NotFound),
-        };
-
-        // return
-        Ok(res)
-    }
-
-    /// Get all global questions by their author, 50 at a time
-    ///
-    /// ## Arguments:
-    /// * `author`
-    /// * `page`
-    pub async fn get_global_questions_by_author_paginated(
-        &self,
-        author: String,
-        page: i32,
-    ) -> Result<Vec<(Question, usize)>> {
-        // pull from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
-            format!("SELECT * FROM \"xquestions\" WHERE \"author\" = ? AND \"recipient\" = '@' ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
-        } else {
-            format!("SELECT * FROM \"xquestions\" WHERE \"author\" = $1 AND \"recipient\" = '@' ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
-        }
-        .to_string();
-
-        let c = &self.base.db.client;
-        let res = match sqlquery(&query)
-            .bind::<&String>(&author.to_lowercase())
-            .fetch_all(c)
-            .await
-        {
-            Ok(p) => {
-                let mut out: Vec<(Question, usize)> = Vec::new();
+                let mut out: Vec<(Question, usize, usize)> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
@@ -517,12 +446,82 @@ impl Database {
                             .await
                             .unwrap_or(String::from("0"))
                             .parse::<usize>()
-                            .unwrap_or(
-                                self.get_responses_by_question(id)
-                                    .await
-                                    .unwrap_or(Vec::new())
-                                    .len(),
-                            ),
+                            .unwrap_or(0),
+                        // get the number of reactions the question has
+                        self.get_reaction_count_by_asset(id).await,
+                    ));
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        Ok(res)
+    }
+
+    /// Get all global questions by their author, 50 at a time
+    ///
+    /// ## Arguments:
+    /// * `author`
+    /// * `page`
+    pub async fn get_global_questions_by_author_paginated(
+        &self,
+        author: String,
+        page: i32,
+    ) -> Result<Vec<(Question, usize, usize)>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            format!("SELECT * FROM \"xquestions\" WHERE \"author\" = ? AND \"recipient\" = '@' ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        } else {
+            format!("SELECT * FROM \"xquestions\" WHERE \"author\" = $1 AND \"recipient\" = '@' ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query)
+            .bind::<&String>(&author.to_lowercase())
+            .fetch_all(c)
+            .await
+        {
+            Ok(p) => {
+                let mut out: Vec<(Question, usize, usize)> = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let id = res.get("id").unwrap().to_string();
+                    out.push((
+                        Question {
+                            author: match self
+                                .get_profile(res.get("author").unwrap().to_string())
+                                .await
+                            {
+                                Ok(ua) => ua,
+                                Err(e) => return Err(e),
+                            },
+                            recipient: match self
+                                .get_profile(res.get("recipient").unwrap().to_string())
+                                .await
+                            {
+                                Ok(ua) => ua,
+                                Err(e) => return Err(e),
+                            },
+                            content: res.get("content").unwrap().to_string(),
+                            id: res.get("id").unwrap().to_string(),
+                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                        },
+                        // get the number of responses the question has
+                        self.base
+                            .cachedb
+                            .get(format!("xsulib.sparkler.question_response_count:{}", id))
+                            .await
+                            .unwrap_or(String::from("0"))
+                            .parse::<usize>()
+                            .unwrap_or(0),
+                        // get the number of reactions the question has
+                        self.get_reaction_count_by_asset(id).await,
                     ));
                 }
 
@@ -542,7 +541,7 @@ impl Database {
     pub async fn get_global_questions_by_following(
         &self,
         user: String,
-    ) -> Result<Vec<(Question, i32)>> {
+    ) -> Result<Vec<(Question, usize, usize)>> {
         // get following
         let following = match self.auth.get_following(user.clone()).await {
             Ok(f) => f,
@@ -585,7 +584,7 @@ impl Database {
             .await
         {
             Ok(p) => {
-                let mut out: Vec<(Question, i32)> = Vec::new();
+                let mut out: Vec<(Question, usize, usize)> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
@@ -597,33 +596,17 @@ impl Database {
                                 .await
                             {
                                 Ok(ua) => ua,
-                                Err(e) => {
-                                    println!(
-                                        "({}) UID {}",
-                                        e.to_string(),
-                                        res.get("author").unwrap().to_string()
-                                    );
-
-                                    continue;
-                                }
+                                Err(e) => return Err(e),
                             },
                             recipient: match self
                                 .get_profile(res.get("recipient").unwrap().to_string())
                                 .await
                             {
                                 Ok(ua) => ua,
-                                Err(e) => {
-                                    println!(
-                                        "({}) UID {}",
-                                        e.to_string(),
-                                        res.get("recipient").unwrap().to_string()
-                                    );
-
-                                    continue;
-                                }
+                                Err(e) => return Err(e),
                             },
                             content: res.get("content").unwrap().to_string(),
-                            id: id.clone(),
+                            id: res.get("id").unwrap().to_string(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
                         },
                         // get the number of responses the question has
@@ -632,8 +615,10 @@ impl Database {
                             .get(format!("xsulib.sparkler.question_response_count:{}", id))
                             .await
                             .unwrap_or(String::from("0"))
-                            .parse::<i32>()
+                            .parse::<usize>()
                             .unwrap_or(0),
+                        // get the number of reactions the question has
+                        self.get_reaction_count_by_asset(id).await,
                     ));
                 }
 
@@ -975,6 +960,11 @@ impl Database {
                             question.author.username
                         ))
                         .await;
+
+                    // clear reactions
+                    if let Err(e) = self.clear_reactions(question.id).await {
+                        return Err(e);
+                    }
                 }
 
                 // remove from cache
@@ -1822,6 +1812,11 @@ impl Database {
                             response.0.id
                         ))
                         .await;
+                }
+
+                // clear reactions
+                if let Err(e) = self.clear_reactions(id).await {
+                    return Err(e);
                 }
 
                 // return
@@ -2721,6 +2716,36 @@ impl Database {
                     .await;
 
                 // decr response count
+                self.base
+                    .cachedb
+                    .decr(format!("xsulib.sparkler.reaction_count:{}", id))
+                    .await;
+
+                // return
+                return Ok(());
+            }
+            Err(_) => return Err(DatabaseError::Other),
+        };
+    }
+
+    /// Delete all reactions by their asset
+    ///
+    /// # Arguments
+    /// * `id` - the ID of the asset
+    pub async fn clear_reactions(&self, id: String) -> Result<()> {
+        // delete reactions
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "DELETE FROM \"xreactions\" WHERE \"asset\" = ?"
+        } else {
+            "DELETE FROM \"xreactions\" WHERE \"asset\" = $1"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query).bind::<&String>(&id).execute(c).await {
+            Ok(_) => {
+                // clear reaction count
                 self.base
                     .cachedb
                     .decr(format!("xsulib.sparkler.reaction_count:{}", id))

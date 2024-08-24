@@ -106,30 +106,15 @@ endblock %} {% block head %}
 <script>
     document.getElementById("question_form").addEventListener("submit", (e) => {
         e.preventDefault();
-        fetch("/api/v1/questions", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                recipient:
-                    e.target.recipient.options[e.target.recipient.selectedIndex]
-                        .value,
-                content: e.target.content.value,
-                anonymous: false,
-            }),
-        })
-            .then((res) => res.json())
-            .then((res) => {
-                trigger("app:shout", [
-                    res.success ? "tip" : "caution",
-                    res.message || "Question asked!",
-                ]);
 
-                if (res.success === true) {
-                    e.target.reset();
-                }
-            });
+        trigger("questions:create", [
+            e.target.recipient.options[e.target.recipient.selectedIndex].value,
+            e.target.content.value,
+            false,
+        ]).then((_) => {
+            // reset if successful
+            e.target.reset();
+        });
     });
 </script>
 

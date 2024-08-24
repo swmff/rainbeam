@@ -69,6 +69,16 @@
         alert("Copied!");
     });
 
+    app.define("smooth_remove", function (_, element, ms) {
+        // run animation
+        element.style.animation = `fadeout ease-in-out 1 ${ms}ms forwards running`;
+
+        // remove
+        setTimeout(() => {
+            element.remove();
+        }, ms);
+    });
+
     // hooks
     app.define("hook.dropdown", function (_, event) {
         let target = event.target;
@@ -171,9 +181,9 @@
     }
 
     // toast
-    app.define("toast", function (_, type, content) {
+    app.define("toast", function ({ $ }, type, content) {
         let time_until_remove = 5; // seconds
-        
+
         const element = document.createElement("div");
         element.id = "toast";
         element.classList.add(type);
@@ -193,14 +203,7 @@
         // start timer
         setTimeout(() => {
             clearInterval(count_interval);
-
-            // run animation
-            element.style.animation = "fadeout ease-in-out 1 500ms forwards running";
-
-            // remove
-            setTimeout(() => {
-                toast.remove();
-            }, 500); // animation plays for 1 second
+            $.smooth_remove(element, 500);
         }, time_until_remove * 1000);
 
         const count_interval = setInterval(() => {

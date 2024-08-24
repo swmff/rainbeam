@@ -464,28 +464,15 @@ config.name }}{% endblock %} {% block head %}
 <script>
     document.getElementById("question_form").addEventListener("submit", (e) => {
         e.preventDefault();
-        fetch("/api/v1/questions", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                recipient: "{{ other.id }}",
-                content: e.target.content.value,
-                anonymous: (e.target.anonymous || { checked: false }).checked,
-            }),
-        })
-            .then((res) => res.json())
-            .then((res) => {
-                trigger("app:shout", [
-                    res.success ? "tip" : "caution",
-                    res.message || "Question asked!",
-                ]);
 
-                if (res.success === true) {
-                    e.target.reset();
-                }
-            });
+        trigger("questions:create", [
+            "{{ other.id }}",
+            e.target.content.value,
+            (e.target.anonymous || { checked: false }).checked,
+        ]).then((_) => {
+            // reset if successful
+            e.target.reset();
+        });
     });
 
     function follow() {
@@ -494,20 +481,19 @@ config.name }}{% endblock %} {% block head %}
         })
             .then((res) => res.json())
             .then((res) => {
-                trigger("app:shout", [
-                    res.success ? "tip" : "caution",
-                    res.message || "Toggled user follow!",
-                ]);
-
                 // swap button
                 const button = document.getElementById("follow_button");
 
                 if (button.innerText === "Follow") {
                     button.classList.remove("primary");
                     button.innerText = "Unfollow";
+
+                    trigger("app:toast", ["success", "User followed!"]);
                 } else {
                     button.classList.add("primary");
                     button.innerText = "Follow";
+
+                    trigger("app:toast", ["success", "User unfollowed!"]);
                 }
             });
     }
@@ -534,9 +520,9 @@ config.name }}{% endblock %} {% block head %}
             })
         ).json();
 
-        trigger("app:shout", [
-            res.success ? "tip" : "caution",
-            res.message || "Settings saved!",
+        trigger("app:toast", [
+            res.success ? "success" : "error",
+            res.success ? "Settings saved!" : res.message,
         ]);
     }
 
@@ -547,7 +533,7 @@ config.name }}{% endblock %} {% block head %}
 
         metadata.kv["sparkler:pinned"] += `${id},`;
         save_metadata();
-        alert("Pinned!");
+        trigger("app:toast", ["success", "Response pinned!"]);
     }
 
     function unpin_response(id) {
@@ -557,7 +543,7 @@ config.name }}{% endblock %} {% block head %}
         );
 
         save_metadata();
-        alert("Unpinned!");
+        trigger("app:toast", ["success", "Response unpinned!"]);
     }
 </script>
 {% endif %} {% endif %}

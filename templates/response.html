@@ -68,13 +68,15 @@ block head %}
         <h5 id="reactions">Reactions</h5>
         <div id="reactions" class="flex gap-2 flex-wrap w-full">
             {% for reaction in reactions %}
-            <img
-                title="{{ reaction.user.username }}'s avatar"
-                src="/api/v1/profiles/{{ reaction.user.username }}/avatar"
-                alt="@{{ reaction.user.username }}"
-                class="avatar round-sm"
-                style="--size: 20px"
-            />
+            <a href="/@{{ reaction.user.username }}">
+                <img
+                    title="{{ reaction.user.username }}'s avatar"
+                    src="/api/v1/profiles/{{ reaction.user.username }}/avatar"
+                    alt="@{{ reaction.user.username }}"
+                    class="avatar round-sm"
+                    style="--size: 20px"
+                />
+            </a>
             {% endfor %}
         </div>
 

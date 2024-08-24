@@ -716,6 +716,7 @@ dialog::backdrop {
     min-width: 10rem;
     padding: 0.5rem 0;
     color: var(--color-text-raised);
+    animation: popin ease-in-out 1 0.05s forwards running;
 }
 
 .dropdown .inner.left {
@@ -951,10 +952,12 @@ dialog::backdrop {
 
 @keyframes popin {
     from {
+        opacity: 0%;
         transform: scale(0);
     }
 
     to {
+        opacity: 100%;
         transform: scale(1);
     }
 }

@@ -229,27 +229,13 @@
 <script>
     function respond(e, question) {
         e.preventDefault();
-        fetch("/api/v1/responses", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                question,
-                content: e.target.content.value,
-            }),
-        })
-            .then((res) => res.json())
-            .then((res) => {
-                trigger("app:shout", [
-                    res.success ? "tip" : "caution",
-                    res.message || "Response posted!",
-                ]);
 
-                document
-                    .getElementById(`question:${question}`)
-                    .setAttribute("disabled", "fully");
-            });
+        trigger("responses:create", [question, e.target.content.value]).then(
+            (_) => {
+                // reset if successful
+                e.target.reset();
+            },
+        );
     }
 </script>
 

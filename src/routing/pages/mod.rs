@@ -274,6 +274,7 @@ struct GlobalQuestionTemplate {
     notifs: usize,
     question: Question,
     responses: Vec<(Question, QuestionResponse, usize, usize)>,
+    reactions: Vec<Reaction>,
     already_responded: bool,
     is_powerful: bool,
 }
@@ -335,6 +336,11 @@ pub async fn global_question_request(
         false
     };
 
+    let reactions = match database.get_reactions_by_asset(id.clone()).await {
+        Ok(r) => r,
+        Err(e) => return Html(e.to_html(database)),
+    };
+
     Html(
         GlobalQuestionTemplate {
             config: database.server_options.clone(),
@@ -352,6 +358,7 @@ pub async fn global_question_request(
             question,
             responses,
             is_powerful,
+            reactions,
         }
         .render()
         .unwrap(),
@@ -373,7 +380,6 @@ struct ResponseTemplate {
     anonymous_username: Option<String>,
     anonymous_avatar: Option<String>,
     is_powerful: bool,
-    has_reacted: bool,
 }
 
 /// GET /response/:id
@@ -442,12 +448,6 @@ pub async fn response_request(
         false
     };
 
-    let has_reacted = if let Some(ref ua) = auth_user {
-        database.get_reaction(ua.id.clone(), id).await.is_ok()
-    } else {
-        false
-    };
-
     Html(
         ResponseTemplate {
             config: database.server_options.clone(),
@@ -462,7 +462,6 @@ pub async fn response_request(
             anonymous_username: Some("anonymous".to_string()), // TODO: fetch recipient setting
             anonymous_avatar: None,
             is_powerful,
-            has_reacted,
         }
         .render()
         .unwrap(),
@@ -647,7 +646,7 @@ struct GlobalTimelineTemplate {
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
-    questions: Vec<(Question, i32)>,
+    questions: Vec<(Question, usize, usize)>,
     is_powerful: bool,
 }
 
