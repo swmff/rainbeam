@@ -57,32 +57,30 @@ endblock %} {% block nav_left %} {% if profile.is_some() %}
     {% include "components/theming.html" %}
 {% endif %}
 
-<article>
-    <turbo-frame id="settings" class="flex flex-collapse gap-2">
-        <div
-            id="settings_nav"
-            class="sidenav sm:static sm:w-full shadow"
-            style="
-                width: 20rem;
-                padding-top: 0;
-                height: max-content;
-                top: calc(56px + 0.5rem);
-            "
-        >
-            {% block sidenav %}{% endblock %}
-        </div>
+<article class="flex flex-collapse gap-2">
+    <div
+        id="settings_nav"
+        class="sidenav sm:static sm:w-full shadow"
+        style="
+            width: 20rem;
+            padding-top: 0;
+            height: max-content;
+            top: calc(56px + 0.5rem);
+        "
+    >
+        {% block sidenav %}{% endblock %}
+    </div>
 
-        <section id="settings_content" class="card flex flex-col gap-2 w-full">
-            <div id="admonition_zone"></div>
+    <section id="settings_content" class="card flex flex-col gap-2 w-full">
+        <div id="admonition_zone"></div>
 
-            {% block panel %}{% endblock %}
+        {% block panel %}{% endblock %}
 
-            <hr />
-            <form id="submit_form">
-                <button class="primary bold">Save changes</button>
-            </form>
-        </section>
-    </turbo-frame>
+        <hr />
+        <form id="submit_form">
+            <button class="primary bold">Save changes</button>
+        </form>
+    </section>
 </article>
 
 <script type="application/json" id="my_metadata">
