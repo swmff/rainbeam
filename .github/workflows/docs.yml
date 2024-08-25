@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+      - name: Pull submodules
+        run: git submodule update --recursive --remote
       - name: Init Rust
         uses: dtolnay/rust-toolchain@stable
       - name: Configure cache
@@ -24,8 +26,6 @@ jobs:
       - name: Configure pages
         id: pages
         uses: actions/configure-pages@v4
-      - name: Pull submodules
-        run: git submodule update --recursive --remote
       - name: Clean docs directory
         run: cargo clean --doc
       - name: Build documentation
