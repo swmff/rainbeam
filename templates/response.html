@@ -248,7 +248,7 @@ block head %}
 
     function edit(e) {
         e.preventDefault();
-        trigger("responses:edit_tags", [
+        trigger("responses:edit", [
             "{{ response.id }}",
             e.target.content.value,
         ]).then((res) => {
