@@ -269,6 +269,17 @@ pub fn remove_tags(input: &str) -> String {
 
 /// Clean profile metadata
 pub fn clean_metadata(metadata: &ProfileMetadata) -> String {
+    // remove stupid characters
+    let mut metadata = metadata.to_owned();
+
+    for field in metadata.kv.clone() {
+        metadata.kv.insert(
+            field.0.to_string(),
+            field.1.replace("<", "&lt;").replace(">", "&gt;"),
+        );
+    }
+
+    // ...
     remove_tags(&serde_json::to_string(&metadata).unwrap())
 }
 
