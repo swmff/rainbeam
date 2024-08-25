@@ -22,7 +22,7 @@ pub struct Config {
     /// If new profile registration is enabled
     #[serde(default)]
     pub registration_enabled: bool,
-    /// The origin of the public server (ex: "https://sparkler.cc")
+    /// The origin of the public server (ex: "<https://sparkler.cc>")
     ///
     /// Used in embeds and links.
     #[serde(default)]
