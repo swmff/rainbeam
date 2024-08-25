@@ -241,7 +241,8 @@ block head %}
             document.getElementById("tags").value = `{{ tags|safe }}`
                 .replaceAll('["', "")
                 .replaceAll('","', ", ")
-                .replaceAll('"]', "");
+                .replaceAll('"]', "")
+                .replace("[]", "");
         }
     }, 100);
 
