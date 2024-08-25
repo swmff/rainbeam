@@ -231,9 +231,16 @@ pub async fn sign_up_request(
 }
 
 #[derive(Serialize, Deserialize)]
+pub struct PaginatedQuery {
+    #[serde(default)]
+    page: i32,
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct ProfileQuery {
     #[serde(default)]
     page: i32,
+    tag: Option<String>,
 }
 
 /// Escape profile colors
@@ -376,6 +383,7 @@ struct ResponseTemplate {
     response: QuestionResponse,
     comments: Vec<(ResponseComment, usize, usize)>,
     reactions: Vec<Reaction>,
+    tags: String,
     page: i32,
     anonymous_username: Option<String>,
     anonymous_avatar: Option<String>,
@@ -387,7 +395,7 @@ pub async fn response_request(
     jar: CookieJar,
     Path(id): Path<String>,
     State(database): State<Database>,
-    Query(query): Query<ProfileQuery>,
+    Query(query): Query<PaginatedQuery>,
 ) -> impl IntoResponse {
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
@@ -455,6 +463,7 @@ pub async fn response_request(
             unread,
             notifs,
             question: response.0,
+            tags: serde_json::to_string(&response.1.tags).unwrap(),
             response: response.1,
             comments,
             reactions,
@@ -477,6 +486,7 @@ struct CommentTemplate {
     notifs: usize,
     comment: (ResponseComment, usize, usize),
     replies: Vec<(ResponseComment, usize, usize)>,
+    reactions: Vec<Reaction>,
     page: i32,
     question: Question,
     response: QuestionResponse,
@@ -491,7 +501,7 @@ pub async fn comment_request(
     jar: CookieJar,
     Path(id): Path<String>,
     State(database): State<Database>,
-    Query(props): Query<ProfileQuery>,
+    Query(props): Query<PaginatedQuery>,
 ) -> impl IntoResponse {
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
@@ -523,7 +533,7 @@ pub async fn comment_request(
         0
     };
 
-    let comment = match database.get_comment(id.clone()).await {
+    let comment = match database.get_comment(id.clone(), true).await {
         Ok(r) => r,
         Err(e) => return Html(e.to_html(database)),
     };
@@ -552,6 +562,11 @@ pub async fn comment_request(
         false
     };
 
+    let reactions = match database.get_reactions_by_asset(id.clone()).await {
+        Ok(r) => r,
+        Err(e) => return Html(e.to_html(database)),
+    };
+
     Html(
         CommentTemplate {
             config: database.server_options.clone(),
@@ -560,6 +575,7 @@ pub async fn comment_request(
             notifs,
             comment,
             replies,
+            reactions,
             page: props.page,
             question: response.0,
             response: response.1,

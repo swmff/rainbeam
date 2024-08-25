@@ -10,7 +10,7 @@ use crate::config::Config;
 use crate::database::Database;
 use crate::model::{DatabaseError, Question, QuestionResponse};
 
-use super::{clean_metadata, ProfileQuery};
+use super::{clean_metadata, PaginatedQuery, ProfileQuery};
 
 #[derive(Template)]
 #[template(path = "profile/profile.html")]
@@ -30,6 +30,7 @@ struct ProfileTemplate {
     metadata: String,
     pinned: Option<Vec<(Question, QuestionResponse, usize, usize)>>,
     page: i32,
+    tag: String,
     // ...
     lock_profile: bool,
     disallow_anonymous: bool,
@@ -112,12 +113,26 @@ pub async fn profile_request(
         false
     };
 
-    let responses = match database
-        .get_responses_by_author_paginated(other.id.to_owned(), query.page)
-        .await
-    {
-        Ok(responses) => responses,
-        Err(e) => return Html(e.to_html(database)),
+    let responses = if let Some(ref tag) = query.tag {
+        match database
+            .get_responses_by_author_tagged_paginated(
+                other.id.to_owned(),
+                tag.to_owned(),
+                query.page,
+            )
+            .await
+        {
+            Ok(responses) => responses,
+            Err(e) => return Html(e.to_html(database)),
+        }
+    } else {
+        match database
+            .get_responses_by_author_paginated(other.id.to_owned(), query.page)
+            .await
+        {
+            Ok(responses) => responses,
+            Err(e) => return Html(e.to_html(database)),
+        }
     };
 
     let pinned = if let Some(pinned) = other.metadata.kv.get("sparkler:pinned") {
@@ -190,6 +205,7 @@ pub async fn profile_request(
             metadata: clean_metadata(&other.metadata),
             pinned,
             page: query.page,
+            tag: query.tag.unwrap_or(String::new()),
             // ...
             lock_profile: other
                 .metadata
@@ -260,7 +276,7 @@ pub async fn followers_request(
     jar: CookieJar,
     Path(username): Path<String>,
     State(database): State<Database>,
-    Query(query): Query<ProfileQuery>,
+    Query(query): Query<PaginatedQuery>,
 ) -> impl IntoResponse {
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
@@ -449,7 +465,7 @@ pub async fn following_request(
     jar: CookieJar,
     Path(username): Path<String>,
     State(database): State<Database>,
-    Query(query): Query<ProfileQuery>,
+    Query(query): Query<PaginatedQuery>,
 ) -> impl IntoResponse {
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
@@ -639,7 +655,7 @@ pub async fn questions_request(
     jar: CookieJar,
     Path(username): Path<String>,
     State(database): State<Database>,
-    Query(query): Query<ProfileQuery>,
+    Query(query): Query<PaginatedQuery>,
 ) -> impl IntoResponse {
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database

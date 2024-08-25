@@ -13,7 +13,7 @@ use crate::model::{
     Circle, CircleMetadata, DatabaseError, MembershipStatus, Question, QuestionResponse,
 };
 
-use super::ProfileQuery;
+use super::PaginatedQuery;
 
 /// Clean profile metadata
 fn clean_metadata(metadata: &CircleMetadata) -> String {
@@ -167,7 +167,7 @@ pub async fn profile_request(
     jar: CookieJar,
     Path(name): Path<String>,
     State(database): State<Database>,
-    Query(query): Query<ProfileQuery>,
+    Query(query): Query<PaginatedQuery>,
 ) -> impl IntoResponse {
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database

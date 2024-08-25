@@ -90,6 +90,8 @@ pub struct QuestionResponse {
     pub id: String,
     /// The time this response was created
     pub timestamp: u128,
+    /// The response tags
+    pub tags: Vec<String>,
 }
 
 /// A comment structure
@@ -228,6 +230,11 @@ pub struct ResponseEdit {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct ResponseEditTags {
+    pub tags: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct CommentCreate {
     pub response: String,
     pub content: String,
@@ -269,9 +276,9 @@ impl DatabaseError {
             InvalidName => String::from("This name cannot be used!"),
             NotAllowed => String::from("You are not allowed to do this!"),
             ValueError => String::from("One of the field values given is invalid!"),
-            OutOfTime => {
-                String::from("You can only edit a response within the first 2 hours of posting it!")
-            }
+            OutOfTime => String::from(
+                "You can only edit a response within the first 24 hours of posting it!",
+            ),
             NotFound => {
                 String::from("Nothing with this path exists or you do not have access to it!")
             }

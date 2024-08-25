@@ -57,17 +57,16 @@ block head %}
 <article>
     {% if responses.len() == 0 %}
     <main>
-        <p>
-            You've seen everything!
-            <em>For now...</em>
-        </p>
+        <div class="markdown-alert-important">
+            <span>No results matching this query yet!</span>
+        </div>
     </main>
     {% endif %}
 
     <main class="flex flex-col gap-2">
         <div class="pillmenu">
             <a href="/" class="active">Timeline</a>
-            <a href="/inbox/compose">Ask</a>
+            <a href="/inbox/compose" data-turbo="false">Ask</a>
         </div>
 
         <p>Answers from people you follow (and yourself) will show up here!</p>

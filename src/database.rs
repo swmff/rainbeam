@@ -62,7 +62,8 @@ impl Database {
                 question  TEXT,
                 content   TEXT,
                 id        TEXT,
-                timestamp TEXT
+                timestamp TEXT,
+                tags      TEXT
             )",
         )
         .execute(c)
@@ -1041,6 +1042,10 @@ impl Database {
             content: res.get("content").unwrap().to_string(),
             id: res.get("id").unwrap().to_string(),
             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+            tags: match serde_json::from_str(res.get("tags").unwrap()) {
+                Ok(t) => t,
+                Err(_) => return Err(DatabaseError::ValueError),
+            },
         };
 
         // store in cache
@@ -1107,6 +1112,10 @@ impl Database {
             content: res.get("content").unwrap().to_string(),
             id: res.get("id").unwrap().to_string(),
             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+            tags: match serde_json::from_str(res.get("tags").unwrap()) {
+                Ok(t) => t,
+                Err(_) => return Err(DatabaseError::ValueError),
+            },
         };
 
         // return
@@ -1170,6 +1179,10 @@ impl Database {
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            tags: match serde_json::from_str(res.get("tags").unwrap()) {
+                                Ok(t) => t,
+                                Err(_) => return Err(DatabaseError::ValueError),
+                            },
                         },
                         self.get_comment_count_by_response(id.clone()).await,
                         self.get_reaction_count_by_asset(id).await,
@@ -1233,6 +1246,80 @@ impl Database {
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            tags: match serde_json::from_str(res.get("tags").unwrap()) {
+                                Ok(t) => t,
+                                Err(_) => return Err(DatabaseError::ValueError),
+                            },
+                        },
+                        self.get_comment_count_by_response(id.clone()).await,
+                        self.get_reaction_count_by_asset(id).await,
+                    ));
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::Other),
+        };
+
+        // return
+        Ok(res)
+    }
+
+    /// Get all responses by their author and tag, 50 at a time
+    ///
+    /// # Arguments
+    /// * `author`
+    /// * `tag`
+    pub async fn get_responses_by_author_tagged_paginated(
+        &self,
+        author: String,
+        tag: String,
+        page: i32,
+    ) -> Result<Vec<(Question, QuestionResponse, usize, usize)>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            format!("SELECT * FROM \"xresponses\" WHERE \"author\" = ? AND \"tags\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        } else {
+            format!("SELECT * FROM \"xresponses\" WHERE \"author\" = $1 AND \"tags\" LIKE $2 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        };
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query)
+            .bind::<&String>(&author.to_lowercase())
+            .bind::<&String>(&format!("%\"{}\"%", tag))
+            .fetch_all(c)
+            .await
+        {
+            Ok(p) => {
+                let mut out: Vec<(Question, QuestionResponse, usize, usize)> = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let question = res.get("question").unwrap().to_string();
+                    let id = res.get("id").unwrap().to_string();
+
+                    out.push((
+                        match self.get_question(question.clone()).await {
+                            Ok(q) => q,
+                            Err(_) => Question::unknown(),
+                        },
+                        QuestionResponse {
+                            author: match self
+                                .get_profile(res.get("author").unwrap().to_string())
+                                .await
+                            {
+                                Ok(ua) => ua,
+                                Err(_) => anonymous_profile("anonymous".to_string()),
+                            },
+                            question,
+                            content: res.get("content").unwrap().to_string(),
+                            id: id.clone(),
+                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            tags: match serde_json::from_str(res.get("tags").unwrap()) {
+                                Ok(t) => t,
+                                Err(_) => return Err(DatabaseError::ValueError),
+                            },
                         },
                         self.get_comment_count_by_response(id.clone()).await,
                         self.get_reaction_count_by_asset(id).await,
@@ -1355,6 +1442,10 @@ impl Database {
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            tags: match serde_json::from_str(res.get("tags").unwrap()) {
+                                Ok(t) => t,
+                                Err(_) => return Err(DatabaseError::ValueError),
+                            },
                         },
                         self.get_comment_count_by_response(id.clone()).await,
                         self.get_reaction_count_by_asset(id).await,
@@ -1414,6 +1505,10 @@ impl Database {
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            tags: match serde_json::from_str(res.get("tags").unwrap()) {
+                                Ok(t) => t,
+                                Err(_) => return Err(DatabaseError::ValueError),
+                            },
                         },
                         self.get_comment_count_by_response(id.clone()).await,
                         self.get_reaction_count_by_asset(id).await,
@@ -1524,14 +1619,15 @@ impl Database {
             content: props.content.trim().to_string(),
             id: utility::random_id(),
             timestamp: utility::unix_epoch_timestamp(),
+            tags: Vec::new(),
         };
 
         // create response
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            "INSERT INTO \"xresponses\" VALUES (?, ?, ?, ?, ?)"
+            "INSERT INTO \"xresponses\" VALUES (?, ?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xresponses\" VALEUS ($1, $2, $3, $4, $5)"
+            "INSERT INTO \"xresponses\" VALEUS ($1, $2, $3, $4, $5, $6)"
         }
         .to_string();
 
@@ -1542,6 +1638,7 @@ impl Database {
             .bind::<&String>(&response.content)
             .bind::<&String>(&response.id)
             .bind::<&String>(&response.timestamp.to_string())
+            .bind::<&str>("[]")
             .execute(c)
             .await
         {
@@ -1653,11 +1750,10 @@ impl Database {
         }
     }
 
-    /// Create a new response
-    ///
-    /// Responses can only be created for questions where `recipient` matches the given `author`
+    /// Update an existing response's content
     ///
     /// # Arguments
+    /// * `id`
     /// * `content`
     /// * `user` - the user doing this
     pub async fn update_response_content(
@@ -1675,9 +1771,9 @@ impl Database {
         // check time
         let now = xsu_util::unix_epoch_timestamp();
         let diff = now - response.timestamp;
-        let two_hours = 7200000;
+        let twenty_four_hours = 14400000;
 
-        if diff >= two_hours {
+        if diff >= twenty_four_hours {
             return Err(DatabaseError::OutOfTime);
         }
 
@@ -1727,6 +1823,73 @@ impl Database {
         let c = &self.base.db.client;
         match sqlquery(&query)
             .bind::<&String>(&content)
+            .bind::<&String>(&id)
+            .execute(c)
+            .await
+        {
+            Ok(_) => {
+                self.base
+                    .cachedb
+                    .remove(format!("xsulib.sparkler.response:{id}"))
+                    .await;
+
+                Ok(())
+            }
+            Err(_) => Err(DatabaseError::Other),
+        }
+    }
+
+    /// Update an existing response's tags
+    ///
+    /// # Arguments
+    /// * `id`
+    /// * `tags`
+    /// * `user` - the user doing this
+    pub async fn update_response_tags(
+        &self,
+        id: String,
+        tags: Vec<String>,
+        user: Profile,
+    ) -> Result<()> {
+        // make sure the response exists
+        let response = match self.get_response(id.clone()).await {
+            Ok(q) => q.1,
+            Err(e) => return Err(e),
+        };
+
+        // check user permissions
+        if user.group == -1 {
+            // group -1 (even if it exists) is for marking users as banned
+            return Err(DatabaseError::NotAllowed);
+        }
+
+        if user.id != response.author.id {
+            // check permission
+            let group = match self.auth.get_group_by_id(user.group).await {
+                Ok(g) => g,
+                Err(_) => return Err(DatabaseError::Other),
+            };
+
+            if !group.permissions.contains(&Permission::Manager) {
+                return Err(DatabaseError::NotAllowed);
+            }
+        }
+
+        // update response
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "UPDATE \"xresponses\" SET \"tags\" = ? WHERE \"id\" = ?"
+        } else {
+            "UPDATE \"xresponses\" SET (\"tags\") = ($1) WHERE \"id\" = $2"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query)
+            .bind::<&String>(&match serde_json::to_string(&tags) {
+                Ok(t) => t,
+                Err(_) => return Err(DatabaseError::ValueError),
+            })
             .bind::<&String>(&id)
             .execute(c)
             .await
@@ -1832,8 +1995,13 @@ impl Database {
     ///
     /// # Arguments
     /// * `id`
+    /// * `recurse` - should be FALSE when fetching counts to prevent a stack overflow
     #[async_recursion]
-    pub async fn get_comment(&self, id: String) -> Result<(ResponseComment, usize, usize)> {
+    pub async fn get_comment(
+        &self,
+        id: String,
+        recurse: bool,
+    ) -> Result<(ResponseComment, usize, usize)> {
         // check in cache
         match self
             .base
@@ -1844,7 +2012,11 @@ impl Database {
             Some(c) => {
                 return Ok((
                     serde_json::from_str::<ResponseComment>(c.as_str()).unwrap(),
-                    self.get_reply_count_by_comment(id.clone()).await,
+                    if recurse == true {
+                        self.get_reply_count_by_comment(id.clone()).await
+                    } else {
+                        0
+                    },
                     self.get_reaction_count_by_asset(id).await,
                 ))
             }
@@ -1883,7 +2055,7 @@ impl Database {
             reply: if reply.is_empty() {
                 None
             } else {
-                match Box::pin(self.get_comment(reply)).await {
+                match Box::pin(self.get_comment(reply, recurse)).await {
                     Ok(r) => Some(Box::new(r.0)),
                     Err(_) => None,
                 }
@@ -1902,7 +2074,11 @@ impl Database {
         // return
         Ok((
             comment,
-            self.get_reply_count_by_comment(id.clone()).await,
+            if recurse == true {
+                self.get_reply_count_by_comment(id.clone()).await
+            } else {
+                0
+            },
             self.get_reaction_count_by_asset(id).await,
         ))
     }
@@ -1918,9 +2094,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            "SELECT * FROM \"xcomments\" WHERE \"response\" = ? ORDER BY \"timestamp\" DESC"
+            "SELECT * FROM \"xcomments\" WHERE \"response\" = ? AND \"reply\" = '' ORDER BY \"timestamp\" DESC"
         } else {
-            "SELECT * FROM \"xcomments\" WHERE \"response\" = $1 ORDER BY \"timestamp\" DESC"
+            "SELECT * FROM \"xcomments\" WHERE \"response\" = $1 AND \"reply\" = '' ORDER BY \"timestamp\" DESC"
         }
         .to_string();
 
@@ -1951,7 +2127,7 @@ impl Database {
                             reply: if reply.is_empty() {
                                 None
                             } else {
-                                match self.get_comment(reply).await {
+                                match self.get_comment(reply, true).await {
                                     Ok(r) => Some(Box::new(r.0)),
                                     Err(_) => None,
                                 }
@@ -1983,9 +2159,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xcomments\" WHERE \"response\" = ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+            format!("SELECT * FROM \"xcomments\" WHERE \"response\" = ? AND \"reply\" = '' ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
         } else {
-            format!("SELECT * FROM \"xcomments\" WHERE \"response\" = $1 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+            format!("SELECT * FROM \"xcomments\" WHERE \"response\" = $1 AND \"reply\" = '' ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
         };
 
         let c = &self.base.db.client;
@@ -2019,7 +2195,7 @@ impl Database {
                             reply: if reply.is_empty() {
                                 None
                             } else {
-                                match self.get_comment(reply).await {
+                                match self.get_comment(reply, true).await {
                                     Ok(r) => Some(Box::new(r.0)),
                                     Err(_) => None,
                                 }
@@ -2076,10 +2252,12 @@ impl Database {
     ///
     /// # Arguments
     /// * `id`
+    /// * `recurse` - should be FALSE when fetching counts to prevent a stack overflow
     #[async_recursion]
     pub async fn get_replies_by_comment(
         &self,
         id: String,
+        recurse: bool,
     ) -> Result<Vec<(ResponseComment, usize, usize)>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
@@ -2117,13 +2295,17 @@ impl Database {
                             reply: if reply.is_empty() {
                                 None
                             } else {
-                                match self.get_comment(reply).await {
+                                match self.get_comment(reply, recurse).await {
                                     Ok(r) => Some(Box::new(r.0)),
                                     Err(_) => None,
                                 }
                             },
                         },
-                        self.get_reply_count_by_comment(id.clone()).await,
+                        if recurse == true {
+                            self.get_reply_count_by_comment(id.clone()).await
+                        } else {
+                            0
+                        },
                         self.get_reaction_count_by_asset(id).await,
                     ));
                 }
@@ -2185,7 +2367,7 @@ impl Database {
                             reply: if reply.is_empty() {
                                 None
                             } else {
-                                match self.get_comment(reply).await {
+                                match self.get_comment(reply, true).await {
                                     Ok(r) => Some(Box::new(r.0)),
                                     Err(_) => None,
                                 }
@@ -2222,7 +2404,7 @@ impl Database {
 
         // fetch from database
         let count = self
-            .get_replies_by_comment(id.clone())
+            .get_replies_by_comment(id.clone(), false)
             .await
             .unwrap_or(Vec::new())
             .len();
@@ -2320,7 +2502,7 @@ impl Database {
                 // create notification
                 if !props.reply.is_empty() {
                     // send notification
-                    let reply = match self.get_comment(props.reply.clone()).await {
+                    let reply = match self.get_comment(props.reply.clone(), false).await {
                         Ok(r) => r.0,
                         Err(e) => return Err(e),
                     };
@@ -2398,7 +2580,7 @@ impl Database {
     /// * `user` - the user doing this
     pub async fn delete_comment(&self, id: String, user: Profile) -> Result<()> {
         // make sure comment exists
-        let comment = match self.get_comment(id.clone()).await {
+        let comment = match self.get_comment(id.clone(), false).await {
             Ok(q) => q.0,
             Err(e) => return Err(e),
         };
@@ -3285,7 +3467,7 @@ impl Database {
     pub async fn update_circle_metadata(
         &self,
         id: String,
-        metadata: CircleMetadata,
+        mut metadata: CircleMetadata,
         user: Profile,
     ) -> Result<()> {
         // make sure circle exists
@@ -3309,6 +3491,15 @@ impl Database {
 
             if !group.permissions.contains(&Permission::Manager) {
                 return Err(DatabaseError::NotAllowed);
+            }
+        }
+
+        // check metadata kv
+        let allowed_custom_keys = self.auth.allowed_custom_keys();
+
+        for kv in metadata.kv.clone() {
+            if !allowed_custom_keys.contains(&kv.0.as_str()) {
+                metadata.kv.remove(&kv.0);
             }
         }
 
@@ -3531,6 +3722,10 @@ impl Database {
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            tags: match serde_json::from_str(res.get("tags").unwrap()) {
+                                Ok(t) => t,
+                                Err(_) => return Err(DatabaseError::ValueError),
+                            },
                         },
                         self.get_comment_count_by_response(id.clone()).await,
                         self.get_reaction_count_by_asset(id).await,
@@ -3611,6 +3806,10 @@ impl Database {
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            tags: match serde_json::from_str(res.get("tags").unwrap()) {
+                                Ok(t) => t,
+                                Err(_) => return Err(DatabaseError::ValueError),
+                            },
                         },
                         self.get_comment_count_by_response(id.clone()).await,
                         self.get_reaction_count_by_asset(id).await,

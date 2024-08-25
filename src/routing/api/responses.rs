@@ -1,5 +1,5 @@
 use crate::database::Database;
-use crate::model::{DatabaseError, ResponseCreate, ResponseEdit};
+use crate::model::{DatabaseError, ResponseCreate, ResponseEdit, ResponseEditTags};
 use axum::routing::put;
 use hcaptcha::Hcaptcha;
 use xsu_authman::model::{NotificationCreate, ProfileMetadata};
@@ -19,6 +19,7 @@ pub fn routes(database: Database) -> Router {
         .route("/", post(create_request))
         .route("/:id", get(get_request))
         .route("/:id", put(edit_request))
+        .route("/:id/tags", put(edit_tags_request))
         .route("/:id", delete(delete_request))
         .route("/:id/report", post(report_request))
         // ...
@@ -126,6 +127,43 @@ pub async fn edit_request(
             .update_response_content(id, req.content, auth_user)
             .await
         {
+            Ok(r) => DefaultReturn {
+                success: true,
+                message: String::new(),
+                payload: Some(r),
+            },
+            Err(e) => e.into(),
+        },
+    )
+}
+
+/// [`Database::update_response_tags`]
+pub async fn edit_tags_request(
+    jar: CookieJar,
+    Path(id): Path<String>,
+    State(database): State<Database>,
+    Json(req): Json<ResponseEditTags>,
+) -> impl IntoResponse {
+    // get user from token
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => {
+                return Json(DatabaseError::NotAllowed.into());
+            }
+        },
+        None => {
+            return Json(DatabaseError::NotAllowed.into());
+        }
+    };
+
+    // ...
+    Json(
+        match database.update_response_tags(id, req.tags, auth_user).await {
             Ok(r) => DefaultReturn {
                 success: true,
                 message: String::new(),

@@ -974,6 +974,13 @@ dialog::backdrop {
     }
 }
 
+.tag {
+    font-size: 0.825rem;
+    font-family: monospace;
+    opacity: 75%;
+    color: inherit;
+}
+
 /* utility */
 .flex {
     display: flex;

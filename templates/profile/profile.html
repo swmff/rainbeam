@@ -42,6 +42,12 @@
             {% include "../components/response.html" %}
         {% endfor %}
     <hr class="small" />
+    {% endif %} {% if !tag.is_empty() %}
+    <h3>#{{ tag }}</h3>
+    {% endif %} {% if responses.len() == 0 %}
+    <div class="markdown-alert-important">
+        <span>No results matching this query yet!</span>
+    </div>
     {% endif %}
 
     <!-- actual feed -->
@@ -58,11 +64,21 @@
     {% if response_count != 0 %}
     <div class="flex justify-between gap-4 w-full">
         {% if page > 0 %}
-        <a class="button secondary" href="?page={{ page - 1 }}">Previous</a>
+        <a
+            class="button secondary"
+            href="?page={{ page - 1 }}{% if !tag.is_empty() %}&tag={{ tag }}{% endif %}"
+        >
+            Previous
+        </a>
         {% else %}
         <div></div>
         {% endif %} {% if responses.len() != 0 %}
-        <a class="button secondary" href="?page={{ page + 1 }}">Next</a>
+        <a
+            class="button secondary"
+            href="?page={{ page + 1 }}{% if !tag.is_empty() %}&tag={{ tag }}{% endif %}"
+        >
+            Next
+        </a>
         {% endif %}
     </div>
     {% endif %}

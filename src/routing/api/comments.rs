@@ -60,7 +60,7 @@ pub async fn get_request(
     Path(id): Path<String>,
     State(database): State<Database>,
 ) -> impl IntoResponse {
-    Json(match database.get_comment(id).await {
+    Json(match database.get_comment(id, true).await {
         Ok(mut r) => DefaultReturn {
             success: true,
             message: String::new(),
@@ -131,7 +131,7 @@ pub async fn report_request(
     }
 
     // get comment
-    if let Err(_) = database.get_comment(id.clone()).await {
+    if let Err(_) = database.get_comment(id.clone(), false).await {
         return Json(DefaultReturn {
             success: false,
             message: DatabaseError::NotFound.to_string(),

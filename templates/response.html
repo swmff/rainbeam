@@ -191,39 +191,94 @@ block head %}
     </form>
 </dialog>
 
+<dialog id="edit_tags_dialog">
+    <form class="inner flex flex-col gap-2" onsubmit="edit_tags(event)">
+        <!-- prettier-ignore -->
+        <label for="tags">Tags</label>
+
+        <textarea
+            class="w-full"
+            placeholder="Type your tags!"
+            minlength="1"
+            maxlength="1000"
+            required
+            name="tags"
+            id="tags"
+            hook="counter"
+        ></textarea>
+
+        <div>
+            <span id="tags:counter" class="notification item"></span>
+        </div>
+
+        <p>Tags should be separated by a comma with a space after!</p>
+
+        <hr />
+        <div class="flex gap-2">
+            <button class="primary bold">Confirm</button>
+            <button
+                class="bold"
+                onclick="document.getElementById('edit_tags_dialog').close(); window.close()"
+                type="button"
+            >
+                Cancel
+            </button>
+        </div>
+    </form>
+</dialog>
+
 <script>
     setTimeout(() => {
         const dialogs = ns("dialogs");
+
         dialogs.add("edit_dialog");
+        dialogs.add("edit_tags_dialog");
 
         if (window.location.search === "?edit") {
             dialogs.get("edit_dialog").open();
+        } else if (window.location.search === "?edit_tags") {
+            dialogs.get("edit_tags_dialog").open();
+            document.getElementById("tags").value = `{{ tags|safe }}`
+                .replaceAll('["', "")
+                .replaceAll('","', ", ")
+                .replaceAll('"]', "");
         }
     }, 100);
 
     function edit(e) {
         e.preventDefault();
-        fetch("/api/v1/responses/{{ response.id }}", {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                content: e.target.content.value,
-            }),
-        })
-            .then((res) => res.json())
-            .then((res) => {
-                alert(res.message || "Response edited!");
+        trigger("responses:edit_tags", [
+            "{{ response.id }}",
+            e.target.content.value,
+        ]).then((res) => {
+            alert(res.message || "Response edited!");
 
-                if (res.success === true) {
-                    window.close();
+            if (res.success === true) {
+                window.close();
 
-                    setTimeout(() => {
-                        window.location.href = "?";
-                    }, 100);
-                }
-            });
+                setTimeout(() => {
+                    window.location.href = "?";
+                }, 100);
+            }
+        });
+    }
+
+    function edit_tags(e) {
+        e.preventDefault();
+        trigger("responses:edit_tags", [
+            "{{ response.id }}",
+            e.target.tags.value.split(", "),
+        ]).then((res) => {
+            alert(res.message || "Response edited!");
+
+            if (res.success === true) {
+                window.close();
+
+                setTimeout(() => {
+                    window.location.href = "?";
+                }, 100);
+            }
+        });
     }
 </script>
 {% endif %} {% endif %} {% call super() %} {% endblock %}

@@ -34,6 +34,60 @@
         });
     });
 
+    self.define("edit", function ({ $, app }, id, content) {
+        return new Promise((resolve, reject) => {
+            fetch(`/api/v1/responses/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    content,
+                }),
+            })
+                .then((res) => res.json())
+                .then((res) => {
+                    app.toast(
+                        res.success ? "success" : "error",
+                        res.success ? "Response edited!" : res.message,
+                    );
+
+                    if (res.success === true) {
+                        return resolve(res);
+                    } else {
+                        return reject(res);
+                    }
+                });
+        });
+    });
+
+     self.define("edit_tags", function ({ $, app }, id, tags) {
+        return new Promise((resolve, reject) => {
+            fetch(`/api/v1/responses/${id}/tags`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    tags,
+                }),
+            })
+                .then((res) => res.json())
+                .then((res) => {
+                    app.toast(
+                        res.success ? "success" : "error",
+                        res.success ? "Response edited!" : res.message,
+                    );
+
+                    if (res.success === true) {
+                        return resolve(res);
+                    } else {
+                        return reject(res);
+                    }
+                });
+        });
+    });
+
     self.define("delete", function ({ $, app }, id) {
         if (!confirm("Are you sure you want to do this?")) {
             return;

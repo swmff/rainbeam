@@ -38,7 +38,7 @@
         <script>
             globalThis.ns_config = {
                 root: "/static/js/",
-                version: "0.6.5",
+                version: "0.6.6",
             };
 
             globalThis._app_base = {
@@ -104,6 +104,7 @@
                         class="button"
                         href="/inbox/compose"
                         title="Compose a question"
+                        data-turbo="false"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -204,7 +205,7 @@
                             {% else %}
                             <b class="title">Account</b>
 
-                            <a href="/login">
+                            <a href="/login" data-turbo="false">
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 16 16"
@@ -220,7 +221,7 @@
                                 Login
                             </a>
 
-                            <a href="/sign_up">
+                            <a href="/sign_up" data-turbo="false">
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 16 16"

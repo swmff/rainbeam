@@ -26,6 +26,22 @@
         <p class="fade">A short description about you. Supports Markdown.</p>
     </div>
 
+    <div class="flex flex-col gap-1">
+        <label for="sparkler:sidebar">Sidebar</label>
+
+        <textarea
+            name="sparkler:sidebar"
+            id="sparkler:sidebar"
+            onchange="update_kv('sparkler:sidebar', event.target.value)"
+        ></textarea>
+
+        <p class="fade">
+            A sidebar shown under your profile card on your profile. Use it to
+            display extra information separate from your biography. Supports
+            Markdown.
+        </p>
+    </div>
+
     <hr />
     <div class="flex flex-col gap-1">
         <label for="sparkler:avatar_url">Avatar URL</label>
