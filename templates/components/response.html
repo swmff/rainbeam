@@ -1,7 +1,8 @@
 {% let question = response.0.clone() %} {% let comment_count = response.2 %} {%
 let reaction_count = response.3 %} {% let response = response.1.clone() %}
 <div class="card-nest w-full shadow" id="response:{{ response.id }}">
-    {% if do_not_render_question == false %}
+    {% if (do_not_render_question == false) && (response.context.is_post ==
+    false) %}
     <div class="card flex flex-col gap-1">
         <div class="flex justify-between gap-1 question_title">
             <div class="footernav">
@@ -442,7 +443,8 @@ let reaction_count = response.3 %} {% let response = response.1.clone() %}
         </div>
     </div>
 
-    {% if do_not_render_question == true %}
+    {% if (do_not_render_question == true) | (response.context.is_post == true)
+    %}
     <div class="card" style="display: none"></div>
 
     <style>

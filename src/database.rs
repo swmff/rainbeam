@@ -5,7 +5,7 @@ use crate::config::Config;
 use crate::model::{
     anonymous_profile, global_profile, Circle, CircleCreate, CircleMetadata, CommentCreate,
     MembershipStatus, QuestionCreate, QuestionResponse, Reaction, RefQuestion, ResponseComment,
-    ResponseCreate,
+    ResponseContext, ResponseCreate,
 };
 use crate::model::{DatabaseError, Question};
 
@@ -983,6 +983,51 @@ impl Database {
 
     // responses
 
+    /// Get a response from a database result
+    pub async fn gimme_response(
+        &self,
+        res: HashMap<String, String>,
+    ) -> Result<(Question, QuestionResponse, usize, usize)> {
+        let question = res.get("question").unwrap().to_string();
+        let id = res.get("id").unwrap().to_string();
+        let ctx: ResponseContext = match serde_json::from_str(res.get("context").unwrap()) {
+            Ok(t) => t,
+            Err(_) => return Err(DatabaseError::ValueError),
+        };
+
+        Ok((
+            if ctx.is_post {
+                // don't even try to fetch question, it doesn't exist
+                Question::unknown()
+            } else {
+                match self.get_question(question.clone()).await {
+                    Ok(q) => q,
+                    Err(_) => Question::unknown(),
+                }
+            },
+            QuestionResponse {
+                author: match self
+                    .get_profile(res.get("author").unwrap().to_string())
+                    .await
+                {
+                    Ok(ua) => ua,
+                    Err(_) => anonymous_profile("anonymous".to_string()),
+                },
+                question,
+                content: res.get("content").unwrap().to_string(),
+                id: id.clone(),
+                timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                tags: match serde_json::from_str(res.get("tags").unwrap()) {
+                    Ok(t) => t,
+                    Err(_) => return Err(DatabaseError::ValueError),
+                },
+                context: ctx,
+            },
+            self.get_comment_count_by_response(id.clone()).await,
+            self.get_reaction_count_by_asset(id).await,
+        ))
+    }
+
     /// Get an existing response
     ///
     /// # Arguments
@@ -1030,22 +1075,9 @@ impl Database {
         };
 
         // return
-        let response = QuestionResponse {
-            author: match self
-                .get_profile(res.get("author").unwrap().to_string())
-                .await
-            {
-                Ok(ua) => ua,
-                Err(_) => anonymous_profile("anonymous".to_string()),
-            },
-            question: res.get("question").unwrap().to_string(),
-            content: res.get("content").unwrap().to_string(),
-            id: res.get("id").unwrap().to_string(),
-            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-            tags: match serde_json::from_str(res.get("tags").unwrap()) {
-                Ok(t) => t,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
+        let response = match self.gimme_response(res).await {
+            Ok(r) => r,
+            Err(e) => return Err(e),
         };
 
         // store in cache
@@ -1053,20 +1085,12 @@ impl Database {
             .cachedb
             .set(
                 format!("xsulib.sparkler.response:{}", id),
-                serde_json::to_string::<QuestionResponse>(&response).unwrap(),
+                serde_json::to_string::<QuestionResponse>(&response.1).unwrap(),
             )
             .await;
 
         // return
-        Ok((
-            match self.get_question(response.question.clone()).await {
-                Ok(q) => q,
-                Err(_) => Question::unknown(),
-            },
-            response,
-            self.get_comment_count_by_response(id.clone()).await,
-            self.get_reaction_count_by_asset(id).await,
-        ))
+        Ok(response)
     }
 
     /// Get an existing response by the question ID and response author
@@ -1100,35 +1124,10 @@ impl Database {
         };
 
         // return
-        let response = QuestionResponse {
-            author: match self
-                .get_profile(res.get("author").unwrap().to_string())
-                .await
-            {
-                Ok(ua) => ua,
-                Err(_) => anonymous_profile("anonymous".to_string()),
-            },
-            question: res.get("question").unwrap().to_string(),
-            content: res.get("content").unwrap().to_string(),
-            id: res.get("id").unwrap().to_string(),
-            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-            tags: match serde_json::from_str(res.get("tags").unwrap()) {
-                Ok(t) => t,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-        };
-
-        // return
-        Ok((
-            match self.get_question(response.question.clone()).await {
-                Ok(q) => q,
-                Err(_) => Question::unknown(),
-            },
-            response.clone(),
-            self.get_comment_count_by_response(response.id.clone())
-                .await,
-            self.get_reaction_count_by_asset(response.id).await,
-        ))
+        Ok(match self.gimme_response(res).await {
+            Ok(r) => r,
+            Err(e) => return Err(e),
+        })
     }
 
     /// Get all responses by their author
@@ -1159,34 +1158,10 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    let question = res.get("question").unwrap().to_string();
-                    let id = res.get("id").unwrap().to_string();
-
-                    out.push((
-                        match self.get_question(question.clone()).await {
-                            Ok(q) => q,
-                            Err(_) => Question::unknown(),
-                        },
-                        QuestionResponse {
-                            author: match self
-                                .get_profile(res.get("author").unwrap().to_string())
-                                .await
-                            {
-                                Ok(ua) => ua,
-                                Err(_) => anonymous_profile("anonymous".to_string()),
-                            },
-                            question,
-                            content: res.get("content").unwrap().to_string(),
-                            id: id.clone(),
-                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-                            tags: match serde_json::from_str(res.get("tags").unwrap()) {
-                                Ok(t) => t,
-                                Err(_) => return Err(DatabaseError::ValueError),
-                            },
-                        },
-                        self.get_comment_count_by_response(id.clone()).await,
-                        self.get_reaction_count_by_asset(id).await,
-                    ));
+                    out.push(match self.gimme_response(res).await {
+                        Ok(r) => r,
+                        Err(e) => return Err(e),
+                    });
                 }
 
                 out
@@ -1226,34 +1201,10 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    let question = res.get("question").unwrap().to_string();
-                    let id = res.get("id").unwrap().to_string();
-
-                    out.push((
-                        match self.get_question(question.clone()).await {
-                            Ok(q) => q,
-                            Err(_) => Question::unknown(),
-                        },
-                        QuestionResponse {
-                            author: match self
-                                .get_profile(res.get("author").unwrap().to_string())
-                                .await
-                            {
-                                Ok(ua) => ua,
-                                Err(_) => anonymous_profile("anonymous".to_string()),
-                            },
-                            question,
-                            content: res.get("content").unwrap().to_string(),
-                            id: id.clone(),
-                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-                            tags: match serde_json::from_str(res.get("tags").unwrap()) {
-                                Ok(t) => t,
-                                Err(_) => return Err(DatabaseError::ValueError),
-                            },
-                        },
-                        self.get_comment_count_by_response(id.clone()).await,
-                        self.get_reaction_count_by_asset(id).await,
-                    ));
+                    out.push(match self.gimme_response(res).await {
+                        Ok(r) => r,
+                        Err(e) => return Err(e),
+                    });
                 }
 
                 out
@@ -1296,34 +1247,10 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    let question = res.get("question").unwrap().to_string();
-                    let id = res.get("id").unwrap().to_string();
-
-                    out.push((
-                        match self.get_question(question.clone()).await {
-                            Ok(q) => q,
-                            Err(_) => Question::unknown(),
-                        },
-                        QuestionResponse {
-                            author: match self
-                                .get_profile(res.get("author").unwrap().to_string())
-                                .await
-                            {
-                                Ok(ua) => ua,
-                                Err(_) => anonymous_profile("anonymous".to_string()),
-                            },
-                            question,
-                            content: res.get("content").unwrap().to_string(),
-                            id: id.clone(),
-                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-                            tags: match serde_json::from_str(res.get("tags").unwrap()) {
-                                Ok(t) => t,
-                                Err(_) => return Err(DatabaseError::ValueError),
-                            },
-                        },
-                        self.get_comment_count_by_response(id.clone()).await,
-                        self.get_reaction_count_by_asset(id).await,
-                    ));
+                    out.push(match self.gimme_response(res).await {
+                        Ok(r) => r,
+                        Err(e) => return Err(e),
+                    });
                 }
 
                 out
@@ -1422,34 +1349,10 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    let question = res.get("question").unwrap().to_string();
-                    let id = res.get("id").unwrap().to_string();
-
-                    out.push((
-                        match self.get_question(question.clone()).await {
-                            Ok(q) => q,
-                            Err(_) => Question::unknown(),
-                        },
-                        QuestionResponse {
-                            author: match self
-                                .get_profile(res.get("author").unwrap().to_string())
-                                .await
-                            {
-                                Ok(ua) => ua,
-                                Err(_) => anonymous_profile("anonymous".to_string()),
-                            },
-                            question,
-                            content: res.get("content").unwrap().to_string(),
-                            id: id.clone(),
-                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-                            tags: match serde_json::from_str(res.get("tags").unwrap()) {
-                                Ok(t) => t,
-                                Err(_) => return Err(DatabaseError::ValueError),
-                            },
-                        },
-                        self.get_comment_count_by_response(id.clone()).await,
-                        self.get_reaction_count_by_asset(id).await,
-                    ));
+                    out.push(match self.gimme_response(res).await {
+                        Ok(r) => r,
+                        Err(e) => return Err(e),
+                    });
                 }
 
                 out
@@ -1485,34 +1388,10 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    let question = res.get("question").unwrap().to_string();
-                    let id = res.get("id").unwrap().to_string();
-
-                    out.push((
-                        match self.get_question(question.clone()).await {
-                            Ok(q) => q,
-                            Err(_) => Question::unknown(),
-                        },
-                        QuestionResponse {
-                            author: match self
-                                .get_profile(res.get("author").unwrap().to_string())
-                                .await
-                            {
-                                Ok(ua) => ua,
-                                Err(_) => anonymous_profile("anonymous".to_string()),
-                            },
-                            question,
-                            content: res.get("content").unwrap().to_string(),
-                            id: id.clone(),
-                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-                            tags: match serde_json::from_str(res.get("tags").unwrap()) {
-                                Ok(t) => t,
-                                Err(_) => return Err(DatabaseError::ValueError),
-                            },
-                        },
-                        self.get_comment_count_by_response(id.clone()).await,
-                        self.get_reaction_count_by_asset(id).await,
-                    ));
+                    out.push(match self.gimme_response(res).await {
+                        Ok(r) => r,
+                        Err(e) => return Err(e),
+                    });
                 }
 
                 out
@@ -1620,6 +1499,7 @@ impl Database {
             id: utility::random_id(),
             timestamp: utility::unix_epoch_timestamp(),
             tags: Vec::new(),
+            context: ResponseContext::default(),
         };
 
         // create response
@@ -3702,34 +3582,10 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    let question = res.get("question").unwrap().to_string();
-                    let id = res.get("id").unwrap().to_string();
-
-                    out.push((
-                        match self.get_question(question.clone()).await {
-                            Ok(q) => q,
-                            Err(_) => Question::unknown(),
-                        },
-                        QuestionResponse {
-                            author: match self
-                                .get_profile(res.get("author").unwrap().to_string())
-                                .await
-                            {
-                                Ok(ua) => ua,
-                                Err(_) => anonymous_profile("anonymous".to_string()),
-                            },
-                            question,
-                            content: res.get("content").unwrap().to_string(),
-                            id: id.clone(),
-                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-                            tags: match serde_json::from_str(res.get("tags").unwrap()) {
-                                Ok(t) => t,
-                                Err(_) => return Err(DatabaseError::ValueError),
-                            },
-                        },
-                        self.get_comment_count_by_response(id.clone()).await,
-                        self.get_reaction_count_by_asset(id).await,
-                    ));
+                    out.push(match self.gimme_response(res).await {
+                        Ok(r) => r,
+                        Err(e) => return Err(e),
+                    });
                 }
 
                 out
@@ -3786,34 +3642,10 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    let question = res.get("question").unwrap().to_string();
-                    let id = res.get("id").unwrap().to_string();
-
-                    out.push((
-                        match self.get_question(question.clone()).await {
-                            Ok(q) => q,
-                            Err(_) => Question::unknown(),
-                        },
-                        QuestionResponse {
-                            author: match self
-                                .get_profile(res.get("author").unwrap().to_string())
-                                .await
-                            {
-                                Ok(ua) => ua,
-                                Err(_) => anonymous_profile("anonymous".to_string()),
-                            },
-                            question,
-                            content: res.get("content").unwrap().to_string(),
-                            id: id.clone(),
-                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-                            tags: match serde_json::from_str(res.get("tags").unwrap()) {
-                                Ok(t) => t,
-                                Err(_) => return Err(DatabaseError::ValueError),
-                            },
-                        },
-                        self.get_comment_count_by_response(id.clone()).await,
-                        self.get_reaction_count_by_asset(id).await,
-                    ));
+                    out.push(match self.gimme_response(res).await {
+                        Ok(r) => r,
+                        Err(e) => return Err(e),
+                    });
                 }
 
                 out

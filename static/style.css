@@ -43,6 +43,7 @@ body {
     background: var(--color-surface);
     overflow: hidden auto;
     height: 100dvh;
+    scroll-behavior: smooth;
 }
 
 #page {
@@ -677,6 +678,7 @@ dialog {
     display: none;
     margin: auto;
     color: var(--color-text);
+    animation: popin ease-in-out 1 0.15s forwards running;
 }
 
 dialog .inner {

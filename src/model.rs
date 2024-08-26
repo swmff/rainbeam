@@ -92,6 +92,22 @@ pub struct QuestionResponse {
     pub timestamp: u128,
     /// The response tags
     pub tags: Vec<String>,
+    /// Response context
+    pub context: ResponseContext,
+}
+
+/// Basic information which changes the way the response is deserialized
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ResponseContext {
+    /// If the response is a post and the question shouldn't be rendered at all
+    #[serde(default)]
+    pub is_post: bool,
+}
+
+impl Default for ResponseContext {
+    fn default() -> Self {
+        Self { is_post: false }
+    }
 }
 
 /// A comment structure

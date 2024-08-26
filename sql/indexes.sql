@@ -20,3 +20,4 @@ CREATE FULLTEXT INDEX IF NOT EXISTS "idx_memberships" ON "xcircle_memberships" (
 CREATE FULLTEXT INDEX IF NOT EXISTS "idx_my_memberships" ON "xcircle_memberships" ("user");
 CREATE FULLTEXT INDEX IF NOT EXISTS "idx_circles" ON "xcircles" ("id");
 CREATE FULLTEXT INDEX IF NOT EXISTS "idx_circle_owner" ON "xcircles" ("owner");
+CREATE FULLTEXT INDEX IF NOT EXISTS "idx_context" ON "xresponses" ("context");
