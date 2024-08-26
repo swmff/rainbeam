@@ -1,7 +1,8 @@
 name: Docs
 on:
   push:
-    branches: [main]
+    branches: [master]
+  workflow_dispatch:
 permissions:
   contents: read
   pages: write
@@ -16,6 +17,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+      - name: Checkout repo submodules
+        run: git submodule update --init --recursive
       - name: Init Rust
         uses: dtolnay/rust-toolchain@stable
       - name: Configure cache
