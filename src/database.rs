@@ -63,7 +63,8 @@ impl Database {
                 content   TEXT,
                 id        TEXT,
                 timestamp TEXT,
-                tags      TEXT
+                tags      TEXT,
+                context   TEXT
             )",
         )
         .execute(c)
@@ -1412,9 +1413,15 @@ impl Database {
     /// * `author` - the ID of the user creating the response
     pub async fn create_response(&self, props: ResponseCreate, author: String) -> Result<()> {
         // make sure the question exists
-        let question = match self.get_question(props.question.clone()).await {
-            Ok(q) => q,
-            Err(e) => return Err(e),
+        let question = if props.question != "0" {
+            // get question from database
+            match self.get_question(props.question.clone()).await {
+                Ok(q) => q,
+                Err(e) => return Err(e),
+            }
+        } else {
+            // create post question
+            Question::post()
         };
 
         // check content length
@@ -1438,49 +1445,51 @@ impl Database {
         }
 
         // check permissions
-        if question.recipient.username != "@" {
-            if !question.recipient.id.starts_with("@") {
-                if question.recipient.id != author.id {
-                    // cannot respond to a question not asked to us
-                    return Err(DatabaseError::NotAllowed);
+        if question.id != "0" {
+            if question.recipient.username != "@" {
+                if !question.recipient.id.starts_with("@") {
+                    if question.recipient.id != author.id {
+                        // cannot respond to a question not asked to us
+                        return Err(DatabaseError::NotAllowed);
+                    }
+                } else {
+                    // circles
+                    let circle_name = question.recipient.id.replacen("@", "", 1);
+
+                    let circle = match self.get_circle_by_name(circle_name).await {
+                        Ok(c) => c,
+                        Err(e) => return Err(e),
+                    };
+
+                    // check circle membership
+                    let membership = self
+                        .get_user_circle_membership(author.id.clone(), circle.id.clone())
+                        .await;
+
+                    if membership != MembershipStatus::Active {
+                        return Err(DatabaseError::NotAllowed);
+                    }
+
+                    // update author id
+                    author.id = format!("{}%{}", author.id, circle.id); // tag with circle id
                 }
             } else {
-                // circles
-                let circle_name = question.recipient.id.replacen("@", "", 1);
+                // TODO: check author privacy settings
+                let tag = Database::anonymous_tag(&author.id);
 
-                let circle = match self.get_circle_by_name(circle_name).await {
-                    Ok(c) => c,
-                    Err(e) => return Err(e),
-                };
-
-                // check circle membership
-                let membership = self
-                    .get_user_circle_membership(author.id.clone(), circle.id.clone())
-                    .await;
-
-                if membership != MembershipStatus::Active {
+                if tag.0 {
+                    // anonymous users cannot answer global questions
                     return Err(DatabaseError::NotAllowed);
                 }
 
-                // update author id
-                author.id = format!("{}%{}", author.id, circle.id); // tag with circle id
-            }
-        } else {
-            // TODO: check author privacy settings
-            let tag = Database::anonymous_tag(&author.id);
-
-            if tag.0 {
-                // anonymous users cannot answer global questions
-                return Err(DatabaseError::NotAllowed);
-            }
-
-            // make sure we didn't already answer this
-            if let Ok(_) = self
-                .get_response_by_question_and_author(question.id.clone(), author.id.clone())
-                .await
-            {
-                // cannot answer the same global question twice
-                return Err(DatabaseError::NotAllowed);
+                // make sure we didn't already answer this
+                if let Ok(_) = self
+                    .get_response_by_question_and_author(question.id.clone(), author.id.clone())
+                    .await
+                {
+                    // cannot answer the same global question twice
+                    return Err(DatabaseError::NotAllowed);
+                };
             };
         };
 
@@ -1494,20 +1503,26 @@ impl Database {
         // ...
         let response = QuestionResponse {
             author,
-            question: question.id,
             content: props.content.trim().to_string(),
             id: utility::random_id(),
             timestamp: utility::unix_epoch_timestamp(),
             tags: Vec::new(),
-            context: ResponseContext::default(),
+            context: if question.id != "0" {
+                // default context
+                ResponseContext::default()
+            } else {
+                // post context
+                ResponseContext::post()
+            },
+            question: question.id,
         };
 
         // create response
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            "INSERT INTO \"xresponses\" VALUES (?, ?, ?, ?, ?, ?)"
+            "INSERT INTO \"xresponses\" VALUES (?, ?, ?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xresponses\" VALEUS ($1, $2, $3, $4, $5, $6)"
+            "INSERT INTO \"xresponses\" VALEUS ($1, $2, $3, $4, $5, $6, $7)"
         }
         .to_string();
 
@@ -1519,6 +1534,10 @@ impl Database {
             .bind::<&String>(&response.id)
             .bind::<&String>(&response.timestamp.to_string())
             .bind::<&str>("[]")
+            .bind::<&String>(&match serde_json::to_string(&response.context) {
+                Ok(s) => s,
+                Err(_) => return Err(DatabaseError::ValueError),
+            })
             .execute(c)
             .await
         {

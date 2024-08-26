@@ -61,6 +61,34 @@ endblock %} {% block head %}
             <a href="/inbox/compose" class="active">Ask</a>
         </div>
 
+        <!-- new post -->
+        <div class="card-nest w-full shadow">
+            <div class="card">Create a post</div>
+
+            <div class="card">
+                <form id="post_form" class="flex flex-col gap-2">
+                    <textarea
+                        class="w-full"
+                        placeholder="Type your post!"
+                        minlength="1"
+                        maxlength="500"
+                        required
+                        name="content"
+                        id="post_content"
+                        hook="counter"
+                    ></textarea>
+
+                    <div class="flex justify-between w-full gap-1">
+                        <span
+                            id="post_content:counter"
+                            class="notification item"
+                        ></span>
+                        <button class="round-lg primary bold">Send</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <!-- compose -->
         <div class="card-nest w-full shadow">
             <div class="card">Ask a question</div>
@@ -104,6 +132,18 @@ endblock %} {% block head %}
 </article>
 
 <script>
+    document.getElementById("post_form").addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        trigger("responses:create", [
+            "0", // posts use "0" as their question ID
+            e.target.content.value,
+        ]).then((_) => {
+            // reset if successful
+            e.target.reset();
+        });
+    });
+
     document.getElementById("question_form").addEventListener("submit", (e) => {
         e.preventDefault();
 

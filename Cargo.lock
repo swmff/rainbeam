@@ -2001,7 +2001,7 @@ dependencies = [
 
 [[package]]
 name = "sparkler"
-version = "0.6.6"
+version = "0.6.7"
 dependencies = [
  "ammonia",
  "askama",

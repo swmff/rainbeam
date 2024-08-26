@@ -15,16 +15,24 @@
             })
                 .then((res) => res.json())
                 .then((res) => {
+                    const is_post = question === "0";
+
                     app.toast(
                         res.success ? "success" : "error",
-                        res.success ? "Response posted!" : res.message,
+                        res.success
+                            ? !is_post
+                                ? "Response posted!"
+                                : "Post created!"
+                            : res.message,
                     );
 
                     if (res.success === true) {
-                        app.smooth_remove(
-                            document.getElementById(`question:${question}`),
-                            500,
-                        );
+                        if (!is_post) {
+                            app.smooth_remove(
+                                document.getElementById(`question:${question}`),
+                                500,
+                            );
+                        }
 
                         return resolve(res);
                     } else {
@@ -61,7 +69,7 @@
         });
     });
 
-     self.define("edit_tags", function ({ $, app }, id, tags) {
+    self.define("edit_tags", function ({ $, app }, id, tags) {
         return new Promise((resolve, reject) => {
             fetch(`/api/v1/responses/${id}/tags`, {
                 method: "PUT",

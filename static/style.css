@@ -253,6 +253,16 @@ a.button.secondary:hover {
     background: var(--color-raised);
 }
 
+.card button.secondary,
+.card a.button.secondary {
+    background: var(--color-raised);
+}
+
+.card button.secondary:hover,
+.card a.button.secondary:hover {
+    background: var(--color-super-raised);
+}
+
 button.reaction.active {
     background: var(--color-primary);
     color: var(--color-text-primary);

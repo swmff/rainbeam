@@ -40,6 +40,16 @@ impl Question {
         }
     }
 
+    pub fn post() -> Self {
+        Self {
+            author: anonymous_profile("anonymous".to_string()),
+            recipient: anonymous_profile("anonymous".to_string()),
+            content: "<post>".to_string(),
+            id: "0".to_string(),
+            timestamp: 0,
+        }
+    }
+
     pub fn unknown() -> Self {
         Self::lost(
             "anonymous".to_string(),
@@ -107,6 +117,12 @@ pub struct ResponseContext {
 impl Default for ResponseContext {
     fn default() -> Self {
         Self { is_post: false }
+    }
+}
+
+impl ResponseContext {
+    pub fn post() -> Self {
+        Self { is_post: true }
     }
 }
 

@@ -44,7 +44,7 @@ comment = comment.0.clone() %}
             <!-- reactions -->
             <button
                 title="{{ reaction_count }} reactions"
-                class="w-full"
+                class="w-full secondary"
                 onclick="trigger('reactions:toggle', ['{{ comment.id }}'])"
             >
                 <svg
@@ -68,7 +68,7 @@ comment = comment.0.clone() %}
             <a
                 href="/comment/{{ comment.id }}"
                 title="{{ reply_count }} replies"
-                class="button w-full"
+                class="button w-full secondary"
             >
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -92,7 +92,7 @@ comment = comment.0.clone() %}
                 <button
                     onclick="trigger('app:hook.dropdown', [event])"
                     exclude="dropdown"
-                    class="w-full"
+                    class="w-full secondary"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
