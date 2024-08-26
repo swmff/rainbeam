@@ -991,10 +991,11 @@ impl Database {
     ) -> Result<(Question, QuestionResponse, usize, usize)> {
         let question = res.get("question").unwrap().to_string();
         let id = res.get("id").unwrap().to_string();
-        let ctx: ResponseContext = match serde_json::from_str(res.get("context").unwrap()) {
-            Ok(t) => t,
-            Err(_) => return Err(DatabaseError::ValueError),
-        };
+        let ctx: ResponseContext =
+            match serde_json::from_str(res.get("context").unwrap_or(&"{}".to_string())) {
+                Ok(t) => t,
+                Err(_) => return Err(DatabaseError::ValueError),
+            };
 
         Ok((
             if ctx.is_post {
