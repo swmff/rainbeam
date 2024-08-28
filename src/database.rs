@@ -199,6 +199,10 @@ impl Database {
     /// ## Arguments:
     /// * `id`
     pub async fn get_question(&self, id: String) -> Result<Question> {
+        if id == "0" {
+            return Ok(Question::post());
+        }
+
         // legacy migration
         if id.starts_with("{") {
             let question = serde_json::from_str::<serde_json::Value>(&id).unwrap();
