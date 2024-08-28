@@ -1418,7 +1418,7 @@ impl Database {
             // get question from database
             match self.get_question(props.question.clone()).await {
                 Ok(q) => q,
-                Err(e) => return Err(e),
+                Err(_) => Question::unknown(),
             }
         } else {
             // create post question
@@ -1446,7 +1446,8 @@ impl Database {
         }
 
         // check permissions
-        if question.id != "0" {
+        if props.question != "0" {
+            // normal questions
             if question.recipient.username != "@" {
                 if !question.recipient.id.starts_with("@") {
                     if question.recipient.id != author.id {
@@ -1474,7 +1475,9 @@ impl Database {
                     // update author id
                     author.id = format!("{}%{}", author.id, circle.id); // tag with circle id
                 }
-            } else {
+            }
+            // global questions
+            else {
                 // TODO: check author privacy settings
                 let tag = Database::anonymous_tag(&author.id);
 
@@ -1492,6 +1495,14 @@ impl Database {
                     return Err(DatabaseError::NotAllowed);
                 };
             };
+        } else {
+            // check tag
+            let tag = Database::anonymous_tag(&author.id);
+
+            if tag.0 {
+                // anonymous users cannot create posts
+                return Err(DatabaseError::NotAllowed);
+            }
         };
 
         // check markdown content

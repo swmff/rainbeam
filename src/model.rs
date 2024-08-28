@@ -35,7 +35,7 @@ impl Question {
             author: anonymous_profile(author),
             recipient: anonymous_profile(recipient),
             content,
-            id: "".to_string(),
+            id: String::new(),
             timestamp,
         }
     }
