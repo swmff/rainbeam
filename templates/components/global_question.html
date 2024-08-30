@@ -117,7 +117,7 @@ question = question.clone().0 %}
         <!-- reactions -->
         <button
             title="{{ reaction_count }} reactions"
-            onclick="trigger('reactions:toggle', ['{{ question.id }}'])"
+            onclick="trigger('reactions:toggle', ['{{ question.id }}', 'Question'])"
         >
             <svg
                 xmlns="http://www.w3.org/2000/svg"

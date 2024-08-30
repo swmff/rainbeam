@@ -1,5 +1,6 @@
 use crate::database::Database;
-use crate::model::DatabaseError;
+use crate::model::{AssetType, DatabaseError, ReactionCreate};
+use xsu_authman::model::NotificationCreate;
 use xsu_dataman::DefaultReturn;
 
 use axum::response::IntoResponse;
@@ -27,6 +28,7 @@ pub async fn create_request(
     jar: CookieJar,
     Path(id): Path<String>,
     State(database): State<Database>,
+    Json(props): Json<ReactionCreate>,
 ) -> impl IntoResponse {
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
@@ -35,10 +37,113 @@ pub async fn create_request(
             .get_profile_by_unhashed(c.value_trimmed().to_string())
             .await
         {
-            Ok(ua) => ua.username,
+            Ok(ua) => ua,
             Err(_) => return Json(DatabaseError::NotAllowed.into()),
         },
         None => return Json(DatabaseError::NotAllowed.into()),
+    };
+
+    // verify asset from type
+    match props.r#type {
+        AssetType::Question => {
+            let asset = match database.get_question(id.clone()).await {
+                Ok(r) => r,
+                Err(e) => {
+                    return Json(DefaultReturn {
+                        success: false,
+                        message: e.to_string(),
+                        payload: None,
+                    })
+                }
+            };
+
+            // create notification
+            if let Err(_) = database
+                .auth
+                .create_notification(NotificationCreate {
+                    title: format!(
+                        "[@{}](/@{}) has reacted to a question you created!",
+                        auth_user.username, auth_user.username
+                    ),
+                    content: String::new(),
+                    address: format!("/question/{id}"),
+                    recipient: asset.author.id,
+                })
+                .await
+            {
+                return Json(DefaultReturn {
+                    success: false,
+                    message: DatabaseError::Other.to_string(),
+                    payload: None,
+                });
+            }
+        }
+        AssetType::Response => {
+            let asset = match database.get_response(id.clone()).await {
+                Ok(r) => r.1,
+                Err(e) => {
+                    return Json(DefaultReturn {
+                        success: false,
+                        message: e.to_string(),
+                        payload: None,
+                    })
+                }
+            };
+
+            // create notification
+            if let Err(_) = database
+                .auth
+                .create_notification(NotificationCreate {
+                    title: format!(
+                        "[@{}](/@{}) has reacted to a response you created!",
+                        auth_user.username, auth_user.username
+                    ),
+                    content: String::new(),
+                    address: format!("/response/{id}"),
+                    recipient: asset.author.id,
+                })
+                .await
+            {
+                return Json(DefaultReturn {
+                    success: false,
+                    message: DatabaseError::Other.to_string(),
+                    payload: None,
+                });
+            }
+        }
+        AssetType::Comment => {
+            let asset = match database.get_comment(id.clone(), false).await {
+                Ok(r) => r.0,
+                Err(e) => {
+                    return Json(DefaultReturn {
+                        success: false,
+                        message: e.to_string(),
+                        payload: None,
+                    })
+                }
+            };
+
+            // create notification
+            if let Err(_) = database
+                .auth
+                .create_notification(NotificationCreate {
+                    title: format!(
+                        "[@{}](/@{}) has reacted to a comment you created!",
+                        auth_user.username, auth_user.username
+                    ),
+                    content: String::new(),
+                    address: format!("/comment/{id}"),
+                    recipient: asset.author.id,
+                })
+                .await
+            {
+                return Json(DefaultReturn {
+                    success: false,
+                    message: DatabaseError::Other.to_string(),
+                    payload: None,
+                });
+            }
+        }
     };
 
     // ...

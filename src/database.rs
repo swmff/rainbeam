@@ -2707,9 +2707,9 @@ impl Database {
     ///
     /// # Arguments
     /// * `id` - the ID of the asset
-    /// * `author` - the ID of the user creating the reaction
-    pub async fn create_reaction(&self, id: String, author: String) -> Result<()> {
-        let tag = Database::anonymous_tag(&author);
+    /// * `author` - the user creating the reaction
+    pub async fn create_reaction(&self, id: String, author: Profile) -> Result<()> {
+        let tag = Database::anonymous_tag(&author.username);
 
         if tag.0 {
             // anonymous users cannot comment
@@ -2717,16 +2717,11 @@ impl Database {
         }
 
         // make sure reaction doesn't already exist
-        if let Ok(_) = self.get_reaction(author.clone(), id.clone()).await {
+        if let Ok(_) = self.get_reaction(author.id.clone(), id.clone()).await {
             return Err(DatabaseError::NotAllowed);
         }
 
         // check author permissions
-        let author = match self.auth.get_profile_by_username(author.clone()).await {
-            Ok(ua) => ua,
-            Err(_) => return Err(DatabaseError::NotFound),
-        };
-
         if author.group == -1 {
             // group -1 (even if it exists) is for marking users as banned
             return Err(DatabaseError::NotAllowed);

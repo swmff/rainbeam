@@ -154,6 +154,17 @@ pub struct Reaction {
     pub timestamp: u128,
 }
 
+/// The type of any asset (anything created by a user)
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub enum AssetType {
+    /// A [`Question`]
+    Question,
+    /// A [`QuestionResponse`]
+    Response,
+    /// A [`ResponseComment`]
+    Comment,
+}
+
 /// The status of a user's membership in a [`Circle`]
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub enum MembershipStatus {
@@ -284,6 +295,11 @@ pub struct CircleCreate {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct EditCircleMetadata {
     pub metadata: CircleMetadata,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ReactionCreate {
+    pub r#type: AssetType,
 }
 
 /// General API errors
