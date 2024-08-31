@@ -203,6 +203,23 @@ impl Database {
         mut target_length: usize,
     ) -> String {
         link = format!("{host}{link}");
+
+        // check chars
+        // if anything takes up multiple characters then we cannot safely split the string
+        // we're just going to return the link in this case
+        for char in part_1.chars() {
+            if char.len_utf8() != 1 {
+                return link;
+            }
+        }
+
+        for char in part_2.chars() {
+            if char.len_utf8() != 1 {
+                return link;
+            }
+        }
+
+        // ...
         let link_size = link.len();
         target_length -= link_size;
 
