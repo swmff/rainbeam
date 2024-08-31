@@ -192,6 +192,49 @@ impl Database {
         }
     }
 
+    // extra util
+
+    /// Generate share content from 2 strings and a link
+    pub fn share(
+        host: &String,
+        part_1: &String,
+        part_2: &String,
+        mut link: String,
+        target_length: usize,
+    ) -> String {
+        link = format!("{host}{link}");
+
+        let mut out = String::new();
+        let separator = " — ";
+
+        let link_size = link.len();
+
+        let part_2_size = (target_length / 2) - 1 - link_size;
+        let sep_size = separator.len();
+        let part_1_size = (target_length / 2) - sep_size - link_size;
+
+        out += if part_1_size > part_1.len() {
+            // just use part_1
+            part_1
+        } else {
+            &part_1[..part_1_size]
+        };
+
+        out += separator;
+
+        if !part_2.is_empty() {
+            out += &if part_2_size > part_2.len() {
+                // just use part_2
+                part_2
+            } else {
+                &part_2[..part_2_size]
+            }
+        }
+
+        out += &format!(" {link}");
+        out
+    }
+
     // questions
 
     /// Get an existing question
@@ -1068,14 +1111,18 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            "SELECT * FROM \"xresponses\" WHERE \"id\" = ?"
+            "SELECT * FROM \"xresponses\" WHERE \"id\" LIKE ?"
         } else {
-            "SELECT * FROM \"xresponses\" WHERE \"id\" = $1"
+            "SELECT * FROM \"xresponses\" WHERE \"id\" LIKE $1"
         }
         .to_string();
 
         let c = &self.base.db.client;
-        let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
+        let res = match sqlquery(&query)
+            .bind::<&String>(&format!("{id}%"))
+            .fetch_one(c)
+            .await
+        {
             Ok(p) => self.base.textify_row(p, Vec::new()).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
@@ -1941,14 +1988,18 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            "SELECT * FROM \"xcomments\" WHERE \"id\" = ?"
+            "SELECT * FROM \"xcomments\" WHERE \"id\" LIKE ?"
         } else {
-            "SELECT * FROM \"xcomments\" WHERE \"id\" = $1"
+            "SELECT * FROM \"xcomments\" WHERE \"id\" LIKE $1"
         }
         .to_string();
 
         let c = &self.base.db.client;
-        let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
+        let res = match sqlquery(&query)
+            .bind::<&String>(&format!("{id}%"))
+            .fetch_one(c)
+            .await
+        {
             Ok(p) => self.base.textify_row(p, Vec::new()).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
@@ -2009,14 +2060,18 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            "SELECT * FROM \"xcomments\" WHERE \"response\" = ? AND \"reply\" = '' ORDER BY \"timestamp\" DESC"
+            "SELECT * FROM \"xcomments\" WHERE \"response\" LIKE ? AND \"reply\" = '' ORDER BY \"timestamp\" DESC"
         } else {
-            "SELECT * FROM \"xcomments\" WHERE \"response\" = $1 AND \"reply\" = '' ORDER BY \"timestamp\" DESC"
+            "SELECT * FROM \"xcomments\" WHERE \"response\" LIKE $1 AND \"reply\" = '' ORDER BY \"timestamp\" DESC"
         }
         .to_string();
 
         let c = &self.base.db.client;
-        let res = match sqlquery(&query).bind::<&String>(&id).fetch_all(c).await {
+        let res = match sqlquery(&query)
+            .bind::<&String>(&format!("{id}%"))
+            .fetch_all(c)
+            .await
+        {
             Ok(p) => {
                 let mut out: Vec<(ResponseComment, usize, usize)> = Vec::new();
 

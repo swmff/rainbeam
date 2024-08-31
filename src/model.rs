@@ -222,6 +222,42 @@ pub struct CircleMetadata {
     pub kv: HashMap<String, String>,
 }
 
+/// The status of a user's membership in a [`Circle`]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+pub enum ListMembershipStatus {
+    /// An active member of a list
+    Active,
+    /// Not an active member of a list
+    Inactive,
+}
+
+/// The stored version of a user's membership in a [`FeedList`]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ListMembership {
+    /// The ID of the user
+    pub user: String,
+    /// The ID of the list
+    pub list: String,
+    /// The status of the user's membership in the list
+    pub membership: ListMembershipStatus,
+    /// The time the membership was last updated
+    pub timestamp: u128,
+}
+
+/// A list of users which will build a custom feed of all the responses by the users
+/// with an `Active` [`ListMembershipStatus`] in the list
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct FeedList {
+    /// The name of the list
+    pub name: String,
+    /// The ID of the list
+    pub id: String,
+    /// The owner of the list
+    pub owner: Profile,
+    /// The time the list was created
+    pub timestamp: u128,
+}
+
 // ...
 
 /// Global user profile

@@ -4,7 +4,7 @@ use hcaptcha::Hcaptcha;
 use xsu_authman::model::{NotificationCreate, ProfileMetadata};
 use xsu_dataman::DefaultReturn;
 
-use axum::response::IntoResponse;
+use axum::response::{IntoResponse, Redirect};
 use axum::{
     extract::{Path, State},
     routing::{delete, get, post},
@@ -76,6 +76,17 @@ pub async fn get_request(
         },
         Err(e) => e.into(),
     })
+}
+
+/// Redirect to the full ID of a comment through its short ID
+pub async fn expand_request(
+    Path(id): Path<String>,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    match database.get_comment(id, false).await {
+        Ok(c) => Redirect::to(&format!("/comment/{}", c.0.id)),
+        Err(_) => Redirect::to("/"),
+    }
 }
 
 /// [`Database::delete_comment`]

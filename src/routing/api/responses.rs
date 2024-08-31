@@ -5,7 +5,7 @@ use hcaptcha::Hcaptcha;
 use xsu_authman::model::{NotificationCreate, ProfileMetadata};
 use xsu_dataman::DefaultReturn;
 
-use axum::response::IntoResponse;
+use axum::response::{IntoResponse, Redirect};
 use axum::{
     extract::{Path, State},
     routing::{delete, get, post},
@@ -95,6 +95,17 @@ pub async fn get_request(
         },
         Err(e) => e.into(),
     })
+}
+
+/// Redirect to the full ID of a response through its short ID
+pub async fn expand_request(
+    Path(id): Path<String>,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    match database.get_response(id).await {
+        Ok(r) => Redirect::to(&format!("/response/{}", r.1.id)),
+        Err(_) => Redirect::to("/"),
+    }
 }
 
 /// [`Database::update_response_content`]

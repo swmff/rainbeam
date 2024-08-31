@@ -15,6 +15,8 @@ use crate::config::Config;
 use crate::database::Database;
 use crate::model::{DatabaseError, Question, QuestionResponse, Reaction, ResponseComment};
 
+use super::api;
+
 mod circles;
 mod profile;
 mod settings;
@@ -1022,6 +1024,9 @@ pub async fn routes(database: Database) -> Router {
         // auth
         .route("/login", get(login_request))
         .route("/sign_up", get(sign_up_request))
+        // expanders
+        .route("/+r/:id", get(api::responses::expand_request))
+        .route("/+c/:id", get(api::comments::expand_request))
         // ...
         .with_state(database)
 }
