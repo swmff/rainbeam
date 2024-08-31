@@ -112,7 +112,7 @@ comment = comment.0.clone() %}
                     <!-- prettier-ignore -->
                     {% let short_id = comment.id[..10] %}
                     {% let icon = "💬".to_string() %}
-                    {% let clipboard_data = crate::database::Database::share(config.host, icon, comment.content, format!("/+c/{short_id}").to_owned(), 160).replace("'", "\\'").replace("\"", "\\\"") %}
+                    {% let clipboard_data = crate::database::Database::share(config.host, icon, comment.content, format!("/+c/{short_id}").to_owned(), 240).replace("'", "\\'").replace("\"", "\\\"") %}
 
                     <a
                         href="#"

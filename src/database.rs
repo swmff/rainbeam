@@ -200,18 +200,18 @@ impl Database {
         part_1: &String,
         part_2: &String,
         mut link: String,
-        target_length: usize,
+        mut target_length: usize,
     ) -> String {
         link = format!("{host}{link}");
+        let link_size = link.len();
+        target_length -= link_size;
 
         let mut out = String::new();
         let separator = " — ";
 
-        let link_size = link.len();
-
-        let part_2_size = (target_length / 2) - 1 - link_size;
+        let part_2_size = (target_length / 2) - 1;
         let sep_size = separator.len();
-        let part_1_size = (target_length / 2) - sep_size - link_size;
+        let part_1_size = (target_length / 2) - sep_size;
 
         out += if part_1_size > part_1.len() {
             // just use part_1

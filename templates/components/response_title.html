@@ -117,7 +117,7 @@
             <div class="inner shadow-md w-content" exclude="dropdown">
                 <!-- prettier-ignore -->
                 {% let short_id = response.id[..10] %}
-                {% let clipboard_data = crate::database::Database::share(config.host, question.content, response.content, format!("/+r/{short_id}").to_owned(), 160).replace("'", "\\'").replace("\"", "\\\"") %}
+                {% let clipboard_data = crate::database::Database::share(config.host, question.content, response.content, format!("/+r/{short_id}").to_owned(), 240).replace("'", "\\'").replace("\"", "\\\"") %}
 
                 <a
                     href="#"
