@@ -1,0 +1,195 @@
+{% extends "base.html" %} {% block pillmenu %}
+<a href="/@{{ other.username }}">
+    Feed
+    <b class="notification">{{ response_count }}</b>
+</a>
+
+<a href="/@{{ other.username }}/questions" class="active">
+    Questions
+    <b class="notification">{{ questions_count }}</b>
+</a>
+
+{% if !hide_social %}
+<a href="/@{{ other.username }}/followers">
+    Followers
+    <b class="notification">{{ followers_count }}</b>
+</a>
+
+<a href="/@{{ other.username }}/following">
+    Following
+    <b class="notification">{{ following_count }}</b>
+</a>
+{% endif %} {% if is_powerful %}
+<a href="/@{{ other.username }}/warnings">
+    Warnings
+    <b class="notification">Mod</b>
+</a>
+{% endif %} {% endblock %} {% block panel %}
+<!-- inboxes -->
+{% if is_powerful %}
+<div class="pillmenu convertible">
+    <a href="/@{{ other.username }}/questions">Global</a>
+
+    <a href="/@{{ other.username }}/questions/inbox">
+        Inbox
+        <b class="notification">Mod</b>
+    </a>
+
+    <a href="/@{{ other.username }}/questions/outbox" class="active">
+        Outbox
+        <b class="notification">Mod</b>
+    </a>
+</div>
+{% endif %}
+
+<!-- global questions -->
+<div id="questions" class="flex flex-col items-center gap-4">
+    {% for question in questions %}
+    <div class="card-nest w-full shadow" id="question:{{ question.id }}">
+        <div class="card flex flex-col gap-1">
+            <div class="flex items-center justify-between gap-1 question_title">
+                <div class="footernav">
+                    <b class="flex items-center gap-2 item">
+                        <!-- prettier-ignore -->
+                        {% let author_tag = crate::database::Database::anonymous_tag(question.author.username.as_ref()) %}
+                        {% if author_tag.0 == false %}
+                        <img
+                            title="{{ question.author.username }}'s avatar"
+                            src="/api/v1/profiles/{{ question.author.username }}/avatar"
+                            alt=""
+                            class="avatar round-sm"
+                            style="--size: 20px"
+                        />
+
+                        <a
+                            href="/@{{ question.author.username }}"
+                            style="color: inherit"
+                        >
+                            <!-- prettier-ignore -->
+                            {% let display_name = question.author.metadata.kv.get("sparkler:display_name") %}
+
+                            {% if let Some(display_name) = display_name %}
+                                {{ display_name }}
+                            {% else %}
+                                {{ question.author.username }}
+                            {% endif %}
+                        </a>
+                        {% else %}
+                        <img
+                            title="{{ question.author.username }}'s avatar"
+                            src="/static/images/default-avatar.svg"
+                            alt=""
+                            class="avatar round-sm"
+                            style="--size: 20px"
+                        />
+
+                        anonymous {% endif %}
+                    </b>
+
+                    <span class="date item">{{ question.timestamp }}</span>
+                </div>
+
+                <div class="dropdown">
+                    <button
+                        class="secondary"
+                        onclick="trigger('app:hook.dropdown', [event])"
+                        exclude="dropdown"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 16 16"
+                            width="16"
+                            height="16"
+                            aria-label="Ellipsis symbol"
+                            class="icon"
+                        >
+                            <path
+                                d="M8 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM1.5 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm13 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"
+                            ></path>
+                        </svg>
+                    </button>
+
+                    <div class="inner shadow-md" exclude="dropdown">
+                        <b class="title">Manage</b>
+                        <a
+                            href="#"
+                            onclick="trigger('questions:delete', ['{{ question.id }}'])"
+                            class="red"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 16 16"
+                                width="16"
+                                height="16"
+                                aria-label="Trash symbol"
+                                class="icon"
+                            >
+                                <path
+                                    d="M11 1.75V3h2.25a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75ZM4.496 6.675l.66 6.6a.25.25 0 0 0 .249.225h5.19a.25.25 0 0 0 .249-.225l.66-6.6a.75.75 0 0 1 1.492.149l-.66 6.6A1.748 1.748 0 0 1 10.595 15h-5.19a1.75 1.75 0 0 1-1.741-1.575l-.66-6.6a.75.75 0 1 1 1.492-.15ZM6.5 1.75V3h3V1.75a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25Z"
+                                ></path>
+                            </svg>
+                            Delete
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- prettier-ignore -->
+            <span class="question_content">
+                {{ xsu_util::ui::render_markdown(question.content)|safe }}
+            </span>
+        </div>
+
+        <b class="card flex items-center gap-2" title="Recipient">
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 16 16"
+                width="16"
+                height="16"
+                aria-label="Mail symbol"
+                class="icon"
+            >
+                <path
+                    d="M1.75 2h12.5c.966 0 1.75.784 1.75 1.75v8.5A1.75 1.75 0 0 1 14.25 14H1.75A1.75 1.75 0 0 1 0 12.25v-8.5C0 2.784.784 2 1.75 2ZM1.5 12.251c0 .138.112.25.25.25h12.5a.25.25 0 0 0 .25-.25V5.809L8.38 9.397a.75.75 0 0 1-.76 0L1.5 5.809v6.442Zm13-8.181v-.32a.25.25 0 0 0-.25-.25H1.75a.25.25 0 0 0-.25.25v.32L8 7.88Z"
+                ></path>
+            </svg>
+
+            <img
+                title="{{ question.recipient.username }}'s avatar"
+                src="/api/v1/profiles/{{ question.recipient.username }}/avatar"
+                alt=""
+                class="avatar round-sm"
+                style="--size: 20px"
+            />
+
+            <a
+                href="/@{{ question.recipient.username }}"
+                style="color: inherit"
+            >
+                <!-- prettier-ignore -->
+                {% let display_name = question.recipient.metadata.kv.get("sparkler:display_name") %}
+
+                {% if let Some(display_name) = display_name %}
+                    {{ display_name }}
+                {% else %}
+                    {{ question.recipient.username }}
+                {% endif %}
+            </a>
+        </b>
+    </div>
+    {% endfor %}
+
+    <!-- pagination buttons -->
+    {% if questions_count != 0 %}
+    <div class="flex justify-between gap-2 w-full">
+        {% if page > 0 %}
+        <a class="button secondary" href="?page={{ page - 1 }}">Previous</a>
+        {% else %}
+        <div></div>
+        {% endif %} {% if questions.len() != 0 %}
+        <a class="button secondary" href="?page={{ page + 1 }}">Next</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% call super() %} {% endblock %}

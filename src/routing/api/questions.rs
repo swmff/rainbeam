@@ -3,7 +3,7 @@ use crate::model::{anonymous_profile, DatabaseError, QuestionCreate};
 use xsu_authman::model::ProfileMetadata;
 use xsu_dataman::DefaultReturn;
 
-use axum::response::IntoResponse;
+use axum::response::{IntoResponse, Redirect};
 use axum::{
     extract::{Path, State},
     routing::{delete, get, post},
@@ -155,6 +155,17 @@ pub async fn get_request(
         },
         Err(e) => e.into(),
     })
+}
+
+/// Redirect to the full ID of a question through its short ID
+pub async fn expand_request(
+    Path(id): Path<String>,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    match database.get_question(id).await {
+        Ok(r) => Redirect::to(&format!("/question/{}", r.id)),
+        Err(_) => Redirect::to("/"),
+    }
 }
 
 /// [`Database::delete_question`]

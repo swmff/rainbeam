@@ -222,7 +222,7 @@ pub struct CircleMetadata {
     pub kv: HashMap<String, String>,
 }
 
-/// The status of a user's membership in a [`Circle`]
+/// The status of a user's membership in a [`FeedList`]
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub enum ListMembershipStatus {
     /// An active member of a list

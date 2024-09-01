@@ -25,6 +25,23 @@
     <b class="notification">Mod</b>
 </a>
 {% endif %} {% endblock %} {% block panel %}
+<!-- inboxes -->
+{% if is_powerful %}
+<div class="pillmenu convertible">
+    <a href="/@{{ other.username }}/questions" class="active">Global</a>
+
+    <a href="/@{{ other.username }}/questions/inbox">
+        Inbox
+        <b class="notification">Mod</b>
+    </a>
+
+    <a href="/@{{ other.username }}/questions/outbox">
+        Outbox
+        <b class="notification">Mod</b>
+    </a>
+</div>
+{% endif %}
+
 <!-- global questions -->
 <div id="questions" class="flex flex-col items-center gap-4">
     <!-- prettier-ignore -->

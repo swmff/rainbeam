@@ -727,7 +727,7 @@ pub async fn questions_request(
         .await
     {
         Ok(responses) => responses,
-        Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        Err(e) => return Html(e.to_html(database)),
     };
 
     let posting_as = if let Some(ref ua) = auth_user {
@@ -941,6 +941,343 @@ pub async fn warnings_request(
             is_following,
             is_following_you,
             metadata: clean_metadata(&other.metadata),
+            // ...
+            lock_profile: other
+                .metadata
+                .kv
+                .get("sparkler:lock_profile")
+                .unwrap_or(&"false".to_string())
+                == "true",
+            disallow_anonymous: other
+                .metadata
+                .kv
+                .get("sparkler:disallow_anonymous")
+                .unwrap_or(&"false".to_string())
+                == "true",
+            require_account: other
+                .metadata
+                .kv
+                .get("sparkler:require_account")
+                .unwrap_or(&"false".to_string())
+                == "true",
+            hide_social: (other
+                .metadata
+                .kv
+                .get("sparkler:private_social")
+                .unwrap_or(&"false".to_string())
+                == "true")
+                && !is_self,
+            is_blocked: if let Some(block_list) = other.metadata.kv.get("sparkler:block_list") {
+                block_list.contains(&format!("<@{posting_as}>"))
+            } else {
+                false
+            },
+            is_powerful,
+            is_self,
+        }
+        .render()
+        .unwrap(),
+    )
+}
+
+#[derive(Template)]
+#[template(path = "profile/inbox.html")]
+struct ProfileQuestionsInboxTemplate {
+    config: Config,
+    profile: Option<Profile>,
+    unread: usize,
+    notifs: usize,
+    other: Profile,
+    questions: Vec<Question>,
+    questions_count: usize,
+    response_count: usize,
+    followers_count: usize,
+    following_count: usize,
+    is_following: bool,
+    is_following_you: bool,
+    metadata: String,
+    // ...
+    lock_profile: bool,
+    disallow_anonymous: bool,
+    require_account: bool,
+    hide_social: bool,
+    is_blocked: bool,
+    is_powerful: bool,
+    is_self: bool,
+}
+
+/// GET /@:username/questions/inbox
+pub async fn inbox_request(
+    jar: CookieJar,
+    Path(username): Path<String>,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => return Html(DatabaseError::NotAllowed.to_html(database)),
+        },
+        None => return Html(DatabaseError::NotAllowed.to_html(database)),
+    };
+
+    let unread = match database
+        .get_questions_by_recipient(auth_user.id.to_owned())
+        .await
+    {
+        Ok(unread) => unread.len(),
+        Err(_) => 0,
+    };
+
+    let notifs = database
+        .auth
+        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .await;
+
+    let other = match database
+        .auth
+        .get_profile_by_username(username.clone())
+        .await
+    {
+        Ok(ua) => ua,
+        Err(e) => return Html(e.to_string()),
+    };
+
+    let is_following = match database
+        .auth
+        .get_follow(auth_user.id.to_owned(), other.id.clone())
+        .await
+    {
+        Ok(_) => true,
+        Err(_) => false,
+    };
+
+    let is_following_you = match database
+        .auth
+        .get_follow(other.id.clone(), auth_user.id.to_owned())
+        .await
+    {
+        Ok(_) => true,
+        Err(_) => false,
+    };
+
+    let questions = match database
+        .get_questions_by_recipient(other.id.to_owned())
+        .await
+    {
+        Ok(responses) => responses,
+        Err(e) => return Html(e.to_html(database)),
+    };
+
+    let posting_as = auth_user.username.clone();
+
+    let is_powerful = {
+        let group = match database.auth.get_group_by_id(auth_user.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        group.permissions.contains(&Permission::Manager)
+    };
+
+    if !is_powerful {
+        return Html(DatabaseError::NotAllowed.to_html(database));
+    }
+
+    let is_self = auth_user.id == other.id;
+
+    Html(
+        ProfileQuestionsInboxTemplate {
+            config: database.server_options.clone(),
+            profile: Some(auth_user.clone()),
+            unread,
+            notifs,
+            other: other.clone(),
+            questions,
+            questions_count: database
+                .get_global_questions_count_by_author(other.id.clone())
+                .await,
+            response_count: database
+                .get_response_count_by_author(other.id.clone())
+                .await,
+            followers_count: database.auth.get_followers_count(other.id.clone()).await,
+            following_count: database.auth.get_following_count(other.id.clone()).await,
+            is_following,
+            is_following_you,
+            metadata: clean_metadata(&other.metadata),
+            // ...
+            lock_profile: other
+                .metadata
+                .kv
+                .get("sparkler:lock_profile")
+                .unwrap_or(&"false".to_string())
+                == "true",
+            disallow_anonymous: other
+                .metadata
+                .kv
+                .get("sparkler:disallow_anonymous")
+                .unwrap_or(&"false".to_string())
+                == "true",
+            require_account: other
+                .metadata
+                .kv
+                .get("sparkler:require_account")
+                .unwrap_or(&"false".to_string())
+                == "true",
+            hide_social: (other
+                .metadata
+                .kv
+                .get("sparkler:private_social")
+                .unwrap_or(&"false".to_string())
+                == "true")
+                && !is_self,
+            is_blocked: if let Some(block_list) = other.metadata.kv.get("sparkler:block_list") {
+                block_list.contains(&format!("<@{posting_as}>"))
+            } else {
+                false
+            },
+            is_powerful,
+            is_self,
+        }
+        .render()
+        .unwrap(),
+    )
+}
+
+#[derive(Template)]
+#[template(path = "profile/outbox.html")]
+struct ProfileQuestionsOutboxTemplate {
+    config: Config,
+    profile: Option<Profile>,
+    unread: usize,
+    notifs: usize,
+    other: Profile,
+    questions: Vec<Question>,
+    questions_count: usize,
+    response_count: usize,
+    followers_count: usize,
+    following_count: usize,
+    is_following: bool,
+    is_following_you: bool,
+    metadata: String,
+    page: i32,
+    // ...
+    lock_profile: bool,
+    disallow_anonymous: bool,
+    require_account: bool,
+    hide_social: bool,
+    is_blocked: bool,
+    is_powerful: bool,
+    is_self: bool,
+}
+
+/// GET /@:username/questions/outbox
+pub async fn outbox_request(
+    jar: CookieJar,
+    Path(username): Path<String>,
+    State(database): State<Database>,
+    Query(query): Query<PaginatedQuery>,
+) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => return Html(DatabaseError::NotAllowed.to_html(database)),
+        },
+        None => return Html(DatabaseError::NotAllowed.to_html(database)),
+    };
+
+    let unread = match database
+        .get_questions_by_recipient(auth_user.id.to_owned())
+        .await
+    {
+        Ok(unread) => unread.len(),
+        Err(_) => 0,
+    };
+
+    let notifs = database
+        .auth
+        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .await;
+
+    let other = match database
+        .auth
+        .get_profile_by_username(username.clone())
+        .await
+    {
+        Ok(ua) => ua,
+        Err(e) => return Html(e.to_string()),
+    };
+
+    let is_following = match database
+        .auth
+        .get_follow(auth_user.id.to_owned(), other.id.clone())
+        .await
+    {
+        Ok(_) => true,
+        Err(_) => false,
+    };
+
+    let is_following_you = match database
+        .auth
+        .get_follow(other.id.clone(), auth_user.id.to_owned())
+        .await
+    {
+        Ok(_) => true,
+        Err(_) => false,
+    };
+
+    let questions = match database
+        .get_questions_by_author_paginated(other.id.to_owned(), query.page)
+        .await
+    {
+        Ok(responses) => responses,
+        Err(e) => return Html(e.to_html(database)),
+    };
+
+    let posting_as = auth_user.username.clone();
+
+    let is_powerful = {
+        let group = match database.auth.get_group_by_id(auth_user.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        group.permissions.contains(&Permission::Manager)
+    };
+
+    if !is_powerful {
+        return Html(DatabaseError::NotAllowed.to_html(database));
+    }
+
+    let is_self = auth_user.id == other.id;
+
+    Html(
+        ProfileQuestionsOutboxTemplate {
+            config: database.server_options.clone(),
+            profile: Some(auth_user.clone()),
+            unread,
+            notifs,
+            other: other.clone(),
+            questions,
+            questions_count: database
+                .get_global_questions_count_by_author(other.id.clone())
+                .await,
+            response_count: database
+                .get_response_count_by_author(other.id.clone())
+                .await,
+            followers_count: database.auth.get_followers_count(other.id.clone()).await,
+            following_count: database.auth.get_following_count(other.id.clone()).await,
+            is_following,
+            is_following_you,
+            metadata: clean_metadata(&other.metadata),
+            page: query.page,
             // ...
             lock_profile: other
                 .metadata

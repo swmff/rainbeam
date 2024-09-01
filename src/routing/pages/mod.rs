@@ -991,6 +991,8 @@ pub async fn routes(database: Database) -> Router {
         // profiles
         .route("/@:username/warnings", get(profile::warnings_request)) // staff
         .route("/@:username/questions", get(profile::questions_request))
+        .route("/@:username/questions/inbox", get(profile::inbox_request)) // staff
+        .route("/@:username/questions/outbox", get(profile::outbox_request)) // staff
         .route("/@:username/following", get(profile::following_request))
         .route("/@:username/followers", get(profile::followers_request))
         .route("/@:username", get(profile::profile_request))
@@ -1025,6 +1027,7 @@ pub async fn routes(database: Database) -> Router {
         .route("/login", get(login_request))
         .route("/sign_up", get(sign_up_request))
         // expanders
+        .route("/+q/:id", get(api::questions::expand_request))
         .route("/+r/:id", get(api::responses::expand_request))
         .route("/+c/:id", get(api::comments::expand_request))
         // ...

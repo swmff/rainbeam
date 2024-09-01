@@ -1100,6 +1100,10 @@ dialog::backdrop {
     filter: invert(1);
 }
 
+.grayscale {
+    filter: grayscale(1);
+}
+
 .bold {
     font-weight: bold;
 }

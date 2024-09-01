@@ -355,14 +355,18 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            "SELECT * FROM \"xquestions\" WHERE \"id\" = ?"
+            "SELECT * FROM \"xquestions\" WHERE \"id\" LIKE ?"
         } else {
-            "SELECT * FROM \"xquestions\" WHERE \"id\" = $1"
+            "SELECT * FROM \"xquestions\" WHERE \"id\" LIKE $1"
         }
         .to_string();
 
         let c = &self.base.db.client;
-        let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
+        let res = match sqlquery(&query)
+            .bind::<&String>(&format!("{id}%"))
+            .fetch_one(c)
+            .await
+        {
             Ok(p) => self.base.textify_row(p, Vec::new()).0,
             Err(_) => return Ok(Question::unknown()),
         };
@@ -389,13 +393,16 @@ impl Database {
         };
 
         // store in cache
-        self.base
-            .cachedb
-            .set(
-                format!("xsulib.sparkler.question:{}", id),
-                serde_json::to_string::<RefQuestion>(&RefQuestion::from(question.clone())).unwrap(),
-            )
-            .await;
+        if id.len() == 64 {
+            self.base
+                .cachedb
+                .set(
+                    format!("xsulib.sparkler.question:{}", id),
+                    serde_json::to_string::<RefQuestion>(&RefQuestion::from(question.clone()))
+                        .unwrap(),
+                )
+                .await;
+        }
 
         // return
         Ok(question)
@@ -440,6 +447,66 @@ impl Database {
                         {
                             Ok(ua) => ua,
                             Err(_) => anonymous_profile("anonymous".to_string()),
+                        },
+                        content: res.get("content").unwrap().to_string(),
+                        id: res.get("id").unwrap().to_string(),
+                        timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                    });
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        Ok(res)
+    }
+
+    /// Get all questions by their author, 50 at a time
+    ///
+    /// ## Arguments:
+    /// * `author`
+    /// * `page`
+    pub async fn get_questions_by_author_paginated(
+        &self,
+        author: String,
+        page: i32,
+    ) -> Result<Vec<Question>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            format!("SELECT * FROM \"xquestions\" WHERE \"author\" = ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        } else {
+            format!("SELECT * FROM \"xquestions\" WHERE \"author\" = $1 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query)
+            .bind::<&String>(&author.to_lowercase())
+            .fetch_all(c)
+            .await
+        {
+            Ok(p) => {
+                let mut out: Vec<Question> = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+                    out.push(Question {
+                        author: match self
+                            .get_profile(res.get("author").unwrap().to_string())
+                            .await
+                        {
+                            Ok(ua) => ua,
+                            Err(e) => return Err(e),
+                        },
+                        recipient: match self
+                            .get_profile(res.get("recipient").unwrap().to_string())
+                            .await
+                        {
+                            Ok(ua) => ua,
+                            Err(_) => continue,
                         },
                         content: res.get("content").unwrap().to_string(),
                         id: res.get("id").unwrap().to_string(),
@@ -502,7 +569,7 @@ impl Database {
                                 Err(e) => return Err(e),
                             },
                             content: res.get("content").unwrap().to_string(),
-                            id: res.get("id").unwrap().to_string(),
+                            id: id.clone(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
                         },
                         // get the number of responses the question has
@@ -575,7 +642,7 @@ impl Database {
                                 Err(e) => return Err(e),
                             },
                             content: res.get("content").unwrap().to_string(),
-                            id: res.get("id").unwrap().to_string(),
+                            id: id.clone(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
                         },
                         // get the number of responses the question has
@@ -672,7 +739,7 @@ impl Database {
                                 Err(e) => return Err(e),
                             },
                             content: res.get("content").unwrap().to_string(),
-                            id: res.get("id").unwrap().to_string(),
+                            id: id.clone(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
                         },
                         // get the number of responses the question has
@@ -1151,13 +1218,15 @@ impl Database {
         };
 
         // store in cache
-        self.base
-            .cachedb
-            .set(
-                format!("xsulib.sparkler.response:{}", id),
-                serde_json::to_string::<QuestionResponse>(&response.1).unwrap(),
-            )
-            .await;
+        if id.len() == 64 {
+            self.base
+                .cachedb
+                .set(
+                    format!("xsulib.sparkler.response:{}", id),
+                    serde_json::to_string::<QuestionResponse>(&response.1).unwrap(),
+                )
+                .await;
+        }
 
         // return
         Ok(response)
@@ -2046,13 +2115,15 @@ impl Database {
         };
 
         // store in cache
-        self.base
-            .cachedb
-            .set(
-                format!("xsulib.sparkler.comment:{}", id),
-                serde_json::to_string::<ResponseComment>(&comment).unwrap(),
-            )
-            .await;
+        if id.len() == 64 {
+            self.base
+                .cachedb
+                .set(
+                    format!("xsulib.sparkler.comment:{}", id),
+                    serde_json::to_string::<ResponseComment>(&comment).unwrap(),
+                )
+                .await;
+        }
 
         // return
         Ok((
