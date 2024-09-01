@@ -2023,6 +2023,14 @@ impl Database {
                             response.0.id
                         ))
                         .await;
+                } else {
+                    // delete question
+                    if let Err(e) = self
+                        .delete_question(response.0.id, response.0.recipient)
+                        .await
+                    {
+                        return Err(e);
+                    };
                 }
 
                 // clear reactions
