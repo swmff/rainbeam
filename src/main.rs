@@ -1,8 +1,8 @@
-//! Sparkler server
+//! Neospring server
 #![doc = include_str!("../README.md")]
-#![doc(issue_tracker_base_url = "https://github.com/swmff/sparkler/issues")]
-#![doc(html_favicon_url = "https://sparkler.cc/static/favicon.svg")]
-#![doc(html_logo_url = "https://sparkler.cc/static/favicon.svg")]
+#![doc(issue_tracker_base_url = "https://github.com/swmff/neospring/issues")]
+#![doc(html_favicon_url = "https://neospring.org/static/favicon.svg")]
+#![doc(html_logo_url = "https://neospring.org/static/favicon.svg")]
 use axum::routing::{get, get_service};
 use axum::Router;
 
