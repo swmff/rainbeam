@@ -243,6 +243,7 @@ pub struct ProfileQuery {
     #[serde(default)]
     page: i32,
     tag: Option<String>,
+    q: Option<String>,
 }
 
 /// Escape profile colors

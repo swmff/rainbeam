@@ -319,6 +319,7 @@ impl Database {
         }
 
         // check in cache
+        // we still prefix neospring under the "sparkler" name for compatibility with the first 6 development versions
         match self
             .base
             .cachedb
@@ -1122,6 +1123,7 @@ impl Database {
     ) -> Result<(Question, QuestionResponse, usize, usize)> {
         let question = res.get("question").unwrap().to_string();
         let id = res.get("id").unwrap().to_string();
+        let author = res.get("author").unwrap().to_string();
         let ctx: ResponseContext =
             match serde_json::from_str(res.get("context").unwrap_or(&"{}".to_string())) {
                 Ok(t) => t,
@@ -1139,12 +1141,20 @@ impl Database {
                 }
             },
             QuestionResponse {
-                author: match self
-                    .get_profile(res.get("author").unwrap().to_string())
-                    .await
-                {
-                    Ok(ua) => ua,
-                    Err(_) => anonymous_profile("anonymous".to_string()),
+                author: if author.starts_with("{") {
+                    // likely serialized author struct
+                    let de: Profile = serde_json::from_str(&author).unwrap();
+
+                    match self.get_profile(de.id).await {
+                        Ok(ua) => ua,
+                        Err(_) => anonymous_profile("anonymous".to_string()),
+                    }
+                } else {
+                    // must just be id, fetch normally
+                    match self.get_profile(author).await {
+                        Ok(ua) => ua,
+                        Err(_) => anonymous_profile("anonymous".to_string()),
+                    }
                 },
                 question,
                 content: res.get("content").unwrap().to_string(),
@@ -1177,9 +1187,13 @@ impl Database {
             .await
         {
             Some(c) => {
-                match serde_json::from_str::<(Question, QuestionResponse, usize, usize)>(c.as_str())
-                {
-                    Ok(r) => return Ok(r),
+                match serde_json::from_str::<HashMap<String, String>>(c.as_str()) {
+                    Ok(res) => {
+                        return Ok(match self.gimme_response(res).await {
+                            Ok(r) => r,
+                            Err(e) => return Err(e),
+                        })
+                    }
                     Err(_) => {
                         // we're storing a bad version that couldn't deserialize, we don't need that...
                         self.base
@@ -1332,6 +1346,51 @@ impl Database {
         let c = &self.base.db.client;
         let res = match sqlquery(&query)
             .bind::<&String>(&author.to_lowercase())
+            .fetch_all(c)
+            .await
+        {
+            Ok(p) => {
+                let mut out: Vec<(Question, QuestionResponse, usize, usize)> = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+                    out.push(match self.gimme_response(res).await {
+                        Ok(r) => r,
+                        Err(e) => return Err(e),
+                    });
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::Other),
+        };
+
+        // return
+        Ok(res)
+    }
+
+    /// Get all responses by their author and content search, 50 at a time
+    ///
+    /// # Arguments
+    /// * `author`
+    pub async fn get_responses_by_author_searched_paginated(
+        &self,
+        author: String,
+        search: String,
+        page: i32,
+    ) -> Result<Vec<(Question, QuestionResponse, usize, usize)>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            format!("SELECT * FROM \"xresponses\" WHERE \"author\" = ? AND \"content\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        } else {
+            format!("SELECT * FROM \"xresponses\" WHERE \"author\" = $1 AND \"content\" LIKE $2 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        };
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query)
+            .bind::<&String>(&author.to_lowercase())
+            .bind::<&String>(&format!("%{search}%"))
             .fetch_all(c)
             .await
         {

@@ -26,18 +26,20 @@
 </a>
 {% endif %} {% endblock %} {% block panel %}
 <!-- inboxes -->
-{% if is_powerful %}
+{% if is_self | is_powerful %}
 <div class="pillmenu convertible">
     <a href="/@{{ other.username }}/questions">Global</a>
 
+    {% if is_powerful %}
     <a href="/@{{ other.username }}/questions/inbox">
         Inbox
         <b class="notification">Mod</b>
     </a>
+    {% endif %}
 
     <a href="/@{{ other.username }}/questions/outbox" class="active">
         Outbox
-        <b class="notification">Mod</b>
+        <b class="notification">Private</b>
     </a>
 </div>
 {% endif %}

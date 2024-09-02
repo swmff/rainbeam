@@ -20,7 +20,7 @@ pub async fn main() {
     let mut config = config::Config::get_config();
 
     let home = std::env::var("HOME").expect("failed to read $HOME");
-    let static_dir = format!("{home}/.config/xsu-apps/sparkler/static");
+    let static_dir = format!("{home}/.config/xsu-apps/neospring/static");
     config.static_dir = static_dir.clone();
 
     // create databases

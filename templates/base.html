@@ -15,6 +15,7 @@
         <link rel="icon" href="/static/favicon.svg" />
 
         <meta name="theme-color" content="#b62f5a" />
+        <meta name="description" content="{{ config.description }}" />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="{{ config.name }}" />
 
@@ -74,7 +75,7 @@
         <nav>
             <div class="content_container">
                 <div class="flex gap-1">
-                    <a class="button active desktop" href="/">
+                    <a class="button desktop" href="/">
                         <b>{{ config.name }}</b>
                     </a>
 
@@ -125,7 +126,6 @@
                         <button
                             onclick="trigger('app:hook.dropdown', [event])"
                             exclude="dropdown"
-                            class="active"
                         >
                             {% if let Some(profile) = profile %}
                             <img
@@ -257,7 +257,7 @@
                                 About
                             </a>
 
-                            <a href="https://swmff.github.io/sparkler/">
+                            <a href="https://swmff.github.io/neospring/">
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 16 16"

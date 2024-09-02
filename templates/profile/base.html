@@ -366,7 +366,8 @@ config.name }}{% endblock %} {% block head %}
             <div id="sidebar" class="card">
                 {{ xsu_util::ui::render_markdown(sidebar)|safe }}
             </div>
-            {% endif %} {% endif %}
+            {% endif %} {% endif %} {% block sidebar %}{% endblock %}
+            <hr class="mobile small" />
         </div>
 
         <section id="feed" class="flex flex-col gap-4 w-full">

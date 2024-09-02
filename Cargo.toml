@@ -1,11 +1,11 @@
 [package]
-name = "sparkler"
-version = "0.6.9"
+name = "neospring"
+version = "1.0.0"
 edition = "2021"
 authors = ["trisuaso", "swmff"]
 description = "Ask, share, socialize!"
-homepage = "https://sparkler.cc"
-repository = "https://github.com/swmff/sparkler"
+homepage = "https://neospring.org"
+repository = "https://github.com/swmff/neospring"
 license = "MIT"
 rust-version = "1.80"
 
@@ -43,5 +43,5 @@ async-recursion = "1.1.1"
 
 [[bin]]
 path = "src/main.rs"
-name = "sparkler"
+name = "neospring"
 test = false

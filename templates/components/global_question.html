@@ -144,5 +144,59 @@ question = question.clone().0 %}
             Respond
             <span class="notification">{{ responses }}</span>
         </a>
+
+        <!-- sharing -->
+        <div class="dropdown item">
+            <button
+                onclick="trigger('app:hook.dropdown', [event])"
+                exclude="dropdown"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 16 16"
+                    width="16"
+                    height="16"
+                    aria-label="Sharing symbol"
+                    class="icon"
+                >
+                    <path
+                        d="M15 3a3 3 0 0 1-5.175 2.066l-3.92 2.179a2.994 2.994 0 0 1 0 1.51l3.92 2.179a3 3 0 1 1-.73 1.31l-3.92-2.178a3 3 0 1 1 0-4.133l3.92-2.178A3 3 0 1 1 15 3Zm-1.5 10a1.5 1.5 0 1 0-3.001.001A1.5 1.5 0 0 0 13.5 13Zm-9-5a1.5 1.5 0 1 0-3.001.001A1.5 1.5 0 0 0 4.5 8Zm9-5a1.5 1.5 0 1 0-3.001.001A1.5 1.5 0 0 0 13.5 3Z"
+                    ></path>
+                </svg>
+
+                Share
+            </button>
+
+            <div class="inner shadow-md w-content" exclude="dropdown">
+                <b class="title">Sharing</b>
+
+                <!-- prettier-ignore -->
+                {% let short_id = question.id[..10] %}
+                {% let icon = "❔".to_string() %}
+                {% let clipboard_data = crate::database::Database::share(config.host, icon, question.content, format!("/+q/{short_id}").to_owned(), 240).replace("'", "\\'").replace("\"", "\\\"") %}
+
+                <a
+                    href="#"
+                    onclick="trigger('app:copy_text', ['{{ clipboard_data }}'])"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 16 16"
+                        width="16"
+                        height="16"
+                        aria-label="Copy symbol"
+                        class="icon"
+                    >
+                        <path
+                            d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"
+                        ></path>
+                        <path
+                            d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"
+                        ></path>
+                    </svg>
+                    Copy to Clipboard
+                </a>
+            </div>
+        </div>
     </div>
 </div>

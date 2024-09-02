@@ -1,3 +1,7 @@
 /target
+
+# prod
 static/site/about.md
+static/fonts/
+
 *.db

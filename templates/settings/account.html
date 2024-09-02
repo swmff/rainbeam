@@ -45,6 +45,19 @@
     </div>
 
     <hr />
+    <form class="flex flex-col gap-1" id="change_username">
+        <h3>Change username</h3>
+
+        <label for="current_password">Current password</label>
+        <input type="password" name="current_password" id="current_password" />
+
+        <label for="new_name">New username</label>
+        <input type="text" name="new_name" id="new_name" minlength="2" />
+
+        <button>Submit</button>
+    </form>
+
+    <hr />
     <form class="flex flex-col gap-1" id="change_password">
         <h3>Change password</h3>
 
@@ -104,6 +117,33 @@
         if (document.getElementById(pref)) {
             document.getElementById(pref).setAttribute("selected", "true");
         }
+
+        // change username
+        document
+            .getElementById("change_username")
+            .addEventListener("submit", (e) => {
+                e.preventDefault();
+                fetch("/api/auth/profile/{{ profile.username }}/username", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        password: e.target.current_password.value,
+                        new_name: e.target.new_name.value,
+                    }),
+                })
+                    .then((res) => res.json())
+                    .then((res) => {
+                        trigger("app:shout", [
+                            res.success ? "tip" : "caution",
+                            res.message || "Username changed!",
+                        ]);
+
+                        window.location.href = "#top";
+                        e.target.reset();
+                    });
+            });
 
         // change password
         document

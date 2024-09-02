@@ -31,6 +31,7 @@ struct ProfileTemplate {
     pinned: Option<Vec<(Question, QuestionResponse, usize, usize)>>,
     page: i32,
     tag: String,
+    query: String,
     // ...
     lock_profile: bool,
     disallow_anonymous: bool,
@@ -114,6 +115,7 @@ pub async fn profile_request(
     };
 
     let responses = if let Some(ref tag) = query.tag {
+        // tagged
         match database
             .get_responses_by_author_tagged_paginated(
                 other.id.to_owned(),
@@ -126,12 +128,28 @@ pub async fn profile_request(
             Err(e) => return Html(e.to_html(database)),
         }
     } else {
-        match database
-            .get_responses_by_author_paginated(other.id.to_owned(), query.page)
-            .await
-        {
-            Ok(responses) => responses,
-            Err(e) => return Html(e.to_html(database)),
+        if let Some(ref search) = query.q {
+            // search
+            match database
+                .get_responses_by_author_searched_paginated(
+                    other.id.to_owned(),
+                    search.to_owned(),
+                    query.page,
+                )
+                .await
+            {
+                Ok(responses) => responses,
+                Err(e) => return Html(e.to_html(database)),
+            }
+        } else {
+            // normal
+            match database
+                .get_responses_by_author_paginated(other.id.to_owned(), query.page)
+                .await
+            {
+                Ok(responses) => responses,
+                Err(e) => return Html(e.to_html(database)),
+            }
         }
     };
 
@@ -206,6 +224,7 @@ pub async fn profile_request(
             pinned,
             page: query.page,
             tag: query.tag.unwrap_or(String::new()),
+            query: query.q.unwrap_or(String::new()),
             // ...
             lock_profile: other
                 .metadata
@@ -1252,11 +1271,11 @@ pub async fn outbox_request(
         group.permissions.contains(&Permission::Manager)
     };
 
-    if !is_powerful {
+    let is_self = auth_user.id == other.id;
+
+    if !is_powerful && !is_self {
         return Html(DatabaseError::NotAllowed.to_html(database));
     }
-
-    let is_self = auth_user.id == other.id;
 
     Html(
         ProfileQuestionsOutboxTemplate {

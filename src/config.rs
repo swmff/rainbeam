@@ -14,7 +14,7 @@ pub struct Config {
     pub name: String,
     /// The description of the site
     pub description: String,
-    /// The location of the static directory, should not be supplied manually as it will be overwritten with `$HOME/.config/xsu-apps/sparkler/static`
+    /// The location of the static directory, should not be supplied manually as it will be overwritten with `$HOME/.config/xsu-apps/neospring/static`
     #[serde(default)]
     pub static_dir: String,
     /// HCaptcha configuration
@@ -22,7 +22,7 @@ pub struct Config {
     /// If new profile registration is enabled
     #[serde(default)]
     pub registration_enabled: bool,
-    /// The origin of the public server (ex: "<https://sparkler.cc>")
+    /// The origin of the public server (ex: "<https://neospring.org>")
     ///
     /// Used in embeds and links.
     #[serde(default)]
@@ -36,8 +36,8 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             port: 8080,
-            name: "Sparkler".to_string(),
-            description: "Simple Q&A".to_string(),
+            name: "Neospring".to_string(),
+            description: "Ask, share, socialize!".to_string(),
             static_dir: String::new(),
             captcha: HCaptchaConfig::default(),
             registration_enabled: true,
@@ -57,7 +57,7 @@ impl Config {
     pub fn get_config() -> Self {
         let home = env::var("HOME").expect("failed to read $HOME");
 
-        if let Err(_) = fs::read_dir(format!("{home}/.config/xsu-apps/sparkler")) {
+        if let Err(_) = fs::read_dir(format!("{home}/.config/xsu-apps/neospring")) {
             // make sure .config exists
             fs::mkdir(format!("{home}/.config")).expect("failed to create .config directory");
 
@@ -66,11 +66,11 @@ impl Config {
                 .expect("failed to create xsu-apps directory");
 
             // create .config/xsu-apps/slime
-            fs::mkdir(format!("{home}/.config/xsu-apps/sparkler"))
+            fs::mkdir(format!("{home}/.config/xsu-apps/neospring"))
                 .expect("failed to create application directory")
         }
 
-        match fs::read(format!("{home}/.config/xsu-apps/sparkler/config.toml")) {
+        match fs::read(format!("{home}/.config/xsu-apps/neospring/config.toml")) {
             Ok(c) => Config::read(c),
             Err(_) => {
                 Self::update_config(Self::default()).expect("failed to write default config");
@@ -84,7 +84,7 @@ impl Config {
         let home = env::var("HOME").expect("failed to read $HOME");
 
         fs::write(
-            format!("{home}/.config/xsu-apps/sparkler/config.toml"),
+            format!("{home}/.config/xsu-apps/neospring/config.toml"),
             toml::to_string_pretty::<Self>(&contents).unwrap(),
         )
     }

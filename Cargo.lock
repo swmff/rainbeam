@@ -1208,6 +1208,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "neospring"
+version = "1.0.0"
+dependencies = [
+ "ammonia",
+ "askama",
+ "askama_axum",
+ "async-recursion",
+ "axum",
+ "axum-extra",
+ "futures",
+ "futures-util",
+ "hcaptcha",
+ "mime_guess",
+ "regex",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tokio-stream",
+ "toml",
+ "tower-http",
+ "xsu-authman",
+ "xsu-dataman",
+ "xsu-util",
+]
+
+[[package]]
 name = "new_debug_unreachable"
 version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1997,33 +2024,6 @@ checksum = "ce305eb0b4296696835b71df73eb912e0f1ffd2556a501fcede6e0c50349191c"
 dependencies = [
  "libc",
  "windows-sys 0.52.0",
-]
-
-[[package]]
-name = "sparkler"
-version = "0.6.9"
-dependencies = [
- "ammonia",
- "askama",
- "askama_axum",
- "async-recursion",
- "axum",
- "axum-extra",
- "futures",
- "futures-util",
- "hcaptcha",
- "mime_guess",
- "regex",
- "reqwest",
- "serde",
- "serde_json",
- "tokio",
- "tokio-stream",
- "toml",
- "tower-http",
- "xsu-authman",
- "xsu-dataman",
- "xsu-util",
 ]
 
 [[package]]
@@ -3022,7 +3022,7 @@ dependencies = [
 
 [[package]]
 name = "xsu-authman"
-version = "0.4.1"
+version = "0.4.2"
 dependencies = [
  "axum",
  "axum-extra",

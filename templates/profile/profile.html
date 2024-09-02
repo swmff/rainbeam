@@ -24,6 +24,40 @@
     Warnings
     <b class="notification">Mod</b>
 </a>
+{% endif %} {% endblock %} {% block sidebar %}
+<!-- search -->
+{% if tag.is_empty() %}
+<form id="search_form" class="card flex gap-2 flex-col">
+    <label for="query">Search</label>
+
+    <input
+        id="query"
+        name="q"
+        value="{{ query }}"
+        placeholder="Search responses"
+        maxlength="500"
+    />
+
+    <div class="flex justify-between">
+        <div></div>
+        <button title="Search" class="primary round-lg bold">
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 16 16"
+                width="16"
+                height="16"
+                aria-label="Search symbol"
+                class="icon"
+            >
+                <path
+                    d="M10.68 11.74a6 6 0 0 1-7.922-8.982 6 6 0 0 1 8.982 7.922l3.04 3.04a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215ZM11.5 7a4.499 4.499 0 1 0-8.997 0A4.499 4.499 0 0 0 11.5 7Z"
+                ></path>
+            </svg>
+
+            Search
+        </button>
+    </div>
+</form>
 {% endif %} {% endblock %} {% block panel %}
 <!-- feed -->
 <div id="feed" class="flex flex-col gap-4">

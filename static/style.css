@@ -37,6 +37,7 @@
 html,
 body {
     line-height: 1.5;
+    letter-spacing: 0.15px;
     font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
         "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     color: var(--color-text);
@@ -531,11 +532,11 @@ nav button,
 nav a.button {
     border-radius: var(--radius);
     color: inherit;
-    opacity: 75%;
     padding: 0.75rem 0.5rem;
     transition: opacity 0.15s;
     background: transparent;
     text-decoration: none;
+    position: relative;
 }
 
 nav button:hover,
@@ -547,8 +548,57 @@ nav a.button:hover {
 
 nav button.active,
 nav a.active {
-    opacity: 100%;
+    font-weight: 600;
 }
+
+nav button::before,
+nav a::before {
+    background: transparent;
+    border-radius: var(--radius);
+    width: 100%;
+    height: 32px;
+    display: block;
+    content: "";
+    position: absolute;
+    top: calc(50% - (32px / 2));
+    z-index: -1;
+    transition: background 0.15s;
+}
+
+nav button.active::before,
+nav a.active::before,
+nav button:not(.inner button):hover::before,
+nav a:not(.inner a):hover::before {
+    background: var(--color-primary-lowered);
+}
+
+/* the stuff below is for the microsoft-like status line above the active page */
+/* nav button::after,
+nav a::after {
+    background: transparent;
+    border-radius: var(--radius);
+    width: 100%;
+    height: 4px;
+    display: block;
+    content: "";
+    position: absolute;
+    top: 0;
+    transition:
+        background 0.15s,
+        opacity 0.15s;
+}
+
+nav button.active::after,
+nav a.active::after,
+nav button:not(.inner button):hover::after,
+nav a:not(.inner a):hover::after {
+    background: var(--color-text-primary);
+}
+
+nav button:not(.inner button):hover::after,
+nav a:not(.inner a):hover::after {
+    opacity: 75%;
+} */
 
 .markdown-alert-note,
 .markdown-alert-tip,

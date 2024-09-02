@@ -60,11 +60,6 @@
     {% endif %}
 
     <main class="flex flex-col gap-4">
-        <div class="pillmenu">
-            <a href="/inbox" class="active">Inbox</a>
-            <a href="/inbox/global">Global Questions</a>
-        </div>
-
         {% for question in unread %}
         <div class="card-nest w-full shadow" id="question:{{ question.id }}">
             <div class="card flex flex-col gap-1">
