@@ -108,7 +108,7 @@ question = question.clone().0 %}
         </div>
 
         <!-- prettier-ignore -->
-        <span class="question_content">
+        <span class="question_content" hook="long">
            {{ xsu_util::ui::render_markdown(question.content)|safe }}
        </span>
     </div>

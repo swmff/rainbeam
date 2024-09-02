@@ -144,6 +144,41 @@
         }
     });
 
+    app.define("hook.long", function (_, element, full_text) {
+        element.classList.remove("hook:long.hidden_text");
+        element.innerText = full_text;
+    });
+
+    app.define("hook.long_text.init", function (_, event) {
+        for (const element of Array.from(
+            document.querySelectorAll("[hook=long]") || [],
+        )) {
+            const is_long = element.innerText.length >= 64 * 16;
+
+            if (!is_long) {
+                continue;
+            }
+
+            element.classList.add("hook:long.hidden_text");
+
+            if (element.getAttribute("hook-arg") === "lowered") {
+                element.classList.add("hook:long.hidden_text+lowered");
+            }
+
+            const text = element.innerText;
+            const short = text.slice(0, 64 * 16);
+            element.innerText = `${short}...`;
+
+            // event
+            const listener = () => {
+                app["hook.long"](element, text);
+                element.removeEventListener("click", listener);
+            };
+
+            element.addEventListener("click", listener);
+        }
+    });
+
     // adomonition
     app.define("shout", function (_, type, content) {
         if (document.getElementById("admonition")) {
@@ -218,7 +253,7 @@
             if (anchor.href.length === 0) {
                 continue;
             }
-            
+
             const url = new URL(anchor.href);
             if (
                 anchor.href.startsWith("/") ||

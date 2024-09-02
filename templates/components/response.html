@@ -108,7 +108,7 @@ let reaction_count = response.3 %} {% let response = response.1.clone() %}
         </div>
 
         <!-- prettier-ignore -->
-        <span class="question_content">
+        <span class="question_content" hook="long" hook-arg="lowered">
             {{ xsu_util::ui::render_markdown(question.content)|safe }}
         </span>
     </div>
@@ -123,7 +123,7 @@ let reaction_count = response.3 %} {% let response = response.1.clone() %}
         {% endif %}
 
         <!-- prettier-ignore -->
-        <span class="response_content">
+        <span class="response_content" hook="long">
             {{ xsu_util::ui::render_markdown(response.content)|safe }}
         </span>
 

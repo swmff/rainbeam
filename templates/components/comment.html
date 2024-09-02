@@ -5,7 +5,7 @@ comment = comment.0.clone() %}
     id="comment:{{ comment.id }}"
 >
     <!-- prettier-ignore -->
-    <span class="comment_content">
+    <span class="comment_content" hook="long">
         {{ xsu_util::ui::render_markdown(comment.content)|safe }}
     </span>
 

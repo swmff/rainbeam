@@ -1,4 +1,5 @@
 <!doctype html>
+<!-- NEOSPRING <https://github.com/swmff/neospring> -->
 <html lang="en" prefix="og: https://ogp.me/ns#">
     <head>
         <meta charset="UTF-8" />
@@ -39,10 +40,11 @@
         <script>
             globalThis.ns_config = {
                 root: "/static/js/",
-                version: "0.6.9",
+                version: "1.0.0",
             };
 
             globalThis._app_base = {
+                name: "neospring",
                 ns_store: {},
             };
         </script>
@@ -329,6 +331,7 @@
 
                 app["hook.dropdown.init"](window);
                 app["hook.character_counter.init"]();
+                app["hook.long_text.init"]();
 
                 twemoji.parse(document.body);
             })();

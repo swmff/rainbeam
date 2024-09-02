@@ -809,7 +809,7 @@ impl Database {
             return Err(DatabaseError::ContentTooShort);
         }
 
-        if props.content.len() > 500 {
+        if props.content.len() > (64 * 32) {
             return Err(DatabaseError::ContentTooLong);
         }
 
@@ -1622,7 +1622,7 @@ impl Database {
         };
 
         // check content length
-        if props.content.len() > 1000 {
+        if props.content.len() > (64 * 64) {
             return Err(DatabaseError::ContentTooLong);
         }
 
@@ -2567,7 +2567,7 @@ impl Database {
         }
 
         // check content length
-        if props.content.len() > 500 {
+        if props.content.len() > (64 * 32) {
             return Err(DatabaseError::ContentTooLong);
         }
 
