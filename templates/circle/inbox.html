@@ -138,9 +138,9 @@
             </div>
 
             <!-- prettier-ignore -->
-            <span class="question_content">
-                    {{ xsu_util::ui::render_markdown(question.content)|safe }}
-                </span>
+            <span class="question_content" hook="long" hook-arg="lowered">
+                {{ xsu_util::ui::render_markdown(question.content)|safe }}
+            </span>
         </div>
 
         <div class="card">
