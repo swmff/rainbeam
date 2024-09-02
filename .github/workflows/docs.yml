@@ -31,7 +31,7 @@ jobs:
       - name: Build documentation
         run: cargo doc --no-deps --document-private-items
       - name: Create index.html
-        run: echo '<meta http-equiv="refresh" content="0;url=sparkler/index.html">' > target/doc/index.html
+        run: echo '<meta http-equiv="refresh" content="0;url=neospring/index.html">' > target/doc/index.html
       - name: Artifact
         uses: actions/upload-pages-artifact@v3
         with:
