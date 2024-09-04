@@ -668,6 +668,82 @@ impl Database {
         Ok(res)
     }
 
+    /// Get all global questions by their author and a search query, 50 at a time
+    ///
+    /// ## Arguments:
+    /// * `author`
+    /// * `search`
+    /// * `page`
+    pub async fn get_global_questions_by_author_searched_paginated(
+        &self,
+        author: String,
+        search: String,
+        page: i32,
+    ) -> Result<Vec<(Question, usize, usize)>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            format!("SELECT * FROM \"xquestions\" WHERE \"author\" = ? AND \"recipient\" = '@' AND \"content\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        } else {
+            format!("SELECT * FROM \"xquestions\" WHERE \"author\" = $1 AND \"recipient\" = '@' AND \"content\" LIKE $2 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query)
+            .bind::<&String>(&author.to_lowercase())
+            .bind::<&String>(&format!("%{search}%"))
+            .fetch_all(c)
+            .await
+        {
+            Ok(p) => {
+                let mut out: Vec<(Question, usize, usize)> = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let id = res.get("id").unwrap().to_string();
+                    out.push((
+                        Question {
+                            author: match self
+                                .get_profile(res.get("author").unwrap().to_string())
+                                .await
+                            {
+                                Ok(ua) => ua,
+                                Err(e) => return Err(e),
+                            },
+                            recipient: match self
+                                .get_profile(res.get("recipient").unwrap().to_string())
+                                .await
+                            {
+                                Ok(ua) => ua,
+                                Err(e) => return Err(e),
+                            },
+                            content: res.get("content").unwrap().to_string(),
+                            id: id.clone(),
+                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                        },
+                        // get the number of responses the question has
+                        self.base
+                            .cachedb
+                            .get(format!("xsulib.sparkler.question_response_count:{}", id))
+                            .await
+                            .unwrap_or(String::from("0"))
+                            .parse::<usize>()
+                            .unwrap_or(0),
+                        // get the number of reactions the question has
+                        self.get_reaction_count_by_asset(id).await,
+                    ));
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        Ok(res)
+    }
+
     /// Get 50 global questions from people `user` is following
     ///
     /// # Arguments

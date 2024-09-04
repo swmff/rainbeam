@@ -659,6 +659,7 @@ struct ProfileQuestionsTemplate {
     is_following_you: bool,
     metadata: String,
     page: i32,
+    query: String,
     // ...
     lock_profile: bool,
     disallow_anonymous: bool,
@@ -674,7 +675,7 @@ pub async fn questions_request(
     jar: CookieJar,
     Path(username): Path<String>,
     State(database): State<Database>,
-    Query(query): Query<PaginatedQuery>,
+    Query(query): Query<ProfileQuery>,
 ) -> impl IntoResponse {
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
@@ -741,12 +742,26 @@ pub async fn questions_request(
         false
     };
 
-    let questions = match database
-        .get_global_questions_by_author_paginated(other.id.to_owned(), query.page)
-        .await
-    {
-        Ok(responses) => responses,
-        Err(e) => return Html(e.to_html(database)),
+    let questions = if let Some(ref search) = query.q {
+        match database
+            .get_global_questions_by_author_searched_paginated(
+                other.id.to_owned(),
+                search.clone(),
+                query.page,
+            )
+            .await
+        {
+            Ok(responses) => responses,
+            Err(e) => return Html(e.to_html(database)),
+        }
+    } else {
+        match database
+            .get_global_questions_by_author_paginated(other.id.to_owned(), query.page)
+            .await
+        {
+            Ok(responses) => responses,
+            Err(e) => return Html(e.to_html(database)),
+        }
     };
 
     let posting_as = if let Some(ref ua) = auth_user {
@@ -792,6 +807,7 @@ pub async fn questions_request(
             is_following_you,
             metadata: clean_metadata(&other.metadata),
             page: query.page,
+            query: query.q.unwrap_or(String::new()),
             // ...
             lock_profile: other
                 .metadata
