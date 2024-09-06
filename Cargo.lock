@@ -1209,7 +1209,7 @@ dependencies = [
 
 [[package]]
 name = "neospring"
-version = "1.0.1"
+version = "1.0.3"
 dependencies = [
  "ammonia",
  "askama",
@@ -3022,7 +3022,7 @@ dependencies = [
 
 [[package]]
 name = "xsu-authman"
-version = "0.4.2"
+version = "0.4.3"
 dependencies = [
  "axum",
  "axum-extra",

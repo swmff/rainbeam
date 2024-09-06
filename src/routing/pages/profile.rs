@@ -38,7 +38,8 @@ struct ProfileTemplate {
     require_account: bool,
     hide_social: bool,
     is_blocked: bool,
-    is_powerful: bool,
+    is_powerful: bool, // at least "manager"
+    is_helper: bool,   // at least "helper"
     is_self: bool,
 }
 
@@ -185,12 +186,14 @@ pub async fn profile_request(
         "anonymous".to_string()
     };
 
+    let mut is_helper: bool = false;
     let is_powerful = if let Some(ref ua) = auth_user {
         let group = match database.auth.get_group_by_id(ua.group).await {
             Ok(g) => g,
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
+        is_helper = group.permissions.contains(&Permission::Helper);
         group.permissions.contains(&Permission::Manager)
     } else {
         false
@@ -257,6 +260,7 @@ pub async fn profile_request(
                 false
             },
             is_powerful,
+            is_helper,
             is_self,
         }
         .render()
@@ -273,7 +277,10 @@ struct ProfileEmbedTemplate {
     responses: Vec<(Question, QuestionResponse, usize, usize)>,
     pinned: Option<Vec<(Question, QuestionResponse, usize, usize)>>,
     is_powerful: bool,
+    is_helper: bool,
+    lock_profile: bool,
     disallow_anonymous: bool,
+    require_account: bool,
     is_blocked: bool,
 }
 
@@ -360,22 +367,20 @@ pub async fn profile_embed_request(
         .unwrap_or(&"false".to_string())
         == "true";
 
-    if lock_profile | disallow_anonymous | require_account {
-        return Html(DatabaseError::NotAllowed.to_html(database));
-    }
-
     let posting_as = if let Some(ref ua) = auth_user {
         ua.username.clone()
     } else {
         "anonymous".to_string()
     };
 
+    let mut is_helper: bool = false;
     let is_powerful = if let Some(ref ua) = auth_user {
         let group = match database.auth.get_group_by_id(ua.group).await {
             Ok(g) => g,
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
+        is_helper = group.permissions.contains(&Permission::Helper);
         group.permissions.contains(&Permission::Manager)
     } else {
         false
@@ -390,12 +395,10 @@ pub async fn profile_embed_request(
             responses,
             pinned,
             is_powerful,
-            disallow_anonymous: other
-                .metadata
-                .kv
-                .get("sparkler:disallow_anonymous")
-                .unwrap_or(&"false".to_string())
-                == "true",
+            is_helper,
+            lock_profile,
+            disallow_anonymous,
+            require_account,
             is_blocked: if let Some(block_list) = other.metadata.kv.get("sparkler:block_list") {
                 block_list.contains(&format!("<@{posting_as}>"))
             } else {
@@ -430,6 +433,7 @@ struct FollowersTemplate {
     require_account: bool,
     is_blocked: bool,
     is_powerful: bool,
+    is_helper: bool,
     is_self: bool,
 }
 
@@ -511,12 +515,14 @@ pub async fn followers_request(
         "anonymous".to_string()
     };
 
+    let mut is_helper: bool = false;
     let is_powerful = if let Some(ref ua) = auth_user {
         let group = match database.auth.get_group_by_id(ua.group).await {
             Ok(g) => g,
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
+        is_helper = group.permissions.contains(&Permission::Helper);
         group.permissions.contains(&Permission::Manager)
     } else {
         false
@@ -589,6 +595,7 @@ pub async fn followers_request(
                 false
             },
             is_powerful,
+            is_helper,
             is_self,
         }
         .render()
@@ -619,6 +626,7 @@ struct FollowingTemplate {
     require_account: bool,
     is_blocked: bool,
     is_powerful: bool,
+    is_helper: bool,
     is_self: bool,
 }
 
@@ -700,12 +708,14 @@ pub async fn following_request(
         "anonymous".to_string()
     };
 
+    let mut is_helper: bool = false;
     let is_powerful = if let Some(ref ua) = auth_user {
         let group = match database.auth.get_group_by_id(ua.group).await {
             Ok(g) => g,
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
+        is_helper = group.permissions.contains(&Permission::Helper);
         group.permissions.contains(&Permission::Manager)
     } else {
         false
@@ -778,6 +788,7 @@ pub async fn following_request(
                 false
             },
             is_powerful,
+            is_helper,
             is_self,
         }
         .render()
@@ -810,6 +821,7 @@ struct ProfileQuestionsTemplate {
     hide_social: bool,
     is_blocked: bool,
     is_powerful: bool,
+    is_helper: bool,
     is_self: bool,
 }
 
@@ -913,12 +925,14 @@ pub async fn questions_request(
         "anonymous".to_string()
     };
 
+    let mut is_helper: bool = false;
     let is_powerful = if let Some(ref ua) = auth_user {
         let group = match database.auth.get_group_by_id(ua.group).await {
             Ok(g) => g,
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
+        is_helper = group.permissions.contains(&Permission::Helper);
         group.permissions.contains(&Permission::Manager)
     } else {
         false
@@ -983,6 +997,7 @@ pub async fn questions_request(
                 false
             },
             is_powerful,
+            is_helper,
             is_self,
         }
         .render()
@@ -1013,6 +1028,7 @@ struct ModTemplate {
     hide_social: bool,
     is_blocked: bool,
     is_powerful: bool,
+    is_helper: bool,
     is_self: bool,
 }
 
@@ -1076,11 +1092,16 @@ pub async fn mod_request(
 
     let posting_as = auth_user.username.clone();
 
+    let mut is_helper: bool = false;
     let is_powerful = {
         let group = match database.auth.get_group_by_id(auth_user.group).await {
             Ok(g) => g,
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
+
+        if group.permissions.contains(&Permission::Helper) {
+            is_helper = true;
+        }
 
         group.permissions.contains(&Permission::Manager)
     };
@@ -1151,6 +1172,7 @@ pub async fn mod_request(
                 false
             },
             is_powerful,
+            is_helper,
             is_self,
         }
         .render()
@@ -1181,6 +1203,7 @@ struct ProfileQuestionsInboxTemplate {
     hide_social: bool,
     is_blocked: bool,
     is_powerful: bool,
+    is_helper: bool,
     is_self: bool,
 }
 
@@ -1252,11 +1275,16 @@ pub async fn inbox_request(
 
     let posting_as = auth_user.username.clone();
 
+    let mut is_helper: bool = false;
     let is_powerful = {
         let group = match database.auth.get_group_by_id(auth_user.group).await {
             Ok(g) => g,
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
+
+        if group.permissions.contains(&Permission::Helper) {
+            is_helper = true;
+        }
 
         group.permissions.contains(&Permission::Manager)
     };
@@ -1318,6 +1346,7 @@ pub async fn inbox_request(
                 false
             },
             is_powerful,
+            is_helper,
             is_self,
         }
         .render()
@@ -1349,6 +1378,7 @@ struct ProfileQuestionsOutboxTemplate {
     hide_social: bool,
     is_blocked: bool,
     is_powerful: bool,
+    is_helper: bool,
     is_self: bool,
 }
 
@@ -1421,11 +1451,16 @@ pub async fn outbox_request(
 
     let posting_as = auth_user.username.clone();
 
+    let mut is_helper: bool = false;
     let is_powerful = {
         let group = match database.auth.get_group_by_id(auth_user.group).await {
             Ok(g) => g,
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
+
+        if group.permissions.contains(&Permission::Helper) {
+            is_helper = true;
+        }
 
         group.permissions.contains(&Permission::Manager)
     };
@@ -1488,6 +1523,7 @@ pub async fn outbox_request(
                 false
             },
             is_powerful,
+            is_helper,
             is_self,
         }
         .render()

@@ -52,6 +52,7 @@ struct TimelineTemplate {
     notifs: usize,
     responses: Vec<(Question, QuestionResponse, usize, usize)>,
     is_powerful: bool,
+    is_helper: bool,
 }
 
 /// GET /
@@ -89,12 +90,14 @@ pub async fn homepage_request(
             Err(e) => return Html(e.to_html(database)),
         };
 
+        let mut is_helper: bool = false;
         let is_powerful = if let Some(ref ua) = auth_user {
             let group = match database.auth.get_group_by_id(ua.group).await {
                 Ok(g) => g,
                 Err(_) => return Html(DatabaseError::Other.to_html(database)),
             };
 
+            is_helper = group.permissions.contains(&Permission::Helper);
             group.permissions.contains(&Permission::Manager)
         } else {
             false
@@ -108,6 +111,7 @@ pub async fn homepage_request(
                 notifs,
                 responses,
                 is_powerful,
+                is_helper,
             }
             .render()
             .unwrap(),
@@ -298,6 +302,7 @@ struct GlobalQuestionTemplate {
     reactions: Vec<Reaction>,
     already_responded: bool,
     is_powerful: bool,
+    is_helper: bool,
 }
 
 /// GET /question/:id
@@ -346,12 +351,14 @@ pub async fn global_question_request(
         Err(_) => return Html(DatabaseError::Other.to_html(database)),
     };
 
+    let mut is_helper: bool = false;
     let is_powerful = if let Some(ref ua) = auth_user {
         let group = match database.auth.get_group_by_id(ua.group).await {
             Ok(g) => g,
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
+        is_helper = group.permissions.contains(&Permission::Helper);
         group.permissions.contains(&Permission::Manager)
     } else {
         false
@@ -379,6 +386,7 @@ pub async fn global_question_request(
             question,
             responses,
             is_powerful,
+            is_helper,
             reactions,
         }
         .render()
@@ -396,6 +404,7 @@ struct PublicPostsTemplate {
     page: i32,
     responses: Vec<(Question, QuestionResponse, usize, usize)>,
     is_powerful: bool,
+    is_helper: bool,
 }
 
 /// GET /inbox/posts
@@ -439,12 +448,14 @@ pub async fn public_posts_timeline_request(
         Err(_) => return Html(DatabaseError::Other.to_html(database)),
     };
 
+    let mut is_helper: bool = false;
     let is_powerful = if let Some(ref ua) = auth_user {
         let group = match database.auth.get_group_by_id(ua.group).await {
             Ok(g) => g,
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
+        is_helper = group.permissions.contains(&Permission::Helper);
         group.permissions.contains(&Permission::Manager)
     } else {
         false
@@ -459,6 +470,7 @@ pub async fn public_posts_timeline_request(
             page: query.page,
             responses,
             is_powerful,
+            is_helper,
         }
         .render()
         .unwrap(),
@@ -481,6 +493,7 @@ struct ResponseTemplate {
     anonymous_username: Option<String>,
     anonymous_avatar: Option<String>,
     is_powerful: bool,
+    is_helper: bool,
 }
 
 /// GET /response/:id
@@ -538,12 +551,14 @@ pub async fn response_request(
         Err(e) => return Html(e.to_html(database)),
     };
 
+    let mut is_helper: bool = false;
     let is_powerful = if let Some(ref ua) = auth_user {
         let group = match database.auth.get_group_by_id(ua.group).await {
             Ok(g) => g,
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
+        is_helper = group.permissions.contains(&Permission::Helper);
         group.permissions.contains(&Permission::Manager)
     } else {
         false
@@ -564,6 +579,7 @@ pub async fn response_request(
             anonymous_username: Some("anonymous".to_string()), // TODO: fetch recipient setting
             anonymous_avatar: None,
             is_powerful,
+            is_helper,
         }
         .render()
         .unwrap(),
@@ -587,6 +603,7 @@ struct CommentTemplate {
     anonymous_username: Option<String>,
     anonymous_avatar: Option<String>,
     is_powerful: bool,
+    is_helper: bool,
 }
 
 /// GET /comment/:id
@@ -644,12 +661,14 @@ pub async fn comment_request(
         Err(_) => Vec::new(),
     };
 
+    let mut is_helper: bool = false;
     let is_powerful = if let Some(ref ua) = auth_user {
         let group = match database.auth.get_group_by_id(ua.group).await {
             Ok(g) => g,
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
+        is_helper = group.permissions.contains(&Permission::Helper);
         group.permissions.contains(&Permission::Manager)
     } else {
         false
@@ -676,6 +695,7 @@ pub async fn comment_request(
             anonymous_username: Some("anonymous".to_string()), // TODO: fetch recipient setting
             anonymous_avatar: None,
             is_powerful,
+            is_helper,
         }
         .render()
         .unwrap(),
@@ -756,7 +776,7 @@ struct GlobalTimelineTemplate {
     unread: usize,
     notifs: usize,
     questions: Vec<(Question, usize, usize)>,
-    is_powerful: bool,
+    is_helper: bool,
 }
 
 /// GET /inbox/global
@@ -797,13 +817,13 @@ pub async fn global_timeline_request(
         Err(e) => return Html(e.to_html(database)),
     };
 
-    let is_powerful = {
+    let is_helper = {
         let group = match database.auth.get_group_by_id(auth_user.group).await {
             Ok(g) => g,
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        group.permissions.contains(&Permission::Manager)
+        group.permissions.contains(&Permission::Helper)
     };
 
     Html(
@@ -813,7 +833,7 @@ pub async fn global_timeline_request(
             unread,
             notifs,
             questions,
-            is_powerful,
+            is_helper,
         }
         .render()
         .unwrap(),

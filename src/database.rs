@@ -1115,7 +1115,7 @@ impl Database {
                     Err(_) => return Err(DatabaseError::Other),
                 };
 
-                if !group.permissions.contains(&Permission::Manager) {
+                if !group.permissions.contains(&Permission::Helper) {
                     return Err(DatabaseError::NotAllowed);
                 }
             }
@@ -2127,7 +2127,7 @@ impl Database {
         }
     }
 
-    /// Delete an existing question
+    /// Delete an existing response
     ///
     /// Responses can only be deleted by their author.
     ///
@@ -2149,7 +2149,7 @@ impl Database {
                 Err(_) => return Err(DatabaseError::Other),
             };
 
-            if !group.permissions.contains(&Permission::Manager) {
+            if !group.permissions.contains(&Permission::Helper) {
                 return Err(DatabaseError::NotAllowed);
             }
         }
@@ -2832,7 +2832,7 @@ impl Database {
                 Err(_) => return Err(DatabaseError::Other),
             };
 
-            if !group.permissions.contains(&Permission::Manager) {
+            if !group.permissions.contains(&Permission::Helper) {
                 return Err(DatabaseError::NotAllowed);
             }
         }

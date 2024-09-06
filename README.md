@@ -39,7 +39,9 @@ You can provide a Markdown file for `/site/about` by creating `static/site/about
 
 ### Moderation
 
-After you have created your first account, you'll need to manually create a permissions group in the database so that you can mark the account as a `Manager`. The manager permission allows you to delete accounts, responses, comments, and questions. You can also view profile warnings and reports with this permission. You can view an example SQL query to do this [here](https://github.com/swmff/neospring/blob/master/sql/manager.sql)!
+After you have created your first account, you'll need to manually create a permissions group in the database so that you can mark the account as a `Manager`. The manager permission allows you to delete accounts, responses, comments, and questions. You can also view profile warnings and reports with this permission. You can view an example SQL query to do this [here](https://github.com/swmff/neospring/blob/master/sql/moderation.sql)!
+
+You can add additional moderators with the `Helper` role. They can also be given `Manager`, however `Helper` is much better if you want them to have limited moderation abilities.
 
 ### Account registration
 

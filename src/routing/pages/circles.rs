@@ -158,6 +158,7 @@ struct ProfileTemplate {
     require_account: bool,
     is_blocked: bool,
     is_powerful: bool,
+    is_helper: bool,
     is_member: bool,
     is_owner: bool,
 }
@@ -248,12 +249,14 @@ pub async fn profile_request(
         "anonymous".to_string()
     };
 
+    let mut is_helper: bool = false;
     let is_powerful = if let Some(ref ua) = auth_user {
         let group = match database.auth.get_group_by_id(ua.group).await {
             Ok(g) => g,
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
+        is_helper = group.permissions.contains(&Permission::Helper);
         group.permissions.contains(&Permission::Manager)
     } else {
         false
@@ -314,6 +317,7 @@ pub async fn profile_request(
                 false
             },
             is_powerful,
+            is_helper,
             is_member,
             is_owner,
         }

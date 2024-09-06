@@ -302,7 +302,7 @@
 
                 <!-- prettier-ignore -->
                 {% if let Some(profile) = profile %} 
-                        {% if profile.id != response.author.id %}
+                {% if profile.id != response.author.id %}
                 <!-- actions for users that ARE NOT the author -->
                 <a
                     href="javascript:trigger('reports:bootstrap', ['responses', '{{ response.id }}'])"
@@ -321,7 +321,7 @@
                     </svg>
                     Report
                 </a>
-                {% endif %} {% if is_powerful %}
+                {% endif %} {% if is_helper %}
                 <b class="title">Mod</b>
                 <a
                     href="#"
