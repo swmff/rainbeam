@@ -265,6 +265,149 @@ pub async fn profile_request(
 }
 
 #[derive(Template)]
+#[template(path = "profile/embed.html")]
+struct ProfileEmbedTemplate {
+    config: Config,
+    profile: Option<Profile>,
+    other: Profile,
+    responses: Vec<(Question, QuestionResponse, usize, usize)>,
+    pinned: Option<Vec<(Question, QuestionResponse, usize, usize)>>,
+    is_powerful: bool,
+    disallow_anonymous: bool,
+    is_blocked: bool,
+}
+
+/// GET /@:username/embed
+pub async fn profile_embed_request(
+    jar: CookieJar,
+    Path(username): Path<String>,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => Some(ua),
+            Err(_) => None,
+        },
+        None => None,
+    };
+
+    let other = match database
+        .auth
+        .get_profile_by_username(username.clone())
+        .await
+    {
+        Ok(ua) => ua,
+        Err(_) => return Html(DatabaseError::NotFound.to_html(database)),
+    };
+
+    let responses = match database
+        .get_responses_by_author_paginated(other.id.to_owned(), 0)
+        .await
+    {
+        Ok(responses) => responses,
+        Err(e) => return Html(e.to_html(database)),
+    };
+
+    let pinned = if let Some(pinned) = other.metadata.kv.get("sparkler:pinned") {
+        if pinned.is_empty() {
+            None
+        } else {
+            let mut out = Vec::new();
+
+            for id in pinned.split(",") {
+                match database.get_response(id.to_string()).await {
+                    Ok(response) => {
+                        if response.1.author.id != other.id {
+                            // don't allow us to pin responses from other users
+                            continue;
+                        }
+
+                        out.push(response)
+                    }
+                    Err(_) => continue,
+                }
+            }
+
+            Some(out)
+        }
+    } else {
+        None
+    };
+
+    // permissions
+    let lock_profile = other
+        .metadata
+        .kv
+        .get("sparkler:lock_profile")
+        .unwrap_or(&"false".to_string())
+        == "true";
+
+    let disallow_anonymous = other
+        .metadata
+        .kv
+        .get("sparkler:disallow_anonymous")
+        .unwrap_or(&"false".to_string())
+        == "true";
+
+    let require_account = other
+        .metadata
+        .kv
+        .get("sparkler:require_account")
+        .unwrap_or(&"false".to_string())
+        == "true";
+
+    if lock_profile | disallow_anonymous | require_account {
+        return Html(DatabaseError::NotAllowed.to_html(database));
+    }
+
+    let posting_as = if let Some(ref ua) = auth_user {
+        ua.username.clone()
+    } else {
+        "anonymous".to_string()
+    };
+
+    let is_powerful = if let Some(ref ua) = auth_user {
+        let group = match database.auth.get_group_by_id(ua.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        group.permissions.contains(&Permission::Manager)
+    } else {
+        false
+    };
+
+    // ...
+    Html(
+        ProfileEmbedTemplate {
+            config: database.server_options.clone(),
+            profile: auth_user.clone(),
+            other: other.clone(),
+            responses,
+            pinned,
+            is_powerful,
+            disallow_anonymous: other
+                .metadata
+                .kv
+                .get("sparkler:disallow_anonymous")
+                .unwrap_or(&"false".to_string())
+                == "true",
+            is_blocked: if let Some(block_list) = other.metadata.kv.get("sparkler:block_list") {
+                block_list.contains(&format!("<@{posting_as}>"))
+            } else {
+                false
+            },
+        }
+        .render()
+        .unwrap(),
+    )
+}
+
+#[derive(Template)]
 #[template(path = "profile/followers.html")]
 struct FollowersTemplate {
     config: Config,
