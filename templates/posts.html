@@ -71,7 +71,10 @@ block head %}
             <a href="/inbox/compose">Ask</a>
         </div>
 
-        <p>Answers from people you follow (and yourself) will show up here!</p>
+        <p>
+            Posts from all users in order of their publish time will show up
+            here!
+        </p>
 
         <!-- prettier-ignore -->
         {% for response in responses %}
@@ -83,6 +86,17 @@ block head %}
             {% let show_comments = true %}
             {% include "components/response.html" %}
         {% endfor %}
+
+        <!-- pagination buttons -->
+        <div class="flex justify-between gap-2 w-full">
+            {% if page > 0 %}
+            <a class="button secondary" href="?page={{ page - 1 }}">Previous</a>
+            {% else %}
+            <div></div>
+            {% endif %} {% if responses.len() != 0 %}
+            <a class="button secondary" href="?page={{ page + 1 }}">Next</a>
+            {% endif %}
+        </div>
     </main>
 </article>
 

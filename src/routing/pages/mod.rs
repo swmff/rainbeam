@@ -393,6 +393,7 @@ struct PublicPostsTemplate {
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
+    page: i32,
     responses: Vec<(Question, QuestionResponse, usize, usize)>,
     is_powerful: bool,
 }
@@ -455,6 +456,7 @@ pub async fn public_posts_timeline_request(
             profile: auth_user,
             unread,
             notifs,
+            page: query.page,
             responses,
             is_powerful,
         }
