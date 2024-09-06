@@ -848,8 +848,8 @@ pub async fn questions_request(
 }
 
 #[derive(Template)]
-#[template(path = "profile/warnings.html")]
-struct WarningsTemplate {
+#[template(path = "profile/mod.html")]
+struct ModTemplate {
     config: Config,
     profile: Option<Profile>,
     unread: usize,
@@ -873,8 +873,8 @@ struct WarningsTemplate {
     is_self: bool,
 }
 
-/// GET /@:username/warnings
-pub async fn warnings_request(
+/// GET /@:username/mod
+pub async fn mod_request(
     jar: CookieJar,
     Path(username): Path<String>,
     State(database): State<Database>,
@@ -958,7 +958,7 @@ pub async fn warnings_request(
     let is_self = auth_user.id == other.id;
 
     Html(
-        WarningsTemplate {
+        ModTemplate {
             config: database.server_options.clone(),
             profile: Some(auth_user.clone()),
             unread,

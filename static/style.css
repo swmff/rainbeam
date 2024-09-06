@@ -840,14 +840,14 @@ dialog::backdrop {
     filter: invert(1);
 }
 
-.question_content p,
-.response_content p,
-.comment_content p,
-.motivational_header p,
-.notif_title p,
-.notif_content p,
-.warning_title p,
-.warning_content p {
+.question_content p:last-of-type,
+.response_content p:last-of-type,
+.comment_content p:last-of-type,
+.motivational_header p:last-of-type,
+.notif_title p:last-of-type,
+.notif_content p:last-of-type,
+.warning_title p:last-of-type,
+.warning_content p:last-of-type {
     margin: 0;
     white-space: pre-wrap;
 }

@@ -387,6 +387,83 @@ pub async fn global_question_request(
 }
 
 #[derive(Template)]
+#[template(path = "posts.html")]
+struct PublicPostsTemplate {
+    config: Config,
+    profile: Option<Profile>,
+    unread: usize,
+    notifs: usize,
+    responses: Vec<(Question, QuestionResponse, usize, usize)>,
+    is_powerful: bool,
+}
+
+/// GET /inbox/posts
+pub async fn public_posts_timeline_request(
+    jar: CookieJar,
+    State(database): State<Database>,
+    Query(query): Query<PaginatedQuery>,
+) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => Some(ua),
+            Err(_) => None,
+        },
+        None => None,
+    };
+
+    let unread = if let Some(ref ua) = auth_user {
+        match database.get_questions_by_recipient(ua.id.to_owned()).await {
+            Ok(unread) => unread.len(),
+            Err(_) => 0,
+        }
+    } else {
+        0
+    };
+
+    let notifs = if let Some(ref ua) = auth_user {
+        database
+            .auth
+            .get_notification_count_by_recipient(ua.id.to_owned())
+            .await
+    } else {
+        0
+    };
+
+    let responses = match database.get_posts_paginated(query.page).await {
+        Ok(responses) => responses,
+        Err(_) => return Html(DatabaseError::Other.to_html(database)),
+    };
+
+    let is_powerful = if let Some(ref ua) = auth_user {
+        let group = match database.auth.get_group_by_id(ua.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        group.permissions.contains(&Permission::Manager)
+    } else {
+        false
+    };
+
+    Html(
+        PublicPostsTemplate {
+            config: database.server_options.clone(),
+            profile: auth_user,
+            unread,
+            notifs,
+            responses,
+            is_powerful,
+        }
+        .render()
+        .unwrap(),
+    )
+}
+
+#[derive(Template)]
 #[template(path = "response.html")]
 struct ResponseTemplate {
     config: Config,
@@ -981,6 +1058,7 @@ pub async fn routes(database: Database) -> Router {
         .route("/site/report", get(report_request))
         // inbox
         .route("/inbox", get(inbox_request))
+        .route("/inbox/posts", get(public_posts_timeline_request))
         .route("/inbox/global", get(global_timeline_request))
         .route("/inbox/compose", get(compose_request))
         .route("/inbox/notifications", get(notifications_request))
@@ -990,7 +1068,7 @@ pub async fn routes(database: Database) -> Router {
         .route("/response/:id", get(response_request))
         .route("/comment/:id", get(comment_request))
         // profiles
-        .route("/@:username/warnings", get(profile::warnings_request)) // staff
+        .route("/@:username/mod", get(profile::mod_request)) // staff
         .route("/@:username/questions", get(profile::questions_request))
         .route("/@:username/questions/inbox", get(profile::inbox_request)) // staff
         .route("/@:username/questions/outbox", get(profile::outbox_request)) // staff

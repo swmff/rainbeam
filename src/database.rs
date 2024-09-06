@@ -1359,6 +1359,44 @@ impl Database {
         })
     }
 
+    /// Get all responses, 50 at a time
+    ///
+    /// # Arguments
+    /// * `author`
+    pub async fn get_posts_paginated(
+        &self,
+        page: i32,
+    ) -> Result<Vec<(Question, QuestionResponse, usize, usize)>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            format!("SELECT * FROM \"xresponses\" WHERE \"context\" LIKE '%\"is_post\":true%' ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        } else {
+            format!("SELECT * FROM \"xresponses\" WHERE \"context\" LIKE '%\"is_post\":true%' ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        };
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query).fetch_all(c).await {
+            Ok(p) => {
+                let mut out: Vec<(Question, QuestionResponse, usize, usize)> = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+                    out.push(match self.gimme_response(res).await {
+                        Ok(r) => r,
+                        Err(e) => return Err(e),
+                    });
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        Ok(res)
+    }
+
     /// Get all responses by their author
     ///
     /// # Arguments
