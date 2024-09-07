@@ -574,13 +574,7 @@ impl Database {
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
                         },
                         // get the number of responses the question has
-                        self.base
-                            .cachedb
-                            .get(format!("xsulib.sparkler.question_response_count:{}", id))
-                            .await
-                            .unwrap_or(String::from("0"))
-                            .parse::<usize>()
-                            .unwrap_or(0),
+                        self.get_response_count_by_question(id.clone()).await,
                         // get the number of reactions the question has
                         self.get_reaction_count_by_asset(id).await,
                     ));
@@ -647,13 +641,7 @@ impl Database {
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
                         },
                         // get the number of responses the question has
-                        self.base
-                            .cachedb
-                            .get(format!("xsulib.sparkler.question_response_count:{}", id))
-                            .await
-                            .unwrap_or(String::from("0"))
-                            .parse::<usize>()
-                            .unwrap_or(0),
+                        self.get_response_count_by_question(id.clone()).await,
                         // get the number of reactions the question has
                         self.get_reaction_count_by_asset(id).await,
                     ));
@@ -723,13 +711,7 @@ impl Database {
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
                         },
                         // get the number of responses the question has
-                        self.base
-                            .cachedb
-                            .get(format!("xsulib.sparkler.question_response_count:{}", id))
-                            .await
-                            .unwrap_or(String::from("0"))
-                            .parse::<usize>()
-                            .unwrap_or(0),
+                        self.get_response_count_by_question(id.clone()).await,
                         // get the number of reactions the question has
                         self.get_reaction_count_by_asset(id).await,
                     ));
@@ -820,13 +802,7 @@ impl Database {
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
                         },
                         // get the number of responses the question has
-                        self.base
-                            .cachedb
-                            .get(format!("xsulib.sparkler.question_response_count:{}", id))
-                            .await
-                            .unwrap_or(String::from("0"))
-                            .parse::<usize>()
-                            .unwrap_or(0),
+                        self.get_response_count_by_question(id.clone()).await,
                         // get the number of reactions the question has
                         self.get_reaction_count_by_asset(id).await,
                     ));
@@ -867,6 +843,39 @@ impl Database {
             .cachedb
             .set(
                 format!("xsulib.sparkler.global_question_count:{}", author),
+                count.to_string(),
+            )
+            .await;
+
+        count
+    }
+
+    /// Get the number of responses by their question
+    ///
+    /// # Arguments
+    /// * `id`
+    pub async fn get_response_count_by_question(&self, id: String) -> usize {
+        // attempt to fetch from cache
+        if let Some(count) = self
+            .base
+            .cachedb
+            .get(format!("xsulib.sparkler.question_response_count:{}", id))
+            .await
+        {
+            return count.parse::<usize>().unwrap_or(0);
+        };
+
+        // fetch from database
+        let count = self
+            .get_responses_by_question(id.clone())
+            .await
+            .unwrap_or(Vec::new())
+            .len();
+
+        self.base
+            .cachedb
+            .set(
+                format!("xsulib.sparkler.question_response_count:{}", id),
                 count.to_string(),
             )
             .await;

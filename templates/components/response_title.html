@@ -16,7 +16,11 @@
                 {% let display_name = response.author.metadata.kv.get("sparkler:display_name") %}
 
                 {% if let Some(display_name) = display_name %}
-                    {{ display_name }}
+                    {% if !display_name.is_empty() %}
+                        {{ display_name }}
+                    {% else %}
+                        {{ response.author.username }}
+                    {% endif %}
                 {% else %}
                     {{ response.author.username }}
                 {% endif %}
