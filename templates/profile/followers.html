@@ -27,39 +27,10 @@
 {% endif %} {% endblock %} {% block panel %}
 <!-- followers -->
 <div id="followers" class="flex flex-col items-center gap-4">
+    <!-- prettier-ignore -->
     {% for card in followers %}
-    <div class="card-nest w-full">
-        <div class="card" style="padding: 0">
-            <img
-                title="{{ card.1.username }}'s banner"
-                src="/api/v1/profiles/{{card.1.username }}/banner"
-                alt=""
-                class="shadow round"
-                style="
-                    width: 100%;
-                    min-height: 80px;
-                    max-height: 80px;
-                    object-fit: cover;
-                    border-bottom-left-radius: 0 !important;
-                    border-bottom-right-radius: 0 !important;
-                "
-            />
-        </div>
-
-        <div class="card flex gap-2">
-            <img
-                title="{{ card.1.username }}'s avatar"
-                src="/api/v1/profiles/{{ card.1.username }}/avatar"
-                alt=""
-                class="avatar shadow-md"
-                style="--size: 80px; margin: -50px 0.5rem 0"
-            />
-
-            <h3 class="no-margin">
-                <a href="/@{{ card.1.username }}">{{ card.1.username }}</a>
-            </h3>
-        </div>
-    </div>
+        {% let user = card.1.clone() %}
+        {% include "components/profile_card.html" %}
     {% endfor %}
 
     <!-- pagination buttons -->

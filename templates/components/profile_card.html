@@ -1,0 +1,32 @@
+<div class="card-nest w-full">
+    <div class="card" style="padding: 0">
+        <img
+            title="{{ user.username }}'s banner"
+            src="/api/v1/profiles/{{ user.username }}/banner"
+            alt=""
+            class="shadow round"
+            style="
+                width: 100%;
+                min-height: 80px;
+                max-height: 80px;
+                object-fit: cover;
+                border-bottom-left-radius: 0 !important;
+                border-bottom-right-radius: 0 !important;
+            "
+        />
+    </div>
+
+    <div class="card flex gap-2">
+        <img
+            title="{{ user.username }}'s avatar"
+            src="/api/v1/profiles/{{ user.username }}/avatar"
+            alt=""
+            class="avatar shadow-md"
+            style="--size: 80px; margin: -50px 0.5rem 0"
+        />
+
+        <h3 class="no-margin">
+            <a href="/@{{ user.username }}">{{ user.username }}</a>
+        </h3>
+    </div>
+</div>

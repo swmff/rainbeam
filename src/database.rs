@@ -192,6 +192,52 @@ impl Database {
         }
     }
 
+    /// Get all profiles by a search query, 50 at a time
+    ///
+    /// ## Arguments:
+    /// * `page`
+    /// * `search`
+    pub async fn get_profiles_searched_paginated(
+        &self,
+        page: i32,
+        search: String,
+    ) -> Result<Vec<Profile>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            format!("SELECT * FROM \"xprofiles\" WHERE \"username\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        } else {
+            format!("SELECT * FROM \"xprofiles\" WHERE \"username\" LIKE $1 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query)
+            .bind::<&String>(&format!("%{search}%"))
+            .fetch_all(c)
+            .await
+        {
+            Ok(p) => {
+                let mut out: Vec<Profile> = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let id = res.get("id").unwrap().to_string();
+                    out.push(match self.get_profile(id).await {
+                        Ok(p) => p,
+                        Err(e) => return Err(e),
+                    });
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        Ok(res)
+    }
+
     // extra util
 
     /// Generate share content from 2 strings and a link
@@ -680,6 +726,73 @@ impl Database {
         let c = &self.base.db.client;
         let res = match sqlquery(&query)
             .bind::<&String>(&author.to_lowercase())
+            .bind::<&String>(&format!("%{search}%"))
+            .fetch_all(c)
+            .await
+        {
+            Ok(p) => {
+                let mut out: Vec<(Question, usize, usize)> = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let id = res.get("id").unwrap().to_string();
+                    out.push((
+                        Question {
+                            author: match self
+                                .get_profile(res.get("author").unwrap().to_string())
+                                .await
+                            {
+                                Ok(ua) => ua,
+                                Err(e) => return Err(e),
+                            },
+                            recipient: match self
+                                .get_profile(res.get("recipient").unwrap().to_string())
+                                .await
+                            {
+                                Ok(ua) => ua,
+                                Err(e) => return Err(e),
+                            },
+                            content: res.get("content").unwrap().to_string(),
+                            id: id.clone(),
+                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                        },
+                        // get the number of responses the question has
+                        self.get_response_count_by_question(id.clone()).await,
+                        // get the number of reactions the question has
+                        self.get_reaction_count_by_asset(id).await,
+                    ));
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        Ok(res)
+    }
+
+    /// Get all global questions by a search query, 50 at a time
+    ///
+    /// ## Arguments:
+    /// * `page`
+    /// * `search`
+    pub async fn get_global_questions_searched_paginated(
+        &self,
+        page: i32,
+        search: String,
+    ) -> Result<Vec<(Question, usize, usize)>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            format!("SELECT * FROM \"xquestions\" WHERE \"recipient\" = '@' AND \"content\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        } else {
+            format!("SELECT * FROM \"xquestions\" WHERE \"recipient\" = '@' AND \"content\" LIKE $1 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query)
             .bind::<&String>(&format!("%{search}%"))
             .fetch_all(c)
             .await
@@ -1371,7 +1484,7 @@ impl Database {
     /// Get all responses, 50 at a time
     ///
     /// # Arguments
-    /// * `author`
+    /// * `page`
     pub async fn get_posts_paginated(
         &self,
         page: i32,
@@ -1386,6 +1499,50 @@ impl Database {
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query).fetch_all(c).await {
+            Ok(p) => {
+                let mut out: Vec<(Question, QuestionResponse, usize, usize)> = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+                    out.push(match self.gimme_response(res).await {
+                        Ok(r) => r,
+                        Err(e) => return Err(e),
+                    });
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        Ok(res)
+    }
+
+    /// Get all responses, 50 at a time, matching search query
+    ///
+    /// # Arguments
+    /// * `page`
+    /// * `search`
+    pub async fn get_posts_searched_paginated(
+        &self,
+        page: i32,
+        search: String,
+    ) -> Result<Vec<(Question, QuestionResponse, usize, usize)>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            format!("SELECT * FROM \"xresponses\" WHERE \"context\" LIKE '%\"is_post\":true%' AND \"content\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        } else {
+            format!("SELECT * FROM \"xresponses\" WHERE \"context\" LIKE '%\"is_post\":true%' AND \"content\" LIKE $1 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        };
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query)
+            .bind::<&String>(&format!("%{search}%"))
+            .fetch_all(c)
+            .await
+        {
             Ok(p) => {
                 let mut out: Vec<(Question, QuestionResponse, usize, usize)> = Vec::new();
 
@@ -1614,6 +1771,50 @@ impl Database {
             .await;
 
         count
+    }
+
+    /// Get all responses, 50 at a time, matching search query
+    ///
+    /// # Arguments
+    /// * `page`
+    /// * `search`
+    pub async fn get_responses_searched_paginated(
+        &self,
+        page: i32,
+        search: String,
+    ) -> Result<Vec<(Question, QuestionResponse, usize, usize)>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            format!("SELECT * FROM \"xresponses\" WHERE \"content\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        } else {
+            format!("SELECT * FROM \"xresponses\" WHERE \"content\" LIKE $1 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        };
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query)
+            .bind::<&String>(&format!("%{search}%"))
+            .fetch_all(c)
+            .await
+        {
+            Ok(p) => {
+                let mut out: Vec<(Question, QuestionResponse, usize, usize)> = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+                    out.push(match self.gimme_response(res).await {
+                        Ok(r) => r,
+                        Err(e) => return Err(e),
+                    });
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        Ok(res)
     }
 
     /// Get 50 responses from people `user` is following

@@ -1,0 +1,6 @@
+{% extends "base.html" %} {% block results %}
+<!-- prettier-ignore -->
+{% for question in results %}
+    {% include "components/global_question.html" %}
+{% endfor %}
+{% call super() %} {% endblock %}

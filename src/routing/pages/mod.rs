@@ -19,6 +19,7 @@ use super::api;
 
 mod circles;
 mod profile;
+mod search;
 mod settings;
 
 #[derive(Template)]
@@ -240,6 +241,20 @@ pub async fn sign_up_request(
 pub struct PaginatedQuery {
     #[serde(default)]
     page: i32,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct SearchQuery {
+    #[serde(default)]
+    page: i32,
+    #[serde(default)]
+    q: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct SearchHomeQuery {
+    #[serde(default)]
+    driver: i8,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -1125,6 +1140,12 @@ pub async fn routes(database: Database) -> Router {
         .route("/settings/sessions", get(settings::sessions_settings))
         .route("/settings/profile", get(settings::profile_settings))
         .route("/settings/privacy", get(settings::privacy_settings))
+        // search
+        .route("/search", get(search::search_homepage_request))
+        .route("/search/responses", get(search::search_responses_request))
+        .route("/search/posts", get(search::search_posts_request))
+        .route("/search/questions", get(search::search_questions_request))
+        .route("/search/users", get(search::search_users_request))
         // auth
         .route("/login", get(login_request))
         .route("/sign_up", get(sign_up_request))
