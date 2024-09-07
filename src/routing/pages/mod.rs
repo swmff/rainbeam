@@ -984,7 +984,7 @@ pub async fn reports_request(
         Err(_) => return Html(DatabaseError::NotFound.to_html(database)),
     };
 
-    if !group.permissions.contains(&Permission::Manager) {
+    if !group.permissions.contains(&Permission::Helper) {
         // we must be a manager to do this
         return Html(DatabaseError::NotAllowed.to_html(database));
     }
