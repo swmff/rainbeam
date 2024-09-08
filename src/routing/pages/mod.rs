@@ -493,6 +493,88 @@ pub async fn public_posts_timeline_request(
 }
 
 #[derive(Template)]
+#[template(path = "posts_following.html")]
+struct FollowingPostsTemplate {
+    config: Config,
+    profile: Option<Profile>,
+    unread: usize,
+    notifs: usize,
+    page: i32,
+    responses: Vec<(Question, QuestionResponse, usize, usize)>,
+    is_powerful: bool,
+    is_helper: bool,
+}
+
+/// GET /inbox/posts/following
+pub async fn following_posts_timeline_request(
+    jar: CookieJar,
+    State(database): State<Database>,
+    Query(query): Query<PaginatedQuery>,
+) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => return Html(DatabaseError::NotAllowed.to_html(database)),
+        },
+        None => return Html(DatabaseError::NotAllowed.to_html(database)),
+    };
+
+    let unread = match database
+        .get_questions_by_recipient(auth_user.id.to_owned())
+        .await
+    {
+        Ok(unread) => unread.len(),
+        Err(_) => 0,
+    };
+
+    let notifs = database
+        .auth
+        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .await;
+
+    let responses = match database
+        .get_posts_by_following_paginated(query.page, auth_user.id.clone())
+        .await
+    {
+        Ok(responses) => responses,
+        Err(_) => return Html(DatabaseError::Other.to_html(database)),
+    };
+
+    let mut is_helper: bool = false;
+    let is_powerful = {
+        let group = match database.auth.get_group_by_id(auth_user.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        if group.permissions.contains(&Permission::Helper) {
+            is_helper = true
+        }
+
+        group.permissions.contains(&Permission::Manager)
+    };
+
+    Html(
+        FollowingPostsTemplate {
+            config: database.server_options.clone(),
+            profile: Some(auth_user),
+            unread,
+            notifs,
+            page: query.page,
+            responses,
+            is_powerful,
+            is_helper,
+        }
+        .render()
+        .unwrap(),
+    )
+}
+
+#[derive(Template)]
 #[template(path = "response.html")]
 struct ResponseTemplate {
     config: Config,
@@ -792,12 +874,14 @@ struct GlobalTimelineTemplate {
     notifs: usize,
     questions: Vec<(Question, usize, usize)>,
     is_helper: bool,
+    page: i32,
 }
 
-/// GET /inbox/global
+/// GET /inbox/global/following
 pub async fn global_timeline_request(
     jar: CookieJar,
     State(database): State<Database>,
+    Query(query): Query<PaginatedQuery>,
 ) -> impl IntoResponse {
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
@@ -825,7 +909,7 @@ pub async fn global_timeline_request(
         .await;
 
     let questions = match database
-        .get_global_questions_by_following(auth_user.id.clone())
+        .get_global_questions_by_following_paginated(auth_user.id.clone(), query.page)
         .await
     {
         Ok(r) => r,
@@ -849,6 +933,79 @@ pub async fn global_timeline_request(
             notifs,
             questions,
             is_helper,
+            page: query.page,
+        }
+        .render()
+        .unwrap(),
+    )
+}
+
+#[derive(Template)]
+#[template(path = "public_global_question_timeline.html")]
+struct PublicGlobalTimelineTemplate {
+    config: Config,
+    profile: Option<Profile>,
+    unread: usize,
+    notifs: usize,
+    questions: Vec<(Question, usize, usize)>,
+    is_helper: bool,
+    page: i32,
+}
+
+/// GET /inbox/global
+pub async fn public_global_timeline_request(
+    jar: CookieJar,
+    State(database): State<Database>,
+    Query(query): Query<PaginatedQuery>,
+) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => return Html(DatabaseError::NotAllowed.to_html(database)),
+        },
+        None => return Html(DatabaseError::NotAllowed.to_html(database)),
+    };
+
+    let unread = match database
+        .get_questions_by_recipient(auth_user.id.to_owned())
+        .await
+    {
+        Ok(unread) => unread.len(),
+        Err(_) => 0,
+    };
+
+    let notifs = database
+        .auth
+        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .await;
+
+    let questions = match database.get_global_questions_paginated(query.page).await {
+        Ok(r) => r,
+        Err(e) => return Html(e.to_html(database)),
+    };
+
+    let is_helper = {
+        let group = match database.auth.get_group_by_id(auth_user.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        group.permissions.contains(&Permission::Helper)
+    };
+
+    Html(
+        PublicGlobalTimelineTemplate {
+            config: database.server_options,
+            profile: Some(auth_user),
+            unread,
+            notifs,
+            questions,
+            is_helper,
+            page: query.page,
         }
         .render()
         .unwrap(),
@@ -1096,7 +1253,12 @@ pub async fn routes(database: Database) -> Router {
         // inbox
         .route("/inbox", get(inbox_request))
         .route("/inbox/posts", get(public_posts_timeline_request))
-        .route("/inbox/global", get(global_timeline_request))
+        .route(
+            "/inbox/posts/following",
+            get(following_posts_timeline_request),
+        )
+        .route("/inbox/global", get(public_global_timeline_request))
+        .route("/inbox/global/following", get(global_timeline_request))
         .route("/inbox/compose", get(compose_request))
         .route("/inbox/notifications", get(notifications_request))
         .route("/inbox/reports", get(reports_request)) // staff

@@ -839,13 +839,15 @@ impl Database {
         Ok(res)
     }
 
-    /// Get 50 global questions from people `user` is following
+    /// Get global questions from people `user` is following, 50 at a time
     ///
     /// # Arguments
     /// * `user`
-    pub async fn get_global_questions_by_following(
+    /// * `page`
+    pub async fn get_global_questions_by_following_paginated(
         &self,
         user: String,
+        page: i32,
     ) -> Result<Vec<(Question, usize, usize)>> {
         // get following
         let following = match self.auth.get_following(user.clone()).await {
@@ -877,9 +879,9 @@ impl Database {
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
             // we're also going to include our own responses so we don't have to do any complicated stuff to detect if we should start with "OR" (previous)
-            format!("SELECT * FROM \"xquestions\" WHERE (\"author\" = ?{query_string}) AND \"recipient\" = '@' ORDER BY \"timestamp\" DESC LIMIT 50")
+            format!("SELECT * FROM \"xquestions\" WHERE (\"author\" = ?{query_string}) AND \"recipient\" = '@'  ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
         } else {
-            format!( "SELECT * FROM \"xquestions\" WHERE (\"author\" = $1{query_string}) AND \"recipient\" = '@' ORDER BY \"timestamp\" DESC LIMIT 50")
+            format!( "SELECT * FROM \"xquestions\" WHERE (\"author\" = $1{query_string}) AND \"recipient\" = '@' ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
         };
 
         let c = &self.base.db.client;
@@ -888,6 +890,67 @@ impl Database {
             .fetch_all(c)
             .await
         {
+            Ok(p) => {
+                let mut out: Vec<(Question, usize, usize)> = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let id = res.get("id").unwrap().to_string();
+                    out.push((
+                        Question {
+                            author: match self
+                                .get_profile(res.get("author").unwrap().to_string())
+                                .await
+                            {
+                                Ok(ua) => ua,
+                                Err(e) => return Err(e),
+                            },
+                            recipient: match self
+                                .get_profile(res.get("recipient").unwrap().to_string())
+                                .await
+                            {
+                                Ok(ua) => ua,
+                                Err(e) => return Err(e),
+                            },
+                            content: res.get("content").unwrap().to_string(),
+                            id: id.clone(),
+                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                        },
+                        // get the number of responses the question has
+                        self.get_response_count_by_question(id.clone()).await,
+                        // get the number of reactions the question has
+                        self.get_reaction_count_by_asset(id).await,
+                    ));
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::Other),
+        };
+
+        // return
+        Ok(res)
+    }
+
+    /// Get all global questions, 50 at a time
+    ///
+    /// # Arguments
+    /// * `page`
+    pub async fn get_global_questions_paginated(
+        &self,
+        page: i32,
+    ) -> Result<Vec<(Question, usize, usize)>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            // we're also going to include our own responses so we don't have to do any complicated stuff to detect if we should start with "OR" (previous)
+            format!("SELECT * FROM \"xquestions\" WHERE \"recipient\" = '@' ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        } else {
+            format!( "SELECT * FROM \"xquestions\" WHERE \"recipient\" = '@' ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        };
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query).fetch_all(c).await {
             Ok(p) => {
                 let mut out: Vec<(Question, usize, usize)> = Vec::new();
 
@@ -1481,7 +1544,7 @@ impl Database {
         })
     }
 
-    /// Get all responses, 50 at a time
+    /// Get all posts, 50 at a time
     ///
     /// # Arguments
     /// * `page`
@@ -1499,6 +1562,72 @@ impl Database {
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query).fetch_all(c).await {
+            Ok(p) => {
+                let mut out: Vec<(Question, QuestionResponse, usize, usize)> = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+                    out.push(match self.gimme_response(res).await {
+                        Ok(r) => r,
+                        Err(e) => return Err(e),
+                    });
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        Ok(res)
+    }
+
+    /// Get all posts from users the user is following, 50 at a time
+    ///
+    /// # Arguments
+    /// * `page`
+    /// * `user`
+    pub async fn get_posts_by_following_paginated(
+        &self,
+        page: i32,
+        user: String,
+    ) -> Result<Vec<(Question, QuestionResponse, usize, usize)>> {
+        // get following
+        let following = match self.auth.get_following(user.clone()).await {
+            Ok(f) => f,
+            Err(_) => Vec::new(),
+        };
+
+        // check user permissions
+        // returning NotAllowed here will block them from viewing their timeline
+        // we don't want to waste resources on rule breakers
+        let user = match self.auth.get_profile_by_id(user.clone()).await {
+            Ok(ua) => ua,
+            Err(_) => anonymous_profile(self.create_anonymous().1),
+        };
+
+        if user.group == -1 {
+            // group -1 (even if it exists) is for marking users as banned
+            return Err(DatabaseError::NotAllowed);
+        }
+
+        // build string
+        let mut query_string = String::new();
+
+        for follow in following {
+            query_string.push_str(&format!(" OR \"author\" = '{}'", follow.2.id));
+        }
+
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            format!("SELECT * FROM \"xresponses\" WHERE \"context\" LIKE '%\"is_post\":true%' AND (\"author\" = ?{query_string}) ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        } else {
+            format!("SELECT * FROM \"xresponses\" WHERE \"context\" LIKE '%\"is_post\":true%' AND (\"author\" = $1{query_string}) ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        };
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query).bind(&user.id).fetch_all(c).await {
             Ok(p) => {
                 let mut out: Vec<(Question, QuestionResponse, usize, usize)> = Vec::new();
 

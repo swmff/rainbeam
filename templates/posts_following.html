@@ -55,7 +55,7 @@ block head %}
 </a>
 {% endblock %} {% block content %}
 <article>
-    {% if questions.len() == 0 %}
+    {% if responses.len() == 0 %}
     <main>
         <div class="markdown-alert-important">
             <span>No results matching this query yet!</span>
@@ -63,60 +63,30 @@ block head %}
     </main>
     {% endif %}
 
-    <main class="flex flex-col gap-4">
+    <main class="flex flex-col gap-2">
         <div class="pillmenu convertible">
             <a href="/">Timeline</a>
-            <a href="/inbox/posts">Posts</a>
-            <a href="/inbox/global" class="active">Global Questions</a>
+            <a href="/inbox/posts" class="active">Posts</a>
+            <a href="/inbox/global">Global Questions</a>
             <a href="/inbox/compose">Ask</a>
         </div>
 
         <div class="pillmenu convertible">
-            <a href="/inbox/global">Public</a>
-            <a href="/inbox/global/following" class="active">Following</a>
+            <a href="/inbox/posts">Public</a>
+            <a href="/inbox/posts/following" class="active">Following</a>
         </div>
 
-        <!-- compose -->
-        <div class="card-nest w-full shadow">
-            <!-- prettier-ignore -->
-            <div class="card">
-                Ask a global question
-            </div>
-
-            <div class="card">
-                <form id="question_form" class="flex flex-col gap-2">
-                    <textarea
-                        class="w-full"
-                        placeholder="Type your question!"
-                        minlength="1"
-                        maxlength="250"
-                        required
-                        name="content"
-                        id="content"
-                        hook="counter"
-                    ></textarea>
-
-                    <div class="flex justify-between w-full gap-1">
-                        <span
-                            id="content:counter"
-                            class="notification item"
-                        ></span>
-                        <button class="round-lg primary bold">Ask</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-        <hr class="small" />
-
-        <!-- feed -->
-        <p>
-            Global questions from people you follow (and yourself) will show up
-            here!
-        </p>
+        <p>Posts from users you follow will show up here!</p>
 
         <!-- prettier-ignore -->
-        {% for question in questions %}
-            {% include "components/global_question.html" %}
+        {% for response in responses %}
+            {% let is_pinned = false %}
+            {% let show_pin_button = false %}
+            {% let do_not_render_question = false %}
+            {% let anonymous_username = Some("anonymous") %}
+            {% let anonymous_avatar = Some("") %}
+            {% let show_comments = true %}
+            {% include "components/response.html" %}
         {% endfor %}
 
         <!-- pagination buttons -->
@@ -125,40 +95,12 @@ block head %}
             <a class="button secondary" href="?page={{ page - 1 }}">Previous</a>
             {% else %}
             <div></div>
-            {% endif %} {% if questions.len() != 0 %}
+            {% endif %} {% if responses.len() != 0 %}
             <a class="button secondary" href="?page={{ page + 1 }}">Next</a>
             {% endif %}
         </div>
     </main>
 </article>
-
-<script>
-    document.getElementById("question_form").addEventListener("submit", (e) => {
-        e.preventDefault();
-        fetch("/api/v1/questions", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                recipient: "@",
-                content: e.target.content.value,
-                anonymous: false,
-            }),
-        })
-            .then((res) => res.json())
-            .then((res) => {
-                trigger("app:shout", [
-                    res.success ? "tip" : "caution",
-                    res.message || "Question asked!",
-                ]);
-
-                if (res.success === true) {
-                    e.target.reset();
-                }
-            });
-    });
-</script>
 
 <!-- prettier-ignore -->
 {% if let Some(profile) = profile %}
