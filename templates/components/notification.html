@@ -8,7 +8,7 @@
 
     <div class="card flex flex-col gap-2">
         <!-- prettier-ignore-->
-        <div class="notif_content">{{ xsu_util::ui::render_markdown(notif.content)|safe }}</div>
+        <div class="notif_content"hook="long">{{ xsu_util::ui::render_markdown(notif.content)|safe }}</div>
 
         <!-- actions -->
         <div class="flex gap-2">

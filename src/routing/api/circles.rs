@@ -426,9 +426,9 @@ pub async fn report_request(
     match database
         .auth
         .create_notification(NotificationCreate {
-            title: format!("**CIRCLE REPORT**: @{}", circle.name),
+            title: format!("**CIRCLE REPORT**: [/+{}](/+{})", circle.name, circle.name),
             content: req.content,
-            address: format!("/circles/@{}", circle.name),
+            address: format!("/+{}", circle.name),
             recipient: "*".to_string(), // all staff
         })
         .await
