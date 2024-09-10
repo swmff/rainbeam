@@ -174,6 +174,23 @@
         </p>
     </div>
 
+    <div class="flex flex-col gap-1">
+        <label for="sparkler:website_theme">Profile skin</label>
+
+        <select
+            type="url"
+            name="sparkler:website_theme"
+            id="sparkler:website_theme"
+            onchange="update_kv('sparkler:profile_skin', event.target.options[event.target.selectedIndex].value)"
+        >
+            <option value="sparkler" id="sparkler">Sparkler</option>
+            <option value="rocket" id="rocket">Rocket</option>
+            <option value="bluebird" id="bluebird">Blue bird</option>
+        </select>
+
+        <p class="fade">This is the base skin used on your profile.</p>
+    </div>
+
     <hr />
 
     <div

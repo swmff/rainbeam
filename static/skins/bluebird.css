@@ -34,7 +34,6 @@ input[type="checkbox"] {
     /* card actions */
     background: transparent !important;
     color: var(--color-primary-raised);
-    position: relative;
     width: max-content;
     padding: 0.5rem 1rem;
     border-radius: 360px;
@@ -42,6 +41,11 @@ input[type="checkbox"] {
     &:hover {
         background: var(--color-primary-alpha) !important;
     }
+}
+
+button,
+a.button {
+    border-radius: 360px;
 }
 
 .dropdown:not(nav *):has(.inner[open]) button {

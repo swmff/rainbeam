@@ -15,6 +15,7 @@
     --color-primary: hsl(341, 59%, 45%);
     --color-primary-lowered: hsl(341, 59%, 40%);
     --color-primary-raised: var(--color-primary);
+    --color-primary-alpha: hsla(341, 59%, 40%, 25%);
     --color-text: hsl(0, 0%, 0%);
     --color-text-raised: var(--color-text);
     --color-text-lowered: var(--color-text);

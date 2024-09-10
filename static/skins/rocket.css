@@ -74,7 +74,7 @@ a.button:not(nav *):hover {
     color: var(--color-primary-raised);
 
     &:hover {
-        background: var(--color-raised) !important;
+        background: var(--color-primary-alpha) !important;
     }
 }
 
@@ -129,6 +129,10 @@ nav button:not(.inner button):hover::before {
 
 .dropdown .inner a {
     padding: 0.15rem 1rem;
+}
+
+.dropdown:not(nav *):has(.inner[open]) button {
+    background: var(--color-primary-alpha) !important;
 }
 
 #toast_zone {

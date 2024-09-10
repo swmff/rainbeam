@@ -86,7 +86,14 @@
         }
 
         console.info(`[app skin] registered skin: ${skin}`);
-        document.body.innerHTML += `<style id="skin:${skin}" class="skin_import">@import url("/static/skins/${skin}.css");</style>`;
+
+        if (document.getElementById("skin_import")) {
+            document.getElementById("skin_import").innerHTML =
+                `@import url("/static/skins/${skin}.css");`;
+            return;
+        }
+
+        document.body.innerHTML += `<style id="skin_import">@import url("/static/skins/${skin}.css");</style>`;
     });
 
     app.define("load_skin", function ({ $ }) {

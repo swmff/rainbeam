@@ -86,6 +86,12 @@
     {% endif %}
 </script>
 
+<script type="text/plain" id="skin">
+    {% if let Some(skin) = profile.metadata.kv.get("sparkler:profile_skin") %}
+        {{ skin }}
+    {% endif %}
+</script>
+
 <script>
     (() => {
         // theme preference
@@ -100,6 +106,19 @@
 
         if (profile_theme !== "" && theme_pref !== "no") {
             document.documentElement.setAttribute("class", profile_theme);
+        }
+
+        // profile skin
+        const profile_skin = document.getElementById("skin").innerText.trim();
+
+        if (profile_skin !== "" && theme_pref !== "no") {
+            trigger("app:skin", [profile_skin]);
+
+            if (document.getElementById(profile_skin)) {
+                document
+                    .getElementById(profile_skin)
+                    .setAttribute("selected", "");
+            }
         }
     })();
 </script>
