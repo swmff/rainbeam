@@ -1,6 +1,6 @@
 [package]
 name = "neospring"
-version = "1.1.3"
+version = "1.1.4"
 edition = "2021"
 authors = ["trisuaso", "swmff"]
 description = "Ask, share, socialize!"

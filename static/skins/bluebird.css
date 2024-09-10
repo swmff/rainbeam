@@ -1,7 +1,7 @@
 /* Neospring "Blue bird" skin */
 /* <https://github.com/swmff/neospring> */
-/* inherits: Rocket */
-@import url("rocket.css");
+
+/* @inherits /static/skins/rocket.css */
 
 :root {
     --color-primary: hsl(206, 59%, 45%);

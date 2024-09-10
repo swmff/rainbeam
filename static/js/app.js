@@ -1,6 +1,20 @@
 (() => {
     const app = reg_ns("app");
 
+    // env
+    app.USE_TENNIS_LOADER = true;
+
+    // ...
+    app.define("try_use", function (_, ns_name, callback) {
+        // attempt to get existing namespace
+        if (globalThis._app_base.ns_store[`$${ns_name}`]) {
+            return callback(globalThis._app_base.ns_store[`$${ns_name}`]);
+        }
+
+        // otherwise, call normal use
+        use(ns_name, callback);
+    });
+
     app.define("fold_nav", function ({ $ }) {
         if (!$.nav_folded) {
             for (const nav of Array.from(document.querySelectorAll("nav"))) {
@@ -79,7 +93,23 @@
         }, ms);
     });
 
-    app.define("skin", function (_, skin) {
+    app.define("skin:tennis_proc", function (_, css_source) {
+        return new Promise((resolve, reject) => {
+            app.try_use("tennis", async (tennis) => {
+                // process
+                const processed = await tennis.proc(css_source);
+
+                // create blob
+                const blob = new Blob([processed], { type: "text/css" });
+                const url = URL.createObjectURL(blob);
+
+                // return
+                resolve(url);
+            });
+        });
+    });
+
+    app.define("skin", async function ({ $ }, skin) {
         if (skin === "sparkler") {
             console.warn(`[app skin] skin is invalid, skipped: ${skin}`);
             return;
@@ -87,13 +117,33 @@
 
         console.info(`[app skin] registered skin: ${skin}`);
 
+        // add file extension and full path
+        skin = `/static/skins/${skin}.css`;
+
+        // preprocess css and load into blob
+        if ($.USE_TENNIS_LOADER) {
+            if (globalThis[`${skin}:blob`]) {
+                // use existing blob from previous state,
+                // this prevents the old theme flashing
+                skin = globalThis[`${skin}:blob`];
+            } else {
+                // fetch
+                const css_source = await (await fetch(skin)).text();
+                const origin_skin = skin.toString();
+
+                skin = await $["skin:tennis_proc"](css_source);
+                globalThis[`${origin_skin}:blob`] = skin.toString();
+            }
+        }
+
+        // ...
         if (document.getElementById("skin_import")) {
             document.getElementById("skin_import").innerHTML =
-                `@import url("/static/skins/${skin}.css");`;
+                `@import url("${skin}");`;
             return;
         }
 
-        document.body.innerHTML += `<style id="skin_import">@import url("/static/skins/${skin}.css");</style>`;
+        document.body.innerHTML += `<style id="skin_import">@import url("${skin}");</style>`;
     });
 
     app.define("load_skin", function ({ $ }) {

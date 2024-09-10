@@ -358,6 +358,23 @@
     </div>
 
     <div class="flex flex-col gap-1">
+        <label for="sparkler:color_primary_alpha">Primary alpha</label>
+
+        <input
+            name="sparkler:color_primary_alpha"
+            id="sparkler:color_primary_alpha"
+            onchange="update_kv('sparkler:color_primary_alpha', event.target.value)"
+        />
+
+        <p class="fade">
+            A
+            <code>25%</code>
+            opacity version of your primary color. Used by some skins to have
+            nicer looking buttons.
+        </p>
+    </div>
+
+    <div class="flex flex-col gap-1">
         <label for="sparkler:color_text_primary">Text primary</label>
 
         <input
