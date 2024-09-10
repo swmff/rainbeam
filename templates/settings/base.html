@@ -77,7 +77,7 @@ endblock %} {% block nav_left %} {% if profile.is_some() %}
         {% block panel %}{% endblock %}
 
         <hr />
-        <form id="submit_form">
+        <form id="submit_form" onsubmit="save_settings(event)">
             <button class="primary bold">Save changes</button>
         </form>
     </section>
@@ -152,31 +152,29 @@ endblock %} {% block nav_left %} {% if profile.is_some() %}
         }, 50);
 
         // handle submit
-        document
-            .getElementById("submit_form")
-            .addEventListener("submit", async (e) => {
-                e.preventDefault();
+        globalThis.save_settings = async (e) => {
+            e.preventDefault();
 
-                const res = await (
-                    await fetch(
-                        "/api/auth/profile/{{ profile.username }}/metadata",
-                        {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                            },
-                            body: JSON.stringify({
-                                metadata,
-                            }),
+            const res = await (
+                await fetch(
+                    "/api/auth/profile/{{ profile.username }}/metadata",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
                         },
-                    )
-                ).json();
+                        body: JSON.stringify({
+                            metadata,
+                        }),
+                    },
+                )
+            ).json();
 
-                trigger("app:toast", [
-                    res.success ? "success" : "error",
-                    res.success ? "Settings saved!" : res.message,
-                ]);
-            });
+            trigger("app:toast", [
+                res.success ? "success" : "error",
+                res.success ? "Settings saved!" : res.message,
+            ]);
+        };
     })();
 </script>
 {% call super() %} {% endblock %}

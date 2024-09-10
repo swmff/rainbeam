@@ -448,7 +448,11 @@ config.name }}{% endblock %} {% block head %}
                     <!-- prettier-ignore -->
                     {% if !lock_profile && !is_blocked %}
                     {% if (require_account && profile.is_some()) | (disallow_anonymous && profile.is_some()) | (!require_account && !disallow_anonymous) %}
-                    <form id="question_form" class="flex flex-col gap-2">
+                    <form
+                        id="question_form"
+                        class="flex flex-col gap-2"
+                        onsubmit="ask(event)"
+                    >
                         <textarea
                             class="w-full"
                             placeholder="Type your question!"
@@ -569,7 +573,7 @@ config.name }}{% endblock %} {% block head %}
 {% endif %} {% endif %} {% endif %}
 
 <script>
-    document.getElementById("question_form").addEventListener("submit", (e) => {
+    function ask(e) {
         e.preventDefault();
 
         trigger("questions:create", [
@@ -580,7 +584,7 @@ config.name }}{% endblock %} {% block head %}
             // reset if successful
             e.target.reset();
         });
-    });
+    }
 
     function follow() {
         fetch(`/api/v1/profiles/{{ other.username }}/follow`, {

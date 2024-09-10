@@ -47,6 +47,12 @@ You can add additional moderators with the `Helper` role. They can also be given
 
 To open your instance up for free account registration, you'll need to set `registration_enabled` to `true` in `~/.config/xsu-apps/neospring/config.toml`.
 
+### PWA
+
+You are responsible for adding your own `manifest.json` file in the `static/` directory.
+
+You can place your PWA logo images in `static/images/logo/`. This directory is ignored by git.
+
 ## Contributing
 
 You can view information about contributing to Neospring [here](https://github.com/swmff/neospring/blob/master/.github/CONTRIBUTING.md), as well as the contributor code of conduct [here](https://github.com/swmff/neospring/blob/master/.github/CODE_OF_CONDUCT.md)!

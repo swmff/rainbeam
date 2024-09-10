@@ -3,5 +3,7 @@
 # prod
 static/site/about.md
 static/fonts/
+static/manifest.json
+static/images/logo/
 
 *.db

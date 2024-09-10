@@ -58,7 +58,13 @@ pub async fn main() {
         // ...
         .nest_service(
             "/static",
-            get_service(tower_http::services::ServeDir::new(static_dir)),
+            get_service(tower_http::services::ServeDir::new(&static_dir)),
+        )
+        .nest_service(
+            "/manifest.json",
+            get_service(tower_http::services::ServeFile::new(format!(
+                "{static_dir}/manifest.json"
+            ))),
         )
         .fallback_service(get(routing::pages::not_found).with_state(database.clone()));
 

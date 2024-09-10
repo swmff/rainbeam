@@ -14,6 +14,7 @@
     --color-super-raised: hsl(0, 0%, 100%);
     --color-primary: hsl(341, 59%, 45%);
     --color-primary-lowered: hsl(341, 59%, 40%);
+    --color-primary-raised: var(--color-primary);
     --color-text: hsl(0, 0%, 0%);
     --color-text-raised: var(--color-text);
     --color-text-lowered: var(--color-text);
@@ -32,6 +33,7 @@
     --color-super-raised: hsl(0, 0%, 20%);
     --color-text: hsl(0, 0%, 95%);
     --color-link: #93c5fd;
+    --color-primary-raised: hsl(341, 59%, 55%);
 }
 
 html,
@@ -221,6 +223,12 @@ a.button {
     align-items: center;
     gap: 0.25rem;
     text-decoration: none !important;
+    font-size: 13.3333px;
+}
+
+nav button,
+nav a.button {
+    font-size: unset;
 }
 
 button:has(.notification),

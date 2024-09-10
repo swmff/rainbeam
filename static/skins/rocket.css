@@ -1,0 +1,180 @@
+/* Neospring Rocket skin */
+/* <https://github.com/swmff/neospring> */
+
+:root {
+    color-scheme: light dark;
+    --color-surface: hsl(0, 0%, 92%) !important;
+    --color-lowered: hsl(0, 0%, 88%) !important;
+    --color-raised: hsl(0, 0%, 95%) !important;
+    --color-super-lowered: hsl(0, 0%, 85%) !important;
+    --color-super-raised: hsl(0, 0%, 98%) !important;
+    --radius: 0.35rem !important;
+}
+
+.dark,
+.dark * {
+    --color-surface: hsl(0, 0%, 2%) !important;
+    --color-lowered: hsl(0, 0%, 10%) !important;
+    --color-raised: hsl(0, 0%, 8%) !important;
+    --color-super-lowered: hsl(0, 0%, 12%) !important;
+    --color-super-raised: hsl(0, 0%, 13%) !important;
+    --color-link: var(--color-primary) !important;
+}
+
+/* buttons */
+button,
+a.button,
+input,
+textarea,
+select {
+    min-height: 28px;
+    box-shadow: none;
+    transition: background 0.15s box-shadow 0.2s;
+}
+
+input:is(form *) + button,
+select:is(form *) + button {
+    height: 32px;
+}
+
+input[type="checkbox"] {
+    min-height: auto;
+}
+
+button:not(nav *):hover,
+a.button:not(nav *):hover {
+    box-shadow: 0 0 2px var(--color-shadow);
+}
+
+/* cards */
+.card,
+.card-nest {
+    background: transparent;
+    border: solid 1px var(--color-lowered);
+    box-shadow: none;
+}
+
+.card.secondary {
+    background: transparent;
+}
+
+.card-nest .card {
+    border: none;
+}
+
+.card-nest .card:first-of-type {
+    background: transparent;
+    border-bottom: inherit;
+}
+
+.card:not(:has(form)) button:not(.primary),
+.card:not(:has(form)) a.button:not(.primary) {
+    /* card actions */
+    background: transparent !important;
+    color: var(--color-primary-raised);
+
+    &:hover {
+        background: var(--color-raised) !important;
+    }
+}
+
+/* nav */
+nav {
+    background: var(--color-surface) !important;
+    box-shadow: none;
+    transition: box-shadow 0.15s;
+}
+
+nav:not(.dark *):not(html[data-scroll="0"] *) {
+    box-shadow: 0 0 4px var(--color-shadow);
+}
+
+nav:is(.dark *) {
+    background: transparent !important;
+    backdrop-filter: blur(50px) brightness(60%);
+    box-shadow: none;
+}
+
+nav a.button,
+nav button {
+    color: var(--color-text);
+}
+
+nav a.button.active,
+nav button.active {
+    color: var(--color-text-primary);
+}
+
+nav a:not(.inner a):not(.active):hover::before,
+nav button.active::before,
+nav button:not(.inner button):hover::before {
+    background: var(--color-super-lowered) !important;
+}
+
+/* components */
+.hook\:long\.hidden_text::before {
+    background: linear-gradient(transparent 50%, var(--color-surface));
+}
+
+.dropdown .inner {
+    background: var(--color-surface);
+    border: solid 1px var(--color-lowered);
+    box-shadow: none;
+}
+
+.dropdown .inner:is(.dark *) {
+    background: transparent;
+    backdrop-filter: blur(50px) brightness(80%);
+}
+
+.dropdown .inner a {
+    padding: 0.15rem 1rem;
+}
+
+#toast_zone {
+    top: unset;
+    bottom: 0.5rem;
+    right: unset;
+    left: 0;
+    width: 100%;
+    align-items: center;
+}
+
+.toast {
+    padding: 0.5rem 1rem;
+    font-family: inherit;
+    min-width: 10rem;
+    max-width: 100%;
+}
+
+.sidenav,
+.pillmenu {
+    background: transparent;
+    border: solid 1px var(--color-lowered);
+    box-shadow: none;
+}
+
+.sidenav a,
+.pillmenu a {
+    background: transparent;
+}
+
+.sidenav a:not(:last-of-type) {
+    border-bottom: solid 1px var(--color-lowered);
+}
+
+.pillmenu a:not(:first-of-type) {
+    border-left: solid 1px var(--color-lowered);
+}
+
+@media screen and (max-width: 900px) {
+    .pillmenu.convertible a:not(:last-of-type) {
+        border-left: none;
+        border-bottom: solid 1px var(--color-lowered);
+    }
+}
+
+/* utility */
+.round-lg {
+    border-radius: var(--radius) !important;
+}

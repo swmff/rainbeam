@@ -68,7 +68,11 @@ endblock %} {% block head %}
             <div class="card">Create a post</div>
 
             <div class="card">
-                <form id="post_form" class="flex flex-col gap-2">
+                <form
+                    id="post_form"
+                    class="flex flex-col gap-2"
+                    onsubmit="create_post(event)"
+                >
                     <textarea
                         class="w-full"
                         placeholder="Type your post!"
@@ -96,7 +100,11 @@ endblock %} {% block head %}
             <div class="card">Ask a question</div>
 
             <div class="card">
-                <form id="question_form" class="flex flex-col gap-2">
+                <form
+                    id="question_form"
+                    class="flex flex-col gap-2"
+                    onsubmit="ask(event)"
+                >
                     <select name="recipient" id="recipient" required>
                         <option value="" disabled selected>
                             Select a recipient
@@ -134,7 +142,7 @@ endblock %} {% block head %}
 </article>
 
 <script>
-    document.getElementById("post_form").addEventListener("submit", (e) => {
+    globalThis.create_post = (e) => {
         e.preventDefault();
 
         trigger("responses:create", [
@@ -144,9 +152,9 @@ endblock %} {% block head %}
             // reset if successful
             e.target.reset();
         });
-    });
+    };
 
-    document.getElementById("question_form").addEventListener("submit", (e) => {
+    globalThis.ask = (e) => {
         e.preventDefault();
 
         trigger("questions:create", [
@@ -157,7 +165,7 @@ endblock %} {% block head %}
             // reset if successful
             e.target.reset();
         });
-    });
+    };
 </script>
 
 <!-- prettier-ignore -->

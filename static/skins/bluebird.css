@@ -1,0 +1,49 @@
+/* Neospring "Blue bird" skin */
+/* <https://github.com/swmff/neospring> */
+/* inherits: Rocket */
+@import url("rocket.css");
+
+:root {
+    --color-primary: hsl(206, 59%, 45%);
+    --color-primary-lowered: hsl(206, 59%, 40%);
+    --color-primary-alpha: hsla(206, 59%, 40%, 25%);
+    --radius: 0.5rem !important;
+}
+
+.dark,
+.dark * {
+    --color-primary-raised: hsl(206, 59%, 55%);
+}
+
+button,
+a.button,
+input,
+textarea,
+select {
+    min-height: 32px;
+    box-shadow: none;
+    transition: background 0.15s box-shadow 0.2s;
+}
+
+input[type="checkbox"] {
+    min-height: auto;
+}
+
+.card:not(:has(form)) button:not(.primary),
+.card:not(:has(form)) a.button:not(.primary) {
+    /* card actions */
+    background: transparent !important;
+    color: var(--color-primary-raised);
+    position: relative;
+    width: max-content;
+    padding: 0.5rem 1rem;
+    border-radius: 360px;
+
+    &:hover {
+        background: var(--color-primary-alpha) !important;
+    }
+}
+
+.dropdown:not(nav *):has(.inner[open]) button {
+    background: var(--color-primary-alpha) !important;
+}

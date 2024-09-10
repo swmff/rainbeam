@@ -1,7 +1,7 @@
 (() => {
     const self = reg_ns("notifications");
 
-    self.define("delete", function (_, id) {
+    self.define("delete", function ({ $, app }, id) {
         if (!confirm("Are you sure you want to do this?")) {
             return;
         }

@@ -2,6 +2,7 @@
     id="search_form"
     class="flex gap-2"
     style="min-width: 15rem; max-width: 100%; flex-direction: row"
+    onsubmit="sub_search(event)"
 >
     <input
         id="query"
@@ -36,13 +37,13 @@
 </form>
 
 <script>
-    document.getElementById("search_form").addEventListener("submit", (e) => {
+    globalThis.sub_search = (e) => {
         e.preventDefault();
         trigger("search:run", [
             e.target.driver.options[e.target.driver.selectedIndex].value,
             e.target.q.value,
         ]);
-    });
+    };
 
     for (const option of Array.from(document.querySelectorAll("option"))) {
         if (option.getAttribute("driver") === (driver || "0")) {

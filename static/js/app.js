@@ -79,7 +79,34 @@
         }, ms);
     });
 
+    app.define("skin", function (_, skin) {
+        if (skin === "sparkler") {
+            console.warn(`[app skin] skin is invalid, skipped: ${skin}`);
+            return;
+        }
+
+        console.info(`[app skin] registered skin: ${skin}`);
+        document.body.innerHTML += `<style id="skin:${skin}" class="skin_import">@import url("/static/skins/${skin}.css");</style>`;
+    });
+
+    app.define("load_skin", function ({ $ }) {
+        const skin = window.localStorage.getItem("skin");
+
+        if (!skin) {
+            return;
+        }
+
+        $.skin(skin);
+    });
+
     // hooks
+    app.define("hook.scroll", function (_, scroll_element, track_element) {
+        track_element.setAttribute("data-scroll", "0");
+        scroll_element.addEventListener("scroll", (e) => {
+            track_element.setAttribute("data-scroll", scroll_element.scrollTop);
+        });
+    });
+
     app.define("hook.dropdown", function (_, event) {
         let target = event.target;
 

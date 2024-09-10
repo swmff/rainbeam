@@ -14,6 +14,7 @@
         {% block head %}{% endblock %}
 
         <link rel="icon" href="/static/favicon.svg" />
+        <link rel="manifest" href="/manifest.json" />
 
         <meta name="theme-color" content="#b62f5a" />
         <meta name="description" content="{{ config.description }}" />
@@ -40,7 +41,7 @@
         <script>
             globalThis.ns_config = {
                 root: "/static/js/",
-                version: "1.1.1",
+                version: "1.1.2",
             };
 
             globalThis._app_base = {
@@ -345,7 +346,9 @@
                 const app = ns("app");
                 app.clean_date_codes();
                 app.link_filter();
+                app.load_skin();
 
+                app["hook.scroll"](document.body, document.documentElement);
                 app["hook.dropdown.init"](window);
                 app["hook.character_counter.init"]();
                 app["hook.long_text.init"]();
