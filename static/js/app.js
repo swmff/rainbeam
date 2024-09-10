@@ -230,7 +230,7 @@
 
     app.define("hook.long", function (_, element, full_text) {
         element.classList.remove("hook:long.hidden_text");
-        element.innerText = full_text;
+        element.innerHTML = full_text;
     });
 
     app.define("hook.long_text.init", function (_, event) {
@@ -250,12 +250,13 @@
             }
 
             const text = element.innerText;
+            const html = element.innerHTML;
             const short = text.slice(0, 64 * 16);
             element.innerText = `${short}...`;
 
             // event
             const listener = () => {
-                app["hook.long"](element, text);
+                app["hook.long"](element, html);
                 element.removeEventListener("click", listener);
             };
 
