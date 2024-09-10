@@ -92,6 +92,7 @@ nav:not(.dark *):not(html[data-scroll="0"] *) {
 nav:is(.dark *) {
     background: transparent !important;
     backdrop-filter: blur(50px) brightness(60%);
+    -webkit-backdrop-filter: blur(50px) brightness(60%);
     box-shadow: none;
 }
 
@@ -125,6 +126,7 @@ nav button:not(.inner button):hover::before {
 .dropdown .inner:is(.dark *) {
     background: transparent;
     backdrop-filter: blur(50px) brightness(80%);
+    -webkit-backdrop-filter: blur(50px) brightness(80%);
 }
 
 .dropdown .inner a {
