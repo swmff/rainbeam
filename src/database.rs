@@ -2338,7 +2338,7 @@ impl Database {
         }
 
         // check content length
-        if content.len() > 1000 {
+        if content.len() > 4096 {
             return Err(DatabaseError::ContentTooLong);
         }
 
