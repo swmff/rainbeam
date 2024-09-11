@@ -1176,6 +1176,23 @@ impl Database {
                         return Err(DatabaseError::NotAllowed);
                     }
                 }
+
+                // check filter
+                for filter_string in recipient
+                    .metadata
+                    .kv
+                    .get("sparkler:filter")
+                    .unwrap_or(&"".to_string())
+                    .split("\n")
+                {
+                    if filter_string.is_empty() | filter_string.starts_with("#") {
+                        continue;
+                    }
+
+                    if props.content.contains(filter_string) {
+                        return Err(DatabaseError::Filtered);
+                    }
+                }
             }
         } else {
             // anonymous users cannot ask global questions

@@ -41,7 +41,7 @@
         <script>
             globalThis.ns_config = {
                 root: "/static/js/",
-                version: "1.1.4",
+                version: "1.1.5",
             };
 
             globalThis._app_base = {
@@ -346,12 +346,15 @@
                 const app = ns("app");
                 app.clean_date_codes();
                 app.link_filter();
-                app.load_skin();
 
                 app["hook.scroll"](document.body, document.documentElement);
                 app["hook.dropdown.init"](window);
                 app["hook.character_counter.init"]();
                 app["hook.long_text.init"]();
+
+                (async () => {
+                    await app.load_skin();
+                })();
 
                 twemoji.parse(document.body);
             })();

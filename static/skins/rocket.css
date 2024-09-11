@@ -129,6 +129,10 @@ nav button:not(.inner button):hover::before {
     -webkit-backdrop-filter: blur(50px) brightness(80%);
 }
 
+nav .dropdown .inner:is(.dark *) {
+    background: var(--color-surface);
+}
+
 .dropdown .inner a {
     padding: 0.15rem 1rem;
 }
@@ -178,6 +182,7 @@ nav button:not(.inner button):hover::before {
         border-left: none;
         border-bottom: solid 1px var(--color-lowered);
     }
+    /* TENNIS END */
 }
 
 /* utility */

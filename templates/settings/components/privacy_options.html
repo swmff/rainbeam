@@ -95,6 +95,23 @@
             and click "Submit" to add them to your block list.
         </p>
     </div>
+
+    <div class="flex flex-col gap-1">
+        <label for="sparkler:filter">Filter</label>
+
+        <textarea
+            name="sparkler:filter"
+            id="sparkler:filter"
+            onchange="update_kv('sparkler:filter', event.target.value)"
+        ></textarea>
+
+        <p class="fade">
+            A list of strings that are not allowed in questions asked to you.
+            Each different string
+            <b>must</b>
+            be on a new line.
+        </p>
+    </div>
 </div>
 
 <dialog id="block_dialog">

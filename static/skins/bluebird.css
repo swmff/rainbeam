@@ -7,7 +7,7 @@
     --color-primary: hsl(206, 59%, 45%);
     --color-primary-lowered: hsl(206, 59%, 40%);
     --color-primary-alpha: hsla(206, 59%, 40%, 25%);
-    --radius: 0.5rem !important;
+    --radius: 1rem !important;
 }
 
 .dark,

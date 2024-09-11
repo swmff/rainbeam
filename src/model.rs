@@ -348,6 +348,7 @@ pub enum DatabaseError {
     ValueError,
     OutOfTime,
     NotFound,
+    Filtered,
     Other,
 }
 
@@ -366,6 +367,7 @@ impl DatabaseError {
             NotFound => {
                 String::from("Nothing with this path exists or you do not have access to it!")
             }
+            Filtered => String::from("This content has been blocked by a content filter."),
             _ => String::from("An unspecified error has occured"),
         }
     }

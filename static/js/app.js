@@ -143,17 +143,17 @@
             return;
         }
 
-        document.body.innerHTML += `<style id="skin_import">@import url("${skin}");</style>`;
+        document.head.innerHTML += `<style id="skin_import">@import url("${skin}");</style>`;
     });
 
-    app.define("load_skin", function ({ $ }) {
+    app.define("load_skin", async function ({ $ }) {
         const skin = window.localStorage.getItem("skin");
 
         if (!skin) {
             return;
         }
 
-        $.skin(skin);
+        await $.skin(skin);
     });
 
     // hooks
