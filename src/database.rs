@@ -4,8 +4,8 @@ use std::collections::HashMap;
 use crate::config::Config;
 use crate::model::{
     anonymous_profile, global_profile, Circle, CircleCreate, CircleMetadata, CommentCreate,
-    MembershipStatus, QuestionCreate, QuestionResponse, Reaction, RefQuestion, ResponseComment,
-    ResponseContext, ResponseCreate,
+    DataExport, MembershipStatus, QuestionCreate, QuestionResponse, Reaction, RefQuestion,
+    ResponseComment, ResponseContext, ResponseCreate,
 };
 use crate::model::{DatabaseError, Question};
 
@@ -236,6 +236,28 @@ impl Database {
 
         // return
         Ok(res)
+    }
+
+    /// Export all data of the given `user`
+    pub async fn create_data_export(&self, user: String) -> Result<DataExport> {
+        Ok(DataExport {
+            profile: match self.get_profile(user.clone()).await {
+                Ok(r) => r,
+                Err(e) => return Err(e),
+            },
+            questions: match self.get_questions_by_author(user.clone()).await {
+                Ok(r) => r,
+                Err(e) => return Err(e),
+            },
+            responses: match self.get_responses_by_author(user.clone()).await {
+                Ok(r) => r,
+                Err(e) => return Err(e),
+            },
+            comments: match self.get_comments_by_author(user.clone()).await {
+                Ok(r) => r,
+                Err(e) => return Err(e),
+            },
+        })
     }
 
     // extra util
@@ -1024,6 +1046,71 @@ impl Database {
             .await;
 
         count
+    }
+
+    /// Get all questions by their author
+    ///
+    /// ## Arguments:
+    /// * `author`
+    pub async fn get_questions_by_author(
+        &self,
+        author: String,
+    ) -> Result<Vec<(Question, usize, usize)>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "SELECT * FROM \"xquestions\" WHERE \"author\" = ? ORDER BY \"timestamp\" DESC"
+        } else {
+            "SELECT * FROM \"xquestions\" WHERE \"author\" = $1 ORDER BY \"timestamp\" DESC"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query)
+            .bind::<&String>(&author.to_lowercase())
+            .fetch_all(c)
+            .await
+        {
+            Ok(p) => {
+                let mut out: Vec<(Question, usize, usize)> = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let id = res.get("id").unwrap().to_string();
+                    out.push((
+                        Question {
+                            author: match self
+                                .get_profile(res.get("author").unwrap().to_string())
+                                .await
+                            {
+                                Ok(ua) => ua,
+                                Err(_) => anonymous_profile("anonymous".to_string()),
+                            },
+                            recipient: match self
+                                .get_profile(res.get("recipient").unwrap().to_string())
+                                .await
+                            {
+                                Ok(ua) => ua,
+                                Err(_) => continue,
+                            },
+                            content: res.get("content").unwrap().to_string(),
+                            id: id.clone(),
+                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                        },
+                        // get the number of responses the question has
+                        self.get_response_count_by_question(id.clone()).await,
+                        // get the number of reactions the question has
+                        self.get_reaction_count_by_asset(id).await,
+                    ));
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        Ok(res)
     }
 
     /// Get the number of responses by their question
@@ -2841,6 +2928,70 @@ impl Database {
             .await;
 
         count
+    }
+
+    /// Get all comments by their author ID
+    ///
+    /// # Arguments
+    /// * `user`
+    pub async fn get_comments_by_author(
+        &self,
+        user: String,
+    ) -> Result<Vec<(ResponseComment, usize, usize)>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "SELECT * FROM \"xcomments\" WHERE \"author\" = ? ORDER BY \"timestamp\" DESC"
+        } else {
+            "SELECT * FROM \"xcomments\" WHERE \"author\" = $1 ORDER BY \"timestamp\" DESC"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query).bind::<&String>(&user).fetch_all(c).await {
+            Ok(p) => {
+                let mut out: Vec<(ResponseComment, usize, usize)> = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+
+                    let reply = res.get("reply").unwrap().to_string();
+                    let id = res.get("id").unwrap().to_string();
+
+                    out.push((
+                        ResponseComment {
+                            author: match self
+                                .get_profile(res.get("author").unwrap().to_string())
+                                .await
+                            {
+                                Ok(ua) => ua,
+                                Err(_) => anonymous_profile("anonymous".to_string()),
+                            },
+                            response: res.get("response").unwrap().to_string(),
+                            content: res.get("content").unwrap().to_string(),
+                            id: id.clone(),
+                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            reply: if reply.is_empty() {
+                                None
+                            } else {
+                                match self.get_comment(reply, true).await {
+                                    Ok(r) => Some(Box::new(r.0)),
+                                    Err(_) => None,
+                                }
+                            },
+                        },
+                        self.get_reply_count_by_comment(id.clone()).await,
+                        self.get_reaction_count_by_asset(id).await,
+                    ));
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        Ok(res)
     }
 
     /// Get all replies by their comment ID

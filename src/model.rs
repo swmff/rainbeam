@@ -258,6 +258,19 @@ pub struct FeedList {
     pub timestamp: u128,
 }
 
+/// An export of a user's entire history
+#[derive(Serialize, Deserialize)]
+pub struct DataExport {
+    /// The user's profile
+    pub profile: Profile,
+    /// All of the user's [`Question`]s
+    pub questions: Vec<(Question, usize, usize)>,
+    /// All of the user's [`QuestionResponse`]s
+    pub responses: Vec<(Question, QuestionResponse, usize, usize)>,
+    /// All of the user's [`ResponseComment`]s
+    pub comments: Vec<(ResponseComment, usize, usize)>,
+}
+
 // ...
 
 /// Global user profile

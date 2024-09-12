@@ -1108,6 +1108,10 @@ dialog::backdrop {
     }
 }
 
+.turbo-progress-bar {
+    background: var(--color-primary);
+}
+
 /* utility */
 .flex {
     display: flex;

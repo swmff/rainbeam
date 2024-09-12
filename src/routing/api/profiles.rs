@@ -3,7 +3,7 @@ use crate::model::DatabaseError;
 use axum_extra::extract::CookieJar;
 use hcaptcha::Hcaptcha;
 use std::{fs::File, io::Read};
-use xsu_authman::model::{NotificationCreate, UserFollow};
+use xsu_authman::model::{NotificationCreate, Permission, UserFollow};
 use xsu_dataman::DefaultReturn;
 
 use axum::response::IntoResponse;
@@ -22,6 +22,7 @@ pub fn routes(database: Database) -> Router {
         .route("/:username/follow", post(follow_request))
         .route("/:username/unfollow", post(unfollow_request)) // force unfollow
         .route("/:username/unfollow-me", post(unfollow_me_request)) // force them to unfollow you
+        .route("/:username/export", get(export_request)) // staff
         // ...
         .with_state(database)
 }
@@ -485,6 +486,91 @@ pub async fn unfollow_me_request(
                 success: false,
                 message: e.to_string(),
                 payload: (),
+            })
+        }
+    }
+}
+
+/// Create a data export of the given user
+pub async fn export_request(
+    jar: CookieJar,
+    Path(username): Path<String>,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    // get user from token
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(e) => {
+                return Json(DefaultReturn {
+                    success: false,
+                    message: e.to_string(),
+                    payload: None,
+                });
+            }
+        },
+        None => {
+            return Json(DefaultReturn {
+                success: false,
+                message: DatabaseError::NotAllowed.to_string(),
+                payload: None,
+            });
+        }
+    };
+
+    let group = match database.auth.get_group_by_id(auth_user.group).await {
+        Ok(g) => g,
+        Err(_) => {
+            return Json(DefaultReturn {
+                success: false,
+                message: DatabaseError::Other.to_string(),
+                payload: None,
+            })
+        }
+    };
+
+    if !group.permissions.contains(&Permission::Helper) {
+        return Json(DefaultReturn {
+            success: false,
+            message: DatabaseError::NotAllowed.to_string(),
+            payload: None,
+        });
+    }
+
+    // ...
+    let other_user = match database
+        .auth
+        .get_profile_by_username(username.to_owned())
+        .await
+    {
+        Ok(ua) => ua,
+        Err(_) => {
+            return Json(DefaultReturn {
+                success: false,
+                message: DatabaseError::NotFound.to_string(),
+                payload: None,
+            })
+        }
+    };
+
+    // return
+    match database.create_data_export(other_user.id).await {
+        Ok(export) => {
+            return Json(DefaultReturn {
+                success: true,
+                message: "Acceptable".to_string(),
+                payload: Some(export),
+            })
+        }
+        Err(e) => {
+            return Json(DefaultReturn {
+                success: false,
+                message: e.to_string(),
+                payload: None,
             })
         }
     }
