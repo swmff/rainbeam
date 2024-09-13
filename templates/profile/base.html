@@ -95,7 +95,9 @@ config.name }}{% endblock %} {% block head %}
         "
     />
 
-    <div class="flex flex-collapse gap-4 sm:mt-2">
+    <div
+        class="flex flex-collapse gap-4 sm:mt-2 {% if layout == "1" %}flex-rev-row{% endif %}"
+    >
         <div class="flex flex-col gap-4 sm:w-full" style="width: 20rem">
             <div
                 id="profile_card"
@@ -204,6 +206,22 @@ config.name }}{% endblock %} {% block head %}
                             </svg>
                             Embed profile
                         </a>
+
+                        <a href="/@{{ other.username }}/rss">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 16 16"
+                                width="16"
+                                height="16"
+                                aria-label="RSS Symbol"
+                                class="icon"
+                            >
+                                <path
+                                    d="M2.002 2.725a.75.75 0 0 1 .797-.699C8.79 2.42 13.58 7.21 13.974 13.201a.75.75 0 0 1-1.497.098 10.502 10.502 0 0 0-9.776-9.776.747.747 0 0 1-.7-.798ZM2.84 7.05h-.002a7.002 7.002 0 0 1 6.113 6.111.75.75 0 0 1-1.49.178 5.503 5.503 0 0 0-4.8-4.8.75.75 0 0 1 .179-1.489ZM2 13a1 1 0 1 1 2 0 1 1 0 0 1-2 0Z"
+                                ></path>
+                            </svg>
+                            RSS feed
+                        </a>
                     </div>
                 </div>
                 {% else %}
@@ -272,6 +290,23 @@ config.name }}{% endblock %} {% block head %}
                             Block
                         </a>
                         <a
+                            href="javascript:trigger('reports:bootstrap', ['profiles', '{{ other.username }}'])"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 16 16"
+                                width="16"
+                                height="16"
+                                aria-label="Report symbol"
+                                class="icon"
+                            >
+                                <path
+                                    d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"
+                                ></path>
+                            </svg>
+                            Report
+                        </a>
+                        <a
                             href="#"
                             onclick="trigger('app:copy_text', ['{{ other.id }}'])"
                         >
@@ -292,22 +327,20 @@ config.name }}{% endblock %} {% block head %}
                             </svg>
                             Copy ID
                         </a>
-                        <a
-                            href="javascript:trigger('reports:bootstrap', ['profiles', '{{ other.username }}'])"
-                        >
+                        <a href="/@{{ other.username }}/rss">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 16 16"
                                 width="16"
                                 height="16"
-                                aria-label="Report symbol"
+                                aria-label="RSS Symbol"
                                 class="icon"
                             >
                                 <path
-                                    d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"
+                                    d="M2.002 2.725a.75.75 0 0 1 .797-.699C8.79 2.42 13.58 7.21 13.974 13.201a.75.75 0 0 1-1.497.098 10.502 10.502 0 0 0-9.776-9.776.747.747 0 0 1-.7-.798ZM2.84 7.05h-.002a7.002 7.002 0 0 1 6.113 6.111.75.75 0 0 1-1.49.178 5.503 5.503 0 0 0-4.8-4.8.75.75 0 0 1 .179-1.489ZM2 13a1 1 0 1 1 2 0 1 1 0 0 1-2 0Z"
                                 ></path>
                             </svg>
-                            Report
+                            RSS feed
                         </a>
                         {% if is_powerful %}
                         <!-- for managers ONLY -->
@@ -616,6 +649,8 @@ config.name }}{% endblock %} {% block head %}
 </script>
 
 <script>
+    use("ewe", () => {});
+
     (() => {
         let metadata = JSON.parse(
             document.getElementById("metadata").innerHTML,

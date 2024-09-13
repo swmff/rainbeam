@@ -37,6 +37,7 @@ struct ProfileTemplate {
     disallow_anonymous: bool,
     require_account: bool,
     hide_social: bool,
+    layout: String,
     is_powerful: bool, // at least "manager"
     is_helper: bool,   // at least "helper"
     is_self: bool,
@@ -238,6 +239,12 @@ pub async fn profile_request(
             tag: query.tag.unwrap_or(String::new()),
             query: query.q.unwrap_or(String::new()),
             // ...
+            layout: other
+                .metadata
+                .kv
+                .get("sparkler:layout")
+                .unwrap_or(&String::new())
+                .to_owned(),
             lock_profile: other
                 .metadata
                 .kv
@@ -419,6 +426,54 @@ pub async fn profile_embed_request(
 }
 
 #[derive(Template)]
+#[template(path = "rss/profile.xml")]
+struct ProfileRssTemplate {
+    config: Config,
+    other: Profile,
+    responses: Vec<(Question, QuestionResponse, usize, usize)>,
+}
+
+/// GET /@:username/rss
+pub async fn profile_rss_request(
+    Path(username): Path<String>,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    let other = match database
+        .auth
+        .get_profile_by_username(username.clone())
+        .await
+    {
+        Ok(ua) => ua,
+        Err(_) => {
+            return (
+                [("Content-Type", "text/html")],
+                DatabaseError::NotFound.to_html(database),
+            )
+        }
+    };
+
+    let responses = match database
+        .get_responses_by_author_paginated(other.id.to_owned(), 0)
+        .await
+    {
+        Ok(responses) => responses,
+        Err(e) => return ([("Content-Type", "text/html")], e.to_html(database)),
+    };
+
+    // ...
+    (
+        [("Content-Type", "application/rss+xml")],
+        ProfileRssTemplate {
+            config: database.server_options.clone(),
+            other: other.clone(),
+            responses,
+        }
+        .render()
+        .unwrap(),
+    )
+}
+
+#[derive(Template)]
 #[template(path = "profile/followers.html")]
 struct FollowersTemplate {
     config: Config,
@@ -436,6 +491,7 @@ struct FollowersTemplate {
     metadata: String,
     page: i32,
     // ...
+    layout: String,
     lock_profile: bool,
     disallow_anonymous: bool,
     require_account: bool,
@@ -588,6 +644,12 @@ pub async fn followers_request(
             metadata: clean_metadata(&other.metadata),
             page: query.page,
             // ...
+            layout: other
+                .metadata
+                .kv
+                .get("sparkler:layout")
+                .unwrap_or(&String::new())
+                .to_owned(),
             lock_profile: other
                 .metadata
                 .kv
@@ -633,6 +695,7 @@ struct FollowingTemplate {
     metadata: String,
     page: i32,
     // ...
+    layout: String,
     lock_profile: bool,
     disallow_anonymous: bool,
     require_account: bool,
@@ -785,6 +848,12 @@ pub async fn following_request(
             metadata: clean_metadata(&other.metadata),
             page: query.page,
             // ...
+            layout: other
+                .metadata
+                .kv
+                .get("sparkler:layout")
+                .unwrap_or(&String::new())
+                .to_owned(),
             lock_profile: other
                 .metadata
                 .kv
@@ -831,6 +900,7 @@ struct ProfileQuestionsTemplate {
     page: i32,
     query: String,
     // ...
+    layout: String,
     lock_profile: bool,
     disallow_anonymous: bool,
     require_account: bool,
@@ -991,6 +1061,12 @@ pub async fn questions_request(
             page: query.page,
             query: query.q.unwrap_or(String::new()),
             // ...
+            layout: other
+                .metadata
+                .kv
+                .get("sparkler:layout")
+                .unwrap_or(&String::new())
+                .to_owned(),
             lock_profile: other
                 .metadata
                 .kv
@@ -1042,6 +1118,7 @@ struct ModTemplate {
     is_following_you: bool,
     metadata: String,
     // ...
+    layout: String,
     lock_profile: bool,
     disallow_anonymous: bool,
     require_account: bool,
@@ -1170,6 +1247,12 @@ pub async fn mod_request(
             is_following_you,
             metadata: clean_metadata(&other.metadata),
             // ...
+            layout: other
+                .metadata
+                .kv
+                .get("sparkler:layout")
+                .unwrap_or(&String::new())
+                .to_owned(),
             lock_profile: other
                 .metadata
                 .kv
@@ -1221,6 +1304,7 @@ struct ProfileQuestionsInboxTemplate {
     is_following_you: bool,
     metadata: String,
     // ...
+    layout: String,
     lock_profile: bool,
     disallow_anonymous: bool,
     require_account: bool,
@@ -1348,6 +1432,12 @@ pub async fn inbox_request(
             is_following_you,
             metadata: clean_metadata(&other.metadata),
             // ...
+            layout: other
+                .metadata
+                .kv
+                .get("sparkler:layout")
+                .unwrap_or(&String::new())
+                .to_owned(),
             lock_profile: other
                 .metadata
                 .kv
@@ -1400,6 +1490,7 @@ struct ProfileQuestionsOutboxTemplate {
     metadata: String,
     page: i32,
     // ...
+    layout: String,
     lock_profile: bool,
     disallow_anonymous: bool,
     require_account: bool,
@@ -1529,6 +1620,12 @@ pub async fn outbox_request(
             metadata: clean_metadata(&other.metadata),
             page: query.page,
             // ...
+            layout: other
+                .metadata
+                .kv
+                .get("sparkler:layout")
+                .unwrap_or(&String::new())
+                .to_owned(),
             lock_profile: other
                 .metadata
                 .kv

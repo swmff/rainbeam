@@ -41,7 +41,7 @@
         <script>
             globalThis.ns_config = {
                 root: "/static/js/",
-                version: "1.2.1",
+                version: "1.2.2",
             };
 
             globalThis._app_base = {
@@ -359,15 +359,6 @@
                 twemoji.parse(document.body);
             })();
         </script>
-
-        {% if profile.is_some() %}
-        <script>
-            (() => {
-                const app = ns("app");
-                app.i_know_you();
-            })();
-        </script>
-        {% endif %}
 
         <!-- dialogs -->
         <dialog id="link_filter">

@@ -156,26 +156,27 @@
         </p>
     </div>
 
+    <hr />
+
     <div class="flex flex-col gap-1">
         <label for="sparkler:profile_theme">Profile theme</label>
 
-        <input
+        <select
+            type="url"
             name="sparkler:profile_theme"
             id="sparkler:profile_theme"
-            onchange="update_kv('sparkler:profile_theme', event.target.value)"
-        />
+            onchange="update_kv('sparkler:profile_theme', event.target.options[event.target.selectedIndex].value)"
+        >
+            <option value="">User-choice</option>
+            <option value="light" id="light">Light</option>
+            <option value="dark" id="dark">Dark</option>
+        </select>
 
-        <p class="fade">
-            This is the base site theme used on your profile. You can leave it
-            blank and let people use their default, or you can use either
-            <code>light</code>
-            or
-            <code>dark</code>
-        </p>
+        <p class="fade">This is the base theme used on your profile.</p>
     </div>
 
     <div class="flex flex-col gap-1">
-        <label for="sparkler:website_theme">Profile skin</label>
+        <label for="sparkler:profile_skin">Profile skin</label>
 
         <select
             type="url"
@@ -189,6 +190,22 @@
         </select>
 
         <p class="fade">This is the base skin used on your profile.</p>
+    </div>
+
+    <div class="flex flex-col gap-1">
+        <label for="sparklerlayout">Profile layout</label>
+
+        <select
+            type="url"
+            name="sparkler:layout"
+            id="sparkler:layout"
+            onchange="update_kv('sparkler:layout', event.target.options[event.target.selectedIndex].value)"
+        >
+            <option value="0" id="0">Sidebar on left (default)</option>
+            <option value="1" id="1">Sidebar on right</option>
+        </select>
+
+        <p class="fade">The layout used on your profile.</p>
     </div>
 
     <hr />

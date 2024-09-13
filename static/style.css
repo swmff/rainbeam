@@ -378,7 +378,7 @@ fieldset:hover {
 
 @media screen and (max-width: 900px) {
     .flex-collapse {
-        flex-direction: column;
+        flex-direction: column !important;
     }
 }
 
@@ -1119,6 +1119,10 @@ dialog::backdrop {
 
 .flex-col {
     flex-direction: column;
+}
+
+.flex-rev-row {
+    flex-direction: row-reverse;
 }
 
 .flex-wrap {
