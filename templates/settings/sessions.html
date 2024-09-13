@@ -8,11 +8,22 @@
     <div class="flex flex-col gap-1" id="manage_sessions">
         <h3>Manage sessions</h3>
 
-        {% for session in tokens_src.iter().rev() %}
+        {% for (i, session) in tokens_src.iter().rev().enumerate() %}
         <div class="card card-nest" id="session:{{ session }}">
             <div class="card flex justify-between" title="{{ session }}">
-                <code>{{ session[..10] }}</code>
+                <span class="footernav">
+                    <code class="item" title="Session short token">
+                        {{ session[..10] }}
+                    </code>
 
+                    <!-- prettier-ignore -->
+                    {% if let Some(profile) = profile %}
+                    {% if let Some(ip) = profile.ips.get(i.to_owned()) %}
+                    <code class="item" title="Session IP">{{ ip }}</code>
+                    {% endif %} {% endif %}
+                </span>
+
+                <!-- prettier-ignore -->
                 {% if current_session == session.to_owned() %}
                 <b>This session</b>
                 {% endif %}

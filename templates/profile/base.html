@@ -446,7 +446,7 @@ config.name }}{% endblock %} {% block head %}
 
                 <div class="card">
                     <!-- prettier-ignore -->
-                    {% if !lock_profile && !is_blocked %}
+                    {% if !lock_profile %}
                     {% if (require_account && profile.is_some()) | (disallow_anonymous && profile.is_some()) | (!require_account && !disallow_anonymous) %}
                     <form
                         id="question_form"

@@ -125,12 +125,22 @@ pub async fn search_responses_request(
     };
 
     // search results
-    let results = match database
-        .get_responses_searched_paginated(query.page, query.q.clone())
-        .await
-    {
-        Ok(responses) => responses,
-        Err(e) => return Html(e.to_html(database)),
+    let results = if query.tag.is_empty() {
+        match database
+            .get_responses_searched_paginated(query.page, query.q.clone())
+            .await
+        {
+            Ok(responses) => responses,
+            Err(e) => return Html(e.to_html(database)),
+        }
+    } else {
+        match database
+            .get_responses_tagged_paginated(query.tag.clone(), query.page)
+            .await
+        {
+            Ok(responses) => responses,
+            Err(e) => return Html(e.to_html(database)),
+        }
     };
 
     // permissions
@@ -156,7 +166,7 @@ pub async fn search_responses_request(
             notifs,
             query: query.q,
             page: query.page,
-            driver: 0,
+            driver: if query.tag.is_empty() { 0 } else { 4 },
             // search-specific
             results,
             is_powerful,

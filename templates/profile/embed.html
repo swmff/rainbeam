@@ -97,7 +97,7 @@
 
                 <div>
                     <!-- prettier-ignore -->
-                    {% if !is_blocked && !lock_profile %}
+                    {% if !lock_profile %}
                     {% if (require_account && profile.is_some()) | (disallow_anonymous && profile.is_some()) | (!require_account && !disallow_anonymous) %}
                     <form id="question_form" class="flex flex-col gap-2">
                         <textarea

@@ -1,0 +1,1 @@
+ALTER TABLE "xquestions" ADD COLUMN "ip" TEXT DEFAULT '';

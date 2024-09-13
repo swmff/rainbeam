@@ -1,5 +1,6 @@
 use crate::database::Database;
 use crate::model::{anonymous_profile, DatabaseError, QuestionCreate};
+use axum::http::{HeaderMap, HeaderValue};
 use xsu_authman::model::ProfileMetadata;
 use xsu_dataman::DefaultReturn;
 
@@ -26,6 +27,7 @@ pub fn routes(database: Database) -> Router {
 /// [`Database::create_question`]
 pub async fn create_request(
     jar: CookieJar,
+    headers: HeaderMap,
     State(database): State<Database>,
     Json(req): Json<QuestionCreate>,
 ) -> impl IntoResponse {
@@ -50,6 +52,18 @@ pub async fn create_request(
     let existing_tag = match jar.get("__Secure-Question-Tag") {
         Some(c) => c.value_trimmed().to_string(),
         None => String::new(),
+    };
+
+    // get real ip
+    let real_ip = if let Some(ref real_ip_header) = database.server_options.real_ip_header {
+        headers
+            .get(real_ip_header.to_owned())
+            .unwrap_or(&HeaderValue::from_static(""))
+            .to_str()
+            .unwrap_or("")
+            .to_string()
+    } else {
+        String::new()
     };
 
     // get correct username
@@ -88,7 +102,7 @@ pub async fn create_request(
                     ),
                 ),
             ],
-            Json(match database.create_question(req, tag).await {
+            Json(match database.create_question(req, tag, real_ip).await {
                 Ok(r) => DefaultReturn {
                     success: true,
                     message: String::new(),
@@ -112,7 +126,7 @@ pub async fn create_request(
                 ),
             ),
         ],
-        Json(match database.create_question(req, auth_user.id).await {
+        Json(match database.create_question(req, auth_user.id, real_ip).await {
             Ok(r) => DefaultReturn {
                 success: true,
                 message: String::new(),
@@ -133,6 +147,8 @@ pub async fn get_request(
             success: true,
             message: String::new(),
             payload: {
+                r.ip = String::new();
+
                 // hide anonymous author id
                 if r.author.id.starts_with("anonymous#") {
                     r.author.id = "anonymous".to_string()

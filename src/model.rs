@@ -25,6 +25,9 @@ pub struct Question {
     pub content: String,
     /// The ID of the question
     pub id: String,
+    /// The IP address of the user asking the question
+    #[serde(default)]
+    pub ip: String,
     /// The time this question was asked
     pub timestamp: u128,
 }
@@ -36,6 +39,7 @@ impl Question {
             recipient: anonymous_profile(recipient),
             content,
             id: String::new(),
+            ip: String::new(),
             timestamp,
         }
     }
@@ -46,6 +50,7 @@ impl Question {
             recipient: anonymous_profile("anonymous".to_string()),
             content: "<post>".to_string(),
             id: "0".to_string(),
+            ip: String::new(),
             timestamp: 0,
         }
     }
@@ -71,6 +76,8 @@ pub struct RefQuestion {
     pub content: String,
     /// The ID of the question
     pub id: String,
+    /// The IP address of the user asking the questionn
+    pub ip: String,
     /// The time this question was asked
     pub timestamp: u128,
 }
@@ -82,6 +89,7 @@ impl From<Question> for RefQuestion {
             recipient: value.recipient.id,
             content: value.content,
             id: value.id,
+            ip: value.ip,
             timestamp: value.timestamp,
         }
     }

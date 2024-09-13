@@ -49,7 +49,8 @@ impl Database {
                 recipient TEXT,
                 content   TEXT,
                 id        TEXT,
-                timestamp TEXT
+                timestamp TEXT,
+                ip        TEXT
             )",
         )
         .execute(c)
@@ -376,6 +377,12 @@ impl Database {
                     .to_string()
                     .trim_matches(|c| c == '"')
                     .to_string(),
+                ip: question
+                    .get("id")
+                    .unwrap()
+                    .to_string()
+                    .trim_matches(|c| c == '"')
+                    .to_string(),
                 timestamp: question
                     .get("timestamp")
                     .unwrap()
@@ -407,6 +414,7 @@ impl Database {
                         },
                         content: q.content,
                         id: q.id,
+                        ip: q.ip,
                         timestamp: q.timestamp,
                     })
                 }
@@ -458,6 +466,7 @@ impl Database {
             },
             content: res.get("content").unwrap().to_string(),
             id: res.get("id").unwrap().to_string(),
+            ip: res.get("ip").unwrap().to_string(),
             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
         };
 
@@ -519,6 +528,7 @@ impl Database {
                         },
                         content: res.get("content").unwrap().to_string(),
                         id: res.get("id").unwrap().to_string(),
+                        ip: res.get("ip").unwrap().to_string(),
                         timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
                     });
                 }
@@ -579,6 +589,7 @@ impl Database {
                         },
                         content: res.get("content").unwrap().to_string(),
                         id: res.get("id").unwrap().to_string(),
+                        ip: res.get("ip").unwrap().to_string(),
                         timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
                     });
                 }
@@ -639,6 +650,7 @@ impl Database {
                             },
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
+                            ip: res.get("ip").unwrap().to_string(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
                         },
                         // get the number of responses the question has
@@ -706,6 +718,7 @@ impl Database {
                             },
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
+                            ip: res.get("ip").unwrap().to_string(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
                         },
                         // get the number of responses the question has
@@ -776,6 +789,7 @@ impl Database {
                             },
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
+                            ip: res.get("ip").unwrap().to_string(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
                         },
                         // get the number of responses the question has
@@ -843,6 +857,7 @@ impl Database {
                             },
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
+                            ip: res.get("ip").unwrap().to_string(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
                         },
                         // get the number of responses the question has
@@ -936,6 +951,7 @@ impl Database {
                             },
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
+                            ip: res.get("ip").unwrap().to_string(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
                         },
                         // get the number of responses the question has
@@ -997,6 +1013,7 @@ impl Database {
                             },
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
+                            ip: res.get("ip").unwrap().to_string(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
                         },
                         // get the number of responses the question has
@@ -1095,6 +1112,7 @@ impl Database {
                             },
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
+                            ip: res.get("ip").unwrap().to_string(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
                         },
                         // get the number of responses the question has
@@ -1151,7 +1169,13 @@ impl Database {
     /// # Arguments
     /// * `props` - [`QuestionCreate`]
     /// * `author` - the ID of the user creating the question
-    pub async fn create_question(&self, mut props: QuestionCreate, author: String) -> Result<()> {
+    /// * `ip` - author IP
+    pub async fn create_question(
+        &self,
+        mut props: QuestionCreate,
+        author: String,
+        ip: String,
+    ) -> Result<()> {
         // check content length
         if props.content.trim().len() < 2 {
             return Err(DatabaseError::ContentTooShort);
@@ -1324,14 +1348,15 @@ impl Database {
             content: props.content.trim().to_string(),
             id: utility::random_id(),
             timestamp: utility::unix_epoch_timestamp(),
+            ip: ip.clone(),
         };
 
         // create question
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            "INSERT INTO \"xquestions\" VALUES (?, ?, ?, ?, ?)"
+            "INSERT INTO \"xquestions\" VALUES (?, ?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xquestions\" VALEUS ($1, $2, $3, $4, $5)"
+            "INSERT INTO \"xquestions\" VALEUS ($1, $2, $3, $4, $5, $6)"
         }
         .to_string();
 
@@ -1342,6 +1367,7 @@ impl Database {
             .bind::<&String>(&question.content)
             .bind::<&String>(&question.id)
             .bind::<&String>(&question.timestamp.to_string())
+            .bind::<&String>(&ip)
             .execute(c)
             .await
         {
@@ -1949,6 +1975,50 @@ impl Database {
         let c = &self.base.db.client;
         let res = match sqlquery(&query)
             .bind::<&String>(&author.to_lowercase())
+            .bind::<&String>(&format!("%\"{}\"%", tag))
+            .fetch_all(c)
+            .await
+        {
+            Ok(p) => {
+                let mut out: Vec<(Question, QuestionResponse, usize, usize)> = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+                    out.push(match self.gimme_response(res).await {
+                        Ok(r) => r,
+                        Err(e) => return Err(e),
+                    });
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::Other),
+        };
+
+        // return
+        Ok(res)
+    }
+
+    /// Get all responses by their tag, 50 at a time
+    ///
+    /// # Arguments
+    /// * `author`
+    /// * `tag`
+    pub async fn get_responses_tagged_paginated(
+        &self,
+        tag: String,
+        page: i32,
+    ) -> Result<Vec<(Question, QuestionResponse, usize, usize)>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            format!("SELECT * FROM \"xresponses\" WHERE \"tags\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        } else {
+            format!("SELECT * FROM \"xresponses\" WHERE \"tags\" LIKE $2 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        };
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query)
             .bind::<&String>(&format!("%\"{}\"%", tag))
             .fetch_all(c)
             .await

@@ -37,7 +37,6 @@ struct ProfileTemplate {
     disallow_anonymous: bool,
     require_account: bool,
     hide_social: bool,
-    is_blocked: bool,
     is_powerful: bool, // at least "manager"
     is_helper: bool,   // at least "helper"
     is_self: bool,
@@ -205,6 +204,16 @@ pub async fn profile_request(
         false
     };
 
+    let is_blocked = if let Some(block_list) = other.metadata.kv.get("sparkler:block_list") {
+        block_list.contains(&format!("<@{posting_as}>"))
+    } else {
+        false
+    };
+
+    if !is_helper && is_blocked {
+        return Html(DatabaseError::NotFound.to_html(database));
+    }
+
     Html(
         ProfileTemplate {
             config: database.server_options.clone(),
@@ -254,11 +263,6 @@ pub async fn profile_request(
                 .unwrap_or(&"false".to_string())
                 == "true")
                 && !is_self,
-            is_blocked: if let Some(block_list) = other.metadata.kv.get("sparkler:block_list") {
-                block_list.contains(&format!("<@{posting_as}>"))
-            } else {
-                false
-            },
             is_powerful,
             is_helper,
             is_self,
@@ -281,7 +285,6 @@ struct ProfileEmbedTemplate {
     lock_profile: bool,
     disallow_anonymous: bool,
     require_account: bool,
-    is_blocked: bool,
 }
 
 /// GET /@:username/embed
@@ -386,6 +389,16 @@ pub async fn profile_embed_request(
         false
     };
 
+    let is_blocked = if let Some(block_list) = other.metadata.kv.get("sparkler:block_list") {
+        block_list.contains(&format!("<@{posting_as}>"))
+    } else {
+        false
+    };
+
+    if !is_helper && is_blocked {
+        return Html(DatabaseError::NotFound.to_html(database));
+    }
+
     // ...
     Html(
         ProfileEmbedTemplate {
@@ -399,11 +412,6 @@ pub async fn profile_embed_request(
             lock_profile,
             disallow_anonymous,
             require_account,
-            is_blocked: if let Some(block_list) = other.metadata.kv.get("sparkler:block_list") {
-                block_list.contains(&format!("<@{posting_as}>"))
-            } else {
-                false
-            },
         }
         .render()
         .unwrap(),
@@ -431,7 +439,6 @@ struct FollowersTemplate {
     lock_profile: bool,
     disallow_anonymous: bool,
     require_account: bool,
-    is_blocked: bool,
     is_powerful: bool,
     is_helper: bool,
     is_self: bool,
@@ -546,6 +553,16 @@ pub async fn followers_request(
         return Html(DatabaseError::NotAllowed.to_html(database));
     }
 
+    let is_blocked = if let Some(block_list) = other.metadata.kv.get("sparkler:block_list") {
+        block_list.contains(&format!("<@{posting_as}>"))
+    } else {
+        false
+    };
+
+    if !is_helper && is_blocked {
+        return Html(DatabaseError::NotFound.to_html(database));
+    }
+
     Html(
         FollowersTemplate {
             config: database.server_options.clone(),
@@ -589,11 +606,6 @@ pub async fn followers_request(
                 .get("sparkler:require_account")
                 .unwrap_or(&"false".to_string())
                 == "true",
-            is_blocked: if let Some(block_list) = other.metadata.kv.get("sparkler:block_list") {
-                block_list.contains(&format!("<@{posting_as}>"))
-            } else {
-                false
-            },
             is_powerful,
             is_helper,
             is_self,
@@ -624,7 +636,6 @@ struct FollowingTemplate {
     lock_profile: bool,
     disallow_anonymous: bool,
     require_account: bool,
-    is_blocked: bool,
     is_powerful: bool,
     is_helper: bool,
     is_self: bool,
@@ -739,6 +750,16 @@ pub async fn following_request(
         return Html(DatabaseError::NotAllowed.to_html(database));
     }
 
+    let is_blocked = if let Some(block_list) = other.metadata.kv.get("sparkler:block_list") {
+        block_list.contains(&format!("<@{posting_as}>"))
+    } else {
+        false
+    };
+
+    if !is_helper && is_blocked {
+        return Html(DatabaseError::NotFound.to_html(database));
+    }
+
     Html(
         FollowingTemplate {
             config: database.server_options.clone(),
@@ -782,11 +803,6 @@ pub async fn following_request(
                 .get("sparkler:require_account")
                 .unwrap_or(&"false".to_string())
                 == "true",
-            is_blocked: if let Some(block_list) = other.metadata.kv.get("sparkler:block_list") {
-                block_list.contains(&format!("<@{posting_as}>"))
-            } else {
-                false
-            },
             is_powerful,
             is_helper,
             is_self,
@@ -819,7 +835,6 @@ struct ProfileQuestionsTemplate {
     disallow_anonymous: bool,
     require_account: bool,
     hide_social: bool,
-    is_blocked: bool,
     is_powerful: bool,
     is_helper: bool,
     is_self: bool,
@@ -944,6 +959,16 @@ pub async fn questions_request(
         false
     };
 
+    let is_blocked = if let Some(block_list) = other.metadata.kv.get("sparkler:block_list") {
+        block_list.contains(&format!("<@{posting_as}>"))
+    } else {
+        false
+    };
+
+    if !is_helper && is_blocked {
+        return Html(DatabaseError::NotFound.to_html(database));
+    }
+
     Html(
         ProfileQuestionsTemplate {
             config: database.server_options.clone(),
@@ -991,11 +1016,6 @@ pub async fn questions_request(
                 .unwrap_or(&"false".to_string())
                 == "true")
                 && !is_self,
-            is_blocked: if let Some(block_list) = other.metadata.kv.get("sparkler:block_list") {
-                block_list.contains(&format!("<@{posting_as}>"))
-            } else {
-                false
-            },
             is_powerful,
             is_helper,
             is_self,
@@ -1026,7 +1046,6 @@ struct ModTemplate {
     disallow_anonymous: bool,
     require_account: bool,
     hide_social: bool,
-    is_blocked: bool,
     is_powerful: bool,
     is_helper: bool,
     is_self: bool,
@@ -1121,6 +1140,16 @@ pub async fn mod_request(
 
     let is_self = auth_user.id == other.id;
 
+    let is_blocked = if let Some(block_list) = other.metadata.kv.get("sparkler:block_list") {
+        block_list.contains(&format!("<@{posting_as}>"))
+    } else {
+        false
+    };
+
+    if !is_helper && is_blocked {
+        return Html(DatabaseError::NotFound.to_html(database));
+    }
+
     Html(
         ModTemplate {
             config: database.server_options.clone(),
@@ -1166,11 +1195,6 @@ pub async fn mod_request(
                 .unwrap_or(&"false".to_string())
                 == "true")
                 && !is_self,
-            is_blocked: if let Some(block_list) = other.metadata.kv.get("sparkler:block_list") {
-                block_list.contains(&format!("<@{posting_as}>"))
-            } else {
-                false
-            },
             is_powerful,
             is_helper,
             is_self,
@@ -1201,7 +1225,6 @@ struct ProfileQuestionsInboxTemplate {
     disallow_anonymous: bool,
     require_account: bool,
     hide_social: bool,
-    is_blocked: bool,
     is_powerful: bool,
     is_helper: bool,
     is_self: bool,
@@ -1295,6 +1318,16 @@ pub async fn inbox_request(
 
     let is_self = auth_user.id == other.id;
 
+    let is_blocked = if let Some(block_list) = other.metadata.kv.get("sparkler:block_list") {
+        block_list.contains(&format!("<@{posting_as}>"))
+    } else {
+        false
+    };
+
+    if !is_helper && is_blocked {
+        return Html(DatabaseError::NotFound.to_html(database));
+    }
+
     Html(
         ProfileQuestionsInboxTemplate {
             config: database.server_options.clone(),
@@ -1340,11 +1373,6 @@ pub async fn inbox_request(
                 .unwrap_or(&"false".to_string())
                 == "true")
                 && !is_self,
-            is_blocked: if let Some(block_list) = other.metadata.kv.get("sparkler:block_list") {
-                block_list.contains(&format!("<@{posting_as}>"))
-            } else {
-                false
-            },
             is_powerful,
             is_helper,
             is_self,
@@ -1376,7 +1404,6 @@ struct ProfileQuestionsOutboxTemplate {
     disallow_anonymous: bool,
     require_account: bool,
     hide_social: bool,
-    is_blocked: bool,
     is_powerful: bool,
     is_helper: bool,
     is_self: bool,
@@ -1471,6 +1498,16 @@ pub async fn outbox_request(
         return Html(DatabaseError::NotAllowed.to_html(database));
     }
 
+    let is_blocked = if let Some(block_list) = other.metadata.kv.get("sparkler:block_list") {
+        block_list.contains(&format!("<@{posting_as}>"))
+    } else {
+        false
+    };
+
+    if !is_helper && is_blocked {
+        return Html(DatabaseError::NotFound.to_html(database));
+    }
+
     Html(
         ProfileQuestionsOutboxTemplate {
             config: database.server_options.clone(),
@@ -1517,11 +1554,6 @@ pub async fn outbox_request(
                 .unwrap_or(&"false".to_string())
                 == "true")
                 && !is_self,
-            is_blocked: if let Some(block_list) = other.metadata.kv.get("sparkler:block_list") {
-                block_list.contains(&format!("<@{posting_as}>"))
-            } else {
-                false
-            },
             is_powerful,
             is_helper,
             is_self,

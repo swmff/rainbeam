@@ -6,6 +6,7 @@
         questions: "/search/questions?q=",
         users: "/search/users?q=",
         posts: "/search/posts?q=",
+        tag: "/search/responses?tag=",
     };
 
     self.define("run", function ({ $, app }, driver, query) {

@@ -249,6 +249,8 @@ pub struct SearchQuery {
     page: i32,
     #[serde(default)]
     q: String,
+    #[serde(default)]
+    tag: String,
 }
 
 #[derive(Serialize, Deserialize)]
