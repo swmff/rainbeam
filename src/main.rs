@@ -29,6 +29,7 @@ pub async fn main() {
         xsu_authman::ServerOptions {
             captcha: config.captcha.clone(),
             registration_enabled: config.registration_enabled,
+            real_ip_header: config.real_ip_header.clone(),
         },
     )
     .await;

@@ -142,11 +142,13 @@ pub async fn get_request(
                 r.author.password = String::new();
                 r.author.salt = String::new();
                 r.author.tokens = Vec::new();
+                r.author.ips = Vec::new();
                 r.author.metadata = ProfileMetadata::default();
 
                 r.recipient.password = String::new();
                 r.recipient.salt = String::new();
                 r.recipient.tokens = Vec::new();
+                r.recipient.ips = Vec::new();
                 r.recipient.metadata = ProfileMetadata::default();
 
                 // return

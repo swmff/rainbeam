@@ -68,6 +68,7 @@ pub async fn get_request(
                 // hide tokens, password, salt, and metadata
                 r.0.author.salt = String::new();
                 r.0.author.tokens = Vec::new();
+                r.0.author.ips = Vec::new();
                 r.0.author.metadata = ProfileMetadata::default();
 
                 // return

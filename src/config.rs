@@ -19,6 +19,8 @@ pub struct Config {
     pub static_dir: String,
     /// HCaptcha configuration
     pub captcha: HCaptchaConfig,
+    /// The name of the header used for reading user IP address
+    pub real_ip_header: Option<String>,
     /// If new profile registration is enabled
     #[serde(default)]
     pub registration_enabled: bool,
@@ -40,6 +42,7 @@ impl Default for Config {
             description: "Ask, share, socialize!".to_string(),
             static_dir: String::new(),
             captcha: HCaptchaConfig::default(),
+            real_ip_header: Option::None,
             registration_enabled: true,
             host: String::new(),
             migration: false,

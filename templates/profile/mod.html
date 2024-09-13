@@ -76,9 +76,24 @@
 </script>
 {% endif %}
 
+<!-- ips -->
 <hr />
+<div id="ips" class="flex flex-col gap-4">
+    <h3>IPs</h3>
+
+    <div class="card w-full shadow">
+        {% for ip in other.ips %}
+        <ul style="margin-bottom: 0">
+            <code>{{ ip }}</code>
+            —
+            <a href="javascript:globalThis.ban_ip('{{ ip }}')">Ban IP</a>
+        </ul>
+        {% endfor %}
+    </div>
+</div>
 
 <!-- warnings -->
+<hr />
 <div id="warnings" class="flex flex-col gap-4">
     <h3>Warnings</h3>
 
@@ -128,8 +143,8 @@
         })
             .then((res) => res.json())
             .then((res) => {
-                trigger("app:shout", [
-                    res.success ? "tip" : "caution",
+                trigger("app:toast", [
+                    res.success ? "success" : "error",
                     res.message || "User warned!",
                 ]);
 
@@ -138,5 +153,33 @@
                 }
             });
     }
+
+    globalThis.ban_ip = function (ip) {
+        const reason = prompt(
+            "Please explain your reason for banning this IP below:",
+        );
+
+        if (!reason) {
+            return;
+        }
+
+        fetch("/api/auth/ipbans", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                ip,
+                reason,
+            }),
+        })
+            .then((res) => res.json())
+            .then((res) => {
+                trigger("app:toast", [
+                    res.success ? "success" : "error",
+                    res.message || "IP banned!",
+                ]);
+            });
+    };
 </script>
 {% call super() %} {% endblock %}

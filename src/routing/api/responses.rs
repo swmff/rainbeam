@@ -77,16 +77,19 @@ pub async fn get_request(
                 r.0.author.password = String::new();
                 r.0.author.salt = String::new();
                 r.0.author.tokens = Vec::new();
+                r.0.author.ips = Vec::new();
                 r.0.author.metadata = ProfileMetadata::default();
 
                 r.0.recipient.password = String::new();
                 r.0.recipient.salt = String::new();
                 r.0.recipient.tokens = Vec::new();
+                r.0.recipient.ips = Vec::new();
                 r.0.recipient.metadata = ProfileMetadata::default();
 
                 r.1.author.password = String::new();
                 r.1.author.salt = String::new();
                 r.1.author.tokens = Vec::new();
+                r.1.author.ips = Vec::new();
                 r.1.author.metadata = ProfileMetadata::default();
 
                 // return
