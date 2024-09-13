@@ -268,7 +268,7 @@ block head %}
         e.preventDefault();
         trigger("responses:edit_tags", [
             "{{ response.id }}",
-            e.target.tags.value.split(", "),
+            e.target.tags.value.split(",").map((t) => t.trim()),
         ]).then((res) => {
             alert(res.message || "Response edited!");
 

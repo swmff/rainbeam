@@ -1,7 +1,11 @@
 (() => {
     const self = reg_ns("responses", ["app"]);
 
-    self.define("create", function ({ $, app }, question, content) {
+    self.define("create", function ({ $, app }, question, content, tags) {
+        if (!tags) {
+            tags = "";
+        }
+
         return new Promise((resolve, reject) => {
             fetch("/api/v1/responses", {
                 method: "POST",
@@ -11,6 +15,8 @@
                 body: JSON.stringify({
                     question,
                     content,
+                    tags:
+                        tags === "" ? [] : tags.split(",").map((t) => t.trim()),
                 }),
             })
                 .then((res) => res.json())

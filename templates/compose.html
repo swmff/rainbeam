@@ -84,6 +84,15 @@ endblock %} {% block head %}
                         hook="counter"
                     ></textarea>
 
+                    <input
+                        type="text"
+                        name="tags"
+                        id="tags"
+                        placeholder="Tags (optional)"
+                    />
+
+                    <p class="fade">Tags should be separated by a comma.</p>
+
                     <div class="flex justify-between w-full gap-1">
                         <span
                             id="post_content:counter"
@@ -148,6 +157,7 @@ endblock %} {% block head %}
         trigger("responses:create", [
             "0", // posts use "0" as their question ID
             e.target.content.value,
+            e.target.tags.value,
         ]).then((_) => {
             // reset if successful
             e.target.reset();

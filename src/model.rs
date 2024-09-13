@@ -316,6 +316,8 @@ pub struct QuestionCreate {
 pub struct ResponseCreate {
     pub question: String,
     pub content: String,
+    #[serde(default)]
+    pub tags: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

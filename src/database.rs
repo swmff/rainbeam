@@ -2298,7 +2298,7 @@ impl Database {
             .bind::<&String>(&response.content)
             .bind::<&String>(&response.id)
             .bind::<&String>(&response.timestamp.to_string())
-            .bind::<&str>("[]")
+            .bind::<&str>(&serde_json::to_string(&props.tags).unwrap_or("[]".to_string()))
             .bind::<&String>(&match serde_json::to_string(&response.context) {
                 Ok(s) => s,
                 Err(_) => return Err(DatabaseError::ValueError),
