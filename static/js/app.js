@@ -50,24 +50,6 @@
         }
     });
 
-    app.define("i_know_you", function (_) {
-        // this will store your current username in localStorage
-        fetch("/api/auth/me")
-            .then((res) => res.json())
-            .then((res) => {
-                window.localStorage.setItem("me", res.message);
-            });
-    });
-
-    app.define("do_i_know_you", function ({ $ }) {
-        if (window.localStorage.getItem("me")) {
-            globalThis.username = window.localStorage.getItem("me");
-            return true;
-        }
-
-        return false;
-    });
-
     app.define("logout", function (_) {
         if (!confirm("Are you sure you would like to do this?")) {
             return;

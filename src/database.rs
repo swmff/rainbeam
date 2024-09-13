@@ -226,7 +226,7 @@ impl Database {
                     let id = res.get("id").unwrap().to_string();
                     out.push(match self.get_profile(id).await {
                         Ok(p) => p,
-                        Err(e) => return Err(e),
+                        Err(_) => continue,
                     });
                 }
 
