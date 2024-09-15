@@ -134,6 +134,10 @@ hr {
     border-top: solid 1px var(--color-super-lowered);
 }
 
+hr:is(.dark *) {
+    border-color: var(--color-raised);
+}
+
 hr.small {
     margin-top: 0.25rem;
     margin-bottom: 0.25rem;
@@ -217,7 +221,8 @@ a.button {
     transition:
         background 0.15s,
         outline 0.08s,
-        outline-color 0.15s;
+        outline-color 0.15s,
+        border-radius 0.15s;
     user-select: none;
     display: flex;
     justify-content: center;
@@ -225,6 +230,11 @@ a.button {
     gap: 0.25rem;
     text-decoration: none !important;
     font-size: 13.3333px;
+}
+
+button:not(nav *):hover,
+a.button:not(nav *):hover {
+    box-shadow: 0 0 2px var(--color-shadow);
 }
 
 nav button,
@@ -389,7 +399,7 @@ fieldset:hover {
     border-radius: var(--radius);
     padding: 0.75rem;
     max-width: 100vw;
-    box-shadow: 0 0 4px var(--color-shadow);
+    box-shadow: 0 0 2px var(--color-shadow);
 }
 
 .card.padded {
@@ -525,6 +535,10 @@ nav {
     top: 0;
     z-index: 6374;
     padding: 0.25rem;
+}
+
+nav:not(html[data-scroll="0"] *) {
+    box-shadow: 0 0 4px var(--color-shadow);
 }
 
 nav .content_container {
@@ -715,6 +729,10 @@ img {
     vertical-align: middle;
 }
 
+img:not(.avatar) {
+    border-radius: var(--radius);
+}
+
 img.emoji {
     height: 1em;
     width: 1em;
@@ -783,6 +801,7 @@ dialog::backdrop {
     background: var(--color-super-raised);
     z-index: 1;
     border-radius: var(--radius);
+    top: calc(100% + 5px);
     right: 0;
     width: 10rem;
     min-width: 10rem;
@@ -827,14 +846,24 @@ dialog::backdrop {
     background: var(--color-raised);
 }
 
+.card:not(:has(form)) button,
+.card:not(:has(form)) a.button {
+    border-radius: 360px;
+}
+
+.dropdown:not(nav *):has(.inner[open]) button {
+    background: var(--color-super-raised) !important;
+    box-shadow: 0 0 2px var(--color-shadow);
+}
+
 .notification {
     text-decoration: none;
     color: black;
     background: white;
-    padding: 0.05rem 0.25rem;
+    padding: 0.05rem 0.3rem;
     font-family: monospace;
     font-size: 10px;
-    border-radius: calc(var(--radius) / 2);
+    border-radius: 360px;
     height: max-content;
 }
 

@@ -85,14 +85,10 @@ nav {
     transition: box-shadow 0.15s;
 }
 
-nav:not(.dark *):not(html[data-scroll="0"] *) {
-    box-shadow: 0 0 4px var(--color-shadow);
-}
-
 nav:is(.dark *) {
     background: transparent !important;
-    backdrop-filter: blur(50px) brightness(60%);
-    -webkit-backdrop-filter: blur(50px) brightness(60%);
+    backdrop-filter: blur(50px) brightness(20%);
+    -webkit-backdrop-filter: blur(50px) brightness(20%);
     box-shadow: none;
 }
 
@@ -125,8 +121,8 @@ nav button:not(.inner button):hover::before {
 
 .dropdown .inner:is(.dark *) {
     background: transparent;
-    backdrop-filter: blur(50px) brightness(80%);
-    -webkit-backdrop-filter: blur(50px) brightness(80%);
+    backdrop-filter: blur(50px) brightness(20%);
+    -webkit-backdrop-filter: blur(50px) brightness(20%);
 }
 
 nav .dropdown .inner:is(.dark *) {

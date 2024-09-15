@@ -426,15 +426,15 @@ pub async fn profile_embed_request(
 }
 
 #[derive(Template)]
-#[template(path = "rss/profile.xml")]
-struct ProfileRssTemplate {
+#[template(path = "xml/profile.xml")]
+struct ProfileXmlTemplate {
     config: Config,
     other: Profile,
     responses: Vec<(Question, QuestionResponse, usize, usize)>,
 }
 
-/// GET /@:username/rss
-pub async fn profile_rss_request(
+/// GET /xml/@:username
+pub async fn profile_xml_request(
     Path(username): Path<String>,
     State(database): State<Database>,
 ) -> impl IntoResponse {
@@ -462,8 +462,8 @@ pub async fn profile_rss_request(
 
     // ...
     (
-        [("Content-Type", "application/rss+xml")],
-        ProfileRssTemplate {
+        [("Content-Type", "application/xml")],
+        ProfileXmlTemplate {
             config: database.server_options.clone(),
             other: other.clone(),
             responses,

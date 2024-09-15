@@ -686,6 +686,54 @@ pub async fn response_request(
 }
 
 #[derive(Template)]
+#[template(path = "xml/response.xml")]
+struct ResponseXmlTemplate {
+    config: Config,
+    question: Question,
+    response: QuestionResponse,
+    comments: Vec<(ResponseComment, usize, usize)>,
+    reactions: Vec<Reaction>,
+}
+
+/// GET /xml/response/:id
+pub async fn response_xml_request(
+    Path(id): Path<String>,
+    State(database): State<Database>,
+    Query(query): Query<PaginatedQuery>,
+) -> impl IntoResponse {
+    let response = match database.get_response(id.clone()).await {
+        Ok(r) => r,
+        Err(e) => return ([("Content-Type", "text/html")], e.to_html(database)),
+    };
+
+    let comments = match database
+        .get_comments_by_response_paginated(id.clone(), query.page)
+        .await
+    {
+        Ok(r) => r,
+        Err(e) => return ([("Content-Type", "text/html")], e.to_html(database)),
+    };
+
+    let reactions = match database.get_reactions_by_asset(id.clone()).await {
+        Ok(r) => r,
+        Err(e) => return ([("Content-Type", "text/html")], e.to_html(database)),
+    };
+
+    (
+        [("Content-Type", "application/xml")],
+        ResponseXmlTemplate {
+            config: database.server_options.clone(),
+            question: response.0,
+            response: response.1,
+            comments,
+            reactions,
+        }
+        .render()
+        .unwrap(),
+    )
+}
+
+#[derive(Template)]
 #[template(path = "comment.html")]
 struct CommentTemplate {
     config: Config,
@@ -795,6 +843,63 @@ pub async fn comment_request(
             anonymous_avatar: None,
             is_powerful,
             is_helper,
+        }
+        .render()
+        .unwrap(),
+    )
+}
+
+#[derive(Template)]
+#[template(path = "xml/comment.xml")]
+struct CommentXmlTemplate {
+    config: Config,
+    comment: (ResponseComment, usize, usize),
+    replies: Vec<(ResponseComment, usize, usize)>,
+    reactions: Vec<Reaction>,
+    question: Question,
+    response: QuestionResponse,
+    reaction_count: usize,
+}
+
+/// GET /xml/comment/:id
+pub async fn comment_xml_request(
+    Path(id): Path<String>,
+    State(database): State<Database>,
+    Query(props): Query<PaginatedQuery>,
+) -> impl IntoResponse {
+    let comment = match database.get_comment(id.clone(), true).await {
+        Ok(r) => r,
+        Err(e) => return ([("Content-Type", "text/html")], e.to_html(database)),
+    };
+
+    let response = match database.get_response(comment.0.response.clone()).await {
+        Ok(r) => r,
+        Err(e) => return ([("Content-Type", "text/html")], e.to_html(database)),
+    };
+
+    let replies = match database
+        .get_replies_by_comment_paginated(comment.0.id.clone(), props.page.clone())
+        .await
+    {
+        Ok(r) => r,
+        Err(_) => Vec::new(),
+    };
+
+    let reactions = match database.get_reactions_by_asset(id.clone()).await {
+        Ok(r) => r,
+        Err(e) => return ([("Content-Type", "text/html")], e.to_html(database)),
+    };
+
+    (
+        [("Content-Type", "application/xml")],
+        CommentXmlTemplate {
+            config: database.server_options.clone(),
+            comment,
+            question: response.0,
+            response: response.1,
+            replies,
+            reactions,
+            reaction_count: response.3,
         }
         .render()
         .unwrap(),
@@ -1267,7 +1372,9 @@ pub async fn routes(database: Database) -> Router {
         // assets
         .route("/question/:id", get(global_question_request))
         .route("/response/:id", get(response_request))
+        .route("/xml/response/:id", get(response_xml_request))
         .route("/comment/:id", get(comment_request))
+        .route("/xml/comment/:id", get(comment_xml_request))
         // profiles
         .route("/@:username/mod", get(profile::mod_request)) // staff
         .route("/@:username/questions", get(profile::questions_request))
@@ -1276,7 +1383,7 @@ pub async fn routes(database: Database) -> Router {
         .route("/@:username/following", get(profile::following_request))
         .route("/@:username/followers", get(profile::followers_request))
         .route("/@:username/embed", get(profile::profile_embed_request))
-        .route("/@:username/rss", get(profile::profile_rss_request))
+        .route("/xml/@:username", get(profile::profile_xml_request))
         .route("/@:username", get(profile::profile_request))
         // circles
         .route("/circles", get(circles::circles_request))

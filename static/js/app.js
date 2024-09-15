@@ -231,10 +231,9 @@
                 element.classList.add("hook:long.hidden_text+lowered");
             }
 
-            const text = element.innerText;
             const html = element.innerHTML;
-            const short = text.slice(0, 64 * 16);
-            element.innerText = `${short}...`;
+            const short = html.slice(0, 64 * 16);
+            element.innerHTML = `${short}...`;
 
             // event
             const listener = () => {
@@ -243,6 +242,16 @@
             };
 
             element.addEventListener("click", listener);
+        }
+    });
+
+    app.define("hook.alt", function (_) {
+        for (const element of Array.from(
+            document.querySelectorAll("img") || [],
+        )) {
+            if (element.getAttribute("alt") && !element.getAttribute("title")) {
+                element.setAttribute("title", element.getAttribute("alt"));
+            }
         }
     });
 

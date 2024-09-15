@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<feed xmlns="https://github.com/swmff/neospring/blob/master/docs/nss.md">
+    <title>{{ response.id }}</title>
+    <link rel="alternate" type="text/html" hreflang="en" href="{{ config.host }}/response/{{ response.id }}" />
+    <description type="html">Response feed</description>
+
+    <!-- response -->
+    <question>
+        <id>{{ question.id }}</id>
+        <author id="{{ question.author.id }}">{{ question.author.username }}</author>
+        <content>{{ question.content }}</content>
+        <timestamp>{{ question.timestamp }}</timestamp>
+    </question>
+
+    <response>
+        <id>{{ response.id }}</id>
+        <author id="{{ response.author.id }}">{{ response.author.username }}</author>
+        <content>{{ response.content }}</content>
+        <timestamp>{{ response.timestamp }}</timestamp>
+        <comments>{{ comments.len() }}</comments>
+        <reactions>{{ reactions.len() }}</reactions>
+    </response>
+
+    <!-- reactions -->
+    <subfeed name="reactions">
+    {% for reaction in reactions %}
+        <entry type="user">
+            <author id="{{ reaction.user.id }}">{{ reaction.user.username }}</author>
+            <timestamp>{{ reaction.timestamp }}</timestamp>
+        </entry>
+    {% endfor %}
+    </subfeed>
+
+    <!-- comments -->
+    <subfeed name="comments">
+    {% for comment in comments %}
+        <entry type="comment">
+            <comment>
+                <id>{{ comment.0.id }}</id>
+                <author id="{{ comment.0.author.id }}">{{ comment.0.author.username }}</author>
+                <content>{{ comment.0.content }}</content>
+                <timestamp>{{ comment.0.content }}</timestamp>
+                <replies>{{ comment.1 }}</replies>
+                <reactions>{{ comment.2 }}</reactions>
+            </comment>
+            
+            <link rel="alternate" type="text/html" href="{{ config.host }}/comment/{{ comment.0.id }}" />
+            <link rel="replies" type="text/html" href="{{ config.host }}/comment/{{ comment.0.id }}" />
+        </entry>
+    {% endfor %}
+    </subfeed>
+</feed>
+

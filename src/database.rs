@@ -3779,7 +3779,15 @@ impl Database {
             .get(format!("xsulib.sparkler.circle:{}", id))
             .await
         {
-            Some(c) => return Ok(serde_json::from_str::<Circle>(c.as_str()).unwrap()),
+            Some(c) => match serde_json::from_str::<Circle>(c.as_str()) {
+                Ok(c) => return Ok(c),
+                Err(_) => {
+                    self.base
+                        .cachedb
+                        .remove(format!("xsulib.sparkler.circle:{}", id))
+                        .await;
+                }
+            },
             None => (),
         };
 

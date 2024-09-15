@@ -153,6 +153,7 @@ struct ProfileTemplate {
     pinned: Option<Vec<(Question, QuestionResponse, usize, usize)>>,
     page: i32,
     // ...
+    layout: String,
     lock_profile: bool,
     disallow_anonymous: bool,
     require_account: bool,
@@ -293,6 +294,12 @@ pub async fn profile_request(
             pinned,
             page: query.page,
             // ...
+            layout: circle
+                .metadata
+                .kv
+                .get("sparkler:layout")
+                .unwrap_or(&String::new())
+                .to_owned(),
             lock_profile: circle
                 .metadata
                 .kv
@@ -340,6 +347,7 @@ struct MemberlistTemplate {
     member_count: usize,
     metadata: String,
     // ...
+    layout: String,
     lock_profile: bool,
     disallow_anonymous: bool,
     require_account: bool,
@@ -449,6 +457,12 @@ pub async fn memberlist_request(
                 .await,
             metadata: clean_metadata(&circle.metadata),
             // ...
+            layout: circle
+                .metadata
+                .kv
+                .get("sparkler:layout")
+                .unwrap_or(&String::new())
+                .to_owned(),
             lock_profile: circle
                 .metadata
                 .kv
@@ -494,6 +508,7 @@ struct AcceptInviteTemplate {
     member_count: usize,
     metadata: String,
     // ...
+    layout: String,
     lock_profile: bool,
     disallow_anonymous: bool,
     require_account: bool,
@@ -601,6 +616,12 @@ pub async fn accept_invite_request(
                 .await,
             metadata: clean_metadata(&circle.metadata),
             // ...
+            layout: circle
+                .metadata
+                .kv
+                .get("sparkler:layout")
+                .unwrap_or(&String::new())
+                .to_owned(),
             lock_profile: circle
                 .metadata
                 .kv
@@ -648,6 +669,7 @@ struct InboxTemplate {
     anonymous_username: Option<String>,
     anonymous_avatar: Option<String>,
     // ...
+    layout: String,
     lock_profile: bool,
     disallow_anonymous: bool,
     require_account: bool,
@@ -771,6 +793,12 @@ pub async fn inbox_request(
                     .to_string(),
             ),
             // ...
+            layout: circle
+                .metadata
+                .kv
+                .get("sparkler:layout")
+                .unwrap_or(&String::new())
+                .to_owned(),
             lock_profile: circle
                 .metadata
                 .kv
