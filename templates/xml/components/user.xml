@@ -1,7 +1,7 @@
 <entry type="user">
     <id>{{ user.id }}</id>
     <name>{{ user.username }}</name>
-    <icon>{{ config.host }}/@{{ user.username }}/avatar</icon>
+    <icon>{{ config.host }}/api/v1/profiles/{{ user.username }}/avatar</icon>
 
     <link rel="alternate" type="text/html" href="{{ config.host }}/@{{ user.username }}" />
     <link rel="alternate" type="application/nss+xml" href="{{ config.host }}/xml/@{{ user.username }}" />

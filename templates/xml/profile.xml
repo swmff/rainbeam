@@ -7,8 +7,8 @@
 
 <subtitle>{{ other.username }}</subtitle>
 
-<icon>{{ config.host }}/@{{ other.username }}/avatar</icon>
-<banner>{{ config.host }}/@{{ other.username }}/banner</banner>
+<icon>{{ config.host }}/api/v1/profiles/{{ other.username }}/avatar</icon>
+<banner>{{ config.host }}/api/v1/profiles/{{ other.username }}/banner</banner>
 
 <link rel="alternate" type="text/html" hreflang="en" href="{{ config.host }}/@{{ other.username }}" />
 

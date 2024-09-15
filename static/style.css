@@ -741,7 +741,7 @@ img.contain {
     object-fit: contain;
 }
 
-img:not(.avatar) {
+img:not(.avatar):not(.emoji) {
     border-radius: var(--radius);
 }
 
