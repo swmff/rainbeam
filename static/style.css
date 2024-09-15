@@ -1153,6 +1153,45 @@ dialog::backdrop {
     background: var(--color-primary);
 }
 
+details summary {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: background 0.15s;
+    cursor: pointer;
+    width: max-content;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius);
+    background: var(--color-lowered);
+}
+
+details summary:hover {
+    background: var(--color-super-lowered);
+}
+
+details summary::-webkit-details-marker {
+    display: none;
+}
+
+details[open] summary {
+    background: var(--color-primary-alpha);
+    margin-bottom: 0.25rem;
+}
+
+details .card {
+    background: var(--color-super-raised);
+}
+
+/* details summary::before {
+    content: "▶";
+    margin-right: 10px;
+    font-size: 12px;
+}
+
+details[open] summary:before {
+    content: "▼";
+} */
+
 /* utility */
 .flex {
     display: flex;

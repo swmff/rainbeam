@@ -1,6 +1,10 @@
 {% let question = response.0.clone() %} {% let comment_count = response.2 %} {%
 let reaction_count = response.3 %} {% let response = response.1.clone() %}
-<div class="card-nest w-full shadow" id="response:{{ response.id }}">
+<div
+    class="card-nest w-full shadow"
+    id="response:{{ response.id }}"
+    data-warning="{{ response.context.warning }}"
+>
     {% if (do_not_render_question == false) && (response.context.is_post ==
     false) %}
     <div class="card flex flex-col gap-1">

@@ -205,6 +205,8 @@
                         hook="counter"
                     ></textarea>
 
+                    {% include "components/more_response_options.html" %}
+
                     <div class="flex justify-between w-full gap-1">
                         <span
                             id="content-{{ question.id }}:counter"
@@ -223,12 +225,15 @@
     function respond(e, question) {
         e.preventDefault();
 
-        trigger("responses:create", [question, e.target.content.value]).then(
-            (_) => {
-                // reset if successful
-                e.target.reset();
-            },
-        );
+        trigger("responses:create", [
+            question,
+            e.target.content.value,
+            e.target.tags.value,
+            e.target.warning.value,
+        ]).then((_) => {
+            // reset if successful
+            e.target.reset();
+        });
     }
 </script>
 

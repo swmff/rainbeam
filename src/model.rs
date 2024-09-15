@@ -120,17 +120,19 @@ pub struct ResponseContext {
     /// If the response is a post and the question shouldn't be rendered at all
     #[serde(default)]
     pub is_post: bool,
+    /// The warning shown on the response. Users must accept this warning to view the response
+    ///
+    /// Empty means no warning.
+    #[serde(default)]
+    pub warning: String,
 }
 
 impl Default for ResponseContext {
     fn default() -> Self {
-        Self { is_post: false }
-    }
-}
-
-impl ResponseContext {
-    pub fn post() -> Self {
-        Self { is_post: true }
+        Self {
+            is_post: false,
+            warning: String::new(),
+        }
     }
 }
 
@@ -326,6 +328,8 @@ pub struct ResponseCreate {
     pub content: String,
     #[serde(default)]
     pub tags: Vec<String>,
+    #[serde(default)]
+    pub warning: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

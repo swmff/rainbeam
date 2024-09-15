@@ -2342,12 +2342,9 @@ impl Database {
             id: utility::random_id(),
             timestamp: utility::unix_epoch_timestamp(),
             tags: Vec::new(),
-            context: if question.id != "0" {
-                // default context
-                ResponseContext::default()
-            } else {
-                // post context
-                ResponseContext::post()
+            context: ResponseContext {
+                is_post: question.id == "0",
+                warning: props.warning,
             },
             question: question.id,
         };

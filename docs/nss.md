@@ -70,6 +70,16 @@ A `description` is used to include extra information about the feed and is gener
 <description>extra information blah blah blah</description>
 ```
 
+#### `<context>`
+
+Context is used to include additional information about any element. It uses `<data>` elements to include data with different types.
+
+```xml
+<context>
+    <data type="bool" name="is_example">true</data>
+</context>
+```
+
 ## Entries
 
 Individual entries are denoted by an `<entry>` element in the feed/subfeed.

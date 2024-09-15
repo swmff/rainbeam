@@ -11,6 +11,11 @@
     <comments>{{ comment_count }}</comments>
     <reactions>{{ reaction_count }}</reactions>
 
+    <context>
+        <data type="bool" name="is_post">{{ response.context.is_post }}</data>
+        <data type="string" name="warning">{{ response.context.warning }}</data>
+    </context>
+
     <link rel="alternate" type="text/html" href="{{ config.host }}/response/{{ response.id }}" />
     <link rel="comments" type="application/nss+xml" href="{{ config.host }}/xml/response/{{ response.id }}" />
 </entry>

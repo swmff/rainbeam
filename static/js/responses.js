@@ -1,52 +1,60 @@
 (() => {
     const self = reg_ns("responses", ["app"]);
 
-    self.define("create", function ({ $, app }, question, content, tags) {
-        if (!tags) {
-            tags = "";
-        }
+    self.define(
+        "create",
+        function ({ $, app }, question, content, tags, warning) {
+            if (!tags) {
+                tags = "";
+            }
 
-        return new Promise((resolve, reject) => {
-            fetch("/api/v1/responses", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    question,
-                    content,
-                    tags:
-                        tags === "" ? [] : tags.split(",").map((t) => t.trim()),
-                }),
-            })
-                .then((res) => res.json())
-                .then((res) => {
-                    const is_post = question === "0";
+            return new Promise((resolve, reject) => {
+                fetch("/api/v1/responses", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        question,
+                        content,
+                        tags:
+                            tags === ""
+                                ? []
+                                : tags.split(",").map((t) => t.trim()),
+                        warning: warning || "",
+                    }),
+                })
+                    .then((res) => res.json())
+                    .then((res) => {
+                        const is_post = question === "0";
 
-                    app.toast(
-                        res.success ? "success" : "error",
-                        res.success
-                            ? !is_post
-                                ? "Response posted!"
-                                : "Post created!"
-                            : res.message,
-                    );
+                        app.toast(
+                            res.success ? "success" : "error",
+                            res.success
+                                ? !is_post
+                                    ? "Response posted!"
+                                    : "Post created!"
+                                : res.message,
+                        );
 
-                    if (res.success === true) {
-                        if (!is_post) {
-                            app.smooth_remove(
-                                document.getElementById(`question:${question}`),
-                                500,
-                            );
+                        if (res.success === true) {
+                            if (!is_post) {
+                                app.smooth_remove(
+                                    document.getElementById(
+                                        `question:${question}`,
+                                    ),
+                                    500,
+                                );
+                            }
+
+                            return resolve(res);
+                        } else {
+                            return reject(res);
                         }
-
-                        return resolve(res);
-                    } else {
-                        return reject(res);
-                    }
-                });
-        });
-    });
+                    });
+            });
+        },
+    );
 
     self.define("edit", function ({ $, app }, id, content) {
         return new Promise((resolve, reject) => {
