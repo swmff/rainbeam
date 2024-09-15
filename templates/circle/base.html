@@ -82,11 +82,24 @@
 </a>
 {% endif %} {% endblock %} {% block content %}
 <article class="flex flex-col gap-4">
+    {% if let Some(fit) = circle.metadata.kv.get("sparkler:banner_fit") %}
     <img
         title="{{ circle.name }}'s banner"
         src="/api/v1/circles/{{ circle.name }}/banner"
         alt=""
-        class="shadow round"
+        class="shadow round {{ fit }}"
+        style="
+            width: 100%;
+            min-height: 150px;
+            max-height: 440px;
+        "
+    />
+    {% else %}
+     <img
+        title="{{ circle.name }}'s banner"
+        src="/api/v1/circles/{{ circle.name }}/banner"
+        alt=""
+        class="shadow round cover"
         style="
             width: 100%;
             min-height: 150px;
@@ -94,6 +107,7 @@
             object-fit: cover;
         "
     />
+    {% endif %}
 
     <div class="flex flex-collapse gap-4 sm:mt-2 {% if layout == "1" %}flex-rev-row{% endif %}">
         <div

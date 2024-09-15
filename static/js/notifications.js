@@ -20,9 +20,11 @@
             });
     });
 
-    self.define("clear", function (_, id) {
-        if (!confirm("Are you sure you want to do this?")) {
-            return;
+    self.define("clear", function (_, conf) {
+        if (!conf) {
+            if (!confirm("Are you sure you want to do this?")) {
+                return;
+            }
         }
 
         fetch(`/api/auth/notifications/clear`, {

@@ -91,6 +91,15 @@ endblock %} {% block head %}
     </main>
 </article>
 
+<script>
+    if (window.localStorage.getItem("clear_notifs") === "true") {
+        use("notifications", (notifs) => {
+            // clear all notifications
+            notifs.clear(true);
+        });
+    }
+</script>
+
 <!-- prettier-ignore -->
 {% if let Some(profile) = profile %}
     {% include "components/theming.html" %}

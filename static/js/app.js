@@ -281,24 +281,18 @@
             element.appendChild(warning_element);
 
             // compute new height
-            const rect = element.getBoundingClientRect();
-            const warning_rect = warning_element
+            const warning_rect = warning_element.getBoundingClientRect();
+            const paragraph_rect = warning_element
                 .querySelector("p")
                 .getBoundingClientRect();
 
-            const old_height = rect.height;
-            const new_height =
-                warning_rect.height > rect.height
-                    ? rect.height + warning_rect.height
-                    : rect.height;
-
-            element.style.height = `${new_height}px`;
+            element.style.height = `${warning_rect.height + paragraph_rect.height}px`;
 
             // event
             const listener = () => {
                 warning_element.removeEventListener("click", listener);
                 warning_element.remove();
-                element.style.height = `${old_height}px`;
+                element.style.height = "auto";
             };
 
             warning_element.addEventListener("click", listener);
