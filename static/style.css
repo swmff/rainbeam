@@ -729,6 +729,18 @@ img {
     vertical-align: middle;
 }
 
+img.cover {
+    object-fit: cover;
+}
+
+img.fill {
+    object-fit: fill;
+}
+
+img.contain {
+    object-fit: contain;
+}
+
 img:not(.avatar) {
     border-radius: var(--radius);
 }

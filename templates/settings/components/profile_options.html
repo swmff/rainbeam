@@ -76,6 +76,25 @@
         </p>
     </div>
 
+    <div class="flex flex-col gap-1">
+        <label for="sparkler:banner_fit">Banner fit</label>
+
+        <select
+            type="url"
+            name="sparkler:banner_fit"
+            id="sparkler:banner_fit"
+            onchange="update_kv('sparkler:banner_fit', event.target.options[event.target.selectedIndex].value)"
+        >
+            <option value="cover" id="cover">Cover (default)</option>
+            <option value="fill" id="fill">Fill</option>
+            <option value="contain" id="contain">Contain</option>
+        </select>
+
+        <p class="fade">
+            The way your banner image is fit onto the image element.
+        </p>
+    </div>
+
     <hr />
     <div class="flex flex-col gap-1">
         <label for="sparkler:motivational_header">Motivational header</label>
