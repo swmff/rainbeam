@@ -146,9 +146,10 @@ block head %}
     }
 </script>
 
-<!-- prettier-ignore -->
-{% if let Some(profile) = profile %}
-    {% include "components/theming.html" %}
+{% if let Some(profile) = profile %} {% let other = profile.clone() %} {% if
+profile.username == other.username %}
+<div id="is_self"></div>
+{% endif %} {% include "components/theming.html" %}
 
 <!-- author actions -->
 <!-- prettier-ignore -->

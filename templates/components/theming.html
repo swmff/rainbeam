@@ -1,90 +1,90 @@
 <!-- prettier-ignore -->
 <div id="stylesheets">
-{% if let Some(color) = profile.metadata.kv.get("sparkler:color_surface") %}
+{% if let Some(color) = other.metadata.kv.get("sparkler:color_surface") %}
     {% let color = crate::routing::pages::color_escape(color) %}
     {% if !color.is_empty() %}
         <style id="sparkler_live:color_surface">:root, * { --color-surface: {{ color|safe }} !important }</style>
     {% endif %}
 {% endif %}
-{% if let Some(color) = profile.metadata.kv.get("sparkler:color_lowered") %}
+{% if let Some(color) = other.metadata.kv.get("sparkler:color_lowered") %}
     {% let color = crate::routing::pages::color_escape(color) %}
     {% if !color.is_empty() %}
         <style id="sparkler_live:color_lowered">:root, * { --color-lowered: {{ color|safe }} !important }</style>
     {% endif %}
 {% endif %}
-{% if let Some(color) = profile.metadata.kv.get("sparkler:color_super_lowered") %}
+{% if let Some(color) = other.metadata.kv.get("sparkler:color_super_lowered") %}
     {% let color = crate::routing::pages::color_escape(color) %}
     {% if !color.is_empty() %}
         <style id="sparkler_live:color_super_lowered">:root, * { --color-super-lowered: {{ color|safe }} !important }</style>
     {% endif %}
 {% endif %}
-{% if let Some(color) = profile.metadata.kv.get("sparkler:color_raised") %}
+{% if let Some(color) = other.metadata.kv.get("sparkler:color_raised") %}
     {% let color = crate::routing::pages::color_escape(color) %}
     {% if !color.is_empty() %}
         <style id="sparkler_live:color_raised">:root, * { --color-raised: {{ color|safe }} !important }</style>
     {% endif %}
 {% endif %}
-{% if let Some(color) = profile.metadata.kv.get("sparkler:color_super_raised") %}
+{% if let Some(color) = other.metadata.kv.get("sparkler:color_super_raised") %}
     {% let color = crate::routing::pages::color_escape(color) %}
     {% if !color.is_empty() %}
         <style id="sparkler_live:color_super_raised">:root, * { --color-super-raised: {{ color|safe }} !important }</style>
     {% endif %}
 {% endif %}
-{% if let Some(color) = profile.metadata.kv.get("sparkler:color_text") %}
+{% if let Some(color) = other.metadata.kv.get("sparkler:color_text") %}
     {% let color = crate::routing::pages::color_escape(color) %}
     {% if !color.is_empty() %}
         <style id="sparkler_live:color_text">:root, * { --color-text: {{ color|safe }} !important }</style>
     {% endif %}
 {% endif %}
-{% if let Some(color) = profile.metadata.kv.get("sparkler:color_text_raised") %}
+{% if let Some(color) = other.metadata.kv.get("sparkler:color_text_raised") %}
     {% let color = crate::routing::pages::color_escape(color) %}
     {% if !color.is_empty() %}
         <style id="sparkler_live:color_text_raised">:root, * { --color-text-raised: {{ color|safe }} !important }</style>
     {% endif %}
 {% endif %}
-{% if let Some(color) = profile.metadata.kv.get("sparkler:color_text_lowered") %}
+{% if let Some(color) = other.metadata.kv.get("sparkler:color_text_lowered") %}
     {% let color = crate::routing::pages::color_escape(color) %}
     {% if !color.is_empty() %}
         <style id="sparkler_live:color_text_lowered">:root, * { --color-text-lowered: {{ color|safe }} !important }</style>
     {% endif %}
 {% endif %}
-{% if let Some(color) = profile.metadata.kv.get("sparkler:color_link") %}
+{% if let Some(color) = other.metadata.kv.get("sparkler:color_link") %}
     {% let color = crate::routing::pages::color_escape(color) %}
     {% if !color.is_empty() %}
         <style id="sparkler_live:color_link">:root, * { --color-link: {{ color|safe }} !important }</style>
     {% endif %}
 {% endif %}
-{% if let Some(color) = profile.metadata.kv.get("sparkler:color_primary") %}
+{% if let Some(color) = other.metadata.kv.get("sparkler:color_primary") %}
     {% let color = crate::routing::pages::color_escape(color) %}
     {% if !color.is_empty() %}
         <style id="sparkler_live:color_primary">:root, * { --color-primary: {{ color|safe }} !important }</style>
     {% endif %}
 {% endif %}
-{% if let Some(color) = profile.metadata.kv.get("sparkler:color_primary_lowered") %}
+{% if let Some(color) = other.metadata.kv.get("sparkler:color_primary_lowered") %}
     {% let color = crate::routing::pages::color_escape(color) %}
     {% if !color.is_empty() %}
         <style id="sparkler_live:color_primary_lowered">:root, * { --color-primary-lowered: {{ color|safe }} !important }</style>
     {% endif %}
 {% endif %}
-{% if let Some(color) = profile.metadata.kv.get("sparkler:color_primary_alpha") %}
+{% if let Some(color) = other.metadata.kv.get("sparkler:color_primary_alpha") %}
     {% let color = crate::routing::pages::color_escape(color) %}
     {% if !color.is_empty() %}
         <style id="sparkler_live:color_primary_alpha">:root, * { --color-primary-alpha: {{ color|safe }} !important }</style>
     {% endif %}
 {% endif %}
-{% if let Some(color) = profile.metadata.kv.get("sparkler:color_primary_raised") %}
+{% if let Some(color) = other.metadata.kv.get("sparkler:color_primary_raised") %}
     {% let color = crate::routing::pages::color_escape(color) %}
     {% if !color.is_empty() %}
         <style id="sparkler_live:color_primary_raised">:root, * { --color-primary-raised: {{ color|safe }} !important }</style>
     {% endif %}
 {% endif %}
-{% if let Some(color) = profile.metadata.kv.get("sparkler:color_text_primary") %}
+{% if let Some(color) = other.metadata.kv.get("sparkler:color_text_primary") %}
     {% let color = crate::routing::pages::color_escape(color) %}
     {% if !color.is_empty() %}
         <style id="sparkler_live:color_text_primary">:root, * { --color-text-primary: {{ color|safe }} !important }</style>
     {% endif %}
 {% endif %}
-{% if let Some(color) = profile.metadata.kv.get("sparkler:color_shadow") %}
+{% if let Some(color) = other.metadata.kv.get("sparkler:color_shadow") %}
     {% let color = crate::routing::pages::color_escape(color) %}
     {% if !color.is_empty() %}
         <style id="sparkler_live:color_shadow">:root, * { --color-shadow: {{ color|safe }} !important }</style>
@@ -93,37 +93,39 @@
 </div>
 
 <script type="text/plain" id="theme">
-    {% if let Some(theme) = profile.metadata.kv.get("sparkler:profile_theme") %}
+    {% if let Some(theme) = other.metadata.kv.get("sparkler:profile_theme") %}
         {{ theme }}
     {% endif %}
 </script>
 
 <script type="text/plain" id="skin">
-    {% if let Some(skin) = profile.metadata.kv.get("sparkler:profile_skin") %}
+    {% if let Some(skin) = other.metadata.kv.get("sparkler:profile_skin") %}
         {{ skin }}
     {% endif %}
 </script>
 
 <script>
     (() => {
+        const is_self_theme = document.getElementById("is_self") !== null;
+
         // theme preference
         const theme_pref = window.localStorage.getItem("theme-pref") || "yes";
 
-        if (theme_pref === "no") {
+        if (theme_pref === "no" && !is_self_theme) {
             document.getElementById("stylesheets").remove(); // remove custom theme stuff
         }
 
         // profile theme
         const profile_theme = document.getElementById("theme").innerText.trim();
 
-        if (profile_theme !== "" && theme_pref !== "no") {
+        if (profile_theme !== "" && (theme_pref !== "no" || is_self_theme)) {
             document.documentElement.setAttribute("class", profile_theme);
         }
 
         // profile skin
         const profile_skin = document.getElementById("skin").innerText.trim();
 
-        if (profile_skin !== "" && theme_pref !== "no") {
+        if (profile_skin !== "" && (theme_pref !== "no" || is_self_theme)) {
             trigger("app:skin", [profile_skin]);
 
             if (document.getElementById(profile_skin)) {

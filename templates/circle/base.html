@@ -572,7 +572,9 @@
     })();
 </script>
 {% endif %}
-<!-- prettier-ignore -->
-{% let profile = circle.clone() %}
-{% include "../components/theming.html" %}
-{% call super() %} {% endblock %}
+
+{% if let Some(profile) = profile %} {% let other = profile.clone() %} {% if
+profile.username == other.username %}
+<div id="is_self"></div>
+{% endif %} {% include "components/theming.html" %} {% endif %} {% call super()
+%} {% endblock %}

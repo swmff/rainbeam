@@ -712,6 +712,9 @@ config.name }}{% endblock %} {% block head %}
 </script>
 {% endif %} {% endif %}
 <!-- prettier-ignore -->
-{% let profile = other.clone() %}
+{% if is_self %}
+    <div id="is_self"></div>
+{% endif %}
+
 {% include "components/theming.html" %}
 {% call super() %} {% endblock %}

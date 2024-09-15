@@ -53,7 +53,7 @@ config.name }}{% endblock %} {% block nav_left %} {% if profile.is_some() %}
 </a>
 {% endif %} {% endblock %} {% block content %}
 <!-- prettier-ignore -->
-{% let profile = circle.clone() %}
+{% let other = circle.clone() %}
 {% include "../../components/theming.html" %}
 
 <article class="flex flex-collapse gap-2">
