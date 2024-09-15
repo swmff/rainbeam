@@ -308,8 +308,8 @@ pub fn clean_metadata(metadata: &ProfileMetadata) -> String {
 }
 
 #[derive(Template)]
-#[template(path = "global_question.html")]
-struct GlobalQuestionTemplate {
+#[template(path = "question.html")]
+struct QuestionTemplate {
     config: Config,
     profile: Option<Profile>,
     unread: usize,
@@ -323,7 +323,7 @@ struct GlobalQuestionTemplate {
 }
 
 /// GET /question/:id
-pub async fn global_question_request(
+pub async fn question_request(
     jar: CookieJar,
     Path(id): Path<String>,
     State(database): State<Database>,
@@ -387,7 +387,7 @@ pub async fn global_question_request(
     };
 
     Html(
-        GlobalQuestionTemplate {
+        QuestionTemplate {
             config: database.server_options.clone(),
             already_responded: if let Some(ref ua) = auth_user {
                 database
@@ -404,6 +404,53 @@ pub async fn global_question_request(
             responses,
             is_powerful,
             is_helper,
+            reactions,
+        }
+        .render()
+        .unwrap(),
+    )
+}
+
+#[derive(Template)]
+#[template(path = "xml/question.xml")]
+struct QuestionXmlTemplate {
+    config: Config,
+    question: Question,
+    responses: Vec<(Question, QuestionResponse, usize, usize)>,
+    reactions: Vec<Reaction>,
+}
+
+/// GET /xml/question/:id
+pub async fn question_xml_request(
+    Path(id): Path<String>,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    let question = match database.get_question(id.clone()).await {
+        Ok(ua) => ua,
+        Err(e) => return ([("Content-Type", "text/html")], e.to_html(database)),
+    };
+
+    let responses = match database.get_responses_by_question(id.to_owned()).await {
+        Ok(responses) => responses,
+        Err(_) => {
+            return (
+                [("Content-Type", "text/html")],
+                DatabaseError::Other.to_html(database),
+            )
+        }
+    };
+
+    let reactions = match database.get_reactions_by_asset(id.clone()).await {
+        Ok(r) => r,
+        Err(e) => return ([("Content-Type", "text/html")], e.to_html(database)),
+    };
+
+    (
+        [("Content-Type", "application/xml")],
+        QuestionXmlTemplate {
+            config: database.server_options.clone(),
+            question,
+            responses,
             reactions,
         }
         .render()
@@ -1370,7 +1417,8 @@ pub async fn routes(database: Database) -> Router {
         .route("/inbox/notifications", get(notifications_request))
         .route("/inbox/reports", get(reports_request)) // staff
         // assets
-        .route("/question/:id", get(global_question_request))
+        .route("/question/:id", get(question_request))
+        .route("/xml/question/:id", get(question_xml_request))
         .route("/response/:id", get(response_request))
         .route("/xml/response/:id", get(response_xml_request))
         .route("/comment/:id", get(comment_request))

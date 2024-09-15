@@ -1,46 +1,33 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<feed xmlns="https://github.com/swmff/neospring/blob/master/docs/nss.md">
-    {% if let Some(display_name) = other.metadata.kv.get("sparkler:display_name") %}
-    <title>{{ display_name }}</title>
-    {% else %}
-    <title>{{ other.username }}</title>
-    {% endif %}
+{% extends "base.xml" %} {% block content %}
+{% if let Some(display_name) = other.metadata.kv.get("sparkler:display_name") %}
+<title>{{ display_name }}</title>
+{% else %}
+<title>{{ other.username }}</title>
+{% endif %}
 
-    <subtitle>{{ other.username }}</subtitle>
-    
-    <icon>{{ config.host }}/@{{ other.username }}/avatar</icon>
-    <banner>{{ config.host }}/@{{ other.username }}/banner</banner>
+<subtitle>{{ other.username }}</subtitle>
 
-    <link rel="alternate" type="text/html" hreflang="en" href="{{ config.host }}/@{{ other.username }}" />
+<icon>{{ config.host }}/@{{ other.username }}/avatar</icon>
+<banner>{{ config.host }}/@{{ other.username }}/banner</banner>
 
-    {% if let Some(biography) = other.metadata.kv.get("sparkler:biography") %}
-    <description type="html">{{ biography }}</description>
-    {% else %}
-    <description type="html">@{{ other.username }}'s feed</description>
-    {% endif %}
+<link rel="alternate" type="text/html" hreflang="en" href="{{ config.host }}/@{{ other.username }}" />
 
-    <subfeed name="responses">
-    {% for response in responses %}
-        <entry type="response">
-            <question>
-                <id>{{ response.0.id }}</id>
-                <author id="{{ response.0.author.id }}">{{ response.0.author.username }}</author>
-                <content>{{ response.0.content }}</content>
-                <timestamp>{{ response.0.timestamp }}</timestamp>
-            </question>
+{% if let Some(biography) = other.metadata.kv.get("sparkler:biography") %}
+<description type="html">{{ biography }}</description>
+{% else %}
+<description type="html">@{{ other.username }}'s feed</description>
+{% endif %}
 
-            <response>
-                <id>{{ response.1.id }}</id>
-                <author id="{{ response.1.author.id }}">{{ response.1.author.username }}</author>
-                <content>{{ response.1.content }}</content>
-                <timestamp>{{ response.1.timestamp }}</timestamp>
-                <comments>{{ response.2 }}</comments>
-                <reactions>{{ response.3 }}</reactions>
-            </response>
-            
-            <link rel="alternate" type="text/html" href="{{ config.host }}/response/{{ response.1.id }}" />
-            <link rel="comments" type="text/html" href="{{ config.host }}/response/{{ response.1.id }}" />
-        </entry>
-    {% endfor %}
-    </subfeed>
-</feed>
+<subfeed name="responses">
+{% for res in responses %}
+    {% let response = res.1.clone() %}
+
+    {% let question = res.0.clone() %}
+    {% include "xml/components/question.xml" %}
+
+    {% let comment_count = res.2 %}
+    {% let reaction_count = res.3 %}
+    {% include "xml/components/response.xml" %}
+{% endfor %}
+</subfeed>
+{% call super() %} {% endblock %}

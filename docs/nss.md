@@ -78,7 +78,7 @@ Individual entries are denoted by an `<entry>` element in the feed/subfeed.
 
 Each element here is also allowed to be included in the root `<feed>` (NOT subfeeds). There should only be allowed to be one of each element included in the root `<feed>`, but any amount is allowed inside an `<entry>`.
 
-#### `<question>` (`<entry type="response">` or `<entry type="global_question">`)
+#### `<entry type="question">`
 
 The question being responded to in this entry.
 
@@ -90,7 +90,7 @@ A question needs the following elements:
 * `timestamp` - a UNIX epoch timestamp number
 
 
-#### `<response>` (`<entry type="response">`)
+#### `<entry type="response">`
 
 The responses responding to the question.
 
@@ -105,7 +105,7 @@ A response needs the following elements:
 
 The response should also have a `<link rel="comments" ... />` element to link to its comments.
 
-#### `<comment>`  (`<entry type="comment">`)
+#### `<entry type="comment">`
 
 The comments commenting on the response element.
 
@@ -119,3 +119,9 @@ A comment needs the following elements:
 * `reactions` - the number of reactions the comment has
 
 The comment should also have a `<link rel="replies ... />` element to link to its replies.
+
+#### `<entry type="user">`
+
+* `id` - the unique ID of the user
+* `name` - the name of the user
+* `icon` - a link to the user's avatar

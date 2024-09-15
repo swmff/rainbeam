@@ -1,0 +1,26 @@
+{% extends "base.xml" %} {% block content %}
+<title>{{ question.id }}</title>
+<link rel="alternate" type="text/html" hreflang="en" href="{{ config.host }}/question/{{ question.id }}" />
+<description type="html">Question feed</description>
+
+<!-- question -->
+{% include "xml/components/question.xml" %}
+
+<!-- reactions -->
+<subfeed name="reactions">
+{% for reaction in reactions %}
+    {% let user = reaction.user.clone() %}
+    {% include "xml/components/user.xml" %}
+{% endfor %}
+</subfeed>
+
+<!-- responses -->
+<subfeed name="responses">
+{% for res in responses %}
+    {% let response = res.1.clone() %}
+    {% let comment_count = res.2 %}
+    {% let reaction_count = res.3 %}
+    {% include "xml/components/response.xml" %}
+{% endfor %}
+</subfeed>
+{% call super() %} {% endblock %}

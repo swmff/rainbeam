@@ -1,0 +1,16 @@
+<entry type="response">
+    <id>{{ response.id }}</id>
+    
+    <author>
+        {% let user = response.author.clone() %}
+        {% include "xml/components/user.xml" %}
+    </author>
+  
+    <content type="text/markdown">{{ response.content }}</content>
+    <timestamp>{{ response.timestamp }}</timestamp>
+    <comments>{{ comment_count }}</comments>
+    <reactions>{{ reaction_count }}</reactions>
+
+    <link rel="alternate" type="text/html" href="{{ config.host }}/response/{{ response.id }}" />
+    <link rel="comments" type="application/nss+xml" href="{{ config.host }}/xml/response/{{ response.id }}" />
+</entry>
