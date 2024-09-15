@@ -13,7 +13,12 @@
         <!-- actions -->
         <div class="flex gap-2">
             {% if !notif.address.is_empty() %}
-            <a class="button primary bold" href="{{ notif.address }}">
+            <a
+                class="button primary bold"
+                href="{{ notif.address }}"
+                onclick="trigger('notifications:onopen', ['{{ notif.id }}'])"
+                target="_blank"
+            >
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 16 16"

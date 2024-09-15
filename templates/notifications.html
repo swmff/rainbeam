@@ -92,7 +92,7 @@ endblock %} {% block head %}
 </article>
 
 <script>
-    if (window.localStorage.getItem("clear_notifs") === "true") {
+    if (window.localStorage.getItem("clear_all_notifs") === "true") {
         use("notifications", (notifs) => {
             // clear all notifications
             notifs.clear(true);

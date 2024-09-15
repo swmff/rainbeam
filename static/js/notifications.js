@@ -1,9 +1,11 @@
 (() => {
     const self = reg_ns("notifications", ["app"]);
 
-    self.define("delete", function ({ $, app }, id) {
-        if (!confirm("Are you sure you want to do this?")) {
-            return;
+    self.define("delete", function ({ $, app }, id, conf) {
+        if (!conf) {
+            if (!confirm("Are you sure you want to do this?")) {
+                return;
+            }
         }
 
         fetch(`/api/auth/notifications/${id}`, {
@@ -37,5 +39,11 @@
                     res.success ? "Notifications cleared!" : res.message,
                 ]);
             });
+    });
+
+    self.define("onopen", function ({ $ }, id) {
+        if (window.localStorage.getItem("clear_notifs") === "true") {
+            $.delete(id, true);
+        }
     });
 })();
