@@ -411,6 +411,22 @@
     </div>
 
     <div class="flex flex-col gap-1">
+        <label for="sparkler:color_primary_raised">Primary raised</label>
+
+        <input
+            name="sparkler:color_primary_raised"
+            id="sparkler:color_primary_raised"
+            onchange="update_kv('sparkler:color_primary_raised', event.target.value)"
+        />
+
+        <p class="fade">
+            A lightly lighter version of your primary color. This is used by
+            some skins where the contrast of the background and the primary
+            color is not accessible.
+        </p>
+    </div>
+
+    <div class="flex flex-col gap-1">
         <label for="sparkler:color_text_primary">Text primary</label>
 
         <input

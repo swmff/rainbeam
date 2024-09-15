@@ -134,10 +134,6 @@ hr {
     border-top: solid 1px var(--color-super-lowered);
 }
 
-hr:is(.dark *) {
-    border-color: var(--color-raised);
-}
-
 hr.small {
     margin-top: 0.25rem;
     margin-bottom: 0.25rem;

@@ -72,6 +72,12 @@
         <style id="sparkler_live:color_primary_alpha">:root, * { --color-primary-alpha: {{ color|safe }} !important }</style>
     {% endif %}
 {% endif %}
+{% if let Some(color) = profile.metadata.kv.get("sparkler:color_primary_raised") %}
+    {% let color = crate::routing::pages::color_escape(color) %}
+    {% if !color.is_empty() %}
+        <style id="sparkler_live:color_primary_raised">:root, * { --color-primary-raised: {{ color|safe }} !important }</style>
+    {% endif %}
+{% endif %}
 {% if let Some(color) = profile.metadata.kv.get("sparkler:color_text_primary") %}
     {% let color = crate::routing::pages::color_escape(color) %}
     {% if !color.is_empty() %}
