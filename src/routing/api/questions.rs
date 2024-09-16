@@ -1,7 +1,7 @@
 use crate::database::Database;
 use crate::model::{anonymous_profile, DatabaseError, QuestionCreate};
 use axum::http::{HeaderMap, HeaderValue};
-use xsu_authman::model::ProfileMetadata;
+use xsu_authman::model::{NotificationCreate, ProfileMetadata};
 use xsu_dataman::DefaultReturn;
 
 use axum::response::{IntoResponse, Redirect};
@@ -10,6 +10,7 @@ use axum::{
     routing::{delete, get, post},
     Json, Router,
 };
+use hcaptcha::Hcaptcha;
 
 use axum_extra::extract::cookie::CookieJar;
 
@@ -18,6 +19,7 @@ pub fn routes(database: Database) -> Router {
         .route("/", post(create_request))
         .route("/:id", get(get_request))
         .route("/:id", delete(delete_request))
+        .route("/:id/report", post(report_request))
         // ...
         .with_state(database)
 }
@@ -218,4 +220,56 @@ pub async fn delete_request(
         },
         Err(e) => e.into(),
     })
+}
+
+/// Report a question
+pub async fn report_request(
+    Path(id): Path<String>,
+    State(database): State<Database>,
+    Json(req): Json<super::CreateReport>,
+) -> impl IntoResponse {
+    // check hcaptcha
+    if let Err(e) = req
+        .valid_response(&database.server_options.captcha.secret, None)
+        .await
+    {
+        return Json(DefaultReturn {
+            success: false,
+            message: e.to_string(),
+            payload: (),
+        });
+    }
+
+    // get question
+    if let Err(_) = database.get_question(id.clone()).await {
+        return Json(DefaultReturn {
+            success: false,
+            message: DatabaseError::NotFound.to_string(),
+            payload: (),
+        });
+    };
+
+    match database
+        .auth
+        .create_notification(NotificationCreate {
+            title: format!("**QUESTION REPORT**: {id}"),
+            content: req.content,
+            address: format!("/question/{id}"),
+            recipient: "*".to_string(), // all staff
+        })
+        .await
+    {
+        Ok(_) => {
+            return Json(DefaultReturn {
+                success: true,
+                message: "Question reported!".to_string(),
+                payload: (),
+            })
+        }
+        Err(_) => Json(DefaultReturn {
+            success: false,
+            message: DatabaseError::NotFound.to_string(),
+            payload: (),
+        }),
+    }
 }
