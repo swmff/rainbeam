@@ -92,6 +92,14 @@ endblock %} {% block head %}
 </article>
 
 <script>
+    if (window.localStorage.getItem("clear_notifs") === "true") {
+        for (const element of Array.from(
+            document.querySelectorAll("[neodo=notification]"),
+        )) {
+            element.setAttribute("target", "_blank");
+        }
+    }
+
     if (window.localStorage.getItem("clear_all_notifs") === "true") {
         use("notifications", (notifs) => {
             // clear all notifications

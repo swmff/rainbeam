@@ -1209,7 +1209,7 @@ dependencies = [
 
 [[package]]
 name = "neospring"
-version = "1.2.5"
+version = "1.2.6"
 dependencies = [
  "ammonia",
  "askama",

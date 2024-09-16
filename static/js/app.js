@@ -256,6 +256,7 @@
             }
 
             element.style.position = "relative";
+            element.style.overflow = "hidden";
 
             const warning_element = document.createElement("div");
             warning_element.setAttribute(
@@ -292,7 +293,9 @@
             const listener = () => {
                 warning_element.removeEventListener("click", listener);
                 warning_element.remove();
+
                 element.style.height = "auto";
+                element.style.overflow = "auto";
             };
 
             warning_element.addEventListener("click", listener);
