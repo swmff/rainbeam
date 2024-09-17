@@ -292,13 +292,12 @@ pub async fn follow_request(
         }
     };
 
-    if attempting_to_follow
-        .metadata
-        .kv
-        .get("sparkler:block_list")
-        .unwrap_or(&String::new())
-        .contains(&format!("<@{}>", auth_user.username))
-    {
+    let relationship = database
+        .get_user_relationship(attempting_to_follow.id.clone(), auth_user.id.clone())
+        .await
+        .0;
+
+    if relationship == RelationshipStatus::Blocked {
         // remove the user follow and return
         // blocked users cannot follow the people who blocked them!
         match database

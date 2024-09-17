@@ -1224,30 +1224,12 @@ impl Database {
                     .unwrap_or(&"false".to_string())
                     == "true";
 
-                let block_list =
-                    if let Some(block_list) = circle.metadata.kv.get("sparkler:block_list") {
-                        block_list.to_string()
-                    } else {
-                        String::new()
-                    };
-
                 if profile_locked {
                     return Err(DatabaseError::NotAllowed);
                 }
 
                 if (block_anonymous == true) && (tag.0 == true) {
                     return Err(DatabaseError::NotAllowed);
-                }
-
-                if tag.0 == false {
-                    let author = match self.get_profile(author.clone()).await {
-                        Ok(ua) => ua,
-                        Err(e) => return Err(e),
-                    };
-
-                    if block_list.contains(&format!("<@{}>", author.username)) {
-                        return Err(DatabaseError::NotAllowed);
-                    }
                 }
             } else {
                 // profile
@@ -1274,13 +1256,6 @@ impl Database {
                     .unwrap_or(&"false".to_string())
                     == "true";
 
-                let block_list =
-                    if let Some(block_list) = recipient.metadata.kv.get("sparkler:block_list") {
-                        block_list.to_string()
-                    } else {
-                        String::new()
-                    };
-
                 if profile_locked {
                     return Err(DatabaseError::NotAllowed);
                 }
@@ -1295,7 +1270,12 @@ impl Database {
                         Err(e) => return Err(e),
                     };
 
-                    if block_list.contains(&format!("<@{}>", author.username)) {
+                    let relationship = self
+                        .get_user_relationship(author.id.clone(), recipient.id.clone())
+                        .await
+                        .0;
+
+                    if relationship == RelationshipStatus::Blocked {
                         return Err(DatabaseError::NotAllowed);
                     }
                 }
