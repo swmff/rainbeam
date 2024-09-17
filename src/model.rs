@@ -281,6 +281,41 @@ pub struct DataExport {
     pub comments: Vec<(ResponseComment, usize, usize)>,
 }
 
+/// The state of a user's relationship with another user
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub enum RelationshipStatus {
+    /// No relationship
+    Unknown,
+    /// User two is blocked from interacting with user one
+    Blocked,
+    /// User two is pending a friend request from user one
+    Pending,
+    /// User two is friends with user one
+    Friends,
+}
+
+impl Default for RelationshipStatus {
+    fn default() -> Self {
+        Self::Unknown
+    }
+}
+
+/// A user's relationship with another user
+///
+/// If a relationship already exists, user two cannot attempt to create a relationship with user one.
+/// The existing relation should be used.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Relationship {
+    /// The first user in the relationship
+    pub one: Profile,
+    /// The second user in the relationship
+    pub two: Profile,
+    /// The status of the relationship
+    pub status: RelationshipStatus,
+    /// The timestamp of the relationship's creation
+    pub timestamp: u128,
+}
+
 // ...
 
 /// Global user profile

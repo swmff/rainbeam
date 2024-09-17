@@ -5,7 +5,7 @@ use crate::config::Config;
 use crate::model::{
     anonymous_profile, global_profile, Circle, CircleCreate, CircleMetadata, CommentCreate,
     DataExport, MembershipStatus, QuestionCreate, QuestionResponse, Reaction, RefQuestion,
-    ResponseComment, ResponseContext, ResponseCreate,
+    RelationshipStatus, ResponseComment, ResponseContext, ResponseCreate,
 };
 use crate::model::{DatabaseError, Question};
 
@@ -115,6 +115,18 @@ impl Database {
                 user       TEXT,
                 circle     TEXT,
                 membership TEXT,
+                timestamp  TEXT
+            )",
+        )
+        .execute(c)
+        .await;
+
+        // create relationships table
+        let _ = sqlquery(
+            "CREATE TABLE IF NOT EXISTS \"xrelationships\" (
+                one        TEXT,
+                two        TEXT,
+                status     TEXT,
                 timestamp  TEXT
             )",
         )
@@ -4624,5 +4636,293 @@ impl Database {
             .await;
 
         count
+    }
+
+    // relationships
+
+    /// Get the membership status of the given user and the other user
+    ///
+    /// # Arguments
+    /// * `user` - the ID of the first user
+    /// * `other` - the ID of the second user
+    pub async fn get_user_relationship(
+        &self,
+        user: String,
+        other: String,
+    ) -> (RelationshipStatus, String, String) {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "SELECT * FROM \"xrelationships\" WHERE (\"one\" = ? AND \"two\" = ?) OR (\"one\" = ? AND \"two\" = ?)"
+        } else {
+             "SELECT * FROM \"xrelationships\" WHERE (\"one\" = $1 AND \"two\" = $2) OR (\"one\" = $3 AND \"two\" = $4)"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query)
+            .bind::<&String>(&user)
+            .bind::<&String>(&other)
+            .bind::<&String>(&other)
+            .bind::<&String>(&user)
+            .fetch_one(c)
+            .await
+        {
+            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Err(_) => return (RelationshipStatus::default(), user, other),
+        };
+
+        // return
+        (
+            serde_json::from_str(&res.get("status").unwrap()).unwrap(),
+            res.get("one").unwrap().to_owned(),
+            res.get("two").unwrap().to_owned(),
+        )
+    }
+
+    /// Set the relationship of user `one` and `two`
+    ///
+    /// # Arguments
+    /// * `one` - the ID of the first user
+    /// * `two` - the ID of the second user
+    /// * `status` - the new relationship status, setting to "Unknown" will remove the relationship
+    /// * `disable_notifications`
+    pub async fn set_user_relationship_status(
+        &self,
+        one: String,
+        two: String,
+        status: RelationshipStatus,
+        disable_notifications: bool,
+    ) -> Result<()> {
+        // get current membership status
+        let relationship = self.get_user_relationship(one.clone(), two.clone()).await;
+
+        if relationship.0 == status {
+            return Ok(());
+        }
+
+        let uone = match self.get_profile(relationship.1).await {
+            Ok(ua) => ua,
+            Err(e) => return Err(e),
+        };
+
+        let utwo = match self.get_profile(relationship.2).await {
+            Ok(ua) => ua,
+            Err(e) => return Err(e),
+        };
+
+        // ...
+        match status {
+            RelationshipStatus::Blocked => {
+                if relationship.0 != RelationshipStatus::Unknown {
+                    // update
+                    let query: String =
+                    if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+                        "UPDATE \"xrelationships\" SET \"status\" = ? WHERE \"one\" = ? AND \"two\" = ?"
+                    } else {
+                        "UPDATE \"xrelationships\" SET (\"status\") = (?) WHERE \"one\" = ? AND \"two\" = ?"                    
+                    }
+                    .to_string();
+
+                    let c = &self.base.db.client;
+                    if let Err(_) = sqlquery(&query)
+                        .bind::<&String>(&serde_json::to_string(&status).unwrap())
+                        .bind::<&String>(&uone.id)
+                        .bind::<&String>(&utwo.id)
+                        .execute(c)
+                        .await
+                    {
+                        return Err(DatabaseError::Other);
+                    };
+                } else {
+                    // add
+                    let query: String =
+                        if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+                            "INSERT INTO \"xrelationships\" VALUES (?, ?, ?, ?)"
+                        } else {
+                            "INSERT INTO \"xrelationships\" VALEUS ($1, $2, $3, $4)"
+                        }
+                        .to_string();
+
+                    let c = &self.base.db.client;
+                    if let Err(_) = sqlquery(&query)
+                        .bind::<&String>(&uone.id)
+                        .bind::<&String>(&utwo.id)
+                        .bind::<&String>(&serde_json::to_string(&status).unwrap())
+                        .bind::<&String>(&xsu_util::unix_epoch_timestamp().to_string())
+                        .execute(c)
+                        .await
+                    {
+                        return Err(DatabaseError::Other);
+                    };
+                }
+            }
+            RelationshipStatus::Pending => {
+                // add
+                let query: String =
+                    if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+                        "INSERT INTO \"xrelationships\" VALUES (?, ?, ?, ?)"
+                    } else {
+                        "INSERT INTO \"xrelationships\" VALEUS ($1, $2, $3, $4)"
+                    }
+                    .to_string();
+
+                let c = &self.base.db.client;
+                if let Err(_) = sqlquery(&query)
+                    .bind::<&String>(&uone.id)
+                    .bind::<&String>(&utwo.id)
+                    .bind::<&String>(&serde_json::to_string(&status).unwrap())
+                    .bind::<&String>(&xsu_util::unix_epoch_timestamp().to_string())
+                    .execute(c)
+                    .await
+                {
+                    return Err(DatabaseError::Other);
+                };
+
+                // create notification
+                if !disable_notifications {
+                    if let Err(_) = self
+                        .auth
+                        .create_notification(NotificationCreate {
+                            title: format!(
+                                "[@{}](/@{}) has sent you a friend request!",
+                                uone.username, uone.username
+                            ),
+                            content: format!("{} wants to be your friend.", uone.username),
+                            address: format!("/@{}/relationship/friend_accept", uone.username),
+                            recipient: utwo.id,
+                        })
+                        .await
+                    {
+                        return Err(DatabaseError::Other);
+                    };
+                };
+            }
+            RelationshipStatus::Friends => {
+                // update
+                let query: String =
+                    if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+                        "UPDATE \"xrelationships\" SET \"status\" = ? WHERE \"one\" = ? AND \"two\" = ?"
+                    } else {
+                        "UPDATE \"xrelationships\" SET (\"status\") = (?) WHERE \"one\" = ? AND \"two\" = ?"                    
+                    }
+                    .to_string();
+
+                let c = &self.base.db.client;
+                if let Err(_) = sqlquery(&query)
+                    .bind::<&String>(&serde_json::to_string(&status).unwrap())
+                    .bind::<&String>(&uone.id)
+                    .bind::<&String>(&utwo.id)
+                    .execute(c)
+                    .await
+                {
+                    return Err(DatabaseError::Other);
+                };
+
+                self.base
+                    .cachedb
+                    .incr(format!("xsulib.sparkler.friends_count:{}", one))
+                    .await;
+
+                self.base
+                    .cachedb
+                    .incr(format!("xsulib.sparkler.friends_count:{}", two))
+                    .await;
+
+                // create notification
+                if !disable_notifications {
+                    if let Err(_) = self
+                        .auth
+                        .create_notification(NotificationCreate {
+                            title: "Your friend request has been accepted!".to_string(),
+                            content: format!("{} has accepted your friend request.", utwo.username),
+                            address: String::new(),
+                            recipient: uone.id,
+                        })
+                        .await
+                    {
+                        return Err(DatabaseError::Other);
+                    };
+                };
+            }
+            RelationshipStatus::Unknown => {
+                // delete
+                let query: String =
+                    if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+                        "DELETE FROM \"xrelationships\" WHERE \"one\" = ? AND \"two\" = ?"
+                    } else {
+                        "DELETE FROM \"xrelationships\" WHERE \"one\" = ? AND \"two\" = ?"
+                    }
+                    .to_string();
+
+                let c = &self.base.db.client;
+                if let Err(_) = sqlquery(&query)
+                    .bind::<&String>(&uone.id)
+                    .bind::<&String>(&utwo.id)
+                    .execute(c)
+                    .await
+                {
+                    return Err(DatabaseError::Other);
+                };
+
+                self.base
+                    .cachedb
+                    .decr(format!("xsulib.sparkler.friends_count:{}", one))
+                    .await;
+
+                self.base
+                    .cachedb
+                    .decr(format!("xsulib.sparkler.friends_count:{}", two))
+                    .await;
+            }
+        }
+
+        // return
+        Ok(())
+    }
+
+    /// Get all relationships owned by `user` (ownership is the relationship's `one` field)
+    ///
+    /// # Arguments
+    /// * `user`
+    pub async fn get_user_relationships(
+        &self,
+        user: String,
+    ) -> Result<Vec<(Profile, RelationshipStatus)>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "SELECT * FROM \"xrelationships\" WHERE \"one\" = ?"
+        } else {
+            "SELECT * FROM \"xrelationships\" WHERE \"one\" = $1"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query).bind::<&String>(&user).fetch_all(c).await {
+            Ok(p) => {
+                let mut out = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+
+                    // get profile
+                    let profile = match self.get_profile(res.get("two").unwrap().to_string()).await
+                    {
+                        Ok(c) => c,
+                        Err(e) => return Err(e),
+                    };
+
+                    // add to out
+                    out.push((
+                        profile,
+                        serde_json::from_str(&res.get("status").unwrap()).unwrap(),
+                    ));
+                }
+
+                Ok(out)
+            }
+            Err(_) => return Err(DatabaseError::Other),
+        }
     }
 }

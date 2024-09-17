@@ -1,5 +1,5 @@
 use crate::database::Database;
-use crate::model::DatabaseError;
+use crate::model::{DatabaseError, RelationshipStatus};
 use axum_extra::extract::CookieJar;
 use hcaptcha::Hcaptcha;
 use std::{fs::File, io::Read};
@@ -10,7 +10,7 @@ use axum::response::IntoResponse;
 use axum::{
     body::Body,
     extract::{Path, State},
-    routing::{get, post},
+    routing::{delete, get, post},
     Json, Router,
 };
 
@@ -23,6 +23,9 @@ pub fn routes(database: Database) -> Router {
         .route("/:username/unfollow", post(unfollow_request)) // force unfollow
         .route("/:username/unfollow-me", post(unfollow_me_request)) // force them to unfollow you
         .route("/:username/export", get(export_request)) // staff
+        .route("/:username/relationship/friend", post(friend_request))
+        .route("/:username/relationship/block", post(block_request))
+        .route("/:username/relationship", delete(breakup_request))
         // ...
         .with_state(database)
 }
@@ -563,6 +566,320 @@ pub async fn export_request(
             return Json(DefaultReturn {
                 success: true,
                 message: "Acceptable".to_string(),
+                payload: Some(export),
+            })
+        }
+        Err(e) => {
+            return Json(DefaultReturn {
+                success: false,
+                message: e.to_string(),
+                payload: None,
+            })
+        }
+    }
+}
+
+/// Send/accept a friend request to/from another user
+pub async fn friend_request(
+    jar: CookieJar,
+    Path(username): Path<String>,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    // get user from token
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(e) => {
+                return Json(DefaultReturn {
+                    success: false,
+                    message: e.to_string(),
+                    payload: None,
+                });
+            }
+        },
+        None => {
+            return Json(DefaultReturn {
+                success: false,
+                message: DatabaseError::NotAllowed.to_string(),
+                payload: None,
+            });
+        }
+    };
+
+    // ...
+    let other_user = match database
+        .auth
+        .get_profile_by_username(username.to_owned())
+        .await
+    {
+        Ok(ua) => ua,
+        Err(_) => {
+            return Json(DefaultReturn {
+                success: false,
+                message: DatabaseError::NotFound.to_string(),
+                payload: None,
+            })
+        }
+    };
+
+    // current relationship
+    let current = database
+        .get_user_relationship(auth_user.id.clone(), other_user.id.clone())
+        .await
+        .0;
+
+    // return
+    if current == RelationshipStatus::Unknown {
+        // send request
+        match database
+            .set_user_relationship_status(
+                auth_user.id,
+                other_user.id,
+                RelationshipStatus::Pending,
+                false,
+            )
+            .await
+        {
+            Ok(export) => {
+                return Json(DefaultReturn {
+                    success: true,
+                    message: "Friend request sent!".to_string(),
+                    payload: Some(export),
+                })
+            }
+            Err(e) => {
+                return Json(DefaultReturn {
+                    success: false,
+                    message: e.to_string(),
+                    payload: None,
+                })
+            }
+        }
+    } else if current == RelationshipStatus::Pending {
+        // accept request
+        match database
+            .set_user_relationship_status(
+                auth_user.id,
+                other_user.id,
+                RelationshipStatus::Friends,
+                false,
+            )
+            .await
+        {
+            Ok(export) => {
+                return Json(DefaultReturn {
+                    success: true,
+                    message: "Friend request accepted!".to_string(),
+                    payload: Some(export),
+                })
+            }
+            Err(e) => {
+                return Json(DefaultReturn {
+                    success: false,
+                    message: e.to_string(),
+                    payload: None,
+                })
+            }
+        }
+    } else {
+        // no clue, remove friendship?
+        match database
+            .set_user_relationship_status(
+                auth_user.id,
+                other_user.id,
+                RelationshipStatus::Unknown,
+                false,
+            )
+            .await
+        {
+            Ok(export) => {
+                return Json(DefaultReturn {
+                    success: true,
+                    message: "Friendship removed".to_string(),
+                    payload: Some(export),
+                })
+            }
+            Err(e) => {
+                return Json(DefaultReturn {
+                    success: false,
+                    message: e.to_string(),
+                    payload: None,
+                })
+            }
+        }
+    }
+}
+
+/// Block another user
+pub async fn block_request(
+    jar: CookieJar,
+    Path(username): Path<String>,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    // get user from token
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(e) => {
+                return Json(DefaultReturn {
+                    success: false,
+                    message: e.to_string(),
+                    payload: None,
+                });
+            }
+        },
+        None => {
+            return Json(DefaultReturn {
+                success: false,
+                message: DatabaseError::NotAllowed.to_string(),
+                payload: None,
+            });
+        }
+    };
+
+    // ...
+    let other_user = match database
+        .auth
+        .get_profile_by_username(username.to_owned())
+        .await
+    {
+        Ok(ua) => ua,
+        Err(_) => {
+            return Json(DefaultReturn {
+                success: false,
+                message: DatabaseError::NotFound.to_string(),
+                payload: None,
+            })
+        }
+    };
+
+    // force unfollow
+    if let Err(e) = database
+        .auth
+        .force_remove_user_follow(&mut UserFollow {
+            user: auth_user.id.clone(),
+            following: other_user.id.clone(),
+        })
+        .await
+    {
+        return Json(DefaultReturn {
+            success: false,
+            message: e.to_string(),
+            payload: None,
+        });
+    }
+
+    if let Err(e) = database
+        .auth
+        .force_remove_user_follow(&mut UserFollow {
+            user: other_user.id.clone(),
+            following: auth_user.id.clone(),
+        })
+        .await
+    {
+        return Json(DefaultReturn {
+            success: false,
+            message: e.to_string(),
+            payload: None,
+        });
+    }
+
+    // return
+    match database
+        .set_user_relationship_status(
+            auth_user.id,
+            other_user.id,
+            RelationshipStatus::Blocked,
+            false,
+        )
+        .await
+    {
+        Ok(export) => {
+            return Json(DefaultReturn {
+                success: true,
+                message: "User blocked!".to_string(),
+                payload: Some(export),
+            })
+        }
+        Err(e) => {
+            return Json(DefaultReturn {
+                success: false,
+                message: e.to_string(),
+                payload: None,
+            })
+        }
+    }
+}
+
+/// Remove relationship with another user
+pub async fn breakup_request(
+    jar: CookieJar,
+    Path(username): Path<String>,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    // get user from token
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(e) => {
+                return Json(DefaultReturn {
+                    success: false,
+                    message: e.to_string(),
+                    payload: None,
+                });
+            }
+        },
+        None => {
+            return Json(DefaultReturn {
+                success: false,
+                message: DatabaseError::NotAllowed.to_string(),
+                payload: None,
+            });
+        }
+    };
+
+    // ...
+    let other_user = match database
+        .auth
+        .get_profile_by_username(username.to_owned())
+        .await
+    {
+        Ok(ua) => ua,
+        Err(_) => {
+            return Json(DefaultReturn {
+                success: false,
+                message: DatabaseError::NotFound.to_string(),
+                payload: None,
+            })
+        }
+    };
+
+    // return
+    match database
+        .set_user_relationship_status(
+            auth_user.id,
+            other_user.id,
+            RelationshipStatus::Unknown,
+            false,
+        )
+        .await
+    {
+        Ok(export) => {
+            return Json(DefaultReturn {
+                success: true,
+                message: "Relationship removed!".to_string(),
                 payload: Some(export),
             })
         }

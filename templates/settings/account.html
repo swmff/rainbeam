@@ -148,7 +148,132 @@
 
         <button>Submit</button>
     </form>
+
+    <hr />
+    <div class="flex flex-col gap-1">
+        <label for="sparkler:relationships">Relationships</label>
+
+        <div class="card">
+            <ul style="margin-bottom: 0">
+                {% for relationship in relationships %}
+                <li>
+                    <div class="footernav" style="display: inline-flex">
+                        <a href="/@{{ relationship.0.username }}" class="item">
+                            {{ relationship.0.username }}
+                        </a>
+
+                        <span class="item">
+                            <a
+                                href="javascript:remove_relationship('{{ relationship.0.username }}')"
+                            >
+                                <!-- prettier-ignore -->
+                                {% if relationship.1 == crate::model::RelationshipStatus::Blocked %}
+                                    Unblock
+                                {% else %}
+                                    Remove
+                                {% endif %}
+                            </a>
+                        </span>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <label for="sparkler:block_somebody">Block somebody</label>
+
+        <div class="flex gap-2">
+            <input
+                name="sparkler:block_somebody"
+                id="sparkler:block_somebody"
+                placeholder="username"
+            />
+
+            <button type="button" onclick="block_dialog()">Submit</button>
+        </div>
+
+        <p class="fade">
+            Put the username of somebody you want to block in the input above
+            and click "Submit" to add them to your block list.
+        </p>
+    </div>
+
+    <script>
+        (() => {
+            globalThis.block_dialog = function () {
+                // show confirmation
+                document.getElementById("block_dialog").showModal();
+            };
+
+            globalThis.block = function () {
+                const username = document.getElementById(
+                    "sparkler:block_somebody",
+                ).value;
+
+                fetch(`/api/v1/profiles/${username}/relationship/block`, {
+                    method: "POST",
+                })
+                    .then((res) => res.json())
+                    .then((res) => {
+                        trigger("app:toast", [
+                            res.success ? "success" : "error",
+                            res.success ? "User blocked!" : res.message,
+                        ]);
+
+                        window.close();
+                    });
+            };
+
+            globalThis.remove_relationship = function (username) {
+                if (!confirm("Are you sure you want to do this?")) {
+                    return;
+                }
+
+                fetch(`/api/v1/profiles/${username}/relationship`, {
+                    method: "DELETE",
+                })
+                    .then((res) => res.json())
+                    .then((res) => {
+                        trigger("app:toast", [
+                            res.success ? "success" : "error",
+                            res.success ? "Relationship removed!" : res.message,
+                        ]);
+
+                        window.close();
+                    });
+            };
+
+            // fill block_somebody
+            const search = new URLSearchParams(window.location.search);
+
+            if (search.get("block")) {
+                setTimeout(() => {
+                    document.getElementById("sparkler:block_somebody").value =
+                        search.get("block");
+
+                    block_dialog();
+                }, 100);
+            }
+        })();
+    </script>
 </div>
+
+<dialog id="block_dialog">
+    <div class="inner">
+        <p>Are you sure you would like to block this user?</p>
+
+        <hr />
+        <div class="flex gap-2">
+            <button class="primary bold" onclick="block()">Confirm</button>
+            <button
+                class="bold"
+                onclick="document.getElementById('block_dialog').close(); window.close()"
+            >
+                Cancel
+            </button>
+        </div>
+    </div>
+</dialog>
 
 {% let profile = profile.as_ref().unwrap() %}
 

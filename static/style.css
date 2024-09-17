@@ -890,7 +890,8 @@ dialog::backdrop {
 .notif_title p:last-of-type,
 .notif_content p:last-of-type,
 .warning_title p:last-of-type,
-.warning_content p:last-of-type {
+.warning_content p:last-of-type,
+.profile_warning p:last-of-type {
     margin: 0;
     white-space: pre-wrap;
 }

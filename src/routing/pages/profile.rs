@@ -8,7 +8,7 @@ use xsu_authman::model::{Permission, Profile, UserFollow, Warning};
 
 use crate::config::Config;
 use crate::database::Database;
-use crate::model::{DatabaseError, Question, QuestionResponse};
+use crate::model::{DatabaseError, Question, QuestionResponse, RelationshipStatus};
 
 use super::{clean_metadata, PaginatedQuery, ProfileQuery};
 
@@ -180,12 +180,6 @@ pub async fn profile_request(
         None
     };
 
-    let posting_as = if let Some(ref ua) = auth_user {
-        ua.username.clone()
-    } else {
-        "anonymous".to_string()
-    };
-
     let mut is_helper: bool = false;
     let is_powerful = if let Some(ref ua) = auth_user {
         let group = match database.auth.get_group_by_id(ua.group).await {
@@ -205,11 +199,16 @@ pub async fn profile_request(
         false
     };
 
-    let is_blocked = if let Some(block_list) = other.metadata.kv.get("sparkler:block_list") {
-        block_list.contains(&format!("<@{posting_as}>"))
+    let relationship = if let Some(ref profile) = auth_user {
+        database
+            .get_user_relationship(other.id.clone(), profile.id.clone())
+            .await
+            .0
     } else {
-        false
+        RelationshipStatus::Unknown
     };
+
+    let is_blocked = relationship == RelationshipStatus::Blocked;
 
     if !is_helper && is_blocked {
         return Html(DatabaseError::NotFound.to_html(database));
@@ -377,12 +376,6 @@ pub async fn profile_embed_request(
         .unwrap_or(&"false".to_string())
         == "true";
 
-    let posting_as = if let Some(ref ua) = auth_user {
-        ua.username.clone()
-    } else {
-        "anonymous".to_string()
-    };
-
     let mut is_helper: bool = false;
     let is_powerful = if let Some(ref ua) = auth_user {
         let group = match database.auth.get_group_by_id(ua.group).await {
@@ -396,11 +389,16 @@ pub async fn profile_embed_request(
         false
     };
 
-    let is_blocked = if let Some(block_list) = other.metadata.kv.get("sparkler:block_list") {
-        block_list.contains(&format!("<@{posting_as}>"))
+    let relationship = if let Some(ref profile) = auth_user {
+        database
+            .get_user_relationship(other.id.clone(), profile.id.clone())
+            .await
+            .0
     } else {
-        false
+        RelationshipStatus::Unknown
     };
+
+    let is_blocked = relationship == RelationshipStatus::Blocked;
 
     if !is_helper && is_blocked {
         return Html(DatabaseError::NotFound.to_html(database));
@@ -572,12 +570,6 @@ pub async fn followers_request(
         false
     };
 
-    let posting_as = if let Some(ref ua) = auth_user {
-        ua.username.clone()
-    } else {
-        "anonymous".to_string()
-    };
-
     let mut is_helper: bool = false;
     let is_powerful = if let Some(ref ua) = auth_user {
         let group = match database.auth.get_group_by_id(ua.group).await {
@@ -609,11 +601,16 @@ pub async fn followers_request(
         return Html(DatabaseError::NotAllowed.to_html(database));
     }
 
-    let is_blocked = if let Some(block_list) = other.metadata.kv.get("sparkler:block_list") {
-        block_list.contains(&format!("<@{posting_as}>"))
+    let relationship = if let Some(ref profile) = auth_user {
+        database
+            .get_user_relationship(other.id.clone(), profile.id.clone())
+            .await
+            .0
     } else {
-        false
+        RelationshipStatus::Unknown
     };
+
+    let is_blocked = relationship == RelationshipStatus::Blocked;
 
     if !is_helper && is_blocked {
         return Html(DatabaseError::NotFound.to_html(database));
@@ -776,12 +773,6 @@ pub async fn following_request(
         false
     };
 
-    let posting_as = if let Some(ref ua) = auth_user {
-        ua.username.clone()
-    } else {
-        "anonymous".to_string()
-    };
-
     let mut is_helper: bool = false;
     let is_powerful = if let Some(ref ua) = auth_user {
         let group = match database.auth.get_group_by_id(ua.group).await {
@@ -813,11 +804,16 @@ pub async fn following_request(
         return Html(DatabaseError::NotAllowed.to_html(database));
     }
 
-    let is_blocked = if let Some(block_list) = other.metadata.kv.get("sparkler:block_list") {
-        block_list.contains(&format!("<@{posting_as}>"))
+    let relationship = if let Some(ref profile) = auth_user {
+        database
+            .get_user_relationship(other.id.clone(), profile.id.clone())
+            .await
+            .0
     } else {
-        false
+        RelationshipStatus::Unknown
     };
+
+    let is_blocked = relationship == RelationshipStatus::Blocked;
 
     if !is_helper && is_blocked {
         return Html(DatabaseError::NotFound.to_html(database));
@@ -1004,12 +1000,6 @@ pub async fn questions_request(
         }
     };
 
-    let posting_as = if let Some(ref ua) = auth_user {
-        ua.username.clone()
-    } else {
-        "anonymous".to_string()
-    };
-
     let mut is_helper: bool = false;
     let is_powerful = if let Some(ref ua) = auth_user {
         let group = match database.auth.get_group_by_id(ua.group).await {
@@ -1029,11 +1019,16 @@ pub async fn questions_request(
         false
     };
 
-    let is_blocked = if let Some(block_list) = other.metadata.kv.get("sparkler:block_list") {
-        block_list.contains(&format!("<@{posting_as}>"))
+    let relationship = if let Some(ref profile) = auth_user {
+        database
+            .get_user_relationship(other.id.clone(), profile.id.clone())
+            .await
+            .0
     } else {
-        false
+        RelationshipStatus::Unknown
     };
+
+    let is_blocked = relationship == RelationshipStatus::Blocked;
 
     if !is_helper && is_blocked {
         return Html(DatabaseError::NotFound.to_html(database));
@@ -1186,8 +1181,6 @@ pub async fn mod_request(
         Err(_) => false,
     };
 
-    let posting_as = auth_user.username.clone();
-
     let mut is_helper: bool = false;
     let is_powerful = {
         let group = match database.auth.get_group_by_id(auth_user.group).await {
@@ -1217,11 +1210,12 @@ pub async fn mod_request(
 
     let is_self = auth_user.id == other.id;
 
-    let is_blocked = if let Some(block_list) = other.metadata.kv.get("sparkler:block_list") {
-        block_list.contains(&format!("<@{posting_as}>"))
-    } else {
-        false
-    };
+    let relationship = database
+        .get_user_relationship(other.id.clone(), auth_user.id.clone())
+        .await
+        .0;
+
+    let is_blocked = relationship == RelationshipStatus::Blocked;
 
     if !is_helper && is_blocked {
         return Html(DatabaseError::NotFound.to_html(database));
@@ -1380,8 +1374,6 @@ pub async fn inbox_request(
         Err(e) => return Html(e.to_html(database)),
     };
 
-    let posting_as = auth_user.username.clone();
-
     let mut is_helper: bool = false;
     let is_powerful = {
         let group = match database.auth.get_group_by_id(auth_user.group).await {
@@ -1402,11 +1394,12 @@ pub async fn inbox_request(
 
     let is_self = auth_user.id == other.id;
 
-    let is_blocked = if let Some(block_list) = other.metadata.kv.get("sparkler:block_list") {
-        block_list.contains(&format!("<@{posting_as}>"))
-    } else {
-        false
-    };
+    let relationship = database
+        .get_user_relationship(other.id.clone(), auth_user.id.clone())
+        .await
+        .0;
+
+    let is_blocked = relationship == RelationshipStatus::Blocked;
 
     if !is_helper && is_blocked {
         return Html(DatabaseError::NotFound.to_html(database));
@@ -1567,8 +1560,6 @@ pub async fn outbox_request(
         Err(e) => return Html(e.to_html(database)),
     };
 
-    let posting_as = auth_user.username.clone();
-
     let mut is_helper: bool = false;
     let is_powerful = {
         let group = match database.auth.get_group_by_id(auth_user.group).await {
@@ -1589,11 +1580,12 @@ pub async fn outbox_request(
         return Html(DatabaseError::NotAllowed.to_html(database));
     }
 
-    let is_blocked = if let Some(block_list) = other.metadata.kv.get("sparkler:block_list") {
-        block_list.contains(&format!("<@{posting_as}>"))
-    } else {
-        false
-    };
+    let relationship = database
+        .get_user_relationship(other.id.clone(), auth_user.id.clone())
+        .await
+        .0;
+
+    let is_blocked = relationship == RelationshipStatus::Blocked;
 
     if !is_helper && is_blocked {
         return Html(DatabaseError::NotFound.to_html(database));

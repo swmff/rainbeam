@@ -295,7 +295,7 @@
                 warning_element.remove();
 
                 element.style.height = "auto";
-                element.style.overflow = "auto";
+                element.style.overflow = "unset";
             };
 
             warning_element.addEventListener("click", listener);

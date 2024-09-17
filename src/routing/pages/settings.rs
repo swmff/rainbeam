@@ -7,7 +7,7 @@ use xsu_authman::model::Profile;
 
 use crate::config::Config;
 use crate::database::Database;
-use crate::model::DatabaseError;
+use crate::model::{DatabaseError, RelationshipStatus};
 
 use super::clean_metadata;
 
@@ -19,6 +19,7 @@ struct AccountSettingsTemplate {
     unread: usize,
     notifs: usize,
     metadata: String,
+    relationships: Vec<(Profile, RelationshipStatus)>,
 }
 
 /// GET /settings
@@ -51,6 +52,11 @@ pub async fn account_settings(
         .get_notification_count_by_recipient(auth_user.id.to_owned())
         .await;
 
+    let relationships = match database.get_user_relationships(auth_user.id.clone()).await {
+        Ok(r) => r,
+        Err(_) => Vec::new(),
+    };
+
     Html(
         AccountSettingsTemplate {
             config: database.server_options,
@@ -58,6 +64,7 @@ pub async fn account_settings(
             profile: Some(auth_user),
             unread,
             notifs,
+            relationships,
         }
         .render()
         .unwrap(),
