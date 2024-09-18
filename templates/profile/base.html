@@ -141,6 +141,12 @@ config.name }}{% endblock %} {% block head %}
                     {% if is_following_you == true %}
                     <span class="notification notif-invert ff-inherit fs-md bold">Follows you</span>
                     {% endif %}
+
+                    <div class="flex flex-wrap w-full gap-2">
+                        {% for badge in other.badges %}
+                        <span class="notification ff-inherit fs-md bold" style="background: {{ badge.1 }}; color: {{ badge.2 }}">{{ badge.0 }}</span>
+                        {% endfor %}
+                    </div>
                 </div>
 
                 <!-- prettier-ignore -->

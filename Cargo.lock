@@ -3022,7 +3022,7 @@ dependencies = [
 
 [[package]]
 name = "xsu-authman"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "axum",
  "axum-extra",

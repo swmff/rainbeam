@@ -330,6 +330,7 @@ pub fn global_profile() -> Profile {
         group: 0,
         joined: 0,
         metadata: ProfileMetadata::default(),
+        badges: Vec::new(),
     }
 }
 
@@ -345,6 +346,7 @@ pub fn anonymous_profile(tag: String) -> Profile {
         group: 0,
         joined: 0,
         metadata: ProfileMetadata::default(),
+        badges: Vec::new(),
     }
 }
 

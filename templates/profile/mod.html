@@ -24,7 +24,7 @@
     Manage
     <b class="notification">Mod</b>
 </a>
-{% endif %} {% endblock %} {% block panel %} {% if is_powerful %}
+{% endif %} {% endblock %} {% block panel %}
 <!-- info -->
 <hr />
 <div id="info" class="flex flex-col gap-4">
@@ -64,56 +64,110 @@
     </div>
 </div>
 
+{% if is_powerful %}
+<!-- badges -->
+<hr />
+<div id="badges" class="flex flex-col gap-4">
+    <h3>Badges</h3>
+
+    <div class="card w-full shadow">
+        <form class="flex flex-col gap-1" id="badges_form">
+            <label for="badges_data">Badges data</label>
+
+            <textarea type="text" name="badges" id="badges_data" required>
+{{ badges }}</textarea
+            >
+
+            <button>Submit</button>
+        </form>
+    </div>
+
+    <script>
+        (() => {
+            document
+                .getElementById("badges_form")
+                .addEventListener("submit", (e) => {
+                    e.preventDefault();
+
+                    if (!confirm("Are you sure you want to do this?")) {
+                        return;
+                    }
+
+                    fetch("/api/auth/profile/{{ other.username }}/badges", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            badges: JSON.parse(e.target.badges.value),
+                        }),
+                    })
+                        .then((res) => res.json())
+                        .then((res) => {
+                            trigger("app:toast", [
+                                res.success ? "success" : "error",
+                                res.message || "Badges updated!",
+                            ]);
+
+                            e.target.reset();
+                        });
+                });
+        })();
+    </script>
+</div>
+
 <!-- change password -->
 <hr />
-<form class="card flex flex-col gap-1" id="change_password">
+<div class="flex flex-col gap-4">
     <h3>Change password</h3>
 
-    <label for="new_password">New password</label>
-    <input
-        type="password"
-        name="new_password"
-        id="new_password"
-        minlength="6"
-    />
+    <form class="card flex flex-col gap-1" id="change_password">
+        <label for="new_password">New password</label>
+        <input
+            type="password"
+            name="new_password"
+            id="new_password"
+            minlength="6"
+        />
 
-    <button>Submit</button>
-</form>
+        <button>Submit</button>
+    </form>
 
-<script>
-    (() => {
-        document
-            .getElementById("change_password")
-            .addEventListener("submit", (e) => {
-                e.preventDefault();
+    <script>
+        (() => {
+            document
+                .getElementById("change_password")
+                .addEventListener("submit", (e) => {
+                    e.preventDefault();
 
-                if (!confirm("Are you sure you want to do this?")) {
-                    return;
-                }
+                    if (!confirm("Are you sure you want to do this?")) {
+                        return;
+                    }
 
-                fetch("/api/auth/profile/{{ other.username }}/password", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        password: "",
-                        new_password: e.target.new_password.value,
-                    }),
-                })
-                    .then((res) => res.json())
-                    .then((res) => {
-                        trigger("app:shout", [
-                            res.success ? "tip" : "caution",
-                            res.message || "Password changed!",
-                        ]);
+                    fetch("/api/auth/profile/{{ other.username }}/password", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            password: "",
+                            new_password: e.target.new_password.value,
+                        }),
+                    })
+                        .then((res) => res.json())
+                        .then((res) => {
+                            trigger("app:shout", [
+                                res.success ? "tip" : "caution",
+                                res.message || "Password changed!",
+                            ]);
 
-                        window.location.href = "#top";
-                        e.target.reset();
-                    });
-            });
-    })();
-</script>
+                            window.location.href = "#top";
+                            e.target.reset();
+                        });
+                });
+        })();
+    </script>
+</div>
 {% endif %}
 
 <!-- ips -->

@@ -1112,6 +1112,7 @@ struct ModTemplate {
     is_following: bool,
     is_following_you: bool,
     metadata: String,
+    badges: String,
     // ...
     layout: String,
     lock_profile: bool,
@@ -1240,6 +1241,7 @@ pub async fn mod_request(
             is_following,
             is_following_you,
             metadata: clean_metadata(&other.metadata),
+            badges: serde_json::to_string_pretty(&other.badges).unwrap(),
             // ...
             layout: other
                 .metadata
