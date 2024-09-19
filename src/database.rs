@@ -420,7 +420,14 @@ impl Database {
                             Ok(ua) => ua,
                             Err(_) => anonymous_profile(q.author),
                         },
-                        recipient: match self.get_profile(q.recipient.clone()).await {
+                        recipient: match self
+                            .get_profile(if q.recipient.starts_with("ANSWERED:") {
+                                q.recipient.replace("ANSWERED:", "")
+                            } else {
+                                q.recipient.clone()
+                            })
+                            .await
+                        {
                             Ok(ua) => ua,
                             Err(_) => anonymous_profile(q.recipient),
                         },
@@ -2636,7 +2643,13 @@ impl Database {
     /// # Arguments
     /// * `id` - the ID of the response
     /// * `user` - the user doing this
-    pub async fn delete_response(&self, id: String, user: Profile) -> Result<()> {
+    /// * `save_question` - if we should not delete the question too
+    pub async fn delete_response(
+        &self,
+        id: String,
+        user: Profile,
+        save_question: bool,
+    ) -> Result<()> {
         // make sure response exists
         let response = match self.get_response(id.clone()).await {
             Ok(q) => q,
@@ -2698,7 +2711,7 @@ impl Database {
                             response.0.id
                         ))
                         .await;
-                } else {
+                } else if !save_question {
                     // delete question
                     if let Err(e) = self
                         .delete_question(response.0.id, response.0.recipient)
@@ -2718,6 +2731,70 @@ impl Database {
             }
             Err(_) => return Err(DatabaseError::Other),
         };
+    }
+
+    /// Return a response's question to the inbox and delete the response
+    ///
+    /// # Arguments
+    /// * `id`
+    /// * `user` - the user doing this
+    pub async fn unsend_response(&self, id: String, user: Profile) -> Result<()> {
+        // make sure the response exists
+        let res = match self.get_response(id.clone()).await {
+            Ok(q) => q,
+            Err(e) => return Err(e),
+        };
+
+        let question = res.0;
+        let response = res.1;
+
+        if response.context.is_post {
+            return Err(DatabaseError::Other);
+        }
+
+        // check user permissions
+        if user.group == -1 {
+            // group -1 (even if it exists) is for marking users as banned
+            return Err(DatabaseError::NotAllowed);
+        }
+
+        if user.id != response.author.id {
+            // check permission
+            let group = match self.auth.get_group_by_id(user.group).await {
+                Ok(g) => g,
+                Err(_) => return Err(DatabaseError::Other),
+            };
+
+            if !group.permissions.contains(&Permission::Manager) {
+                return Err(DatabaseError::NotAllowed);
+            }
+        }
+
+        // update question
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "UPDATE \"xquestions\" SET \"recipient\" = ? WHERE \"id\" = ?"
+        } else {
+            "UPDATE \"xquestions\" SET (\"recipient\") = ($1) WHERE \"id\" = $2"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query)
+            .bind::<&String>(&question.recipient.id)
+            .bind::<&String>(&question.id)
+            .execute(c)
+            .await
+        {
+            Ok(_) => {
+                if let Err(e) = self.delete_response(response.id, user, true).await {
+                    return Err(e);
+                }
+
+                Ok(())
+            }
+            Err(_) => Err(DatabaseError::Other),
+        }
     }
 
     // comments

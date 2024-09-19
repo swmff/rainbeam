@@ -115,7 +115,7 @@ pub async fn profile_request(
         false
     };
 
-    let responses = if let Some(ref tag) = query.tag {
+    let mut responses = if let Some(ref tag) = query.tag {
         // tagged
         match database
             .get_responses_by_author_tagged_paginated(
@@ -153,7 +153,6 @@ pub async fn profile_request(
             }
         }
     };
-
     let pinned = if let Some(pinned) = other.metadata.kv.get("sparkler:pinned") {
         if pinned.is_empty() {
             None
@@ -168,6 +167,14 @@ pub async fn profile_request(
                             continue;
                         }
 
+                        // remove from responses
+                        let in_responses = responses.iter().position(|r| r.1.id == response.1.id);
+
+                        if let Some(index) = in_responses {
+                            responses.remove(index);
+                        };
+
+                        // push
                         out.push(response)
                     }
                     Err(_) => continue,
@@ -320,7 +327,7 @@ pub async fn profile_embed_request(
         Err(_) => return Html(DatabaseError::NotFound.to_html(database)),
     };
 
-    let responses = match database
+    let mut responses = match database
         .get_responses_by_author_paginated(other.id.to_owned(), 0)
         .await
     {
@@ -342,6 +349,14 @@ pub async fn profile_embed_request(
                             continue;
                         }
 
+                        // remove from responses
+                        let in_responses = responses.iter().position(|r| r.1.id == response.1.id);
+
+                        if let Some(index) = in_responses {
+                            responses.remove(index);
+                        };
+
+                        // push
                         out.push(response)
                     }
                     Err(_) => continue,
@@ -1196,7 +1211,7 @@ pub async fn mod_request(
         group.permissions.contains(&Permission::Manager)
     };
 
-    if !is_powerful {
+    if !is_helper {
         return Html(DatabaseError::NotAllowed.to_html(database));
     }
 

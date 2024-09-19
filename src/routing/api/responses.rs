@@ -21,6 +21,7 @@ pub fn routes(database: Database) -> Router {
         .route("/:id", put(edit_request))
         .route("/:id/tags", put(edit_tags_request))
         .route("/:id", delete(delete_request))
+        .route("/:id/unsend", post(unsend_request))
         .route("/:id/report", post(report_request))
         // ...
         .with_state(database)
@@ -212,7 +213,41 @@ pub async fn delete_request(
     };
 
     // ...
-    Json(match database.delete_response(id, auth_user).await {
+    Json(match database.delete_response(id, auth_user, false).await {
+        Ok(r) => DefaultReturn {
+            success: true,
+            message: String::new(),
+            payload: Some(r),
+        },
+        Err(e) => e.into(),
+    })
+}
+
+/// [`Database::unsend_response`]
+pub async fn unsend_request(
+    jar: CookieJar,
+    Path(id): Path<String>,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    // get user from token
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => {
+                return Json(DatabaseError::NotAllowed.into());
+            }
+        },
+        None => {
+            return Json(DatabaseError::NotAllowed.into());
+        }
+    };
+
+    // ...
+    Json(match database.unsend_response(id, auth_user).await {
         Ok(r) => DefaultReturn {
             success: true,
             message: String::new(),

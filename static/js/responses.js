@@ -111,7 +111,11 @@
     });
 
     self.define("delete", function ({ $, app }, id) {
-        if (!confirm("Are you sure you want to do this?")) {
+        if (
+            !confirm(
+                "Are you sure you want to do this? This will delete the response and its question.",
+            )
+        ) {
             return;
         }
 
@@ -123,6 +127,32 @@
                 app.toast(
                     res.success ? "success" : "error",
                     res.success ? "Response deleted!" : res.message,
+                );
+
+                app.smooth_remove(
+                    document.getElementById(`response:${id}`),
+                    500,
+                );
+            });
+    });
+
+    self.define("unsend", function ({ $, app }, id) {
+        if (
+            !confirm(
+                "Are you sure you want to do this? This will delete the response and allow you to answer the question again.",
+            )
+        ) {
+            return;
+        }
+
+        fetch(`/api/v1/responses/${id}/unsend`, {
+            method: "POST",
+        })
+            .then((res) => res.json())
+            .then((res) => {
+                app.toast(
+                    res.success ? "success" : "error",
+                    res.success ? "Question returned to inbox!" : res.message,
                 );
 
                 app.smooth_remove(
