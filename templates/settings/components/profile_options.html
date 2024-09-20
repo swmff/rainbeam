@@ -212,7 +212,7 @@
     </div>
 
     <div class="flex flex-col gap-1">
-        <label for="sparklerlayout">Profile layout</label>
+        <label for="sparkler:layout">Profile layout</label>
 
         <select
             type="url"
@@ -222,6 +222,22 @@
         >
             <option value="0" id="0">Sidebar on left (default)</option>
             <option value="1" id="1">Sidebar on right</option>
+        </select>
+
+        <p class="fade">The layout used on your profile.</p>
+    </div>
+
+    <div class="flex flex-col gap-1">
+        <label for="sparkler:nav_layout">Navigation layout</label>
+
+        <select
+            type="url"
+            name="sparkler:nav_layout"
+            id="sparkler:nav_layout"
+            onchange="update_kv('sparkler:nav_layout', event.target.options[event.target.selectedIndex].value)"
+        >
+            <option value="n0" id="n0">Navigation on bottom (default)</option>
+            <option value="n1" id="n1">Navigation on top</option>
         </select>
 
         <p class="fade">The layout used on your profile.</p>

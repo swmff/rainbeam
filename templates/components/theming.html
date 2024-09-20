@@ -90,6 +90,32 @@
         <style id="sparkler_live:color_shadow">:root, * { --color-shadow: {{ color|safe }} !important }</style>
     {% endif %}
 {% endif %}
+{% if let Some(layout) = other.metadata.kv.get("sparkler:nav_layout") %}
+    {% if layout.chars().nth(1).unwrap() == '1' %}
+        <style id="sparkler_live:nav_layout">
+            nav {
+                position: sticky !important;
+                top: 0 !important;
+                bottom: unset !important;
+                margin-bottom: 1rem !important;
+            }
+
+            nav .dropdown .inner {
+                top: calc(100% + 5px) !important;
+                bottom: unset !important;
+            }
+
+            nav .nav_side {
+                display: flex;
+            }
+
+            article {
+                margin-top: 0;
+                margin-bottom: 0;
+            }
+        </style>
+    {% endif %}
+{% endif %}
 </div>
 
 <script type="text/plain" id="theme">

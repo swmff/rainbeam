@@ -667,6 +667,7 @@ nav a:not(.inner a):hover::after {
 
     article {
         margin-top: 0.75rem;
+        margin-bottom: 5rem;
     }
 }
 
