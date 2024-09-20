@@ -1270,13 +1270,13 @@ details[open] summary:before {
     .desktop {
         display: none !important;
     }
-}
 
-@media screen and (max-width: 900px) {
     .mobile {
         display: flex !important;
     }
+}
 
+@media screen and (max-width: 900px) {
     .sm\:static {
         position: static !important;
     }
