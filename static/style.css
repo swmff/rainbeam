@@ -239,7 +239,7 @@ a.button {
 
 button:not(nav *):hover,
 a.button:not(nav *):hover {
-    box-shadow: 0 0 2px var(--color-shadow);
+    box-shadow: inset 0 0 2px var(--color-shadow);
 }
 
 nav button,
@@ -561,6 +561,7 @@ nav {
     top: 0;
     z-index: 6374;
     padding: 0.25rem;
+    transition: opacity 0.15s;
 }
 
 nav:not(html[data-scroll="0"] *) {
@@ -581,7 +582,7 @@ nav button,
 nav a.button {
     border-radius: var(--radius);
     color: inherit;
-    padding: 0.75rem 0.5rem;
+    padding: 0.75rem 0.75rem;
     transition: opacity 0.15s;
     background: transparent;
     text-decoration: none;
@@ -595,11 +596,6 @@ nav a.button:hover {
     opacity: 100%;
 }
 
-nav button.active,
-nav a.active {
-    font-weight: 600;
-}
-
 nav button::before,
 nav a::before {
     background: transparent;
@@ -611,7 +607,10 @@ nav a::before {
     position: absolute;
     top: calc(50% - (32px / 2));
     z-index: -1;
-    transition: background 0.15s;
+    transition:
+        background 0.5s,
+        top 0.2s,
+        bottom 0.2s;
 }
 
 nav button.active::before,
@@ -648,6 +647,28 @@ nav button:not(.inner button):hover::after,
 nav a:not(.inner a):hover::after {
     opacity: 75%;
 } */
+
+@media screen and (max-width: 650px) {
+    nav {
+        position: fixed;
+        top: unset;
+        bottom: 0;
+        margin-bottom: 0 !important;
+    }
+
+    nav .dropdown .inner {
+        top: unset;
+        bottom: calc(100% + 5px);
+    }
+
+    nav .nav_side {
+        display: contents;
+    }
+
+    article {
+        margin-top: 0.75rem;
+    }
+}
 
 .markdown-alert-note,
 .markdown-alert-tip,
@@ -886,7 +907,7 @@ dialog::backdrop {
 
 .dropdown:not(nav *):has(.inner[open]) button {
     background: var(--color-super-raised) !important;
-    box-shadow: 0 0 2px var(--color-shadow);
+    box-shadow: inset 0 0 2px var(--color-shadow);
 }
 
 .notification {
@@ -1259,11 +1280,13 @@ details[open] summary:before {
     display: none !important;
 }
 
-@media screen and (max-width: 900px) {
+@media screen and (max-width: 650px) {
     .desktop {
         display: none !important;
     }
+}
 
+@media screen and (max-width: 900px) {
     .mobile {
         display: flex !important;
     }

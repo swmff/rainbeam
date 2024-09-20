@@ -77,7 +77,7 @@
         <div id="top"></div>
         <nav>
             <div class="content_container">
-                <div class="flex gap-1">
+                <div class="flex gap-1 nav_side">
                     <a class="button desktop" href="/">
                         <b>{{ config.name }}</b>
                     </a>
@@ -101,7 +101,7 @@
                     {% endif %} {% block nav_left %}{% endblock %}
                 </div>
 
-                <div class="flex gap-1">
+                <div class="flex gap-1 nav_side">
                     {% block nav_right %}{% endblock %} {% if profile.is_some()
                     %}
                     <a

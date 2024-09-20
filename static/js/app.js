@@ -136,9 +136,20 @@
 
     // hooks
     app.define("hook.scroll", function (_, scroll_element, track_element) {
+        const goals = [150, 250, 500, 1000];
+
         track_element.setAttribute("data-scroll", "0");
         scroll_element.addEventListener("scroll", (e) => {
             track_element.setAttribute("data-scroll", scroll_element.scrollTop);
+
+            for (const goal of goals) {
+                const name = `data-scroll-${goal}`;
+                if (scroll_element.scrollTop >= goal) {
+                    track_element.setAttribute(name, "true");
+                } else {
+                    track_element.removeAttribute(name);
+                }
+            }
         });
     });
 
