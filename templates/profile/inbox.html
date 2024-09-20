@@ -88,6 +88,13 @@
                     />
 
                     anonymous {% endif %}
+
+                    <!-- prettier-ignore -->
+                    {% if is_powerful %}
+                    {% let author_tag = crate::database::Database::anonymous_tag(question.author.id.as_ref()) %}
+                    {% if author_tag.0 %}
+                    <span class="notification">{{ author_tag.1 }}</span>
+                    {% endif %} {% endif %}
                 </b>
 
                 <span class="date item">{{ question.timestamp }}</span>

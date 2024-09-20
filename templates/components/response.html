@@ -7,7 +7,7 @@ let reaction_count = response.3 %} {% let response = response.1.clone() %}
 >
     {% if (do_not_render_question == false) && (response.context.is_post ==
     false) %}
-    <div class="card flex flex-col gap-1">
+    <div class="card padded flex flex-col gap-1">
         <div class="flex justify-between gap-1 question_title">
             <div class="footernav">
                 <b class="flex items-center gap-2 item">
@@ -120,7 +120,7 @@ let reaction_count = response.3 %} {% let response = response.1.clone() %}
     <div class="card" style="display: none"></div>
     {% endif %}
 
-    <div class="card flex flex-col gap-1 response_body">
+    <div class="card padded flex flex-col gap-1 response_body">
         <!-- prettier-ignore -->
         {% if (do_not_render_question == true) | (response.context.is_post == true) %}
             {% include "components/response_title.html" %}

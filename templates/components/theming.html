@@ -91,27 +91,29 @@
     {% endif %}
 {% endif %}
 {% if let Some(layout) = other.metadata.kv.get("sparkler:nav_layout") %}
-    {% if layout.chars().nth(1).unwrap() == '1' %}
+    {% if layout.chars().nth(1).unwrap() == '2' %}
         <style id="sparkler_live:nav_layout">
-            nav {
-                position: sticky !important;
-                top: 0 !important;
-                bottom: unset !important;
-                margin-bottom: 1rem !important;
-            }
-
-            nav .dropdown .inner {
-                top: calc(100% + 5px) !important;
-                bottom: unset !important;
-            }
-
-            nav .nav_side {
-                display: flex;
-            }
-
-            article {
-                margin-top: 0;
-                margin-bottom: 0;
+            @media screen and (max-width: 650px) {
+                nav {
+                    position: fixed;
+                    top: unset;
+                    bottom: 0;
+                    margin-bottom: 0 !important;
+                }
+            
+                nav .dropdown .inner {
+                    top: unset;
+                    bottom: calc(100% + 5px);
+                }
+            
+                nav .nav_side {
+                    display: contents;
+                }
+            
+                article {
+                    margin-top: 0.75rem;
+                    margin-bottom: 5rem;
+                }
             }
         </style>
     {% endif %}

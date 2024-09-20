@@ -79,6 +79,7 @@ article {
     margin: auto;
     max-width: 100%;
     padding: 0 0.75rem;
+    margin-bottom: 0.75rem;
 }
 
 .content_container {
@@ -429,7 +430,7 @@ fieldset:hover {
 }
 
 .card.padded {
-    padding: 1.5rem;
+    padding: 1rem;
 }
 
 .card-nest {
@@ -587,6 +588,7 @@ nav a.button {
     background: transparent;
     text-decoration: none;
     position: relative;
+    height: 48px;
 }
 
 nav button:hover,
@@ -608,7 +610,7 @@ nav a::before {
     top: calc(50% - (32px / 2));
     z-index: -1;
     transition:
-        background 0.5s,
+        background 0.2s,
         top 0.2s,
         bottom 0.2s;
 }
@@ -647,29 +649,6 @@ nav button:not(.inner button):hover::after,
 nav a:not(.inner a):hover::after {
     opacity: 75%;
 } */
-
-@media screen and (max-width: 650px) {
-    nav {
-        position: fixed;
-        top: unset;
-        bottom: 0;
-        margin-bottom: 0 !important;
-    }
-
-    nav .dropdown .inner {
-        top: unset;
-        bottom: calc(100% + 5px);
-    }
-
-    nav .nav_side {
-        display: contents;
-    }
-
-    article {
-        margin-top: 0.75rem;
-        margin-bottom: 5rem;
-    }
-}
 
 .markdown-alert-note,
 .markdown-alert-tip,
@@ -921,6 +900,12 @@ dialog::backdrop {
     border-radius: 360px;
     height: max-content;
 }
+
+/* .notification.tr {
+    position: absolute;
+    top: 6px;
+    right: 0;
+} */
 
 .notification.camo {
     background: transparent;
