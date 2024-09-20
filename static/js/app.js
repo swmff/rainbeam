@@ -260,7 +260,6 @@
                 `position: absolute;
                 top: 0;
                 left: 0;
-                backdrop-filter: blur(80px) brightness(80%);
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
@@ -271,7 +270,8 @@
                 border-radius: inherit;
                 cursor: pointer;
                 border: solid 2px var(--color-super-raised);
-                padding: 1rem;`,
+                padding: 1rem;
+                background: var(--color-raised);`,
             );
 
             warning_element.innerHTML = `<p>${warning}</p><button class="primary bold round-lg">View content</button>`;

@@ -120,7 +120,7 @@
                 @media screen and (max-width: 900px) {
                     .profile_avatar {
                         --size: 120px; 
-                        margin: -40px 0 0;
+                        margin: -40px auto 0;
                     }   
                 }
             </style>
@@ -130,7 +130,7 @@
                 class="card padded flex flex-col gap-2 sm:w-full"
                 style="padding-top: 0; height: max-content"
             >
-                <div class="flex flex-fold gap-2 w-full">
+                <div class="flex flex-col gap-2 w-full">
                     <img
                         title="{{ circle.name }}'s avatar"
                         src="/api/v1/circles/{{ circle.name }}/avatar"

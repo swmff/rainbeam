@@ -122,7 +122,7 @@ config.name }}{% endblock %} {% block head %}
                 @media screen and (max-width: 900px) {
                     .profile_avatar {
                         --size: 120px; 
-                        margin: -40px 0 0;
+                        margin: -40px auto 0;
                     }   
                 }
             </style>
@@ -132,7 +132,7 @@ config.name }}{% endblock %} {% block head %}
                 class="card padded flex flex-col gap-2 w-full"
                 style="padding-top: 0; height: max-content"
             >
-                <div class="flex flex-fold gap-2 w-full">
+                <div class="flex flex-col gap-2 w-full">
                     <img
                         title="{{ other.username }}'s avatar"
                         src="/api/v1/profiles/{{ other.username }}/avatar"
