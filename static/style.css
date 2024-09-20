@@ -22,7 +22,8 @@
     --color-link: #2949b2;
     --color-text-primary: hsl(0, 0%, 100%);
     --color-shadow: rgba(0, 0, 0, 0.15);
-    --radius: 0.5rem;
+    --color-red: hsl(0, 84%, 60%);
+    --radius: 0.35rem;
 }
 
 .dark,
@@ -35,6 +36,7 @@
     --color-text: hsl(0, 0%, 95%);
     --color-link: #93c5fd;
     --color-primary-raised: hsl(341, 59%, 55%);
+    --color-red: hsl(0, 94%, 82%);
 }
 
 html,
@@ -76,6 +78,7 @@ article {
     width: 100%;
     margin: auto;
     max-width: 100%;
+    padding: 0 0.75rem;
 }
 
 .content_container {
@@ -105,6 +108,10 @@ article {
     }
 
     @media (min-width: 1200px) {
+        article {
+            padding: 0;
+        }
+
         .content_container {
             max-width: 1100px;
         }
@@ -205,7 +212,7 @@ button,
 a.button {
     background: var(--color-lowered);
     color: var(--color-text);
-    padding: 0.25rem 0.75rem;
+    padding: 0.25rem 0.85rem;
     min-height: 32px;
     min-width: max-content;
     width: max-content;
@@ -218,14 +225,16 @@ a.button {
         background 0.15s,
         outline 0.08s,
         outline-color 0.15s,
-        border-radius 0.15s;
+        border-radius 0.15s,
+        opacity 0.15s;
     user-select: none;
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 0.25rem;
     text-decoration: none !important;
-    font-size: 13.3333px;
+    /* font-size: 13.3333px; */
+    font-size: 0.9rem;
 }
 
 button:not(nav *):hover,
@@ -246,6 +255,19 @@ a.button:has(.notification) {
 button:hover,
 a.button:hover {
     background: var(--color-super-lowered);
+}
+
+button.camo,
+a.button.camo {
+    background: transparent;
+    opacity: 85%;
+}
+
+button.camo:hover,
+a.button.camo:hover {
+    box-shadow: none;
+    background: transparent;
+    opacity: 100%;
 }
 
 button.primary,
@@ -379,12 +401,20 @@ fieldset:hover {
 
 .flex-collapse {
     display: flex;
-    gap: 0.5rem;
+}
+
+.flex-fold {
+    display: flex;
+    flex-direction: column;
 }
 
 @media screen and (max-width: 900px) {
     .flex-collapse {
         flex-direction: column !important;
+    }
+
+    .flex-fold {
+        flex-direction: row !important;
     }
 }
 
@@ -807,11 +837,10 @@ dialog::backdrop {
     border-radius: var(--radius);
     top: calc(100% + 5px);
     right: 0;
-    width: 10rem;
+    width: max-content;
     min-width: 10rem;
+    max-width: 100dvw;
     padding: 0.5rem 0;
-    color: var(--color-text-raised);
-    animation: popin ease-in-out 1 0.05s forwards running;
 }
 
 .dropdown .inner.left {
@@ -1332,9 +1361,5 @@ details[open] summary:before {
 }
 
 .red {
-    color: #dc2626;
-}
-
-.red:is(.dark *) {
-    color: #fca5a5;
+    color: var(--color-red) !important;
 }

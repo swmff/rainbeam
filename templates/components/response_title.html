@@ -54,7 +54,7 @@
         <!-- reactions -->
         <button
             title="{{ reaction_count }} reactions"
-            class="w-full secondary"
+            class="w-full camo"
             onclick="trigger('reactions:toggle', ['{{ response.id }}', 'Response'])"
         >
             <svg
@@ -78,7 +78,7 @@
         <a
             href="/response/{{ response.id }}"
             title="{{ comment_count }} comments"
-            class="button w-full secondary"
+            class="button w-full camo"
         >
             <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -100,7 +100,7 @@
         <!-- sharing -->
         <div class="dropdown w-full">
             <button
-                class="w-full secondary"
+                class="w-full camo"
                 onclick="trigger('app:hook.dropdown', [event])"
                 exclude="dropdown"
             >
@@ -168,7 +168,7 @@
         <!-- options -->
         <div class="dropdown w-full">
             <button
-                class="w-full secondary"
+                class="w-full camo"
                 onclick="trigger('app:hook.dropdown', [event])"
                 exclude="dropdown"
             >

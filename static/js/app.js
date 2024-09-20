@@ -35,18 +35,14 @@
 
     app.define("clean_date_codes", function ({ $ }) {
         for (const element of Array.from(document.querySelectorAll(".date"))) {
+            const then = new Date(parseInt(element.innerText));
+
             if (isNaN(element.innerText)) {
                 continue;
             }
 
-            element.setAttribute(
-                "title",
-                new Date(parseInt(element.innerText)).toLocaleString(),
-            );
-
-            element.innerText = new Date(
-                parseInt(element.innerText),
-            ).toLocaleDateString();
+            element.setAttribute("title", then.toLocaleString());
+            element.innerText = then.toLocaleDateString();
         }
     });
 
