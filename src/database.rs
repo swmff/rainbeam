@@ -221,8 +221,7 @@ impl Database {
             format!("SELECT * FROM \"xprofiles\" WHERE \"username\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
         } else {
             format!("SELECT * FROM \"xprofiles\" WHERE \"username\" LIKE $1 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query)
@@ -331,6 +330,23 @@ impl Database {
 
         out += &format!(" {link}");
         out
+    }
+
+    /// Create a moderator audit log entry
+    pub async fn audit(&self, actor_id: String, content: String) -> Result<()> {
+        match self
+            .auth
+            .create_notification(NotificationCreate {
+                title: format!("[{actor_id}](/+u/{actor_id})"),
+                content,
+                address: format!("/+u/{actor_id}"),
+                recipient: "*(audit)".to_string(), // all staff, audit
+            })
+            .await
+        {
+            Ok(_) => Ok(()),
+            Err(_) => Err(DatabaseError::Other),
+        }
     }
 
     // questions
@@ -577,8 +593,7 @@ impl Database {
             format!("SELECT * FROM \"xquestions\" WHERE \"author\" = ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
         } else {
             format!("SELECT * FROM \"xquestions\" WHERE \"author\" = $1 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query)
@@ -704,8 +719,7 @@ impl Database {
             format!("SELECT * FROM \"xquestions\" WHERE \"author\" = ? AND \"recipient\" = '@' ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
         } else {
             format!("SELECT * FROM \"xquestions\" WHERE \"author\" = $1 AND \"recipient\" = '@' ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query)
@@ -774,8 +788,7 @@ impl Database {
             format!("SELECT * FROM \"xquestions\" WHERE \"author\" = ? AND \"recipient\" = '@' AND \"content\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
         } else {
             format!("SELECT * FROM \"xquestions\" WHERE \"author\" = $1 AND \"recipient\" = '@' AND \"content\" LIKE $2 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query)
@@ -843,8 +856,7 @@ impl Database {
             format!("SELECT * FROM \"xquestions\" WHERE \"recipient\" = '@' AND \"content\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
         } else {
             format!("SELECT * FROM \"xquestions\" WHERE \"recipient\" = '@' AND \"content\" LIKE $1 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query)
@@ -2531,6 +2543,16 @@ impl Database {
 
             if !group.permissions.contains(&Permission::Manager) {
                 return Err(DatabaseError::NotAllowed);
+            } else {
+                if let Err(e) = self
+                    .audit(
+                        user.id,
+                        format!("Edited a response: [{}]({})", response.id, response.id),
+                    )
+                    .await
+                {
+                    return Err(e);
+                }
             }
         }
 
@@ -2602,6 +2624,17 @@ impl Database {
 
             if !group.permissions.contains(&Permission::Manager) {
                 return Err(DatabaseError::NotAllowed);
+            } else if let Err(e) = self
+                .audit(
+                    user.id,
+                    format!(
+                        "Edited a response's tags: [{}]({})",
+                        response.id, response.id
+                    ),
+                )
+                .await
+            {
+                return Err(e);
             }
         }
 
@@ -2666,6 +2699,19 @@ impl Database {
 
             if !group.permissions.contains(&Permission::Helper) {
                 return Err(DatabaseError::NotAllowed);
+            } else {
+                if let Err(e) = self
+                    .audit(
+                        user.id,
+                        format!(
+                            "Deleted a response by: [{}](/+u/{})",
+                            response.1.author.id, response.1.author.id
+                        ),
+                    )
+                    .await
+                {
+                    return Err(e);
+                }
             }
         }
 
@@ -2767,6 +2813,19 @@ impl Database {
 
             if !group.permissions.contains(&Permission::Manager) {
                 return Err(DatabaseError::NotAllowed);
+            } else {
+                if let Err(e) = self
+                    .audit(
+                        user.id.clone(),
+                        format!(
+                            "Unsent a response by: [{}](/+u/{})",
+                            response.author.id, response.author.id
+                        ),
+                    )
+                    .await
+                {
+                    return Err(e);
+                }
             }
         }
 
@@ -3477,6 +3536,19 @@ impl Database {
 
             if !group.permissions.contains(&Permission::Helper) {
                 return Err(DatabaseError::NotAllowed);
+            } else {
+                if let Err(e) = self
+                    .audit(
+                        user.id,
+                        format!(
+                            "Deleted a comment by: [{}](/+u/{})",
+                            comment.author.id, comment.author.id
+                        ),
+                    )
+                    .await
+                {
+                    return Err(e);
+                }
             }
         }
 
@@ -3756,6 +3828,19 @@ impl Database {
 
             if !group.permissions.contains(&Permission::Manager) {
                 return Err(DatabaseError::NotAllowed);
+            } else {
+                if let Err(e) = self
+                    .audit(
+                        user.id.clone(),
+                        format!(
+                            "Deleted a reaction by: [{}](/+u/{})",
+                            reaction.user.id, reaction.user.id
+                        ),
+                    )
+                    .await
+                {
+                    return Err(e);
+                }
             }
         }
 
@@ -4444,6 +4529,19 @@ impl Database {
 
             if !group.permissions.contains(&Permission::Manager) {
                 return Err(DatabaseError::NotAllowed);
+            } else {
+                if let Err(e) = self
+                    .audit(
+                        user.id,
+                        format!(
+                            "Deleted a circle by: [{}](/+u/{})",
+                            circle.owner.id, circle.owner.id
+                        ),
+                    )
+                    .await
+                {
+                    return Err(e);
+                }
             }
         }
 

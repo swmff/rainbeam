@@ -61,9 +61,16 @@ endblock %} {% block head %}
     {% endif %}
 
     <main class="flex flex-col gap-2">
+        <div class="pillmenu convertible">
+            <a href="/inbox">My Inbox</a>
+            <a href="/inbox/audit">Audit Log</a>
+            <a href="/inbox/reports" class="active">Reports</a>
+        </div>
+
         <!-- notifications -->
         <!-- prettier-ignore -->
         {% for notif in reports %}
+            {% let show_mark_as_read = true %}
             {% include "components/notification.html" %}
         {% endfor %}
     </main>

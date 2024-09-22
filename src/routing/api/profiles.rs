@@ -6,10 +6,10 @@ use std::{fs::File, io::Read};
 use xsu_authman::model::{NotificationCreate, Permission, UserFollow};
 use xsu_dataman::DefaultReturn;
 
-use axum::response::IntoResponse;
 use axum::{
     body::Body,
     extract::{Path, State},
+    response::{IntoResponse, Redirect},
     routing::{delete, get, post},
     Json, Router,
 };
@@ -44,6 +44,17 @@ pub fn read_image(static_dir: String, image: String) -> Vec<u8> {
 }
 
 // routes
+
+/// Redirect an ID to a full username
+pub async fn expand_request(
+    Path(id): Path<String>,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    match database.get_profile(id).await {
+        Ok(r) => Redirect::to(&format!("/@{}", r.username)),
+        Err(_) => Redirect::to("/"),
+    }
+}
 
 /// Get a profile's avatar image
 pub async fn avatar_request(

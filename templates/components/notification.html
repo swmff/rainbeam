@@ -1,8 +1,8 @@
 <div class="card-nest w-full shadow" id="notif:{{ notif.id }}">
     <div class="card flex flex-wrap justify-between gap-2">
-        <b class="notif_title">
+        <span class="notif_title">
             {{ xsu_util::ui::render_markdown(notif.title)|safe }}
-        </b>
+        </span>
         <span class="notif_timestamp date">{{ notif.timestamp }}</span>
     </div>
 
@@ -33,8 +33,7 @@
                 </svg>
                 Open
             </a>
-            {% endif %}
-
+            {% endif %} {% if show_mark_as_read %}
             <button
                 class="button secondary bold"
                 onclick="trigger('notifications:delete', ['{{ notif.id }}'])"
@@ -53,6 +52,7 @@
                 </svg>
                 Mark as Read
             </button>
+            {% endif %}
         </div>
     </div>
 </div>

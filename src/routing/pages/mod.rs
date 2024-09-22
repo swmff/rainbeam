@@ -962,6 +962,7 @@ struct InboxTemplate {
     notifs: usize,
     anonymous_username: Option<String>,
     anonymous_avatar: Option<String>,
+    is_helper: bool,
 }
 
 /// GET /inbox
@@ -991,6 +992,15 @@ pub async fn inbox_request(jar: CookieJar, State(database): State<Database>) -> 
         .get_notification_count_by_recipient(auth_user.id.to_owned())
         .await;
 
+    let is_helper: bool = {
+        let group = match database.auth.get_group_by_id(auth_user.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        group.permissions.contains(&Permission::Helper)
+    };
+
     Html(
         InboxTemplate {
             config: database.server_options,
@@ -1013,6 +1023,7 @@ pub async fn inbox_request(jar: CookieJar, State(database): State<Database>) -> 
                     .to_string(),
             ),
             profile: Some(auth_user),
+            is_helper,
         }
         .render()
         .unwrap(),
@@ -1346,6 +1357,76 @@ pub async fn reports_request(
 }
 
 #[derive(Template)]
+#[template(path = "audit.html")]
+struct AuditTemplate {
+    config: Config,
+    profile: Option<Profile>,
+    unread: usize,
+    logs: Vec<Notification>,
+    page: i32,
+}
+
+/// GET /inbox/audit
+pub async fn audit_log_request(
+    jar: CookieJar,
+    State(database): State<Database>,
+    Query(props): Query<PaginatedQuery>,
+) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => return Html(DatabaseError::NotAllowed.to_html(database)),
+        },
+        None => return Html(DatabaseError::NotAllowed.to_html(database)),
+    };
+
+    // check permission
+    let group = match database.auth.get_group_by_id(auth_user.group).await {
+        Ok(g) => g,
+        Err(_) => return Html(DatabaseError::NotFound.to_html(database)),
+    };
+
+    if !group.permissions.contains(&Permission::Helper) {
+        // we must be a manager to do this
+        return Html(DatabaseError::NotAllowed.to_html(database));
+    }
+
+    // ...
+    let unread = match database
+        .get_questions_by_recipient(auth_user.id.to_owned())
+        .await
+    {
+        Ok(unread) => unread.len(),
+        Err(_) => 0,
+    };
+
+    let logs = match database
+        .auth
+        .get_notifications_by_recipient_paginated("*(audit)".to_string(), props.page)
+        .await
+    {
+        Ok(r) => r,
+        Err(_) => return Html(DatabaseError::Other.to_html(database)),
+    };
+
+    Html(
+        AuditTemplate {
+            config: database.server_options.clone(),
+            profile: Some(auth_user),
+            unread,
+            logs,
+            page: props.page,
+        }
+        .render()
+        .unwrap(),
+    )
+}
+
+#[derive(Template)]
 #[template(path = "report.html")]
 struct ReportTemplate {
     config: Config,
@@ -1416,6 +1497,7 @@ pub async fn routes(database: Database) -> Router {
         .route("/inbox/compose", get(compose_request))
         .route("/inbox/notifications", get(notifications_request))
         .route("/inbox/reports", get(reports_request)) // staff
+        .route("/inbox/audit", get(audit_log_request)) // staff
         // assets
         .route("/question/:id", get(question_request))
         .route("/xml/question/:id", get(question_xml_request))
@@ -1473,6 +1555,7 @@ pub async fn routes(database: Database) -> Router {
         .route("/+q/:id", get(api::questions::expand_request))
         .route("/+r/:id", get(api::responses::expand_request))
         .route("/+c/:id", get(api::comments::expand_request))
+        .route("/+u/:id", get(api::profiles::expand_request))
         // ...
         .with_state(database)
 }
