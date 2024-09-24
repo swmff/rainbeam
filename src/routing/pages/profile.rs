@@ -25,6 +25,7 @@ struct ProfileTemplate {
     questions_count: usize,
     followers_count: usize,
     following_count: usize,
+    friends_count: usize,
     is_following: bool,
     is_following_you: bool,
     metadata: String,
@@ -33,6 +34,7 @@ struct ProfileTemplate {
     tag: String,
     query: String,
     // ...
+    relationship: RelationshipStatus,
     lock_profile: bool,
     disallow_anonymous: bool,
     require_account: bool,
@@ -237,6 +239,9 @@ pub async fn profile_request(
                 .await,
             followers_count: database.auth.get_followers_count(other.id.clone()).await,
             following_count: database.auth.get_following_count(other.id.clone()).await,
+            friends_count: database
+                .get_friendship_count_by_user(other.id.clone())
+                .await,
             is_following,
             is_following_you,
             metadata: clean_metadata(&other.metadata),
@@ -245,6 +250,7 @@ pub async fn profile_request(
             tag: query.tag.unwrap_or(String::new()),
             query: query.q.unwrap_or(String::new()),
             // ...
+            relationship,
             layout: other
                 .metadata
                 .kv
@@ -499,11 +505,13 @@ struct FollowersTemplate {
     followers: Vec<(UserFollow, Profile, Profile)>,
     followers_count: usize,
     following_count: usize,
+    friends_count: usize,
     is_following: bool,
     is_following_you: bool,
     metadata: String,
     page: i32,
     // ...
+    relationship: RelationshipStatus,
     layout: String,
     lock_profile: bool,
     disallow_anonymous: bool,
@@ -651,11 +659,15 @@ pub async fn followers_request(
                 .unwrap(),
             followers_count: database.auth.get_followers_count(other.id.clone()).await,
             following_count: database.auth.get_following_count(other.id.clone()).await,
+            friends_count: database
+                .get_friendship_count_by_user(other.id.clone())
+                .await,
             is_following,
             is_following_you,
             metadata: clean_metadata(&other.metadata),
             page: query.page,
             // ...
+            relationship,
             layout: other
                 .metadata
                 .kv
@@ -700,6 +712,7 @@ struct FollowingTemplate {
     response_count: usize,
     questions_count: usize,
     followers_count: usize,
+    friends_count: usize,
     following: Vec<(UserFollow, Profile, Profile)>,
     following_count: usize,
     is_following: bool,
@@ -707,6 +720,7 @@ struct FollowingTemplate {
     metadata: String,
     page: i32,
     // ...
+    relationship: RelationshipStatus,
     layout: String,
     lock_profile: bool,
     disallow_anonymous: bool,
@@ -854,11 +868,227 @@ pub async fn following_request(
                 .get_following_paginated(other.id.clone(), query.page)
                 .await
                 .unwrap(),
+            friends_count: database
+                .get_friendship_count_by_user(other.id.clone())
+                .await,
             is_following,
             is_following_you,
             metadata: clean_metadata(&other.metadata),
             page: query.page,
             // ...
+            relationship,
+            layout: other
+                .metadata
+                .kv
+                .get("sparkler:layout")
+                .unwrap_or(&String::new())
+                .to_owned(),
+            lock_profile: other
+                .metadata
+                .kv
+                .get("sparkler:lock_profile")
+                .unwrap_or(&"false".to_string())
+                == "true",
+            disallow_anonymous: other
+                .metadata
+                .kv
+                .get("sparkler:disallow_anonymous")
+                .unwrap_or(&"false".to_string())
+                == "true",
+            require_account: other
+                .metadata
+                .kv
+                .get("sparkler:require_account")
+                .unwrap_or(&"false".to_string())
+                == "true",
+            is_powerful,
+            is_helper,
+            is_self,
+        }
+        .render()
+        .unwrap(),
+    )
+}
+
+#[derive(Template)]
+#[template(path = "profile/friends.html")]
+struct FriendsTemplate {
+    config: Config,
+    profile: Option<Profile>,
+    unread: usize,
+    notifs: usize,
+    other: Profile,
+    response_count: usize,
+    questions_count: usize,
+    friends: Vec<(Profile, Profile)>,
+    followers_count: usize,
+    following_count: usize,
+    friends_count: usize,
+    is_following: bool,
+    is_following_you: bool,
+    metadata: String,
+    page: i32,
+    // ...
+    relationship: RelationshipStatus,
+    layout: String,
+    lock_profile: bool,
+    disallow_anonymous: bool,
+    require_account: bool,
+    is_powerful: bool,
+    is_helper: bool,
+    is_self: bool,
+}
+
+/// GET /@:username/friends
+pub async fn friends_request(
+    jar: CookieJar,
+    Path(username): Path<String>,
+    State(database): State<Database>,
+    Query(query): Query<PaginatedQuery>,
+) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => Some(ua),
+            Err(_) => None,
+        },
+        None => None,
+    };
+
+    let unread = if let Some(ref ua) = auth_user {
+        match database.get_questions_by_recipient(ua.id.to_owned()).await {
+            Ok(unread) => unread.len(),
+            Err(_) => 0,
+        }
+    } else {
+        0
+    };
+
+    let notifs = if let Some(ref ua) = auth_user {
+        database
+            .auth
+            .get_notification_count_by_recipient(ua.id.to_owned())
+            .await
+    } else {
+        0
+    };
+
+    let other = match database
+        .auth
+        .get_profile_by_username(username.clone())
+        .await
+    {
+        Ok(ua) => ua,
+        Err(e) => return Html(e.to_string()),
+    };
+
+    let is_following = if let Some(ref ua) = auth_user {
+        match database
+            .auth
+            .get_follow(ua.id.to_owned(), other.id.clone())
+            .await
+        {
+            Ok(_) => true,
+            Err(_) => false,
+        }
+    } else {
+        false
+    };
+
+    let is_following_you = if let Some(ref ua) = auth_user {
+        match database
+            .auth
+            .get_follow(other.id.clone(), ua.id.to_owned())
+            .await
+        {
+            Ok(_) => true,
+            Err(_) => false,
+        }
+    } else {
+        false
+    };
+
+    let mut is_helper: bool = false;
+    let is_powerful = if let Some(ref ua) = auth_user {
+        let group = match database.auth.get_group_by_id(ua.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        is_helper = group.permissions.contains(&Permission::Helper);
+        group.permissions.contains(&Permission::Manager)
+    } else {
+        false
+    };
+
+    let is_self = if let Some(ref profile) = auth_user {
+        profile.id == other.id
+    } else {
+        false
+    };
+
+    if !is_self
+        && (other
+            .metadata
+            .kv
+            .get("sparkler:private_social")
+            .unwrap_or(&"false".to_string())
+            == "true")
+    {
+        // hide social if not self and private_social is true
+        return Html(DatabaseError::NotAllowed.to_html(database));
+    }
+
+    let relationship = if let Some(ref profile) = auth_user {
+        database
+            .get_user_relationship(other.id.clone(), profile.id.clone())
+            .await
+            .0
+    } else {
+        RelationshipStatus::Unknown
+    };
+
+    let is_blocked = relationship == RelationshipStatus::Blocked;
+
+    if !is_helper && is_blocked {
+        return Html(DatabaseError::NotFound.to_html(database));
+    }
+
+    Html(
+        FriendsTemplate {
+            config: database.server_options.clone(),
+            profile: auth_user.clone(),
+            unread,
+            notifs,
+            other: other.clone(),
+            response_count: database
+                .get_response_count_by_author(other.id.clone())
+                .await,
+            questions_count: database
+                .get_global_questions_count_by_author(other.id.clone())
+                .await,
+            friends: database
+                .get_user_participating_relationships_of_status_paginated(
+                    other.id.clone(),
+                    RelationshipStatus::Friends,
+                    query.page,
+                )
+                .await
+                .unwrap(),
+            followers_count: database.auth.get_followers_count(other.id.clone()).await,
+            following_count: database.auth.get_following_count(other.id.clone()).await,
+            friends_count: database
+                .get_friendship_count_by_user(other.id.clone())
+                .await,
+            is_following,
+            is_following_you,
+            metadata: clean_metadata(&other.metadata),
+            page: query.page,
+            // ...
+            relationship,
             layout: other
                 .metadata
                 .kv
@@ -905,12 +1135,14 @@ struct ProfileQuestionsTemplate {
     response_count: usize,
     followers_count: usize,
     following_count: usize,
+    friends_count: usize,
     is_following: bool,
     is_following_you: bool,
     metadata: String,
     page: i32,
     query: String,
     // ...
+    relationship: RelationshipStatus,
     layout: String,
     lock_profile: bool,
     disallow_anonymous: bool,
@@ -1065,12 +1297,16 @@ pub async fn questions_request(
                 .await,
             followers_count: database.auth.get_followers_count(other.id.clone()).await,
             following_count: database.auth.get_following_count(other.id.clone()).await,
+            friends_count: database
+                .get_friendship_count_by_user(other.id.clone())
+                .await,
             is_following,
             is_following_you,
             metadata: clean_metadata(&other.metadata),
             page: query.page,
             query: query.q.unwrap_or(String::new()),
             // ...
+            relationship,
             layout: other
                 .metadata
                 .kv
@@ -1124,11 +1360,13 @@ struct ModTemplate {
     questions_count: usize,
     followers_count: usize,
     following_count: usize,
+    friends_count: usize,
     is_following: bool,
     is_following_you: bool,
     metadata: String,
     badges: String,
     // ...
+    relationship: RelationshipStatus,
     layout: String,
     lock_profile: bool,
     disallow_anonymous: bool,
@@ -1253,11 +1491,15 @@ pub async fn mod_request(
                 .await,
             followers_count: database.auth.get_followers_count(other.id.clone()).await,
             following_count: database.auth.get_following_count(other.id.clone()).await,
+            friends_count: database
+                .get_friendship_count_by_user(other.id.clone())
+                .await,
             is_following,
             is_following_you,
             metadata: clean_metadata(&other.metadata),
             badges: serde_json::to_string_pretty(&other.badges).unwrap(),
             // ...
+            relationship,
             layout: other
                 .metadata
                 .kv
@@ -1311,10 +1553,12 @@ struct ProfileQuestionsInboxTemplate {
     response_count: usize,
     followers_count: usize,
     following_count: usize,
+    friends_count: usize,
     is_following: bool,
     is_following_you: bool,
     metadata: String,
     // ...
+    relationship: RelationshipStatus,
     layout: String,
     lock_profile: bool,
     disallow_anonymous: bool,
@@ -1438,10 +1682,14 @@ pub async fn inbox_request(
                 .await,
             followers_count: database.auth.get_followers_count(other.id.clone()).await,
             following_count: database.auth.get_following_count(other.id.clone()).await,
+            friends_count: database
+                .get_friendship_count_by_user(other.id.clone())
+                .await,
             is_following,
             is_following_you,
             metadata: clean_metadata(&other.metadata),
             // ...
+            relationship,
             layout: other
                 .metadata
                 .kv
@@ -1495,11 +1743,13 @@ struct ProfileQuestionsOutboxTemplate {
     response_count: usize,
     followers_count: usize,
     following_count: usize,
+    friends_count: usize,
     is_following: bool,
     is_following_you: bool,
     metadata: String,
     page: i32,
     // ...
+    relationship: RelationshipStatus,
     layout: String,
     lock_profile: bool,
     disallow_anonymous: bool,
@@ -1624,11 +1874,15 @@ pub async fn outbox_request(
                 .await,
             followers_count: database.auth.get_followers_count(other.id.clone()).await,
             following_count: database.auth.get_following_count(other.id.clone()).await,
+            friends_count: database
+                .get_friendship_count_by_user(other.id.clone())
+                .await,
             is_following,
             is_following_you,
             metadata: clean_metadata(&other.metadata),
             page: query.page,
             // ...
+            relationship,
             layout: other
                 .metadata
                 .kv
@@ -1663,6 +1917,78 @@ pub async fn outbox_request(
             is_powerful,
             is_helper,
             is_self,
+        }
+        .render()
+        .unwrap(),
+    )
+}
+
+#[derive(Template)]
+#[template(path = "profile/friend_request.html")]
+struct FriendRequestTemplate {
+    config: Config,
+    profile: Option<Profile>,
+    unread: usize,
+    notifs: usize,
+    other: Profile,
+}
+
+/// GET /@:username/relationship/friend_accept
+pub async fn friend_request(
+    jar: CookieJar,
+    Path(username): Path<String>,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => return Html(DatabaseError::NotAllowed.to_html(database)),
+        },
+        None => return Html(DatabaseError::NotAllowed.to_html(database)),
+    };
+
+    let unread = match database
+        .get_questions_by_recipient(auth_user.id.to_owned())
+        .await
+    {
+        Ok(unread) => unread.len(),
+        Err(_) => 0,
+    };
+
+    let notifs = database
+        .auth
+        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .await;
+
+    let other = match database
+        .auth
+        .get_profile_by_username(username.clone())
+        .await
+    {
+        Ok(ua) => ua,
+        Err(e) => return Html(e.to_string()),
+    };
+
+    let relationship = database
+        .get_user_relationship(other.id.clone(), auth_user.id.clone())
+        .await;
+
+    // the relationship status must be pending AND we must be user 2 (the user who got sent the request)
+    if (relationship.0 != RelationshipStatus::Pending) | (relationship.2 != auth_user.id) {
+        return Html(DatabaseError::NotFound.to_html(database));
+    }
+
+    Html(
+        FriendRequestTemplate {
+            config: database.server_options.clone(),
+            profile: Some(auth_user.clone()),
+            unread,
+            notifs,
+            other: other.clone(),
         }
         .render()
         .unwrap(),

@@ -179,7 +179,7 @@ config.name }}{% endblock %} {% block head %}
                 <!-- options for account owner -->
                 <!-- <hr /> -->
                 <a
-                    class="button round-lg w-full bold primary grayscale"
+                    class="button round-lg w-full bold primary"
                     href="/settings/profile"
                 >
                     Edit Profile
@@ -273,12 +273,86 @@ config.name }}{% endblock %} {% block head %}
                 </button>
                 {% else %}
                 <button
-                    class="round-lg w-full bold"
+                    class="round-lg w-full"
                     onclick="follow()"
                     id="follow_button"
                 >
                     Unfollow
                 </button>
+                {% endif %}
+
+                {% if relationship == crate::model::RelationshipStatus::Unknown %}
+                <button class="round-lg w-full primary bold" onclick="friend()">
+                    Add Friend
+                </button>
+
+                <script>
+                    globalThis.friend = function (username) {
+                        fetch("/api/v1/profiles/{{ other.username }}/relationship/friend", {
+                            method: "POST",
+                        })
+                            .then((res) => res.json())
+                            .then((res) => {
+                                trigger("app:toast", [
+                                    res.success ? "success" : "error",
+                                    res.success ? "Friend request sent!" : res.message,
+                                ]);
+
+                                window.close();
+                            });
+                    };
+                </script>
+                {% else if relationship == crate::model::RelationshipStatus::Friends %}
+                <button class="round-lg w-full" onclick="unfriend()">
+                    Remove Friend
+                </button>
+
+                <script>
+                    globalThis.unfriend = function (username) {
+                        if (!confirm("Are you sure you want to do this?")) {
+                            return;
+                        }
+
+                        fetch("/api/v1/profiles/{{ other.username }}/relationship", {
+                            method: "DELETE",
+                        })
+                            .then((res) => res.json())
+                            .then((res) => {
+                                trigger("app:toast", [
+                                    res.success ? "success" : "error",
+                                    res.success ? "User unfriended!" : res.message,
+                                ]);
+
+                                window.close();
+                            });
+                    };
+                </script>
+                {% else if relationship == crate::model::RelationshipStatus::Pending %}
+                <button class="round-lg w-full" onclick="cancel_fr()">
+                    Cancel Friend Request                
+                </button>
+                
+                <script>
+                    globalThis.cancel_fr = function (username) {
+                        if (!confirm("Are you sure you want to do this?")) {
+                            return;
+                        }
+
+                        fetch("/api/v1/profiles/{{ other.username }}/relationship", {
+                            method: "DELETE",
+                        })
+                            .then((res) => res.json())
+                            .then((res) => {
+                                trigger("app:toast", [
+                                    res.success ? "success" : "error",
+                                    res.success ? "Request cancelled!" : res.message,
+                                ]);
+
+                                window.close();
+                            });
+                    };
+                </script>
+                
                 {% endif %}
 
                 <!-- actions -->

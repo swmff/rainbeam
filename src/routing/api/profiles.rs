@@ -636,11 +636,21 @@ pub async fn friend_request(
         }
     };
 
-    // current relationship
+    // get current relationship
     let current = database
         .get_user_relationship(auth_user.id.clone(), other_user.id.clone())
-        .await
-        .0;
+        .await;
+
+    if current.0 == RelationshipStatus::Blocked && auth_user.id != current.1 {
+        // cannot change relationship if we're blocked and we aren't the user that did the blocking
+        return Json(DefaultReturn {
+            success: false,
+            message: DatabaseError::NotAllowed.to_string(),
+            payload: None,
+        });
+    }
+
+    let current = current.0;
 
     // return
     if current == RelationshipStatus::Unknown {
@@ -771,6 +781,20 @@ pub async fn block_request(
         }
     };
 
+    // get current relationship
+    let current = database
+        .get_user_relationship(auth_user.id.clone(), other_user.id.clone())
+        .await;
+
+    if current.0 == RelationshipStatus::Blocked && auth_user.id != current.1 {
+        // cannot change relationship if we're blocked and we aren't the user that did the blocking
+        return Json(DefaultReturn {
+            success: false,
+            message: DatabaseError::NotAllowed.to_string(),
+            payload: None,
+        });
+    }
+
     // force unfollow
     if let Err(e) = database
         .auth
@@ -875,6 +899,20 @@ pub async fn breakup_request(
             })
         }
     };
+
+    // get current relationship
+    let current = database
+        .get_user_relationship(auth_user.id.clone(), other_user.id.clone())
+        .await;
+
+    if current.0 == RelationshipStatus::Blocked && auth_user.id != current.1 {
+        // cannot remove relationship if we're blocked and we aren't the user that did the blocking
+        return Json(DefaultReturn {
+            success: false,
+            message: DatabaseError::NotAllowed.to_string(),
+            payload: None,
+        });
+    }
 
     // return
     match database

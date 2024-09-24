@@ -1512,7 +1512,12 @@ pub async fn routes(database: Database) -> Router {
         .route("/@:username/questions/outbox", get(profile::outbox_request)) // staff
         .route("/@:username/following", get(profile::following_request))
         .route("/@:username/followers", get(profile::followers_request))
+        .route("/@:username/friends", get(profile::friends_request))
         .route("/@:username/embed", get(profile::profile_embed_request))
+        .route(
+            "/@:username/relationship/friend_accept",
+            get(profile::friend_request),
+        )
         .route("/xml/@:username", get(profile::profile_xml_request))
         .route("/@:username", get(profile::profile_request))
         // circles

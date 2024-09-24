@@ -19,6 +19,11 @@
     Following
     <b class="notification">{{ following_count }}</b>
 </a>
+
+<a href="/@{{ other.username }}/friends">
+    Friends
+    <b class="notification">{{ friends_count }}</b>
+</a>
 {% endif %} {% if is_helper %}
 <a href="/@{{ other.username }}/mod" class="active">
     Manage

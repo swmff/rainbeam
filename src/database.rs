@@ -4869,6 +4869,19 @@ impl Database {
         // ...
         match status {
             RelationshipStatus::Blocked => {
+                if relationship.0 == RelationshipStatus::Friends {
+                    // decr friendship counts since we were previously friends but are not now
+                    self.base
+                        .cachedb
+                        .decr(format!("xsulib.sparkler.friends_count:{}", one))
+                        .await;
+
+                    self.base
+                        .cachedb
+                        .decr(format!("xsulib.sparkler.friends_count:{}", two))
+                        .await;
+                }
+
                 if relationship.0 != RelationshipStatus::Unknown {
                     // update
                     let query: String =
@@ -4990,7 +5003,10 @@ impl Database {
                         .auth
                         .create_notification(NotificationCreate {
                             title: "Your friend request has been accepted!".to_string(),
-                            content: format!("{} has accepted your friend request.", utwo.username),
+                            content: format!(
+                                "[@{}](/@{}) has accepted your friend request.",
+                                utwo.username, utwo.username
+                            ),
                             address: String::new(),
                             recipient: uone.id,
                         })
@@ -5020,15 +5036,18 @@ impl Database {
                     return Err(DatabaseError::Other);
                 };
 
-                self.base
-                    .cachedb
-                    .decr(format!("xsulib.sparkler.friends_count:{}", one))
-                    .await;
+                if relationship.0 == RelationshipStatus::Friends {
+                    // decr friendship counts since we were previously friends but are not now
+                    self.base
+                        .cachedb
+                        .decr(format!("xsulib.sparkler.friends_count:{}", one))
+                        .await;
 
-                self.base
-                    .cachedb
-                    .decr(format!("xsulib.sparkler.friends_count:{}", two))
-                    .await;
+                    self.base
+                        .cachedb
+                        .decr(format!("xsulib.sparkler.friends_count:{}", two))
+                        .await;
+                }
             }
         }
 
@@ -5079,5 +5098,150 @@ impl Database {
             }
             Err(_) => return Err(DatabaseError::Other),
         }
+    }
+
+    /// Get all relationships where `user` is either `one` or `two` and the status is `status`
+    ///
+    /// # Arguments
+    /// * `user`
+    /// * `status`
+    pub async fn get_user_participating_relationships_of_status(
+        &self,
+        user: String,
+        status: RelationshipStatus,
+    ) -> Result<Vec<(Profile, Profile)>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+           "SELECT * FROM \"xrelationships\" WHERE (\"one\" = ? OR \"two\" = ?) AND \"status\" = ?"
+        } else {
+           "SELECT * FROM \"xrelationships\" WHERE (\"one\" = $1 OR \"two\" = $2) AND \"status\" = $3"
+        }.to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query)
+            .bind::<&String>(&user)
+            .bind::<&String>(&user)
+            .bind::<&String>(&serde_json::to_string(&status).unwrap())
+            .fetch_all(c)
+            .await
+        {
+            Ok(p) => {
+                let mut out = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+
+                    // get profiles
+                    let profile = match self.get_profile(res.get("one").unwrap().to_string()).await
+                    {
+                        Ok(c) => c,
+                        Err(e) => return Err(e),
+                    };
+
+                    let profile_2 =
+                        match self.get_profile(res.get("two").unwrap().to_string()).await {
+                            Ok(c) => c,
+                            Err(e) => return Err(e),
+                        };
+
+                    // add to out
+                    out.push((profile, profile_2));
+                }
+
+                Ok(out)
+            }
+            Err(_) => return Err(DatabaseError::Other),
+        }
+    }
+
+    /// Get all relationships where `user` is either `one` or `two` and the status is `status`, 50 at a time
+    ///
+    /// # Arguments
+    /// * `user`
+    /// * `status`
+    /// * `page`
+    pub async fn get_user_participating_relationships_of_status_paginated(
+        &self,
+        user: String,
+        status: RelationshipStatus,
+        page: i32,
+    ) -> Result<Vec<(Profile, Profile)>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            format!("SELECT * FROM \"xrelationships\" WHERE (\"one\" = ? OR \"two\" = ?) AND \"status\" = ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        } else {
+            format!("SELECT * FROM \"xrelationships\" WHERE (\"one\" = $1 OR \"two\" = $2) AND \"status\" = $3 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        };
+
+        let c = &self.base.db.client;
+        match sqlquery(&query)
+            .bind::<&String>(&user)
+            .bind::<&String>(&user)
+            .bind::<&String>(&serde_json::to_string(&status).unwrap())
+            .fetch_all(c)
+            .await
+        {
+            Ok(p) => {
+                let mut out = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+
+                    // get profiles
+                    let profile = match self.get_profile(res.get("one").unwrap().to_string()).await
+                    {
+                        Ok(c) => c,
+                        Err(e) => return Err(e),
+                    };
+
+                    let profile_2 =
+                        match self.get_profile(res.get("two").unwrap().to_string()).await {
+                            Ok(c) => c,
+                            Err(e) => return Err(e),
+                        };
+
+                    // add to out
+                    out.push((profile, profile_2));
+                }
+
+                Ok(out)
+            }
+            Err(_) => return Err(DatabaseError::Other),
+        }
+    }
+
+    /// Get the number of friends a user has
+    ///
+    /// # Arguments
+    /// * `id`
+    pub async fn get_friendship_count_by_user(&self, id: String) -> usize {
+        // attempt to fetch from cache
+        if let Some(count) = self
+            .base
+            .cachedb
+            .get(format!("xsulib.sparkler.friends_count:{}", id))
+            .await
+        {
+            return count.parse::<usize>().unwrap_or(0);
+        };
+
+        // fetch from database
+        let count = self
+            .get_user_participating_relationships_of_status(id.clone(), RelationshipStatus::Friends)
+            .await
+            .unwrap_or(Vec::new())
+            .len();
+
+        self.base
+            .cachedb
+            .set(
+                format!("xsulib.sparkler.friends_count:{}", id),
+                count.to_string(),
+            )
+            .await;
+
+        count
     }
 }
