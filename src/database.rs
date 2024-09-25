@@ -4873,12 +4873,12 @@ impl Database {
                     // decr friendship counts since we were previously friends but are not now
                     self.base
                         .cachedb
-                        .decr(format!("xsulib.sparkler.friends_count:{}", one))
+                        .decr(format!("xsulib.sparkler.friends_count:{}", uone.id))
                         .await;
 
                     self.base
                         .cachedb
-                        .decr(format!("xsulib.sparkler.friends_count:{}", two))
+                        .decr(format!("xsulib.sparkler.friends_count:{}", utwo.id))
                         .await;
                 }
 
@@ -4989,12 +4989,12 @@ impl Database {
 
                 self.base
                     .cachedb
-                    .incr(format!("xsulib.sparkler.friends_count:{}", one))
+                    .incr(format!("xsulib.sparkler.friends_count:{}", uone.id))
                     .await;
 
                 self.base
                     .cachedb
-                    .incr(format!("xsulib.sparkler.friends_count:{}", two))
+                    .incr(format!("xsulib.sparkler.friends_count:{}", utwo.id))
                     .await;
 
                 // create notification
@@ -5040,12 +5040,12 @@ impl Database {
                     // decr friendship counts since we were previously friends but are not now
                     self.base
                         .cachedb
-                        .decr(format!("xsulib.sparkler.friends_count:{}", one))
+                        .decr(format!("xsulib.sparkler.friends_count:{}", uone.id))
                         .await;
 
                     self.base
                         .cachedb
-                        .decr(format!("xsulib.sparkler.friends_count:{}", two))
+                        .decr(format!("xsulib.sparkler.friends_count:{}", utwo.id))
                         .await;
                 }
             }
