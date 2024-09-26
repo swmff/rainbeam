@@ -74,7 +74,7 @@ pub async fn create_request(
     if (auth_user.username == "anonymous") | use_anonymous_anyways {
         let tag = if was_not_anonymous && use_anonymous_anyways {
             // use real username as tag
-            format!("anonymous#{}", auth_user.username)
+            format!("anonymous#{}", auth_user.id)
         } else if !existing_tag.is_empty() {
             // use existing tag
             existing_tag
@@ -84,10 +84,9 @@ pub async fn create_request(
         } else {
             // use username as tag
             if auth_user.username == "anonymous" {
-                // anonymous uses id!
                 auth_user.id
             } else {
-                auth_user.username
+                auth_user.id
             }
         };
 

@@ -244,6 +244,14 @@ pub struct PaginatedQuery {
 }
 
 #[derive(Serialize, Deserialize)]
+pub struct NotificationsQuery {
+    #[serde(default)]
+    page: i32,
+    #[serde(default)]
+    profile: String,
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct SearchQuery {
     #[serde(default)]
     page: i32,
@@ -1241,12 +1249,15 @@ struct NotificationsTemplate {
     profile: Option<Profile>,
     unread: usize,
     notifs: Vec<Notification>,
+    page: i32,
+    pid: String,
 }
 
 /// GET /inbox/notifications
 pub async fn notifications_request(
     jar: CookieJar,
     State(database): State<Database>,
+    Query(props): Query<NotificationsQuery>,
 ) -> impl IntoResponse {
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
@@ -1260,6 +1271,15 @@ pub async fn notifications_request(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
+    let is_helper = {
+        let group = match database.auth.get_group_by_id(auth_user.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        group.permissions.contains(&Permission::Helper)
+    };
+
     let unread = match database
         .get_questions_by_recipient(auth_user.id.to_owned())
         .await
@@ -1268,9 +1288,17 @@ pub async fn notifications_request(
         Err(_) => 0,
     };
 
+    let pid = if is_helper && !props.profile.is_empty() {
+        // use the given profile value if we gave one and we are a helper
+        props.profile
+    } else {
+        // otherwise, use the current user
+        auth_user.id.clone()
+    };
+
     let notifs = match database
         .auth
-        .get_notifications_by_recipient(auth_user.id.to_owned())
+        .get_notifications_by_recipient_paginated(pid.clone(), props.page)
         .await
     {
         Ok(r) => r,
@@ -1283,6 +1311,8 @@ pub async fn notifications_request(
             profile: Some(auth_user),
             unread,
             notifs,
+            page: props.page,
+            pid,
         }
         .render()
         .unwrap(),

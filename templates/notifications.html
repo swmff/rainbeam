@@ -65,6 +65,9 @@ endblock %} {% block head %}
     <main class="flex flex-col gap-2">
         <!-- notifications -->
         <div class="flex justify-between">
+            {% if let Some(profile) = profile %} {% if profile.id != pid %}
+            <b>{{ pid }}</b>
+            {% else %}
             <div></div>
             <button
                 onclick="trigger('notifications:clear', [])"
@@ -84,6 +87,7 @@ endblock %} {% block head %}
                 </svg>
                 Mark all as read
             </button>
+            {% endif %} {% endif %}
         </div>
 
         <!-- prettier-ignore -->
@@ -91,6 +95,27 @@ endblock %} {% block head %}
             {% let show_mark_as_read = true %}
             {% include "components/notification.html" %}
         {% endfor %}
+
+        <!-- pagination buttons -->
+        <div class="flex justify-between gap-2 w-full">
+            {% if page > 0 %}
+            <a
+                class="button secondary"
+                href="?page={{ page - 1 }}&profile={{ pid }}"
+            >
+                Previous
+            </a>
+            {% else %}
+            <div></div>
+            {% endif %} {% if notifs.len() != 0 %}
+            <a
+                class="button secondary"
+                href="?page={{ page + 1 }}&profile={{ pid }}"
+            >
+                Next
+            </a>
+            {% endif %}
+        </div>
     </main>
 </article>
 

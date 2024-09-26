@@ -81,7 +81,17 @@ let reaction_count = response.3 %} {% let response = response.1.clone() %}
                     {% if is_powerful %}
                     {% let author_tag = crate::database::Database::anonymous_tag(question.author.id.as_ref()) %}
                     {% if author_tag.0 %}
-                    <span class="notification">{{ author_tag.1 }}</span>
+                    <a class="notification" href="/+u/{{ author_tag.1 }}">
+                        {% if author_tag.1.contains("-") %}
+                        <span title="User hiding as anonymous">🤫</span>
+                        {% endif %}
+                        <!-- prettier-ignore -->
+                        {% if author_tag.1.len() >= 10 %}
+                            {{ author_tag.1[..10] }}
+                        {% else %}
+                            {{ author_tag.1 }}
+                        {% endif %}
+                    </a>
                     {% endif %} {% endif %}
                 </b>
 

@@ -4869,20 +4869,20 @@ impl Database {
         // ...
         match status {
             RelationshipStatus::Blocked => {
-                if relationship.0 == RelationshipStatus::Friends {
-                    // decr friendship counts since we were previously friends but are not now
-                    self.base
-                        .cachedb
-                        .decr(format!("xsulib.sparkler.friends_count:{}", uone.id))
-                        .await;
-
-                    self.base
-                        .cachedb
-                        .decr(format!("xsulib.sparkler.friends_count:{}", utwo.id))
-                        .await;
-                }
-
                 if relationship.0 != RelationshipStatus::Unknown {
+                    if relationship.0 == RelationshipStatus::Friends {
+                        // decr friendship counts since we were previously friends but are not now
+                        self.base
+                            .cachedb
+                            .decr(format!("xsulib.sparkler.friends_count:{}", uone.id))
+                            .await;
+
+                        self.base
+                            .cachedb
+                            .decr(format!("xsulib.sparkler.friends_count:{}", utwo.id))
+                            .await;
+                    }
+
                     // update
                     let query: String =
                     if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
