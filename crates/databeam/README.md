@@ -1,3 +1,3 @@
-# xsu-dataman
+# databeam
 
 Database connection manager.

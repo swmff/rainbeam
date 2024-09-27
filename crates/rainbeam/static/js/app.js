@@ -172,6 +172,20 @@
             for (const dropdown of Array.from(
                 target.querySelectorAll(".inner"),
             )) {
+                // check y
+                const box = target.getBoundingClientRect();
+
+                const scroll = window.scrollY;
+                const height = window.screen.height;
+                const y = box.y + scroll;
+     
+                if (y > (height - scroll) - 300) {
+                    dropdown.classList.add("top");
+                } else {
+                    dropdown.classList.remove("top");
+                }
+
+                // open
                 dropdown.toggleAttribute("open");
             }
         }, 5);
@@ -280,7 +294,6 @@
                 height: 100%;
                 border-radius: inherit;
                 cursor: pointer;
-                border: solid 2px var(--color-super-raised);
                 padding: 1rem;
                 background: var(--color-raised);`,
             );

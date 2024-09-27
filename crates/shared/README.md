@@ -1,3 +1,3 @@
-# xsu-util
+# shared
 
-Simple utilities.
+Shared Rainbeam utilities.

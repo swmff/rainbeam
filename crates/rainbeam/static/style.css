@@ -427,6 +427,7 @@ fieldset:hover {
     padding: 0.75rem;
     max-width: 100vw;
     box-shadow: 0 0 2px var(--color-shadow);
+    border: solid 2px var(--color-lowered);
 }
 
 .card.padded {
@@ -440,6 +441,10 @@ fieldset:hover {
 .card-nest:has(.card:nth-child(3)) .card {
     /* if the nest has a third element, make cards default to no border-radius */
     border-radius: 0;
+}
+
+.card-nest .card {
+    border: none;
 }
 
 .card-nest .card:first-child {
@@ -842,6 +847,11 @@ dialog::backdrop {
     min-width: 10rem;
     max-width: 100dvw;
     padding: 0.5rem 0;
+}
+
+.dropdown .inner.top {
+    top: unset;
+    bottom: calc(100% + 5px);
 }
 
 .dropdown .inner.left {
