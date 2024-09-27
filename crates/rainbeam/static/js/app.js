@@ -33,6 +33,29 @@
         $.nav_folded = !($.nav_folded || false);
     });
 
+    app.define("rel_date", function (_, date) {
+        // stolen and slightly modified because js dates suck
+        const diff = (new Date().getTime() - date.getTime()) / 1000;
+        const day_diff = Math.floor(diff / 86400);
+
+        if (isNaN(day_diff) || day_diff < 0 || day_diff >= 31) {
+            return;
+        }
+
+        return (
+            (day_diff == 0 &&
+                ((diff < 60 && "just now") ||
+                    (diff < 120 && "1 minute ago") ||
+                    (diff < 3600 && Math.floor(diff / 60) + " minutes ago") ||
+                    (diff < 7200 && "1 hour ago") ||
+                    (diff < 86400 &&
+                        Math.floor(diff / 3600) + " hours ago"))) ||
+            (day_diff == 1 && "Yesterday") ||
+            (day_diff < 7 && day_diff + " days ago") ||
+            (day_diff < 31 && Math.ceil(day_diff / 7) + " weeks ago")
+        );
+    });
+
     app.define("clean_date_codes", function ({ $ }) {
         for (const element of Array.from(document.querySelectorAll(".date"))) {
             const then = new Date(parseInt(element.innerText));
@@ -42,7 +65,10 @@
             }
 
             element.setAttribute("title", then.toLocaleString());
-            element.innerText = then.toLocaleDateString();
+
+            const pretty = $.rel_date(then);
+            element.innerText =
+                pretty === undefined ? then.toLocaleDateString() : pretty;
         }
     });
 
@@ -178,8 +204,8 @@
                 const scroll = window.scrollY;
                 const height = window.screen.height;
                 const y = box.y + scroll;
-     
-                if (y > (height - scroll) - 300) {
+
+                if (y > height - scroll - 300) {
                     dropdown.classList.add("top");
                 } else {
                     dropdown.classList.remove("top");

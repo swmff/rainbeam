@@ -3,22 +3,22 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 
 use ammonia::Builder;
-use pulldown_cmark::{Options, Parser};
+use comrak::{markdown_to_html, Options};
 
 /// Render markdown input into HTML
 pub fn render_markdown(input: &str) -> String {
-    let mut options = Options::empty();
-    options.insert(Options::ENABLE_STRIKETHROUGH);
-    options.insert(Options::ENABLE_HEADING_ATTRIBUTES);
-    options.insert(Options::ENABLE_GFM);
-    options.insert(Options::ENABLE_TABLES);
-    options.insert(Options::ENABLE_TASKLISTS);
-    options.insert(Options::ENABLE_FOOTNOTES);
-    options.insert(Options::ENABLE_YAML_STYLE_METADATA_BLOCKS);
+    let mut options = Options::default();
 
-    let parser = Parser::new_ext(input, options);
-    let mut html = String::new();
-    pulldown_cmark::html::push_html(&mut html, parser);
+    options.extension.table = true;
+    options.extension.superscript = true;
+    options.extension.strikethrough = true;
+    options.extension.autolink = true;
+    options.extension.header_ids = Option::Some(String::new());
+    // options.render.unsafe_ = true;
+    options.render.escape = true;
+    options.parse.smart = false;
+
+    let html = markdown_to_html(input, &options);
 
     let mut allowed_attributes = HashSet::new();
     allowed_attributes.insert("id");
