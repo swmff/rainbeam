@@ -62,27 +62,16 @@
         const tokens = JSON.parse(document.getElementById("tokens").innerText);
 
         globalThis.remove_session = (id) => {
-            if (
-                !confirm(
-                    "Are you sure you want to do this? When you save your sessions, the browser using this token will be logged out.",
-                )
-            ) {
+            if (!confirm("Are you sure you want to do this?")) {
                 return;
             }
 
             tokens.splice(tokens.indexOf(id), 1);
             document.getElementById(`session:${id}`).remove();
+            globalThis.save_sessions();
         };
 
         globalThis.save_sessions = async () => {
-            if (
-                !confirm(
-                    "Are you sure you want to do this? All removed sessions will be logged out.",
-                )
-            ) {
-                return;
-            }
-
             const res = await (
                 await fetch("/api/auth/me/tokens", {
                     method: "POST",
