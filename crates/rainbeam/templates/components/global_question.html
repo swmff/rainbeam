@@ -1,0 +1,243 @@
+{% let responses = question.1 %} {% let reaction_count = question.2 %} {% let
+question = question.clone().0 %}
+<div class="card-nest w-full shadow" id="question:{{ question.id }}">
+    <div class="card flex flex-col gap-1">
+        <div class="flex items-center justify-between gap-1 question_title">
+            <div class="footernav">
+                <b class="flex items-center gap-2 item">
+                    <img
+                        title="{{ question.author.username }}'s avatar"
+                        src="/api/v1/profiles/{{ question.author.username }}/avatar"
+                        alt=""
+                        class="avatar round-sm"
+                        style="--size: 20px"
+                    />
+
+                    <!-- prettier-ignore -->
+                    {% let author_tag = crate::database::Database::anonymous_tag(question.author.username.as_ref()) %}
+                    {% if author_tag.0 == false %}
+                    <a
+                        href="/@{{ question.author.username }}"
+                        style="color: inherit"
+                    >
+                        <!-- prettier-ignore -->
+                        {% let display_name = question.author.metadata.kv.get("sparkler:display_name") %}
+
+                        {% if let Some(display_name) = display_name %}
+                            {{ display_name }}
+                        {% else %}
+                            {{ question.author.username }}
+                        {% endif %}
+                    </a>
+                    {% else %} {{ question.author.username }} {% endif %}
+                </b>
+
+                <span class="date item">{{ question.timestamp }}</span>
+            </div>
+
+            <!-- prettier-ignore -->
+            {% if let Some(profile) = profile %}
+            <!-- stuff for only the question author -->
+            <div class="dropdown">
+                <button
+                    onclick="trigger('app:hook.dropdown', [event])"
+                    exclude="dropdown"
+                    class="camo"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 16 16"
+                        width="16"
+                        height="16"
+                        aria-label="Ellipsis symbol"
+                        class="icon"
+                    >
+                        <path
+                            d="M8 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM1.5 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm13 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"
+                        ></path>
+                    </svg>
+                </button>
+
+                <div class="inner shadow-md w-content" exclude="dropdown">
+                    {% if profile.id == question.author.id %}
+                    <b class="title">Manage</b>
+                    <a
+                        href="#"
+                        onclick="trigger('questions:delete', ['{{ question.id }}'])"
+                        class="red"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 16 16"
+                            width="16"
+                            height="16"
+                            aria-label="Trash symbol"
+                            class="icon"
+                        >
+                            <path
+                                d="M11 1.75V3h2.25a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75ZM4.496 6.675l.66 6.6a.25.25 0 0 0 .249.225h5.19a.25.25 0 0 0 .249-.225l.66-6.6a.75.75 0 0 1 1.492.149l-.66 6.6A1.748 1.748 0 0 1 10.595 15h-5.19a1.75 1.75 0 0 1-1.741-1.575l-.66-6.6a.75.75 0 1 1 1.492-.15ZM6.5 1.75V3h3V1.75a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25Z"
+                            ></path>
+                        </svg>
+                        Delete
+                    </a>
+                    {% else if is_helper == true %}
+                    <b class="title">Mod</b>
+                    <a
+                        href="#"
+                        onclick="trigger('questions:delete', ['{{ question.id }}'])"
+                        class="red"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 16 16"
+                            width="16"
+                            height="16"
+                            aria-label="Trash symbol"
+                            class="icon"
+                        >
+                            <path
+                                d="M11 1.75V3h2.25a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75ZM4.496 6.675l.66 6.6a.25.25 0 0 0 .249.225h5.19a.25.25 0 0 0 .249-.225l.66-6.6a.75.75 0 0 1 1.492.149l-.66 6.6A1.748 1.748 0 0 1 10.595 15h-5.19a1.75 1.75 0 0 1-1.741-1.575l-.66-6.6a.75.75 0 1 1 1.492-.15ZM6.5 1.75V3h3V1.75a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25Z"
+                            ></path>
+                        </svg>
+                        Delete
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- prettier-ignore -->
+        <span class="question_content" hook="long">
+           {{ shared::ui::render_markdown(question.content)|safe }}
+       </span>
+    </div>
+
+    <div class="card flex gap-2">
+        <!-- reactions -->
+        <button
+            title="{{ reaction_count }} reactions"
+            onclick="trigger('reactions:toggle', ['{{ question.id }}', 'Question'])"
+        >
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 16 16"
+                width="16"
+                height="16"
+                aria-label="Smiley symbol"
+                class="icon"
+            >
+                <path
+                    d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm3.82 1.636a.75.75 0 0 1 1.038.175l.007.009c.103.118.22.222.35.31.264.178.683.37 1.285.37.602 0 1.02-.192 1.285-.371.13-.088.247-.192.35-.31l.007-.008a.75.75 0 0 1 1.222.87l-.022-.015c.02.013.021.015.021.015v.001l-.001.002-.002.003-.005.007-.014.019a2.066 2.066 0 0 1-.184.213c-.16.166-.338.316-.53.445-.63.418-1.37.638-2.127.629-.946 0-1.652-.308-2.126-.63a3.331 3.331 0 0 1-.715-.657l-.014-.02-.005-.006-.002-.003v-.002h-.001l.613-.432-.614.43a.75.75 0 0 1 .183-1.044ZM12 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM5 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm5.25 2.25.592.416a97.71 97.71 0 0 0-.592-.416Z"
+                ></path>
+            </svg>
+
+            <span class="notification camo">{{ reaction_count }}</span>
+        </button>
+
+        <!-- responses -->
+        <a
+            href="/question/{{ question.id }}"
+            class="button item"
+            style="gap: 0.75rem"
+        >
+            Respond
+            <span class="notification">{{ responses }}</span>
+        </a>
+
+        <!-- sharing -->
+        <div class="dropdown item">
+            <button
+                onclick="trigger('app:hook.dropdown', [event])"
+                exclude="dropdown"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 16 16"
+                    width="16"
+                    height="16"
+                    aria-label="Sharing symbol"
+                    class="icon"
+                >
+                    <path
+                        d="M15 3a3 3 0 0 1-5.175 2.066l-3.92 2.179a2.994 2.994 0 0 1 0 1.51l3.92 2.179a3 3 0 1 1-.73 1.31l-3.92-2.178a3 3 0 1 1 0-4.133l3.92-2.178A3 3 0 1 1 15 3Zm-1.5 10a1.5 1.5 0 1 0-3.001.001A1.5 1.5 0 0 0 13.5 13Zm-9-5a1.5 1.5 0 1 0-3.001.001A1.5 1.5 0 0 0 4.5 8Zm9-5a1.5 1.5 0 1 0-3.001.001A1.5 1.5 0 0 0 13.5 3Z"
+                    ></path>
+                </svg>
+
+                Share
+            </button>
+
+            <div class="inner shadow-md w-content" exclude="dropdown">
+                <b class="title">Sharing</b>
+
+                <!-- prettier-ignore -->
+                {% let short_id = question.id[..10] %}
+                {% let icon = "❔".to_string() %}
+                {% let clipboard_data = crate::database::Database::share(config.host, icon, question.content, format!("/+q/{short_id}").to_owned(), 240).replace("'", "\\'").replace("\"", "\\\"") %}
+
+                <a
+                    href="#"
+                    onclick="trigger('app:copy_text', ['{{ clipboard_data }}'])"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 16 16"
+                        width="16"
+                        height="16"
+                        aria-label="Copy symbol"
+                        class="icon"
+                    >
+                        <path
+                            d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"
+                        ></path>
+                        <path
+                            d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"
+                        ></path>
+                    </svg>
+                    Copy to Clipboard
+                </a>
+            </div>
+        </div>
+
+        {% if profile.is_none() %}
+        <a
+            class="button"
+            href="javascript:trigger('reports:bootstrap', ['questions', '{{ question.id }}'])"
+            title="Report"
+        >
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 16 16"
+                width="16"
+                height="16"
+                aria-label="Report symbol"
+                class="icon"
+            >
+                <path
+                    d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"
+                ></path>
+            </svg>
+        </a>
+        {% else if let Some(profile) = profile %} {% if profile.id !=
+        question.author.id %}
+        <a
+            class="button"
+            href="javascript:trigger('reports:bootstrap', ['questions', '{{ question.id }}'])"
+            title="Report"
+        >
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 16 16"
+                width="16"
+                height="16"
+                aria-label="Report symbol"
+                class="icon"
+            >
+                <path
+                    d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"
+                ></path>
+            </svg>
+        </a>
+        {% endif %} {% endif %}
+    </div>
+</div>

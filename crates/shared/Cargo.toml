@@ -1,0 +1,21 @@
+[package]
+name = "shared"
+version = "0.1.2"
+edition = "2021"
+authors = ["trisuaso", "swmff"]
+description = "Basic utilities"
+homepage = "https://rainbeam.net"
+repository = "https://github.com/swmff/rainbeam"
+license = "MIT"
+
+[dependencies]
+ammonia = "4.0.0"
+hex_fmt = "0.3.0"
+pulldown-cmark = "0.11.0"
+rand = "0.8.5"
+serde = { version = "1.0.204", features = ["derive"] }
+sha2 = "0.10.8"
+uuid = { version = "1.10.0", features = ["v4"] }
+
+[lib]
+doctest = false

@@ -1,0 +1,10 @@
+# indent_style = "Block"
+reorder_imports = false
+hard_tabs = false
+tab_spaces = 4
+# enum_discrim_align_threshold = 20
+# struct_field_align_threshold = 20
+fn_params_layout = "Tall"
+max_width = 100
+newline_style = "Unix"
+use_field_init_shorthand = true

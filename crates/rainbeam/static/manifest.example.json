@@ -1,0 +1,31 @@
+{
+  "short_name": "Rainbeam",
+  "name": "Rainbeam",
+  "description": "Ask, share, socialize!",
+  "start_url": "https://rainbeam.net",
+  "scope": "https://rainbeam.net",
+  "display": "standalone",
+  "categories": [
+    "social"
+  ],
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/static/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "128x128"
+    },
+    {
+      "src": "/static/images/logo/logo_192x192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/static/images/logo/logo_512x512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "theme_color": "#b62f5a",
+  "background_color": "#f2f2f2"
+}

@@ -1,0 +1,32 @@
+[package]
+name = "authbeam"
+version = "0.5.1"
+edition = "2021"
+description = "Authentication manager"
+authors = ["trisuaso", "swmff"]
+homepage = "https://rainbeam.net"
+repository = "https://github.com/swmff/rainbeam"
+license = "MIT"
+
+[features]
+postgres = ["databeam/postgres"]
+mysql = ["databeam/mysql"]
+sqlite = ["databeam/sqlite"]
+default = ["databeam/sqlite"] # for development
+
+[dependencies]
+axum = { version = "0.7.5", features = ["macros"] }
+axum-macros = "0.4.1"
+serde = { version = "1.0.203", features = ["derive"] }
+serde_json = "1.0.117"
+tokio = { version = "1.38.0", features = ["macros", "rt-multi-thread"] }
+databeam = { path = "../databeam", default-features = false }
+shared = { path = "../shared" }
+dotenv = "0.15.0"
+axum-extra = { version = "0.9.3", features = ["cookie"] }
+regex = "1.10.5"
+reqwest = "0.12.5"
+hcaptcha = "2.4.6"
+
+[lib]
+doctest = false

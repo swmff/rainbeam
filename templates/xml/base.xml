@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<feed xmlns="https://github.com/swmff/neospring/blob/master/docs/nss.md">
-    {% block content %}{% endblock %}
-</feed>

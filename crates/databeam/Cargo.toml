@@ -1,0 +1,33 @@
+[package]
+name = "databeam"
+version = "0.1.1"
+edition = "2021"
+description = "Database connection library"
+authors = ["trisuaso", "swmff"]
+homepage = "https://rainbeam.net"
+repository = "https://github.com/swmff/rainbeam"
+license = "MIT"
+
+[features]
+postgres = []
+mysql = []
+sqlite = []
+default = ["sqlite"]
+
+[dependencies]
+redis = "0.25.3"
+serde = { version = "1.0.197", features = ["derive"] }
+serde_json = "1.0.115"
+toml = "0.8.14"
+shared = { path = "../shared" }
+
+[dependencies.sqlx]
+version = "0.8.0"
+features = [
+    "sqlite",
+    "postgres",
+    "mysql",
+    "any",
+    "runtime-tokio",
+    "tls-native-tls",
+]

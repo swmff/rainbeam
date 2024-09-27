@@ -1,0 +1,283 @@
+{% let reply_count = comment.1 %} {% let reaction_count = comment.2 %} {% let
+comment = comment.0.clone() %}
+<div
+    class="card flex flex-col gap-1 comment_body"
+    id="comment:{{ comment.id }}"
+>
+    <!-- prettier-ignore -->
+    <span class="comment_content" hook="long">
+        {{ shared::ui::render_markdown(comment.content)|safe }}
+    </span>
+
+    <div
+        class="flex justify-between flex-collapse sm:items-start items-center gap-1 comment_title"
+    >
+        <div class="footernav">
+            <b class="flex items-center gap-2 item">
+                <img
+                    title="{{ comment.author.username }}'s avatar"
+                    src="/api/v1/profiles/{{ comment.author.username }}/avatar"
+                    alt=""
+                    class="avatar round-sm"
+                    style="--size: 20px"
+                />
+
+                <a
+                    href="/@{{ comment.author.username }}"
+                    style="color: inherit"
+                >
+                    <!-- prettier-ignore -->
+                    {% let display_name = comment.author.metadata.kv.get("sparkler:display_name") %}
+
+                    {% if let Some(display_name) = display_name %}
+                        {{ display_name }}
+                    {% else %}
+                        {{ comment.author.username }}
+                    {% endif %}
+                </a>
+            </b>
+
+            <span class="date item">{{ comment.timestamp }}</span>
+        </div>
+
+        <div class="flex gap-2 sm:w-full">
+            <!-- reactions -->
+            <button
+                title="{{ reaction_count }} reactions"
+                class="w-full camo"
+                onclick="trigger('reactions:toggle', ['{{ comment.id }}', 'Comment'])"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 16 16"
+                    width="16"
+                    height="16"
+                    aria-label="Smiley symbol"
+                    class="icon"
+                >
+                    <path
+                        d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm3.82 1.636a.75.75 0 0 1 1.038.175l.007.009c.103.118.22.222.35.31.264.178.683.37 1.285.37.602 0 1.02-.192 1.285-.371.13-.088.247-.192.35-.31l.007-.008a.75.75 0 0 1 1.222.87l-.022-.015c.02.013.021.015.021.015v.001l-.001.002-.002.003-.005.007-.014.019a2.066 2.066 0 0 1-.184.213c-.16.166-.338.316-.53.445-.63.418-1.37.638-2.127.629-.946 0-1.652-.308-2.126-.63a3.331 3.331 0 0 1-.715-.657l-.014-.02-.005-.006-.002-.003v-.002h-.001l.613-.432-.614.43a.75.75 0 0 1 .183-1.044ZM12 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM5 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm5.25 2.25.592.416a97.71 97.71 0 0 0-.592-.416Z"
+                    ></path>
+                </svg>
+
+                <span class="notification camo">{{ reaction_count }}</span>
+            </button>
+
+            <!-- replies -->
+            {% if show_replies != false %}
+            <a
+                href="/comment/{{ comment.id }}"
+                title="{{ reply_count }} replies"
+                class="button w-full camo"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 16 16"
+                    width="16"
+                    height="16"
+                    aria-label="Discussion symbol"
+                    class="icon"
+                >
+                    <path
+                        d="M1.75 1h8.5c.966 0 1.75.784 1.75 1.75v5.5A1.75 1.75 0 0 1 10.25 10H7.061l-2.574 2.573A1.458 1.458 0 0 1 2 11.543V10h-.25A1.75 1.75 0 0 1 0 8.25v-5.5C0 1.784.784 1 1.75 1ZM1.5 2.75v5.5c0 .138.112.25.25.25h1a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h3.5a.25.25 0 0 0 .25-.25v-5.5a.25.25 0 0 0-.25-.25h-8.5a.25.25 0 0 0-.25.25Zm13 2a.25.25 0 0 0-.25-.25h-.5a.75.75 0 0 1 0-1.5h.5c.966 0 1.75.784 1.75 1.75v5.5A1.75 1.75 0 0 1 14.25 12H14v1.543a1.458 1.458 0 0 1-2.487 1.03L9.22 12.28a.749.749 0 0 1 .326-1.275.749.749 0 0 1 .734.215l2.22 2.22v-2.19a.75.75 0 0 1 .75-.75h1a.25.25 0 0 0 .25-.25Z"
+                    ></path>
+                </svg>
+
+                <span class="notification camo">{{ reply_count }}</span>
+            </a>
+            {% endif %}
+
+            <!-- sharing -->
+            <div class="dropdown w-full">
+                <button
+                    class="w-full camo"
+                    onclick="trigger('app:hook.dropdown', [event])"
+                    exclude="dropdown"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 16 16"
+                        width="16"
+                        height="16"
+                        aria-label="Sharing symbol"
+                        class="icon"
+                    >
+                        <path
+                            d="M15 3a3 3 0 0 1-5.175 2.066l-3.92 2.179a2.994 2.994 0 0 1 0 1.51l3.92 2.179a3 3 0 1 1-.73 1.31l-3.92-2.178a3 3 0 1 1 0-4.133l3.92-2.178A3 3 0 1 1 15 3Zm-1.5 10a1.5 1.5 0 1 0-3.001.001A1.5 1.5 0 0 0 13.5 13Zm-9-5a1.5 1.5 0 1 0-3.001.001A1.5 1.5 0 0 0 4.5 8Zm9-5a1.5 1.5 0 1 0-3.001.001A1.5 1.5 0 0 0 13.5 3Z"
+                        ></path>
+                    </svg>
+                </button>
+
+                <div class="inner shadow-md w-content" exclude="dropdown">
+                    <b class="title">Sharing</b>
+
+                    <!-- prettier-ignore -->
+                    {% let short_id = comment.id[..10] %}
+                    {% let icon = "💬".to_string() %}
+                    {% let clipboard_data = crate::database::Database::share(config.host, icon, comment.content, format!("/+c/{short_id}").to_owned(), 240).replace("'", "\\'").replace("\"", "\\\"") %}
+
+                    <a
+                        href="#"
+                        onclick="trigger('app:copy_text', ['{{ clipboard_data }}'])"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 16 16"
+                            width="16"
+                            height="16"
+                            aria-label="Copy symbol"
+                            class="icon"
+                        >
+                            <path
+                                d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"
+                            ></path>
+                            <path
+                                d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"
+                            ></path>
+                        </svg>
+                        Copy to Clipboard
+                    </a>
+                </div>
+            </div>
+
+            <!-- options -->
+            <div class="dropdown w-full">
+                <button
+                    onclick="trigger('app:hook.dropdown', [event])"
+                    exclude="dropdown"
+                    class="w-full camo"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 16 16"
+                        width="16"
+                        height="16"
+                        aria-label="Ellipsis symbol"
+                        class="icon"
+                    >
+                        <path
+                            d="M8 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM1.5 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm13 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"
+                        ></path>
+                    </svg>
+                </button>
+
+                <div class="inner shadow-md w-content" exclude="dropdown">
+                    {% if let Some(profile) = profile %} {% if profile.id ==
+                    comment.author.id %}
+                    <!-- actions for the profile owner only -->
+                    <b class="title">Manage</b>
+
+                    <a
+                        href="#"
+                        onclick="trigger('comments:delete', ['{{ comment.id }}'])"
+                        class="red"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 16 16"
+                            width="16"
+                            height="16"
+                            aria-label="Trash symbol"
+                            class="icon"
+                        >
+                            <path
+                                d="M11 1.75V3h2.25a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75ZM4.496 6.675l.66 6.6a.25.25 0 0 0 .249.225h5.19a.25.25 0 0 0 .249-.225l.66-6.6a.75.75 0 0 1 1.492.149l-.66 6.6A1.748 1.748 0 0 1 10.595 15h-5.19a1.75 1.75 0 0 1-1.741-1.575l-.66-6.6a.75.75 0 1 1 1.492-.15ZM6.5 1.75V3h3V1.75a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25Z"
+                            ></path>
+                        </svg>
+                        Delete
+                    </a>
+                    {% endif %} {% endif %}
+                    <!-- actions for everybody -->
+                    <b class="title">Tools</b>
+                    <a
+                        href="#"
+                        onclick="trigger('app:copy_text', ['{{ comment.id }}'])"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 16 16"
+                            width="16"
+                            height="16"
+                            aria-label="Copy symbol"
+                            class="icon"
+                        >
+                            <path
+                                d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"
+                            ></path>
+                            <path
+                                d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"
+                            ></path>
+                        </svg>
+                        Copy ID
+                    </a>
+
+                    <a href="/comment/{{ comment.id }}">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 16 16"
+                            width="16"
+                            height="16"
+                            aria-label="Link symbol"
+                            class="icon"
+                        >
+                            <path
+                                d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"
+                            ></path>
+                        </svg>
+                        Open
+                    </a>
+
+                    <!-- prettier-ignore -->
+                    {% if let Some(profile) = profile %} 
+                    {% if profile.id != comment.author.id %}
+                    <!-- actions for users that ARE NOT the author -->
+                    <a
+                        href="javascript:trigger('reports:bootstrap', ['comments', '{{ comment.id }}'])"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 16 16"
+                            width="16"
+                            height="16"
+                            aria-label="Report symbol"
+                            class="icon"
+                        >
+                            <path
+                                d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"
+                            ></path>
+                        </svg>
+                        Report
+                    </a>
+                    {% endif %} {% if is_helper %}
+                    <b class="title">Mod</b>
+                    <a
+                        href="#"
+                        onclick="trigger('comments:delete', ['{{ comment.id }}'])"
+                        class="red"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 16 16"
+                            width="16"
+                            height="16"
+                            aria-label="Trash symbol"
+                            class="icon"
+                        >
+                            <path
+                                d="M11 1.75V3h2.25a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75ZM4.496 6.675l.66 6.6a.25.25 0 0 0 .249.225h5.19a.25.25 0 0 0 .249-.225l.66-6.6a.75.75 0 0 1 1.492.149l-.66 6.6A1.748 1.748 0 0 1 10.595 15h-5.19a1.75 1.75 0 0 1-1.741-1.575l-.66-6.6a.75.75 0 1 1 1.492-.15ZM6.5 1.75V3h3V1.75a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25Z"
+                            ></path>
+                        </svg>
+                        Delete
+                    </a>
+                    {% endif %} {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .comment_body {
+        border-radius: var(--radius) !important;
+    }
+</style>

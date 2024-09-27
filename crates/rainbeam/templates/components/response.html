@@ -1,0 +1,175 @@
+{% let question = response.0.clone() %} {% let comment_count = response.2 %} {%
+let reaction_count = response.3 %} {% let response = response.1.clone() %}
+<div
+    class="card-nest w-full shadow"
+    id="response:{{ response.id }}"
+    data-warning="{{ response.context.warning }}"
+>
+    {% if (do_not_render_question == false) && (response.context.is_post ==
+    false) %}
+    <div class="card flex flex-col gap-1">
+        <div class="flex justify-between gap-1 question_title">
+            <div class="footernav">
+                <b class="flex items-center gap-2 item">
+                    <!-- prettier-ignore -->
+                    {% let author_tag = crate::database::Database::anonymous_tag(question.author.username.as_ref()) %}
+                    {% if author_tag.0 == false %}
+                    <img
+                        title="{{ question.author.username }}'s avatar"
+                        src="/api/v1/profiles/{{ question.author.username }}/avatar"
+                        alt=""
+                        class="avatar round-sm"
+                        style="--size: 20px"
+                    />
+
+                    <a
+                        href="/@{{ question.author.username }}"
+                        style="color: inherit"
+                    >
+                        <!-- prettier-ignore -->
+                        {% let display_name = question.author.metadata.kv.get("sparkler:display_name") %}
+
+                        {% if let Some(display_name) = display_name %}
+                            {{ display_name }}
+                        {% else %}
+                            {{ question.author.username }}
+                        {% endif %}
+                    </a>
+                    {% else %} {% if let Some(avatar) = anonymous_avatar %} {%
+                    if (avatar.is_empty()) | (!avatar.starts_with("https://"))
+                    %}
+                    <!-- default avatar, setting set but blank or unsafe -->
+                    <img
+                        title="{{ question.author.username }}'s avatar"
+                        src="/static/images/default-avatar.svg"
+                        alt=""
+                        class="avatar round-sm"
+                        style="--size: 20px"
+                    />
+                    {% else %}
+                    <!-- anonymous avatar, setting set and valid -->
+                    <img
+                        title="This profile's anonymous avatar"
+                        src="/api/util/ext/image?img={{ avatar }}"
+                        alt=""
+                        class="avatar round-sm"
+                        style="--size: 20px"
+                    />
+                    {% endif %} {% else %}
+                    <!-- default avatar, setting not set -->
+                    <img
+                        title="{{ question.author.username }}'s avatar"
+                        src="/static/images/default-avatar.svg"
+                        alt=""
+                        class="avatar round-sm"
+                        style="--size: 20px"
+                    />
+                    {% endif %}
+
+                    <!-- prettier-ignore -->
+                    {% if let Some(username) = anonymous_username %}
+                        {% if username.is_empty() %}
+                            anonymous
+                        {% else %}
+                            {{ username }}
+                        {% endif %}
+                    {% else %}
+                        anonymous
+                    {% endif %}
+                    {% endif %}
+
+                    {% if is_powerful %}
+                    {% let author_tag = crate::database::Database::anonymous_tag(question.author.id.as_ref()) %}
+                    {% if author_tag.0 %}
+                    <a class="notification" href="/+u/{{ author_tag.1 }}">
+                        {% if author_tag.1.contains("-") %}
+                        <span title="User hiding as anonymous">🤫</span>
+                        {% endif %}
+                        <!-- prettier-ignore -->
+                        {% if author_tag.1.len() >= 10 %}
+                            {{ author_tag.1[..10] }}
+                        {% else %}
+                            {{ author_tag.1 }}
+                        {% endif %}
+                    </a>
+                    {% endif %} {% endif %}
+                </b>
+
+                <span class="date item">{{ question.timestamp }}</span>
+
+                {% if question.recipient.id == "@" %}
+                <a
+                    class="button item primary"
+                    href="/question/{{ question.id }}"
+                    title="Global question"
+                    style="height: 24px; min-height: 24px; padding: 0.25rem"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 16 16"
+                        width="16"
+                        height="16"
+                        aria-label="Globe symbol"
+                        class="icon"
+                    >
+                        <path
+                            d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM5.78 8.75a9.64 9.64 0 0 0 1.363 4.177c.255.426.542.832.857 1.215.245-.296.551-.705.857-1.215A9.64 9.64 0 0 0 10.22 8.75Zm4.44-1.5a9.64 9.64 0 0 0-1.363-4.177c-.307-.51-.612-.919-.857-1.215a9.927 9.927 0 0 0-.857 1.215A9.64 9.64 0 0 0 5.78 7.25Zm-5.944 1.5H1.543a6.507 6.507 0 0 0 4.666 5.5c-.123-.181-.24-.365-.352-.552-.715-1.192-1.437-2.874-1.581-4.948Zm-2.733-1.5h2.733c.144-2.074.866-3.756 1.58-4.948.12-.197.237-.381.353-.552a6.507 6.507 0 0 0-4.666 5.5Zm10.181 1.5c-.144 2.074-.866 3.756-1.58 4.948-.12.197-.237.381-.353.552a6.507 6.507 0 0 0 4.666-5.5Zm2.733-1.5a6.507 6.507 0 0 0-4.666-5.5c.123.181.24.365.353.552.714 1.192 1.436 2.874 1.58 4.948Z"
+                        ></path>
+                    </svg>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- prettier-ignore -->
+        <span class="question_content" hook="long" hook-arg="lowered">
+            {{ shared::ui::render_markdown(question.content)|safe }}
+        </span>
+    </div>
+    {% else %}
+    <div class="card" style="display: none"></div>
+    {% endif %}
+
+    <div class="card flex flex-col gap-1 response_body">
+        <!-- prettier-ignore -->
+        {% if (do_not_render_question == true) | (response.context.is_post == true) %}
+            {% include "components/response_title.html" %}
+        {% endif %}
+
+        <!-- prettier-ignore -->
+        <span class="response_content" hook="long">
+            {{ shared::ui::render_markdown(response.content)|safe }}
+        </span>
+
+        <span class="response_tags flex gap-2 flex-wrap">
+            {% for tag in response.tags %}
+            <a
+                href="/@{{ response.author.username }}?tag={{ tag }}"
+                class="tag"
+            >
+                #{{ tag }}
+            </a>
+            {% endfor %}
+        </span>
+
+        <!-- prettier-ignore -->
+        {% if (do_not_render_question == false) && (response.context.is_post == false) %}
+            {% include "components/response_title.html" %}
+        {% endif %}
+    </div>
+
+    {% if (do_not_render_question == true) | (response.context.is_post == true)
+    %}
+    <style>
+        #response\:{{ response.id }} .response_body {
+            border-radius: var(--radius) !important;
+        }
+
+        @media screen and (max-width: 600px) {
+            #response\:{{ response.id }} .response_body {
+                flex-direction: column-reverse;
+            }
+        }
+    </style>
+    {% endif %}
+</div>

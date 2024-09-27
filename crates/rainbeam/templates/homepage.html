@@ -1,0 +1,79 @@
+{% extends "base.html" %} {% block title %}{{ config.name }}{% endblock %} {%
+block head %}
+<meta name="description" content="{{ config.description }}" />
+{% endblock %} {% block content %}
+<main class="flex flex-col gap-4">
+    <div
+        class="card padded flex flex-col gap-2 justify-center items-center"
+        style="
+            background: var(--color-primary);
+            color: var(--color-text-primary) !important;
+        "
+    >
+        <h1 class="no-margin">{{ config.name }}</h1>
+        <h3 style="font-weight: normal; margin-top: 0">
+            {{ config.description }}
+        </h3>
+
+        <div class="flex items-center gap-2" style="margin-top: 1rem">
+            <a class="button round-lg bold" href="/sign_up" data-turbo="false">
+                Register
+            </a>
+            <em>or</em>
+            <a class="button round-lg bold" href="/login" data-turbo="false">
+                Login
+            </a>
+        </div>
+    </div>
+
+    <div class="flex flex-col gap-4">
+        <section class="card flex flex-col gap-2">
+            <h2>
+                <span class="hl-tag">Ask</span>
+                questions
+            </h2>
+            <p>
+                On {{ config.name }}, you can easily ask your friends questions
+                as well as ask global questions which everybody can respond to.
+            </p>
+        </section>
+
+        <section class="card flex flex-col gap-2">
+            <h2>
+                <span class="hl-tag">Share</span>
+                responses
+            </h2>
+            <p>
+                Quickly respond to questions asked to you in your inbox and
+                allow all of your friends to view your response!
+            </p>
+        </section>
+
+        <section class="card flex flex-col gap-2">
+            <h2>
+                <span class="hl-tag">Socialize</span>
+                with friends
+            </h2>
+            <p>
+                Grow your social circle through following users and being
+                followed. Users you're following will be used to generate your
+                unique timelines for exploring {{ config.name }}!
+            </p>
+        </section>
+    </div>
+</main>
+
+<script>
+    // logout of account (if it exists), we can only possibly see this page with an account if it was deleted
+    fetch("/api/auth/logout", { method: "POST" });
+</script>
+
+<style>
+    .hl-tag {
+        color: var(--color-text-primary);
+        background: var(--color-primary);
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius);
+    }
+</style>
+{% call super() %} {% endblock %}
