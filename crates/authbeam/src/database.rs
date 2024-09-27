@@ -2928,6 +2928,58 @@ impl Database {
         }
     }
 
+    /// Get all relationships owned by `user` (ownership is the relationship's `one` field)
+    ///
+    /// # Arguments
+    /// * `user`
+    /// * `status`
+    pub async fn get_user_relationships_of_status(
+        &self,
+        user: String,
+        status: RelationshipStatus,
+    ) -> Result<Vec<(Profile, RelationshipStatus)>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "SELECT * FROM \"xrelationships\" WHERE \"one\" = ? AND \"status\" = ?"
+        } else {
+            "SELECT * FROM \"xrelationships\" WHERE \"one\" = $1 AND \"status\" = $2"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query)
+            .bind::<&String>(&user)
+            .bind::<&String>(&serde_json::to_string(&status).unwrap())
+            .fetch_all(c)
+            .await
+        {
+            Ok(p) => {
+                let mut out = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+
+                    // get profile
+                    let profile = match self.get_profile(res.get("two").unwrap().to_string()).await
+                    {
+                        Ok(c) => c,
+                        Err(e) => return Err(e),
+                    };
+
+                    // add to out
+                    out.push((
+                        profile,
+                        serde_json::from_str(&res.get("status").unwrap()).unwrap(),
+                    ));
+                }
+
+                Ok(out)
+            }
+            Err(_) => return Err(AuthError::Other),
+        }
+    }
+
     /// Get all relationships where `user` is either `one` or `two` and the status is `status`
     ///
     /// # Arguments

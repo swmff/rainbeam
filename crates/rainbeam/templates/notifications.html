@@ -120,17 +120,10 @@ endblock %} {% block head %}
 <script>
     if (window.localStorage.getItem("clear_notifs") === "true") {
         for (const element of Array.from(
-            document.querySelectorAll("[neodo=notification]"),
+            document.querySelectorAll("[do=notification]"),
         )) {
             element.setAttribute("target", "_blank");
         }
-    }
-
-    if (window.localStorage.getItem("clear_all_notifs") === "true") {
-        use("notifications", (notifs) => {
-            // clear all notifications
-            notifs.clear(true);
-        });
     }
 </script>
 

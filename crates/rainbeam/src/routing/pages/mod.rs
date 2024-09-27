@@ -9,7 +9,9 @@ use axum_extra::extract::CookieJar;
 
 use ammonia::Builder;
 use serde::{Deserialize, Serialize};
-use authbeam::model::{Notification, Permission, Profile, ProfileMetadata, UserFollow};
+use authbeam::model::{
+    Notification, Permission, Profile, ProfileMetadata, RelationshipStatus, UserFollow,
+};
 
 use crate::config::Config;
 use crate::database::Database;
@@ -468,11 +470,37 @@ pub async fn public_posts_timeline_request(
         0
     };
 
-    let responses = match database.get_posts_paginated(query.page).await {
+    let mut responses = match database.get_posts_paginated(query.page).await {
         Ok(responses) => responses,
         Err(_) => return Html(DatabaseError::Other.to_html(database)),
     };
 
+    // remove content from blocked users/users that have blocked us
+    let blocked = if let Some(ref ua) = auth_user {
+        match database
+            .auth
+            .get_user_relationships_of_status(ua.id.clone(), RelationshipStatus::Blocked)
+            .await
+        {
+            Ok(l) => l,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        }
+    } else {
+        Vec::new()
+    };
+
+    for user in blocked {
+        for (i, _) in responses
+            .clone()
+            .iter()
+            .filter(|x| x.1.author.id == user.0.id)
+            .enumerate()
+        {
+            responses.remove(i);
+        }
+    }
+
+    // ...
     let mut is_helper: bool = false;
     let is_powerful = if let Some(ref ua) = auth_user {
         let group = match database.auth.get_group_by_id(ua.group).await {
@@ -1004,11 +1032,33 @@ pub async fn public_global_timeline_request(
         .get_notification_count_by_recipient(auth_user.id.to_owned())
         .await;
 
-    let questions = match database.get_global_questions_paginated(query.page).await {
+    let mut questions = match database.get_global_questions_paginated(query.page).await {
         Ok(r) => r,
         Err(e) => return Html(e.to_html(database)),
     };
 
+    // remove content from blocked users/users that have blocked us
+    let blocked = match database
+        .auth
+        .get_user_relationships_of_status(auth_user.id.clone(), RelationshipStatus::Blocked)
+        .await
+    {
+        Ok(l) => l,
+        Err(_) => return Html(DatabaseError::Other.to_html(database)),
+    };
+
+    for user in blocked {
+        for (i, _) in questions
+            .clone()
+            .iter()
+            .filter(|x| x.0.author.id == user.0.id)
+            .enumerate()
+        {
+            questions.remove(i);
+        }
+    }
+
+    // ...
     let is_helper = {
         let group = match database.auth.get_group_by_id(auth_user.group).await {
             Ok(g) => g,
