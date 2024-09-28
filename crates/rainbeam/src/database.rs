@@ -2191,7 +2191,7 @@ impl Database {
     /// * `author` - the ID of the user creating the response
     pub async fn create_response(&self, props: ResponseCreate, author: String) -> Result<()> {
         // make sure the question exists
-        let question = if props.question != "0" {
+        let mut question = if props.question != "0" {
             // get question from database
             match self.get_question(props.question.clone()).await {
                 Ok(q) => q,
@@ -2329,9 +2329,18 @@ impl Database {
         {
             Ok(_) => {
                 // create notification
-                let tag = Database::anonymous_tag(&question.author.username);
+                let tag = Database::anonymous_tag(&question.author.id);
+                let mut is_allowed_to_receive_notif = true;
 
-                if (question.recipient.id != question.author.id) && tag.0 == false {
+                if tag.0 {
+                    // allow users who were just hiding their name to receive a notification
+                    if let Ok(ua) = self.auth.get_profile(tag.1).await {
+                        is_allowed_to_receive_notif = true;
+                        question.author = ua;
+                    }
+                }
+
+                if (question.recipient.id != question.author.id) && is_allowed_to_receive_notif {
                     if let Err(_) = self
                         .auth
                         .create_notification(NotificationCreate {

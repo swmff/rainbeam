@@ -12,7 +12,7 @@ let reaction_count = response.3 %} {% let response = response.1.clone() %}
             <div class="footernav">
                 <b class="flex items-center gap-2 item">
                     <!-- prettier-ignore -->
-                    {% let author_tag = crate::database::Database::anonymous_tag(question.author.username.as_ref()) %}
+                    {% let author_tag = crate::database::Database::anonymous_tag(question.author.id.as_ref()) %}
                     {% if author_tag.0 == false %}
                     <img
                         title="{{ question.author.username }}'s avatar"
@@ -78,8 +78,14 @@ let reaction_count = response.3 %} {% let response = response.1.clone() %}
                     {% endif %}
                     {% endif %}
 
+                    <!-- prettier-ignore -->
+                    {% if let Some(profile) = profile %} 
+                    {% if author_tag.0 && author_tag.1 == profile.id %}
+                    <span class="notification">You</span>
+                    {% endif %} {% endif %}
+
+                    <!-- prettier-ignore -->
                     {% if is_powerful %}
-                    {% let author_tag = crate::database::Database::anonymous_tag(question.author.id.as_ref()) %}
                     {% if author_tag.0 %}
                     <a class="notification" href="/+u/{{ author_tag.1 }}">
                         {% if author_tag.1.contains("-") %}
