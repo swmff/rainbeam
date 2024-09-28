@@ -83,6 +83,21 @@
         </p>
     </div>
 
+    <div class="flex flex-col gap-1">
+        <div class="checkbox_container">
+            <input
+                type="checkbox"
+                name="sparkler:limited_friend_requests"
+                id="sparkler:limited_friend_requests"
+                onchange="update_kv('sparkler:limited_friend_requests', event.target.checked.toString())"
+            />
+
+            <label for="sparkler:limited_friend_requests" class="normal">
+                Only allow friend requests from people you follow
+            </label>
+        </div>
+    </div>
+
     <hr />
     <form class="flex flex-col gap-1" id="change_username">
         <h3>Change username</h3>

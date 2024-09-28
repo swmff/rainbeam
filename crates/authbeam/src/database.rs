@@ -601,6 +601,7 @@ impl Database {
     pub fn allowed_custom_keys(&self) -> Vec<&'static str> {
         vec![
             "sparkler:display_name",
+            "sparkler:limited_friend_requests",
             "sparkler:biography",
             "sparkler:sidebar",
             "sparkler:avatar_url",
@@ -635,6 +636,7 @@ impl Database {
             "sparkler:color_shadow",
             "sparkler:lock_profile",
             "sparkler:disallow_anonymous",
+            "sparkler:disallow_anonymous_comments",
             "sparkler:require_account",
             "sparkler:private_social",
             "sparkler:filter",
@@ -2756,6 +2758,14 @@ impl Database {
                 }
             }
             RelationshipStatus::Pending => {
+                // check utwo permissions
+                if utwo.metadata.is_true("sparkler:limited_friend_requests") {
+                    // make sure utwo is following uone
+                    if let Err(_) = self.get_follow(utwo.id.clone(), uone.id.clone()).await {
+                        return Err(AuthError::NotAllowed);
+                    }
+                }
+
                 // add
                 let query: String =
                     if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {

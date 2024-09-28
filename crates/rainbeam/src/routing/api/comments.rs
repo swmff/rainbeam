@@ -1,5 +1,5 @@
 use crate::database::Database;
-use crate::model::{CommentCreate, DatabaseError};
+use crate::model::{anonymous_profile, CommentCreate, DatabaseError};
 use hcaptcha::Hcaptcha;
 use authbeam::model::{NotificationCreate, ProfileMetadata};
 use databeam::DefaultReturn;
@@ -38,21 +38,77 @@ pub async fn create_request(
             .get_profile_by_unhashed(c.value_trimmed().to_string())
             .await
         {
-            Ok(ua) => ua.username,
-            Err(_) => return Json(DatabaseError::NotAllowed.into()),
+            Ok(ua) => ua,
+            Err(_) => anonymous_profile(database.create_anonymous().0),
         },
-        None => return Json(DatabaseError::NotAllowed.into()),
+        None => anonymous_profile(database.create_anonymous().0),
     };
 
+    let existing_tag = match jar.get("__Secure-Question-Tag") {
+        Some(c) => c.value_trimmed().to_string(),
+        None => String::new(),
+    };
+
+    // get correct username
+    if auth_user.username == "anonymous" {
+        let tag = if !existing_tag.is_empty() {
+            // use existing tag
+            existing_tag
+        } else {
+            // use id as tag
+            if auth_user.username == "anonymous" {
+                auth_user.id
+            } else {
+                auth_user.id
+            }
+        };
+
+        // create as anonymous
+        return (
+            [
+                ("Content-Type".to_string(), "text/plain".to_string()),
+                (
+                    "Set-Cookie".to_string(),
+                    format!(
+                        "__Secure-Question-Tag={}; SameSite=Lax; Secure; Path=/; HostOnly=true; HttpOnly=true; Max-Age={}",
+                        tag,
+                        60 * 60 * 24 * 365
+                    ),
+                ),
+            ],
+            Json(match database.create_comment(req, tag).await {
+                Ok(r) => DefaultReturn {
+                    success: true,
+                    message: String::new(),
+                    payload: Some(r),
+                },
+                Err(e) => e.into(),
+            }),
+        );
+    }
+
     // ...
-    Json(match database.create_comment(req, auth_user).await {
-        Ok(r) => DefaultReturn {
-            success: true,
-            message: String::new(),
-            payload: Some(r),
-        },
-        Err(e) => e.into(),
-    })
+    (
+        [
+            ("Content-Type".to_string(), "text/plain".to_string()),
+            (
+                "Set-Cookie".to_string(),
+                format!(
+                    "__Secure-Question-Tag={}; SameSite=Lax; Secure; Path=/; HostOnly=true; HttpOnly=true; Max-Age={}",
+                    auth_user.username.replace("anonymous#", ""),
+                    60 * 60 * 24 * 365
+                ),
+            ),
+        ],
+        Json(match database.create_comment(req, auth_user.id).await {
+            Ok(r) => DefaultReturn {
+                success: true,
+                message: String::new(),
+                payload: Some(r),
+            },
+            Err(e) => e.into(),
+        })
+    )
 }
 
 /// [`Database::get_comment`]

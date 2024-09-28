@@ -122,6 +122,30 @@ pub struct ProfileMetadata {
     pub kv: HashMap<String, String>,
 }
 
+impl ProfileMetadata {
+    /// Check if a value exists in `kv` (and isn't empty)
+    pub fn exists(&self, key: &str) -> bool {
+        if let Some(ref value) = self.kv.get(key) {
+            if value.is_empty() {
+                return false;
+            }
+
+            return true;
+        }
+
+        false
+    }
+
+    /// Check if a value in `kv` is "true"
+    pub fn is_true(&self, key: &str) -> bool {
+        if !self.exists(key) {
+            return false;
+        }
+
+        self.kv.get(key).unwrap() == "true"
+    }
+}
+
 impl Default for ProfileMetadata {
     fn default() -> Self {
         Self {

@@ -51,6 +51,7 @@ pub fn routes(database: Database) -> Router {
         .route("/login", post(login_request))
         .route("/callback", get(callback_request))
         .route("/logout", post(logout_request))
+        .route("/untag", post(remove_tag))
         // ...
         .with_state(database)
 }
@@ -1508,9 +1509,8 @@ pub async fn logout_request(jar: CookieJar) -> impl IntoResponse {
                 ("Content-Type".to_string(), "text/plain".to_string()),
                 (
                     "Set-Cookie".to_string(),
-                   "__Secure-Token=refresh; SameSite=Strict; Secure; Path=/; HostOnly=true; HttpOnly=true; Max-Age=0".to_string(),
-                ),
-            ],
+                    "__Secure-Token=refresh; SameSite=Strict; Secure; Path=/; HostOnly=true; HttpOnly=true; Max-Age=0".to_string(),
+                )            ],
             "You have been signed out. You can now close this tab.",
         );
     }
@@ -1522,5 +1522,31 @@ pub async fn logout_request(jar: CookieJar) -> impl IntoResponse {
             ("Set-Cookie".to_string(), String::new()),
         ],
         "Failed to sign out of account.",
+    )
+}
+
+pub async fn remove_tag(jar: CookieJar) -> impl IntoResponse {
+    // check for cookie
+    // anonymous users cannot remove their own tag
+    if let Some(_) = jar.get("__Secure-Token") {
+        return (
+            [
+                ("Content-Type".to_string(), "text/plain".to_string()),
+                (
+                    "Set-Cookie2".to_string(),
+                    "__Secure-Question-Tag=refresh; SameSite=Lax; Secure; Path=/; HostOnly=true; HttpOnly=true; Max-Age=0".to_string()
+                )
+            ],
+            "You have been signed out. You can now close this tab.",
+        );
+    }
+
+    // return
+    (
+        [
+            ("Content-Type".to_string(), "text/plain".to_string()),
+            ("Set-Cookie".to_string(), String::new()),
+        ],
+        "Failed to remove tag.",
     )
 }

@@ -155,6 +155,7 @@ pub async fn profile_request(
             }
         }
     };
+
     let pinned = if let Some(pinned) = other.metadata.kv.get("sparkler:pinned") {
         if pinned.is_empty() {
             None

@@ -88,8 +88,7 @@ block head %}
             <div class="card flex flex-col gap-1">Leave a comment</div>
 
             <div class="card">
-                {% if profile.is_some() %}
-                <form
+                      <form
                     class="flex flex-col gap-2"
                     onsubmit="comment(event, '{{ response.id }}')"
                 >
@@ -112,9 +111,6 @@ block head %}
                         <button class="round-lg primary bold">Submit</button>
                     </div>
                 </form>
-                {% else %}
-                <span><a href="/sign_up">Sign up</a> or <a href="/login">login</a> to add a comment!</span>
-                {% endif %}
             </div>
         </div>
 

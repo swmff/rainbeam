@@ -82,7 +82,7 @@ pub async fn create_request(
             // use id as tag
             auth_user.id
         } else {
-            // use username as tag
+            // use id as tag
             if auth_user.username == "anonymous" {
                 auth_user.id
             } else {

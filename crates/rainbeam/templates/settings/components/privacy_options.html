@@ -32,6 +32,21 @@
         </label>
     </div>
 
+    <div class="flex flex-col gap-1">
+        <div class="checkbox_container">
+            <input
+                type="checkbox"
+                name="sparkler:disallow_anonymous_comments"
+                id="sparkler:disallow_anonymous_comments"
+                onchange="update_kv('sparkler:disallow_anonymous_comments', event.target.checked.toString())"
+            />
+
+            <label for="sparkler:disallow_anonymous_comments" class="normal">
+                Disallow anonymous comments on your responses
+            </label>
+        </div>
+    </div>
+
     <div class="checkbox_container">
         <input
             type="checkbox"

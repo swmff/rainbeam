@@ -3306,8 +3306,14 @@ impl Database {
         let tag = Database::anonymous_tag(&author);
 
         if tag.0 {
-            // anonymous users cannot comment
-            return Err(DatabaseError::NotAllowed);
+            // anonymous users cannot comment if disallowed by the response creator
+            if response
+                .author
+                .metadata
+                .is_true("sparkler:disallow_anonymous_comments")
+            {
+                return Err(DatabaseError::NotAllowed);
+            }
         }
 
         // check content length
@@ -3320,7 +3326,7 @@ impl Database {
         }
 
         // check author permissions
-        let author = match self.auth.get_profile_by_username(author.clone()).await {
+        let author = match self.auth.get_profile(author.clone()).await {
             Ok(ua) => ua,
             Err(_) => return Err(DatabaseError::NotFound),
         };
@@ -3376,14 +3382,20 @@ impl Database {
                         Err(e) => return Err(e),
                     };
 
-                    if reply.author.id != comment.author.id {
+                    let author_tag = Database::anonymous_tag(&reply.author.username);
+
+                    if (reply.author.id != comment.author.id) && !author_tag.0 {
                         if let Err(_) = self
                             .auth
                             .create_notification(NotificationCreate {
-                                title: format!(
-                                    "[@{}](/@{}) replied to a comment you created!",
-                                    comment.author.username, comment.author.username
-                                ),
+                                title: if !tag.0 {
+                                    format!(
+                                        "[@{}](/@{}) replied to a comment you created!",
+                                        comment.author.username, comment.author.username
+                                    )
+                                } else {
+                                    "Somebody replied to a comment you created!".to_string()
+                                },
                                 content: format!(
                                     "{}: \"{}...\"",
                                     comment.author.username,
@@ -3408,10 +3420,14 @@ impl Database {
                     if let Err(_) = self
                         .auth
                         .create_notification(NotificationCreate {
-                            title: format!(
-                                "[@{}](/@{}) commented on a response you created!",
-                                comment.author.username, comment.author.username
-                            ),
+                            title: if !tag.0 {
+                                format!(
+                                    "[@{}](/@{}) commented on a response you created!",
+                                    comment.author.username, comment.author.username
+                                )
+                            } else {
+                                "Somebody commented on a response you created!".to_string()
+                            },
                             content: format!(
                                 "{}: \"{}...\"",
                                 comment.author.username,

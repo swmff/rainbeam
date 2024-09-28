@@ -15,7 +15,7 @@ pub fn render_markdown(input: &str) -> String {
     options.extension.autolink = true;
     options.extension.header_ids = Option::Some(String::new());
     // options.render.unsafe_ = true;
-    options.render.escape = true;
+    // options.render.escape = true;
     options.parse.smart = false;
 
     let html = markdown_to_html(input, &options);
