@@ -14,7 +14,8 @@ pub fn render_markdown(input: &str) -> String {
     options.extension.strikethrough = true;
     options.extension.autolink = true;
     options.extension.header_ids = Option::Some(String::new());
-    // options.render.unsafe_ = true;
+    options.extension.tagfilter = true;
+    options.render.unsafe_ = true;
     // options.render.escape = true;
     options.parse.smart = false;
 
