@@ -87,6 +87,23 @@
         <div class="checkbox_container">
             <input
                 type="checkbox"
+                name="sparkler:always_anon"
+                id="sparkler:always_anon"
+                onchange="window.localStorage.setItem('always_anon', event.target.checked.toString())"
+            />
+
+            <label for="sparkler:always_anon" class="normal">
+                Default to anonymous
+            </label>
+        </div>
+
+        <p class="fade">"Hide your name" will be checked by default.</p>
+    </div>
+
+    <div class="flex flex-col gap-1">
+        <div class="checkbox_container">
+            <input
+                type="checkbox"
                 name="sparkler:limited_friend_requests"
                 id="sparkler:limited_friend_requests"
                 onchange="update_kv('sparkler:limited_friend_requests', event.target.checked.toString())"

@@ -589,6 +589,12 @@ config.name }}{% endblock %} {% block head %}
                                     Hide your name
                                 </label>
                             </div>
+
+                            <script>
+                                if (window.localStorage.getItem("always_anon") === "true") {
+                                    document.getElementById("anonymous").checked = true
+                                }
+                            </script>
                             {% else %}
                             <div></div>
                             {% endif %}

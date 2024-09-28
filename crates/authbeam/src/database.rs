@@ -76,7 +76,7 @@ impl Database {
         }
     }
 
-    /// Pull [`dorsal::DatabaseOpts`] from env
+    /// Pull [`databeam::DatabaseOpts`] from env
     pub fn env_options() -> databeam::DatabaseOpts {
         use std::env::var;
         databeam::DatabaseOpts {
@@ -1914,7 +1914,7 @@ impl Database {
     /// Create a new notification
     ///
     /// ## Arguments:
-    /// * `props` - [`QuestionCreate`]
+    /// * `props` - [`NotificationCreate`]
     pub async fn create_notification(&self, props: NotificationCreate) -> Result<()> {
         let notification = Notification {
             title: props.title,
