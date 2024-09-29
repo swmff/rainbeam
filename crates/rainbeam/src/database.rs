@@ -227,23 +227,28 @@ impl Database {
         mut link: String,
         mut target_length: usize,
     ) -> String {
-        let mut part_1 = part_1.to_owned();
-        let mut part_2 = part_2.to_owned();
+        let part_1 = part_1.to_owned();
+        let part_2 = part_2.to_owned();
 
         link = format!("{host}{link}");
 
         // check chars
         // if anything takes up multiple characters then we cannot safely split the string
         // we're just going to return the link in this case
-        for (i, char) in part_1.clone().chars().enumerate() {
+
+        // for (i, char) in part_1.clone().chars().enumerate() {
+        for char in part_1.chars() {
             if char.len_utf8() != 1 {
-                part_1.remove(i); // get rid of this stupid character
+                // part_1.remove(i); // get rid of this stupid character
+                return link;
             }
         }
 
-        for (i, char) in part_2.clone().chars().enumerate() {
+        // for (i, char) in part_2.clone().chars().enumerate() {
+        for char in part_2.chars() {
             if char.len_utf8() != 1 {
-                part_2.remove(i); // get rid of this stupid character
+                // part_2.remove(i); // get rid of this stupid character
+                return link;
             }
         }
 
