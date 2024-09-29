@@ -84,9 +84,9 @@
         });
     });
 
-    app.define("copy_text", function (_, text) {
+    app.define("copy_text", function ({ $ }, text) {
         navigator.clipboard.writeText(text);
-        alert("Copied!");
+        $.toast("success", "Copied!");
     });
 
     app.define("smooth_remove", function (_, element, ms) {

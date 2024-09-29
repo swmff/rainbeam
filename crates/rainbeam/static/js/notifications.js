@@ -2,11 +2,11 @@
     const self = reg_ns("notifications", ["app"]);
 
     self.define("delete", function ({ $, app }, id, conf) {
-        if (!conf) {
-            if (!confirm("Are you sure you want to do this?")) {
-                return;
-            }
-        }
+        // if (!conf) {
+        //     if (!confirm("Are you sure you want to do this?")) {
+        //         return;
+        //     }
+        // }
 
         fetch(`/api/auth/notifications/${id}`, {
             method: "DELETE",
@@ -23,11 +23,11 @@
     });
 
     self.define("clear", function (_, conf) {
-        if (!conf) {
-            if (!confirm("Are you sure you want to do this?")) {
-                return;
-            }
-        }
+        // if (!conf) {
+        //     if (!confirm("Are you sure you want to do this?")) {
+        //         return;
+        //     }
+        // }
 
         fetch(`/api/auth/notifications/clear`, {
             method: "DELETE",

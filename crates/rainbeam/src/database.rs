@@ -227,20 +227,23 @@ impl Database {
         mut link: String,
         mut target_length: usize,
     ) -> String {
+        let mut part_1 = part_1.to_owned();
+        let mut part_2 = part_2.to_owned();
+
         link = format!("{host}{link}");
 
         // check chars
         // if anything takes up multiple characters then we cannot safely split the string
         // we're just going to return the link in this case
-        for char in part_1.chars() {
+        for (i, char) in part_1.clone().chars().enumerate() {
             if char.len_utf8() != 1 {
-                return link;
+                part_1.remove(i); // get rid of this stupid character
             }
         }
 
-        for char in part_2.chars() {
+        for (i, char) in part_2.clone().chars().enumerate() {
             if char.len_utf8() != 1 {
-                return link;
+                part_2.remove(i); // get rid of this stupid character
             }
         }
 
@@ -255,11 +258,11 @@ impl Database {
         let sep_size = separator.len();
         let part_1_size = (target_length / 2) - sep_size;
 
-        out += if part_1_size > part_1.len() {
+        out += &if part_1_size > part_1.len() {
             // just use part_1
             part_1
         } else {
-            &part_1[..part_1_size]
+            part_1[..part_1_size].to_string()
         };
 
         out += separator;
@@ -269,7 +272,7 @@ impl Database {
                 // just use part_2
                 part_2
             } else {
-                &part_2[..part_2_size]
+                part_2[..part_2_size].to_string()
             }
         }
 
