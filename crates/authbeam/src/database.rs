@@ -1,6 +1,6 @@
 use crate::model::{
-    AuthError, IpBan, IpBanCreate, Profile, ProfileCreate, ProfileMetadata, Warning, WarningCreate,
-    RelationshipStatus,
+    AuthError, IpBan, IpBanCreate, Profile, ProfileCreate, ProfileMetadata, RelationshipStatus,
+    Warning, WarningCreate,
 };
 use crate::model::{Group, Notification, NotificationCreate, Permission, UserFollow};
 
@@ -174,10 +174,10 @@ impl Database {
 
         let _ = sqlquery(
             "CREATE TABLE IF NOT EXISTS \"xrelationships\" (
-                one        TEXT,
-                two        TEXT,
-                status     TEXT,
-                timestamp  TEXT
+                one       TEXT,
+                two       TEXT,
+                status    TEXT,
+                timestamp TEXT
             )",
         )
         .execute(c)

@@ -189,9 +189,9 @@ comment = comment.0.clone() %}
                 </button>
 
                 <div class="inner shadow-md w-content" exclude="dropdown">
-                    {% if let Some(profile) = profile %} {% if profile.id ==
-                    comment.author.id %}
-                    <!-- actions for the profile owner only -->
+                    {% if let Some(profile) = profile %} {% if (profile.id ==
+                    comment.author.id) | (profile.id == response.author.id) %}
+                    <!-- actions for the comment author/response author only -->
                     <b class="title">Manage</b>
 
                     <a

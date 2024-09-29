@@ -25,3 +25,6 @@ CREATE FULLTEXT INDEX IF NOT EXISTS "idx_tags" ON "xresponses" ("tags");
 CREATE FULLTEXT INDEX IF NOT EXISTS "idx_uone" ON "xrelationships" ("one");
 CREATE FULLTEXT INDEX IF NOT EXISTS "idx_utwo" ON "xrelationships" ("two");
 CREATE FULLTEXT INDEX IF NOT EXISTS "idx_relationship" ON "xrelationships" ("one", "two");
+CREATE FULLTEXT INDEX IF NOT EXISTS "idx_chats" ON "xchats" ("id");
+CREATE FULLTEXT INDEX IF NOT EXISTS "idx_chat_members" ON "xchats" ("users");
+CREATE FULLTEXT INDEX IF NOT EXISTS "idx_messages" ON "xmessages" ("chat");

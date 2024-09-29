@@ -3,9 +3,9 @@ use std::collections::HashMap;
 
 use crate::config::Config;
 use crate::model::{
-    anonymous_profile, Circle, CircleCreate, CircleMetadata, CommentCreate, DataExport,
-    MembershipStatus, QuestionCreate, QuestionResponse, Reaction, RefQuestion, ResponseComment,
-    ResponseContext, ResponseCreate,
+    anonymous_profile, Chat, ChatContext, Circle, CircleCreate, CircleMetadata, CommentCreate,
+    DataExport, MembershipStatus, Message, MessageContext, MessageCreate, QuestionCreate,
+    QuestionResponse, Reaction, RefQuestion, ResponseComment, ResponseContext, ResponseCreate,
 };
 use crate::model::{DatabaseError, Question};
 
@@ -115,6 +115,32 @@ impl Database {
                 circle     TEXT,
                 membership TEXT,
                 timestamp  TEXT
+            )",
+        )
+        .execute(c)
+        .await;
+
+        // create chats table
+        let _ = sqlquery(
+            "CREATE TABLE IF NOT EXISTS \"xchats\" (
+                id        TEXT,
+                users     TEXT,
+                context   TEXT,
+                timestamp TEXT
+            )",
+        )
+        .execute(c)
+        .await;
+
+        // create messages table
+        let _ = sqlquery(
+            "CREATE TABLE IF NOT EXISTS \"xmessages\" (
+                id        TEXT,
+                chat      TEXT,
+                author    TEXT,
+                content   TEXT,
+                context   TEXT,
+                timestamp TEXT
             )",
         )
         .execute(c)
@@ -3421,6 +3447,11 @@ impl Database {
             Err(e) => return Err(e),
         };
 
+        let res = match self.get_response(comment.response.clone()).await {
+            Ok(q) => q.1,
+            Err(e) => return Err(e),
+        };
+
         // check username
         if user.id != comment.author.id {
             // check permission
@@ -3429,20 +3460,24 @@ impl Database {
                 Err(_) => return Err(DatabaseError::Other),
             };
 
-            if !group.permissions.contains(&Permission::Helper) {
-                return Err(DatabaseError::NotAllowed);
-            } else {
-                if let Err(e) = self
-                    .audit(
-                        user.id,
-                        format!(
-                            "Deleted a comment by: [{}](/+u/{})",
-                            comment.author.id, comment.author.id
-                        ),
-                    )
-                    .await
-                {
-                    return Err(e);
+            // check if we're the response author
+            if user.id != res.author.id {
+                // check if we're helper
+                if !group.permissions.contains(&Permission::Helper) {
+                    return Err(DatabaseError::NotAllowed);
+                } else {
+                    if let Err(e) = self
+                        .audit(
+                            user.id,
+                            format!(
+                                "Deleted a comment by: [{}](/+u/{})",
+                                comment.author.id, comment.author.id
+                            ),
+                        )
+                        .await
+                    {
+                        return Err(e);
+                    }
                 }
             }
         }
@@ -4677,5 +4712,527 @@ impl Database {
             .await;
 
         count
+    }
+
+    // chats
+
+    /// Get an existing chat
+    ///
+    /// # Arguments
+    /// * `id`
+    pub async fn get_chat(&self, id: String) -> Result<Chat> {
+        // check in cache
+        match self
+            .base
+            .cachedb
+            .get(format!("rbeam.app.chat:{}", id))
+            .await
+        {
+            Some(c) => return Ok(serde_json::from_str::<Chat>(c.as_str()).unwrap()),
+            None => (),
+        };
+
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "SELECT * FROM \"xchats\" WHERE \"id\" = ?"
+        } else {
+            "SELECT * FROM \"xchats\" WHERE \"id\" = $1"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
+            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        let chat = Chat {
+            id: res.get("id").unwrap().to_string(),
+            users: serde_json::from_str(res.get("users").unwrap()).unwrap(),
+            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
+            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+        };
+
+        // store in cache
+        if id.len() == 64 {
+            self.base
+                .cachedb
+                .set(
+                    format!("rbeam.app.chat:{}", id),
+                    serde_json::to_string::<Chat>(&chat).unwrap(),
+                )
+                .await;
+        }
+
+        // return
+        Ok(chat)
+    }
+
+    /// Get all chats the given user ID is in
+    ///
+    /// # Arguments
+    /// * `id` - the ID of the user
+    pub async fn get_chats_for_user(&self, id: String) -> Result<Vec<Chat>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "SELECT * FROM \"xchats\" WHERE \"users\" LIKE ? ORDER BY \"timestamp\" DESC"
+        } else {
+            "SELECT * FROM \"xchats\" WHERE \"users\" LIKE $1 ORDER BY \"timestamp\" DESC"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query)
+            .bind::<&String>(&format!("%{id}%"))
+            .fetch_all(c)
+            .await
+        {
+            Ok(p) => {
+                let mut out: Vec<Chat> = Vec::new();
+                // TODO: fetch latest message and order chats by that
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+
+                    out.push(Chat {
+                        id: res.get("id").unwrap().to_string(),
+                        users: serde_json::from_str(res.get("users").unwrap()).unwrap(),
+                        context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
+                        timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                    });
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        Ok(res)
+    }
+
+    /// Create a new chat
+    ///
+    /// Chats can only be created by non-anonymous users.
+    ///
+    /// # Arguments
+    /// * `user1` - the ID of the chat creator
+    /// * `user2` - the ID of the first chat member (NOT the creator)
+    pub async fn create_chat(&self, user1: String, user2: String) -> Result<()> {
+        // make sure users exist
+        if let Err(e) = self.get_profile(user1.clone()).await {
+            return Err(e);
+        }
+
+        if let Err(e) = self.get_profile(user2.clone()).await {
+            return Err(e);
+        }
+
+        // ...
+        let chat = Chat {
+            id: utility::random_id(),
+            users: vec![user1, user2],
+            context: ChatContext {},
+            timestamp: utility::unix_epoch_timestamp(),
+        };
+
+        // create response
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "INSERT INTO \"xchats\" VALUES (?, ?, ?, ?)"
+        } else {
+            "INSERT INTO \"xchats\" VALEUS ($1, $2, $3, $4)"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query)
+            .bind::<&String>(&chat.id)
+            .bind::<&String>(&serde_json::to_string(&chat.users).unwrap())
+            .bind::<&String>(&serde_json::to_string(&chat.context).unwrap())
+            .bind::<&String>(&chat.timestamp.to_string())
+            .execute(c)
+            .await
+        {
+            Ok(_) => return Ok(()),
+            Err(_) => return Err(DatabaseError::Other),
+        };
+    }
+
+    /// Leave an existing chat
+    ///
+    /// Chats are deleted once the last member leaves
+    ///
+    /// # Arguments
+    /// * `id` - the ID of the chat
+    /// * `user` - the ID of the user doing this
+    pub async fn leave_chat(&self, id: String, user: String) -> Result<()> {
+        // make sure comment exists
+        let mut chat = match self.get_chat(id.clone()).await {
+            Ok(q) => q,
+            Err(e) => return Err(e),
+        };
+
+        // leave chat
+        if let Some(i) = chat.users.iter().position(|u| u == &user) {
+            chat.users.remove(i);
+        } else {
+            return Err(DatabaseError::NotAllowed);
+        }
+
+        if chat.users.len() == 0 {
+            // delete chat
+            let query: String =
+                if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+                    "DELETE FROM \"xchats\" WHERE \"id\" = ?"
+                } else {
+                    "DELETE FROM \"xchats\" WHERE \"id\" = $1"
+                }
+                .to_string();
+
+            let c = &self.base.db.client;
+            match sqlquery(&query).bind::<&String>(&id).execute(c).await {
+                Ok(_) => {
+                    // delete messages
+                    let query: String =
+                        if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+                            "DELETE FROM \"xmessages\" WHERE \"chat\" = ?"
+                        } else {
+                            "DELETE FROM \"xmessages\" WHERE \"chat\" = $1"
+                        }
+                        .to_string();
+
+                    let c = &self.base.db.client;
+                    match sqlquery(&query).bind::<&String>(&id).execute(c).await {
+                        Ok(_) => {
+                            // remove from cache
+                            self.base
+                                .cachedb
+                                .remove(format!("rbeam.app.chat:{}", id))
+                                .await;
+
+                            // return
+                            return Ok(());
+                        }
+                        Err(_) => return Err(DatabaseError::Other),
+                    };
+                }
+                Err(_) => return Err(DatabaseError::Other),
+            };
+        } else {
+            // update chat
+            let query: String =
+                if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+                    "UPDATE \"xchats\" SET VALUES \"users\" = ? WHERE \"id\" = ?"
+                } else {
+                    "UPDATE \"xchats\" SET VALUES (\"users\") = ($1) WHERE \"id\" = $2"
+                }
+                .to_string();
+
+            let c = &self.base.db.client;
+            match sqlquery(&query)
+                .bind::<&String>(&serde_json::to_string(&chat.users).unwrap())
+                .bind::<&String>(&id)
+                .execute(c)
+                .await
+            {
+                Ok(_) => {
+                    // remove from cache
+                    self.base
+                        .cachedb
+                        .remove(format!("rbeam.app.chat:{}", id))
+                        .await;
+
+                    // return
+                    return Ok(());
+                }
+                Err(_) => return Err(DatabaseError::Other),
+            };
+        }
+    }
+
+    // messages
+
+    /// Get an existing message
+    ///
+    /// # Arguments
+    /// * `id`
+    pub async fn get_message(&self, id: String) -> Result<(Message, Profile)> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "SELECT * FROM \"xmessages\" WHERE \"id\" = ?"
+        } else {
+            "SELECT * FROM \"xmessages\" WHERE \"id\" = $1"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
+            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        let message = Message {
+            id: res.get("id").unwrap().to_string(),
+            chat: serde_json::from_str(res.get("chat").unwrap()).unwrap(),
+            author: res.get("author").unwrap().to_string(),
+            content: res.get("content").unwrap().to_string(),
+            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
+            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+        };
+
+        let author = message.author.clone();
+
+        // return
+        Ok((
+            message,
+            match self.auth.get_profile(author).await {
+                Ok(p) => p,
+                Err(_) => return Err(DatabaseError::Other),
+            },
+        ))
+    }
+
+    /// Get all messages by their chat
+    ///
+    /// # Arguments
+    /// * `id`
+    pub async fn get_messages_by_chat(&self, id: String) -> Result<Vec<(Message, Profile)>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "SELECT * FROM \"xmessages\" WHERE \"chat\" = ? ORDER BY \"timestamp\" DESC"
+        } else {
+            "SELECT * FROM \"xmessages\" WHERE \"chat\" = $1 ORDER BY \"timestamp\" DESC"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query).bind::<&String>(&id).fetch_all(c).await {
+            Ok(p) => {
+                let mut out: Vec<(Message, Profile)> = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let author = res.get("author").unwrap().to_string();
+
+                    out.push((
+                        Message {
+                            id: res.get("id").unwrap().to_string(),
+                            chat: serde_json::from_str(res.get("chat").unwrap()).unwrap(),
+                            author: res.get("author").unwrap().to_string(),
+                            content: res.get("content").unwrap().to_string(),
+                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
+                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                        },
+                        match self.auth.get_profile(author).await {
+                            Ok(p) => p,
+                            Err(_) => return Err(DatabaseError::Other),
+                        },
+                    ));
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        Ok(res)
+    }
+
+    /// Get all messages by their chat, 25 at a time
+    ///
+    /// # Arguments
+    /// * `id`
+    /// * `page`
+    pub async fn get_messages_by_chat_paginated(
+        &self,
+        id: String,
+        page: i32,
+    ) -> Result<Vec<(Message, Profile)>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            format!("SELECT * FROM \"xmessages\" WHERE \"chat\" = ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        } else {
+            format!("SELECT * FROM \"xmessages\" WHERE \"chat\" = $1 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        };
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query).bind::<&String>(&id).fetch_all(c).await {
+            Ok(p) => {
+                let mut out: Vec<(Message, Profile)> = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let author = res.get("author").unwrap().to_string();
+
+                    out.push((
+                        Message {
+                            id: res.get("id").unwrap().to_string(),
+                            chat: serde_json::from_str(res.get("chat").unwrap()).unwrap(),
+                            author: res.get("author").unwrap().to_string(),
+                            content: res.get("content").unwrap().to_string(),
+                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
+                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                        },
+                        match self.auth.get_profile(author).await {
+                            Ok(p) => p,
+                            Err(_) => return Err(DatabaseError::Other),
+                        },
+                    ));
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        Ok(res)
+    }
+
+    /// Create a new message
+    ///
+    /// Messages can only be created by non-anonymous users.
+    ///
+    /// # Arguments
+    /// * `props` - [`MessageCreate`]
+    /// * `author` - the ID of the user creating the message
+    pub async fn create_message(&self, props: MessageCreate, author: String) -> Result<()> {
+        // make sure the chat exists
+        let chat = match self.get_chat(props.chat.clone()).await {
+            Ok(q) => q,
+            Err(e) => return Err(e),
+        };
+
+        // make sure author is in the chat
+        if !chat.users.contains(&author) {
+            return Err(DatabaseError::NotAllowed);
+        }
+
+        // check content length
+        if props.content.len() > (64 * 8) {
+            return Err(DatabaseError::ContentTooLong);
+        }
+
+        if props.content.len() < 2 {
+            return Err(DatabaseError::ContentTooShort);
+        }
+
+        // check author permissions
+        let author = match self.get_profile(author.clone()).await {
+            Ok(ua) => ua,
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        if author.group == -1 {
+            // group -1 (even if it exists) is for marking users as banned
+            return Err(DatabaseError::NotAllowed);
+        }
+
+        // check markdown content
+        let markdown = shared::ui::render_markdown(&props.content);
+
+        if markdown.trim().len() == 0 {
+            return Err(DatabaseError::ContentTooShort);
+        }
+
+        // ...
+        let message = Message {
+            id: utility::random_id(),
+            chat: chat.id.clone(),
+            author: author.id.clone(),
+            content: props.content.trim().to_string(),
+            context: MessageContext {},
+            timestamp: utility::unix_epoch_timestamp(),
+        };
+
+        // create response
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "INSERT INTO \"xmessages\" VALUES (?, ?, ?, ?, ?, ?)"
+        } else {
+            "INSERT INTO \"xmessages\" VALEUS ($1, $2, $3, $4, $5, $6)"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query)
+            .bind::<&String>(&message.id)
+            .bind::<&String>(&message.chat)
+            .bind::<&String>(&message.author)
+            .bind::<&String>(&message.content)
+            .bind::<&String>(&serde_json::to_string(&chat.context).unwrap())
+            .bind::<&String>(&message.timestamp.to_string())
+            .execute(c)
+            .await
+        {
+            Ok(_) => return Ok(()),
+            Err(_) => return Err(DatabaseError::Other),
+        };
+    }
+
+    /// Delete an existing message
+    ///
+    /// Messages can only be deleted by their author.
+    ///
+    /// # Arguments
+    /// * `id` - the ID of the message
+    /// * `user` - the user doing this
+    pub async fn delete_message(&self, id: String, user: Profile) -> Result<()> {
+        // make sure comment exists
+        let message = match self.get_message(id.clone()).await {
+            Ok(q) => q.0,
+            Err(e) => return Err(e),
+        };
+
+        // check username
+        if user.id != message.author {
+            // check permission
+            let group = match self.auth.get_group_by_id(user.group).await {
+                Ok(g) => g,
+                Err(_) => return Err(DatabaseError::Other),
+            };
+
+            if !group.permissions.contains(&Permission::Helper) {
+                return Err(DatabaseError::NotAllowed);
+            }
+        }
+
+        // check user permissions
+        if user.group == -1 {
+            // group -1 (even if it exists) is for marking users as banned
+            return Err(DatabaseError::NotAllowed);
+        }
+
+        // delete comment
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "DELETE FROM \"xmessages\" WHERE \"id\" = ?"
+        } else {
+            "DELETE FROM \"xmessages\" WHERE \"id\" = $1"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query).bind::<&String>(&id).execute(c).await {
+            Ok(_) => {
+                // clear reactions
+                // if let Err(e) = self.clear_reactions(id).await {
+                //     return Err(e);
+                // }
+
+                // return
+                return Ok(());
+            }
+            Err(_) => return Err(DatabaseError::Other),
+        };
     }
 }

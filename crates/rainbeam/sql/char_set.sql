@@ -10,3 +10,6 @@ ALTER TABLE "xwarnings" CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general
 ALTER TABLE "xreactions" CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 ALTER TABLE "xcircles" CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 ALTER TABLE "xcircle_memberships" CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+ALTER TABLE "xrelationships" CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+ALTER TABLE "xchats" CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+ALTER TABLE "xmessages" CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;

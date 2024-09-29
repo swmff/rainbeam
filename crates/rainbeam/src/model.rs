@@ -283,6 +283,44 @@ pub struct DataExport {
     pub comments: Vec<(ResponseComment, usize, usize)>,
 }
 
+/// Direct message stream
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Chat {
+    /// The ID of the chat
+    pub id: String,
+    /// The users in the chat
+    pub users: Vec<String>,
+    /// The context of the chat
+    pub context: ChatContext,
+    /// The time the chat was created
+    pub timestamp: u128,
+}
+
+/// Additional information about a [`Chat`]
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct ChatContext {}
+
+/// Direct message
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Message {
+    /// The ID of the message
+    pub id: String,
+    /// The ID of the chat the message is in
+    pub chat: String,
+    /// The user who sent the message
+    pub author: String,
+    /// The content of the message
+    pub content: String,
+    /// The context of the message
+    pub context: MessageContext,
+    /// The time the message was sent
+    pub timestamp: u128,
+}
+
+/// Additional information about a [`Message`]
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct MessageContext {}
+
 // ...
 
 /// Anonymous user profile
@@ -342,6 +380,12 @@ pub struct EditCircleMetadata {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ReactionCreate {
     pub r#type: AssetType,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct MessageCreate {
+    pub chat: String,
+    pub content: String,
 }
 
 /// General API errors
