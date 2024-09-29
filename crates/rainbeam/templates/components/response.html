@@ -1,7 +1,7 @@
 {% let question = response.0.clone() %} {% let comment_count = response.2 %} {%
 let reaction_count = response.3 %} {% let response = response.1.clone() %}
 <div
-    class="card-nest w-full shadow"
+    class="card-nest w-full shadow response"
     id="response:{{ response.id }}"
     data-warning="{{ response.context.warning }}"
 >

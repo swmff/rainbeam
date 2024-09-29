@@ -172,12 +172,9 @@ question = question.clone().0 %}
 
                 <!-- prettier-ignore -->
                 {% let short_id = question.id[..10] %}
-                {% let icon = "❔".to_string() %}
-                {% let clipboard_data = crate::database::Database::share(config.host, icon, question.content, format!("/+q/{short_id}").to_owned(), 240).replace("'", "\\'").replace("\"", "\\\"") %}
 
-                <a
-                    href="#"
-                    onclick="trigger('app:copy_text', ['{{ clipboard_data }}'])"
+                <button
+                    onclick="trigger('app:copy_text', ['{{ config.host }}/+q/{{ short_id }}'])"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -194,8 +191,8 @@ question = question.clone().0 %}
                             d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"
                         ></path>
                     </svg>
-                    Copy to Clipboard
-                </a>
+                    Copy link
+                </button>
             </div>
         </div>
 

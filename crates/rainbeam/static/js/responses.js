@@ -161,4 +161,49 @@
                 );
             });
     });
+
+    self.define("gen_share", function (_, target, short_id, target_length) {
+        // resolve target
+        while (!target.classList.contains("response")) {
+            target = target.parentElement;
+        }
+
+        const part_1 = (
+            target.querySelector(".question_content") || { innerText: "" }
+        ).innerText;
+
+        const part_2 = target.querySelector(".response_content").innerText;
+
+        // ...
+        const link = `${window.location.origin}/+r/${short_id}`;
+
+        const link_size = link.length;
+        target_length -= link_size;
+
+        let out = "";
+        const separator = " — ";
+
+        const part_2_size = target_length / 2 - 1;
+        const sep_size = separator.length;
+        const part_1_size = target_length / 2 - sep_size;
+
+        if (part_1 != "") {
+            out +=
+                part_1_size > part_1.length
+                    ? part_1
+                    : part_1.substring(0, part_1_size);
+
+            out += separator;
+        }
+
+        if (part_2 != "") {
+            out +=
+                part_2_size > part_2.length
+                    ? part_2
+                    : part_2.substring(0, part_2_size);
+        }
+
+        out += ` ${link}`;
+        return out;
+    });
 })();

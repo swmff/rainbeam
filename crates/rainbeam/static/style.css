@@ -872,7 +872,8 @@ dialog::backdrop {
     padding-top: 1rem;
 }
 
-.dropdown .inner a {
+.dropdown .inner a,
+.dropdown .inner button {
     width: 100%;
     padding: 0.25rem 1rem;
     transition: background 0.05s;
@@ -881,9 +882,14 @@ dialog::backdrop {
     align-items: center;
     gap: 0.5rem;
     color: var(--color-text-raised);
+    box-shadow: none !important;
+    background: transparent;
+    justify-content: flex-start;
+    border-radius: 0;
 }
 
-.dropdown .inner a:hover {
+.dropdown .inner a:hover,
+.dropdown .inner button:hover {
     background: var(--color-raised);
 }
 
@@ -892,7 +898,7 @@ dialog::backdrop {
     border-radius: 360px;
 }
 
-.dropdown:not(nav *):has(.inner[open]) button {
+.dropdown:not(nav *):has(.inner[open]) button:not(.inner button) {
     background: var(--color-super-raised) !important;
     box-shadow: inset 0 0 2px var(--color-shadow);
 }
