@@ -398,6 +398,13 @@ pub struct ChatNameEdit {
     pub name: String,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ChatAdd {
+    #[serde(default)]
+    pub chat: String,
+    pub friend: String,
+}
+
 /// General API errors
 #[derive(Debug)]
 pub enum DatabaseError {

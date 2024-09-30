@@ -6,7 +6,7 @@ use axum::{
 };
 use axum_extra::extract::CookieJar;
 
-use authbeam::model::{Permission, Profile};
+use authbeam::model::{Permission, Profile, RelationshipStatus};
 
 use crate::config::Config;
 use crate::database::Database;
@@ -81,11 +81,12 @@ struct ChatTemplate {
     chat: Chat,
     members: Vec<Profile>,
     messages: Vec<(Message, Profile)>,
+    friends: Vec<(Profile, Profile)>,
     last_message_id: String,
     is_helper: bool,
 }
 
-/// GET /chat/:id
+/// GET /chats/:id
 pub async fn chat_request(
     jar: CookieJar,
     Path(id): Path<String>,
@@ -153,6 +154,14 @@ pub async fn chat_request(
             chat: chat.0,
             members: chat.1,
             messages,
+            friends: database
+                .auth
+                .get_user_participating_relationships_of_status(
+                    auth_user.id.clone(),
+                    RelationshipStatus::Friends,
+                )
+                .await
+                .unwrap(),
             last_message_id,
             is_helper,
         }

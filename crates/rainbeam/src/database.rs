@@ -3,10 +3,10 @@ use std::collections::HashMap;
 
 use crate::config::Config;
 use crate::model::{
-    anonymous_profile, Chat, ChatContext, ChatNameEdit, Circle, CircleCreate, CircleMetadata,
-    CommentCreate, DataExport, MembershipStatus, Message, MessageContext, MessageCreate,
-    QuestionCreate, QuestionResponse, Reaction, RefQuestion, ResponseComment, ResponseContext,
-    ResponseCreate,
+    anonymous_profile, Chat, ChatAdd, ChatContext, ChatNameEdit, Circle, CircleCreate,
+    CircleMetadata, CommentCreate, DataExport, MembershipStatus, Message, MessageContext,
+    MessageCreate, QuestionCreate, QuestionResponse, Reaction, RefQuestion, ResponseComment,
+    ResponseContext, ResponseCreate,
 };
 use crate::model::{DatabaseError, Question};
 
@@ -4987,7 +4987,7 @@ impl Database {
                             user1_profile.username, user1_profile.id
                         ),
                         content: String::new(),
-                        address: format!("/chat/{}", chat.id),
+                        address: format!("/chats/{}", chat.id),
                         recipient: user2_profile.id,
                     })
                     .await
@@ -5094,9 +5094,7 @@ impl Database {
         }
     }
 
-    /// Leave an existing chat
-    ///
-    /// Chats are deleted once the last member leaves
+    /// Update an existing chat's name
     ///
     /// # Arguments
     /// * `props` - [`ChatNameEdit`]
@@ -5135,6 +5133,101 @@ impl Database {
             .await
         {
             Ok(_) => {
+                // remove from cache
+                self.base
+                    .cachedb
+                    .remove(format!("rbeam.app.chat:{}", chat.id))
+                    .await;
+
+                // return
+                return Ok(());
+            }
+            Err(_) => return Err(DatabaseError::Other),
+        };
+    }
+
+    /// Add a friend to an existing chat
+    ///
+    /// # Arguments
+    /// * `props` - [`ChatNameEdit`]
+    /// * `user` - the ID of the user doing this
+    pub async fn add_friend_to_chat(&self, props: ChatAdd, user: String) -> Result<()> {
+        // make sure chat exists
+        let mut chat = match self.get_chat(props.chat.clone()).await {
+            Ok(q) => q.0,
+            Err(e) => return Err(e),
+        };
+
+        // make sure we're actually in this chat
+        if !chat.users.contains(&user) {
+            return Err(DatabaseError::NotAllowed);
+        }
+
+        let us = match self.get_profile(user.clone()).await {
+            Ok(ua) => ua,
+            Err(e) => return Err(e),
+        };
+
+        // make sure other user exists
+        if let Err(e) = self.get_profile(props.friend.clone()).await {
+            return Err(e);
+        }
+
+        // make sure other user IS NOT in this chat
+        if chat.users.contains(&props.friend) {
+            return Err(DatabaseError::NotAllowed);
+        }
+
+        // make sure chat has less than 10 people
+        if chat.users.len() >= 10 {
+            return Err(DatabaseError::ContentTooLong);
+        }
+
+        // make sure the other user is actually our friend
+        let relationship = self
+            .auth
+            .get_user_relationship(user.clone(), props.friend.clone())
+            .await
+            .0;
+
+        if relationship != RelationshipStatus::Friends {
+            return Err(DatabaseError::NotAllowed);
+        }
+
+        // add
+        chat.users.push(props.friend.clone());
+
+        // update chat
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "UPDATE \"xchats\" SET \"users\" = ? WHERE \"id\" = ?"
+        } else {
+            "UPDATE \"xchats\" SET (\"users\") = ($1) WHERE \"id\" = $2"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query)
+            .bind::<&String>(&serde_json::to_string(&chat.users).unwrap())
+            .bind::<&String>(&chat.id)
+            .execute(c)
+            .await
+        {
+            Ok(_) => {
+                // send notification
+                if let Err(_) = self
+                    .auth
+                    .create_notification(NotificationCreate {
+                        title: format!("[@{}](/+u/{}) added you to a chat!", us.username, us.id),
+                        content: String::new(),
+                        address: format!("/chats/{}", chat.id),
+                        recipient: props.friend,
+                    })
+                    .await
+                {
+                    return Err(DatabaseError::Other);
+                };
+
                 // remove from cache
                 self.base
                     .cachedb

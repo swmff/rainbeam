@@ -102,6 +102,7 @@ endblock %} {% block nav_left %}
                 </button>
 
                 <div class="inner shadow-md" exclude="dropdown">
+                    <b class="title">Actions</b>
                     <button
                         onclick="document.getElementById('name_dialog').showModal()"
                     >
@@ -118,6 +119,24 @@ endblock %} {% block nav_left %}
                             ></path>
                         </svg>
                         Change name
+                    </button>
+
+                    <button
+                        onclick="document.getElementById('add_friends_dialog').showModal()"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 16 16"
+                            width="16"
+                            height="16"
+                            aria-label="Person add symbol"
+                            class="icon"
+                        >
+                            <path
+                                d="M7.9 8.548h-.001a5.528 5.528 0 0 1 3.1 4.659.75.75 0 1 1-1.498.086A4.01 4.01 0 0 0 5.5 9.5a4.01 4.01 0 0 0-4.001 3.793.75.75 0 1 1-1.498-.085 5.527 5.527 0 0 1 3.1-4.66 3.5 3.5 0 1 1 4.799 0ZM13.25 0a.75.75 0 0 1 .75.75V2h1.25a.75.75 0 0 1 0 1.5H14v1.25a.75.75 0 0 1-1.5 0V3.5h-1.25a.75.75 0 0 1 0-1.5h1.25V.75a.75.75 0 0 1 .75-.75ZM5.5 4a2 2 0 1 0-.001 3.999A2 2 0 0 0 5.5 4Z"
+                            ></path>
+                        </svg>
+                        Add friend
                     </button>
 
                     <button
@@ -138,6 +157,27 @@ endblock %} {% block nav_left %}
                         </svg>
                         Leave
                     </button>
+
+                    <b class="title">Tools</b>
+                    <a
+                        class="red"
+                        href="javascript:trigger('reports:bootstrap', ['chats', '{{ chat.id }}'])"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 16 16"
+                            width="16"
+                            height="16"
+                            aria-label="Report symbol"
+                            class="icon"
+                        >
+                            <path
+                                d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"
+                            ></path>
+                        </svg>
+
+                        Report
+                    </a>
                 </div>
             </div>
         </header>
@@ -227,8 +267,20 @@ endblock %} {% block nav_left %}
                     "{{ chat.id }}",
                     event.target.content.value,
                 ]).then(() => {
-                    event.target.reset();
                     document.getElementById("name_dialog").close();
+                });
+            };
+
+            globalThis.add_friend = (event) => {
+                event.preventDefault();
+                trigger("chats:add", [
+                    "{{ chat.id }}",
+                    event.target.friend.options[
+                        event.target.friend.selectedIndex
+                    ].value,
+                ]).then(() => {
+                    event.target.reset();
+                    document.getElementById("add_friends_dialog").close();
                 });
             };
 
@@ -301,6 +353,49 @@ endblock %} {% block nav_left %}
 
 {% if let Some(profile) = profile %} {% let other = profile.clone() %} {% if
 profile.username == other.username %}
+<dialog id="add_friends_dialog">
+    <form class="inner flex flex-col gap-2" onsubmit="add_friend(event)">
+        <!-- prettier-ignore -->
+        <label for="friend">Add a friend</label>
+
+        <select name="friend" id="friend" required>
+            <option value="" disabled selected>Select a friend</option>
+
+            <!-- prettier-ignore -->
+            {% for user in friends %}
+            {% if other.id != user.0.id %}
+            <!-- prettier-ignore -->
+            <option 
+                value="{{ user.0.id }}" 
+                {% if chat.users.contains(user.0.id) %}disabled{% endif %}
+            >
+                {{ user.0.username }}
+            </option>
+            {% else %}
+            <!-- prettier-ignore -->
+            <option 
+                value="{{ user.1.id }}" 
+                {% if chat.users.contains(user.1.id) %}disabled{% endif %}
+            >
+                {{ user.1.username }}
+            </option>
+            {% endif %} {% endfor %}
+        </select>
+
+        <hr />
+        <div class="flex gap-2">
+            <button class="primary bold">Confirm</button>
+            <button
+                class="bold"
+                onclick="document.getElementById('add_friends_dialog').close()"
+                type="button"
+            >
+                Cancel
+            </button>
+        </div>
+    </form>
+</dialog>
+
 <div id="is_self"></div>
 {% endif %} {% include "components/theming.html" %} {% endif %} {% call super()
 %} {% endblock %}
