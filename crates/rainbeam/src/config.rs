@@ -29,6 +29,9 @@ pub struct Config {
     /// Used in embeds and links.
     #[serde(default)]
     pub host: String,
+    /// A list of image hosts that are blocked
+    #[serde(default)]
+    pub blocked_hosts: Vec<String>,
     /// If a migration should be run
     #[serde(default)]
     pub migration: bool,
@@ -45,6 +48,7 @@ impl Default for Config {
             real_ip_header: Option::None,
             registration_enabled: true,
             host: String::new(),
+            blocked_hosts: Vec::new(),
             migration: false,
         }
     }

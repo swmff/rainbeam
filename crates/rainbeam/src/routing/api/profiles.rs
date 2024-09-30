@@ -92,6 +92,18 @@ pub async fn avatar_request(
         );
     }
 
+    for host in database.server_options.blocked_hosts {
+        if avatar_url.starts_with(&host) {
+            return (
+                [("Content-Type", "image/svg+xml")],
+                Body::from(read_image(
+                    database.server_options.static_dir,
+                    "default-avatar.svg".to_string(),
+                )),
+            );
+        }
+    }
+
     // get profile image
     if avatar_url.is_empty() {
         return (
@@ -162,6 +174,18 @@ pub async fn banner_request(
                 "default-banner.svg".to_string(),
             )),
         );
+    }
+
+    for host in database.server_options.blocked_hosts {
+        if banner_url.starts_with(&host) {
+            return (
+                [("Content-Type", "image/svg+xml")],
+                Body::from(read_image(
+                    database.server_options.static_dir,
+                    "default-banner.svg".to_string(),
+                )),
+            );
+        }
     }
 
     // get profile image

@@ -38,6 +38,18 @@ pub async fn external_image_request(
         );
     }
 
+    for host in database.server_options.blocked_hosts {
+        if image_url.starts_with(&host) {
+            return (
+                [("Content-Type", "image/svg+xml")],
+                Body::from(read_image(
+                    database.server_options.static_dir,
+                    "default-banner.svg".to_string(),
+                )),
+            );
+        }
+    }
+
     // get profile image
     if image_url.is_empty() {
         return (
