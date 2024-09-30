@@ -8,7 +8,7 @@ use authbeam::model::{Permission, Profile, UserFollow, Warning};
 
 use crate::config::Config;
 use crate::database::Database;
-use crate::model::{DatabaseError, Question, QuestionResponse, RelationshipStatus};
+use crate::model::{Chat, DatabaseError, Question, QuestionResponse, RelationshipStatus};
 
 use super::{clean_metadata, PaginatedQuery, ProfileQuery};
 
@@ -1330,6 +1330,7 @@ struct ModTemplate {
     is_following_you: bool,
     metadata: String,
     badges: String,
+    chats: Vec<(Chat, Vec<Profile>)>,
     // ...
     relationship: RelationshipStatus,
     layout: String,
@@ -1441,6 +1442,11 @@ pub async fn mod_request(
         return Html(DatabaseError::NotFound.to_html(database));
     }
 
+    let chats = match database.get_chats_for_user(other.id.clone()).await {
+        Ok(c) => c,
+        Err(e) => return Html(e.to_html(database)),
+    };
+
     Html(
         ModTemplate {
             config: database.server_options.clone(),
@@ -1465,6 +1471,7 @@ pub async fn mod_request(
             is_following_you,
             metadata: clean_metadata(&other.metadata),
             badges: serde_json::to_string_pretty(&other.badges).unwrap(),
+            chats,
             // ...
             relationship,
             layout: other

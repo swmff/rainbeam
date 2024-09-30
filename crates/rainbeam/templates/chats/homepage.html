@@ -60,45 +60,8 @@ endblock %} {% block nav_left %}
         <div class="markdown-alert-important">
             <span>No results matching this query yet!</span>
         </div>
-        {% endif %} {% for chat in chats %}
-        <a
-            href="/chats/{{ chat.0.id }}"
-            class="card w-fill flex items-center justify-between"
-        >
-            <div class="flex flex-col gap-1">
-                <b>{{ chat.0.name }}</b>
-                <div class="footernav flex-wrap">
-                    {% for user in chat.1 %}
-                    <span class="item flex items-center gap-2">
-                        <img
-                            title="{{ user.username }}'s avatar"
-                            src="/api/v1/profiles/{{ user.username }}/avatar"
-                            alt="@{{ user.username }}"
-                            class="avatar round-sm"
-                            style="--size: 20px"
-                        />
-                        {{ user.username }}
-                    </span>
-                    {% endfor %}
-                </div>
-            </div>
-
-            <button class="primary">
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 16 16"
-                    width="16"
-                    height="16"
-                    aria-label="Right chevron icon"
-                    class="icon"
-                >
-                    <path
-                        d="M6.22 3.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L9.94 8 6.22 4.28a.75.75 0 0 1 0-1.06Z"
-                    ></path>
-                </svg>
-            </button>
-        </a>
-        {% endfor %}
+        {% endif %} {% for chat in chats %} {% include "components/listing.html"
+        %} {% endfor %}
     </main>
 </article>
 

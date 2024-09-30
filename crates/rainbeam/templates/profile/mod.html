@@ -193,6 +193,14 @@
     </div>
 </div>
 
+<!-- chats -->
+<hr />
+<div id="chats" class="flex flex-col gap-4">
+    <h3>Chats</h3>
+    {% for chat in chats %} {% include "chats/components/listing.html" %} {%
+    endfor %}
+</div>
+
 <!-- warnings -->
 <hr />
 <div id="warnings" class="flex flex-col gap-4">
