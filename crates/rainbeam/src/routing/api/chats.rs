@@ -1,5 +1,5 @@
 use crate::database::Database;
-use crate::model::DatabaseError;
+use crate::model::{ChatNameEdit, DatabaseError};
 use hcaptcha::Hcaptcha;
 use authbeam::model::NotificationCreate;
 use databeam::DefaultReturn;
@@ -18,6 +18,7 @@ pub fn routes(database: Database) -> Router {
         .route("/from_user/:id", post(create_request))
         // .route("/:id", get(get_request))
         .route("/:id/last", get(get_last_message_request))
+        .route("/:id/name", post(edit_name_request))
         .route("/:id", delete(delete_request))
         .route("/:id/report", post(report_request))
         // ...
@@ -91,6 +92,47 @@ pub async fn get_last_message_request(
         }
         Err(e) => e.into(),
     })
+}
+
+/// [`Database::update_chat_name`]
+pub async fn edit_name_request(
+    jar: CookieJar,
+    Path(id): Path<String>,
+    State(database): State<Database>,
+    Json(props): Json<ChatNameEdit>,
+) -> impl IntoResponse {
+    // get user from token
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => return Json(DatabaseError::NotAllowed.into()),
+        },
+        None => return Json(DatabaseError::NotAllowed.into()),
+    };
+
+    Json(
+        match database
+            .update_chat_name(
+                ChatNameEdit {
+                    chat: id,
+                    name: props.name,
+                },
+                auth_user.id,
+            )
+            .await
+        {
+            Ok(()) => DefaultReturn {
+                success: true,
+                message: String::new(),
+                payload: (),
+            },
+            Err(e) => e.into(),
+        },
+    )
 }
 
 /// [`Database::leave_chat`]

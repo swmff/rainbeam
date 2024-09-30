@@ -132,7 +132,7 @@ pub async fn chat_request(
 
     let last_message_id = match messages.first() {
         Some(l) => l.0.id.clone(),
-        None => return Html(DatabaseError::Other.to_html(database)),
+        None => String::new(),
     };
 
     let is_helper = {

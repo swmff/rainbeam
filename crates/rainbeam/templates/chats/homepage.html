@@ -66,10 +66,19 @@ endblock %} {% block nav_left %}
             class="card w-fill flex items-center justify-between"
         >
             <div class="flex flex-col gap-1">
-                <b>{{ chat.0.id[..10] }}</b>
+                <b>{{ chat.0.name }}</b>
                 <div class="footernav flex-wrap">
                     {% for user in chat.1 %}
-                    <span class="item">{{ user.username }}</span>
+                    <span class="item flex items-center gap-2">
+                        <img
+                            title="{{ user.username }}'s avatar"
+                            src="/api/v1/profiles/{{ user.username }}/avatar"
+                            alt="@{{ user.username }}"
+                            class="avatar round-sm"
+                            style="--size: 20px"
+                        />
+                        {{ user.username }}
+                    </span>
                     {% endfor %}
                 </div>
             </div>

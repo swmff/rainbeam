@@ -3,9 +3,10 @@ use std::collections::HashMap;
 
 use crate::config::Config;
 use crate::model::{
-    anonymous_profile, Chat, ChatContext, Circle, CircleCreate, CircleMetadata, CommentCreate,
-    DataExport, MembershipStatus, Message, MessageContext, MessageCreate, QuestionCreate,
-    QuestionResponse, Reaction, RefQuestion, ResponseComment, ResponseContext, ResponseCreate,
+    anonymous_profile, Chat, ChatContext, ChatNameEdit, Circle, CircleCreate, CircleMetadata,
+    CommentCreate, DataExport, MembershipStatus, Message, MessageContext, MessageCreate,
+    QuestionCreate, QuestionResponse, Reaction, RefQuestion, ResponseComment, ResponseContext,
+    ResponseCreate,
 };
 use crate::model::{DatabaseError, Question};
 
@@ -126,7 +127,8 @@ impl Database {
                 id        TEXT,
                 users     TEXT,
                 context   TEXT,
-                timestamp TEXT
+                timestamp TEXT,
+                name      TEXT
             )",
         )
         .execute(c)
@@ -4765,6 +4767,7 @@ impl Database {
             users: serde_json::from_str(res.get("users").unwrap()).unwrap(),
             context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+            name: res.get("name").unwrap().to_string(),
         };
 
         // store in cache
@@ -4821,6 +4824,7 @@ impl Database {
             users: serde_json::from_str(res.get("users").unwrap()).unwrap(),
             context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+            name: res.get("name").unwrap().to_string(),
         };
 
         // return
@@ -4871,6 +4875,7 @@ impl Database {
                             users,
                             context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            name: res.get("name").unwrap().to_string(),
                         },
                         profiles_out,
                     ));
@@ -4893,6 +4898,10 @@ impl Database {
     /// * `user1` - the ID of the chat creator
     /// * `user2` - the ID of the first chat member (NOT the creator)
     pub async fn create_chat(&self, user1: String, user2: String) -> Result<Chat> {
+        if user1 == user2 {
+            return Err(DatabaseError::NotAllowed);
+        }
+
         // make sure users exist
         let user1_profile = match self.get_profile(user1.clone()).await {
             Ok(p) => p,
@@ -4946,14 +4955,15 @@ impl Database {
             users: vec![user1, user2],
             context: ChatContext {},
             timestamp: utility::unix_epoch_timestamp(),
+            name: format!("{} & {}", user1_profile.username, user2_profile.username),
         };
 
         // create response
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            "INSERT INTO \"xchats\" VALUES (?, ?, ?, ?)"
+            "INSERT INTO \"xchats\" VALUES (?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xchats\" VALEUS ($1, $2, $3, $4)"
+            "INSERT INTO \"xchats\" VALEUS ($1, $2, $3, $4, $5)"
         }
         .to_string();
 
@@ -4963,6 +4973,7 @@ impl Database {
             .bind::<&String>(&serde_json::to_string(&chat.users).unwrap())
             .bind::<&String>(&serde_json::to_string(&chat.context).unwrap())
             .bind::<&String>(&chat.timestamp.to_string())
+            .bind::<&String>(&chat.name)
             .execute(c)
             .await
         {
@@ -4999,7 +5010,7 @@ impl Database {
     /// * `id` - the ID of the chat
     /// * `user` - the ID of the user doing this
     pub async fn leave_chat(&self, id: String, user: String) -> Result<()> {
-        // make sure comment exists
+        // make sure chat exists
         let mut chat = match self.get_chat(id.clone()).await {
             Ok(q) => q.0,
             Err(e) => return Err(e),
@@ -5081,6 +5092,60 @@ impl Database {
                 Err(_) => return Err(DatabaseError::Other),
             };
         }
+    }
+
+    /// Leave an existing chat
+    ///
+    /// Chats are deleted once the last member leaves
+    ///
+    /// # Arguments
+    /// * `props` - [`ChatNameEdit`]
+    /// * `user` - the ID of the user doing this
+    pub async fn update_chat_name(&self, props: ChatNameEdit, user: String) -> Result<()> {
+        // make sure chat exists
+        let chat = match self.get_chat(props.chat.clone()).await {
+            Ok(q) => q.0,
+            Err(e) => return Err(e),
+        };
+
+        // make sure we're actually in this chat
+        if !chat.users.contains(&user) {
+            return Err(DatabaseError::NotAllowed);
+        }
+
+        // check name
+        if (props.name.len() > 32) | (props.name.len() < 2) {
+            return Err(DatabaseError::InvalidName);
+        }
+
+        // update chat
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "UPDATE \"xchats\" SET \"name\" = ? WHERE \"id\" = ?"
+        } else {
+            "UPDATE \"xchats\" SET (\"name\") = ($1) WHERE \"id\" = $2"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query)
+            .bind::<&String>(&props.name)
+            .bind::<&String>(&chat.id)
+            .execute(c)
+            .await
+        {
+            Ok(_) => {
+                // remove from cache
+                self.base
+                    .cachedb
+                    .remove(format!("rbeam.app.chat:{}", chat.id))
+                    .await;
+
+                // return
+                return Ok(());
+            }
+            Err(_) => return Err(DatabaseError::Other),
+        };
     }
 
     // messages
@@ -5356,10 +5421,8 @@ impl Database {
                         .auth
                         .create_notification(NotificationCreate {
                             title: format!(
-                                "[@{}](/+u/{}) sent you a message in {}!",
-                                author.username,
-                                author.id,
-                                message.chat[..10].to_string()
+                                "[@{}](/+u/{}) sent you a message in **{}**!",
+                                author.username, author.id, chat.name
                             ),
                             content: format!("\"{}\"", message.content),
                             address: format!("/chats/{}", chat.id),

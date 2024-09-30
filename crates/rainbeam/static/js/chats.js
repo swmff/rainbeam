@@ -45,6 +45,34 @@
             });
     });
 
+    self.define("name", function ({ $, app }, id, name) {
+        return new Promise((resolve, reject) => {
+            fetch(`/api/v1/chats/${id}/name`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    chat: id,
+                    name,
+                }),
+            })
+                .then((res) => res.json())
+                .then((res) => {
+                    app.toast(
+                        res.success ? "success" : "error",
+                        res.success ? "Name updated!" : res.message,
+                    );
+
+                    if (res.success === true) {
+                        resolve();
+                    } else {
+                        reject();
+                    }
+                });
+        });
+    });
+
     self.define("msg", function ({ $, app }, id, content) {
         return new Promise((resolve, reject) => {
             fetch("/api/v1/messages", {

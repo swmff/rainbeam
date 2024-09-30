@@ -294,6 +294,9 @@ pub struct Chat {
     pub context: ChatContext,
     /// The time the chat was created
     pub timestamp: u128,
+    /// The name of the chat
+    #[serde(default)]
+    pub name: String,
 }
 
 /// Additional information about a [`Chat`]
@@ -386,6 +389,13 @@ pub struct ReactionCreate {
 pub struct MessageCreate {
     pub chat: String,
     pub content: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ChatNameEdit {
+    #[serde(default)]
+    pub chat: String,
+    pub name: String,
 }
 
 /// General API errors

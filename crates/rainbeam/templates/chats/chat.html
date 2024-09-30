@@ -79,7 +79,7 @@ endblock %} {% block nav_left %}
                     </svg>
                 </a>
 
-                <b>{{ chat.id[..10] }}</b>
+                <b>{{ chat.name }}</b>
             </div>
             <div class="dropdown">
                 <button
@@ -102,6 +102,24 @@ endblock %} {% block nav_left %}
                 </button>
 
                 <div class="inner shadow-md" exclude="dropdown">
+                    <button
+                        onclick="document.getElementById('name_dialog').showModal()"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 16 16"
+                            width="16"
+                            height="16"
+                            aria-label="Pencil symbol"
+                            class="icon"
+                        >
+                            <path
+                                d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.081-.286.235-.547.445-.758l8.61-8.61Zm.176 4.823L9.75 4.81l-6.286 6.287a.253.253 0 0 0-.064.108l-.558 1.953 1.953-.558a.253.253 0 0 0 .108-.064Zm1.238-3.763a.25.25 0 0 0-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 0 0 0-.354Z"
+                            ></path>
+                        </svg>
+                        Change name
+                    </button>
+
                     <button
                         class="red"
                         onclick="trigger('chats:leave', ['{{ chat.id }}'])"
@@ -203,6 +221,17 @@ endblock %} {% block nav_left %}
                 });
             };
 
+            globalThis.update_name = (event) => {
+                event.preventDefault();
+                trigger("chats:name", [
+                    "{{ chat.id }}",
+                    event.target.content.value,
+                ]).then(() => {
+                    event.target.reset();
+                    document.getElementById("name_dialog").close();
+                });
+            };
+
             // polling
             // we were originally going to do some stupidly complicated websocket thing, but this is easy
             const last_message_id = "{{ last_message_id }}";
@@ -217,8 +246,7 @@ endblock %} {% block nav_left %}
                     .then((res) => res.json())
                     .then((res) => {
                         if (!res.success) {
-                            alert("Something went wrong: " + res.message);
-                            window.location.reload();
+                            setTimeout(poll, times[gen_ran_poll_time()]);
                             return;
                         }
 
@@ -235,6 +263,41 @@ endblock %} {% block nav_left %}
         </script>
     </main>
 </article>
+
+<dialog id="name_dialog">
+    <form class="inner flex flex-col gap-2" onsubmit="update_name(event)">
+        <!-- prettier-ignore -->
+        <label for="new_name">Edit chat name</label>
+
+        <input
+            class="w-full"
+            placeholder="Name this chat!"
+            minlength="2"
+            maxlength="32"
+            value="{{ chat.name }}"
+            required
+            name="content"
+            id="new_name"
+            hook="counter"
+        />
+
+        <div>
+            <span id="new_name:counter" class="notification item"></span>
+        </div>
+
+        <hr />
+        <div class="flex gap-2">
+            <button class="primary bold">Confirm</button>
+            <button
+                class="bold"
+                onclick="document.getElementById('name_dialog').close()"
+                type="button"
+            >
+                Cancel
+            </button>
+        </div>
+    </form>
+</dialog>
 
 {% if let Some(profile) = profile %} {% let other = profile.clone() %} {% if
 profile.username == other.username %}
