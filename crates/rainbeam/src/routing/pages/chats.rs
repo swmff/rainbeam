@@ -1,5 +1,6 @@
 use askama_axum::Template;
 use axum::response::IntoResponse;
+use axum::Json;
 use axum::{
     extract::{Query, State, Path},
     response::Html,
@@ -129,7 +130,7 @@ pub async fn chat_request(
         .await
     {
         Ok(c) => c,
-        Err(e) => return Html(e.to_html(database)),
+        Err(_) => Vec::new(),
     };
 
     let last_message_id = match messages.first() {
@@ -166,6 +167,52 @@ pub async fn chat_request(
             last_message_id,
             is_helper,
             page: props.page,
+        }
+        .render()
+        .unwrap(),
+    )
+}
+
+#[derive(Template)]
+#[template(path = "chats/components/message.html")]
+struct MessageTemplate {
+    profile: Option<Profile>,
+    message: (Message, Profile),
+    is_helper: bool,
+}
+
+/// GET /chats/_app/msg.html
+pub async fn render_message_request(
+    jar: CookieJar,
+    State(database): State<Database>,
+    Json(message): Json<(Message, Profile)>,
+) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => return Html(DatabaseError::NotAllowed.to_html(database)),
+        },
+        None => return Html(DatabaseError::NotAllowed.to_html(database)),
+    };
+
+    let is_helper = {
+        let group = match database.auth.get_group_by_id(auth_user.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        group.permissions.contains(&Permission::Helper)
+    };
+
+    Html(
+        MessageTemplate {
+            profile: Some(auth_user.clone()),
+            message,
+            is_helper,
         }
         .render()
         .unwrap(),

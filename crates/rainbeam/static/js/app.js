@@ -58,6 +58,13 @@
 
     app.define("clean_date_codes", function ({ $ }) {
         for (const element of Array.from(document.querySelectorAll(".date"))) {
+            if (element.getAttribute("data-unix")) {
+                // this allows us to run the function twice on the same page
+                // without errors from already rendered dates
+                element.innerText = element.getAttribute("data-unix");
+            }
+
+            element.setAttribute("data-unix", element.innerText);
             const then = new Date(parseInt(element.innerText));
 
             if (isNaN(element.innerText)) {

@@ -54,7 +54,22 @@ endblock %} {% block nav_left %}
     {% endif %}
 </a>
 {% endblock %} {% block content %}
-<article style="height: calc(100dvh - 48px - 4rem)">
+<style>
+    body {
+        overflow: hidden;
+    }
+
+    nav {
+        margin-bottom: 0 !important;
+    }
+
+    article,
+    main {
+        width: 100dvw !important;
+    }
+</style>
+
+<article style="height: calc(100dvh - 48px - 2rem)">
     <main class="flex flex-col justify-between gap-4" style="height: 100%">
         <header
             class="w-full flex justify-between gap-2"
@@ -196,7 +211,7 @@ endblock %} {% block nav_left %}
         </div>
 
         <div
-            class="flex gap-4 window"
+            class="flex gap-1 window"
             id="messages"
             style="
                 height: 100%;
@@ -274,9 +289,9 @@ endblock %} {% block nav_left %}
                 trigger("chats:msg", [
                     "{{ chat.id }}",
                     event.target.content.value,
-                ]).then(() => {
+                ]).then((message) => {
                     event.target.reset();
-                    window.location.reload(); // TODO: render message instead of reloading
+                    fetch_last(() => {}); // render new message by fetching it
                 });
             };
 
@@ -305,11 +320,33 @@ endblock %} {% block nav_left %}
 
             // polling
             // we were originally going to do some stupidly complicated websocket thing, but this is easy
-            const last_message_id = "{{ last_message_id }}";
+            let last_message_id = "{{ last_message_id }}";
             const times = [1500, 2500, 3500, 4500, 5500, 6500];
 
             const gen_ran_poll_time = () => {
                 return Math.floor(Math.random() * times.length);
+            };
+
+            const fetch_last = (callback) => {
+                fetch("/api/v1/chats/{{ chat.id }}/last")
+                    .then((res) => res.json())
+                    .then((res) => {
+                        if (!res.success) {
+                            callback();
+                            return;
+                        }
+
+                        if (res.payload[0].id !== last_message_id) {
+                            // render message and show
+                            last_message_id = res.payload[0].id;
+                            trigger("chats:msg.html", [
+                                res.payload,
+                                document.getElementById("messages"),
+                            ]);
+                        }
+
+                        callback();
+                    });
             };
 
             const poll = () => {
@@ -320,21 +357,9 @@ endblock %} {% block nav_left %}
                     return;
                 }
 
-                fetch("/api/v1/chats/{{ chat.id }}/last")
-                    .then((res) => res.json())
-                    .then((res) => {
-                        if (!res.success) {
-                            setTimeout(poll, times[gen_ran_poll_time()]);
-                            return;
-                        }
-
-                        if (res.payload[0].id !== last_message_id) {
-                            // TODO: render message instead of reloading
-                            window.location.reload();
-                        } else {
-                            setTimeout(poll, times[gen_ran_poll_time()]);
-                        }
-                    });
+                fetch_last(() => {
+                    setTimeout(poll, times[gen_ran_poll_time()]);
+                });
             };
 
             setTimeout(poll, times[gen_ran_poll_time()]);

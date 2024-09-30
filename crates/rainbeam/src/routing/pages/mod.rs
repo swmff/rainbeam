@@ -3,7 +3,7 @@ use axum::debug_handler;
 use axum::extract::{Path, Query};
 use axum::http::status::StatusCode;
 use axum::response::IntoResponse;
-use axum::routing::get;
+use axum::routing::{get, post};
 use axum::{extract::State, response::Html, Router};
 use axum_extra::extract::CookieJar;
 
@@ -1481,6 +1481,7 @@ pub async fn routes(database: Database) -> Router {
         // chats
         .route("/chats", get(chats::chats_homepage_request))
         .route("/chats/:id", get(chats::chat_request))
+        .route("/chats/_app/msg.html", post(chats::render_message_request))
         // auth
         .route("/login", get(login_request))
         .route("/sign_up", get(sign_up_request))

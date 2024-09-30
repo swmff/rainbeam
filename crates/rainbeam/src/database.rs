@@ -5413,7 +5413,7 @@ impl Database {
                         },
                         match self.auth.get_profile(author).await {
                             Ok(p) => p,
-                            Err(_) => return Err(DatabaseError::Other),
+                            Err(_) => anonymous_profile("anonymous".to_string()),
                         },
                     ));
                 }
@@ -5434,7 +5434,7 @@ impl Database {
     /// # Arguments
     /// * `props` - [`MessageCreate`]
     /// * `author` - the ID of the user creating the message
-    pub async fn create_message(&self, props: MessageCreate, author: String) -> Result<()> {
+    pub async fn create_message(&self, props: MessageCreate, author: String) -> Result<Message> {
         // make sure the chat exists
         let chat = match self.get_chat(props.chat.clone()).await {
             Ok(q) => q.0,
@@ -5527,7 +5527,7 @@ impl Database {
                     };
                 }
                 // return
-                return Ok(());
+                return Ok(message);
             }
             Err(_) => return Err(DatabaseError::Other),
         };

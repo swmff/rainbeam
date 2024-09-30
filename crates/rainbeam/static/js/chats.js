@@ -121,12 +121,33 @@
                     );
 
                     if (res.success === true) {
-                        resolve();
+                        resolve(res.payload);
                     } else {
                         reject();
                     }
                 });
         });
+    });
+
+    self.define("msg.html", function ({ $, app }, msg, bind_to) {
+        fetch("/chats/_app/msg.html", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(msg),
+        })
+            .then((res) => res.text())
+            .then((html) => {
+                console.info("msg added:", msg[0].id);
+
+                const element = document.createElement("div");
+                element.innerHTML = html;
+                element.style.display = "contents";
+
+                bind_to.prepend(element);
+                app.clean_date_codes();
+            });
     });
 
     self.define("msg_delete", function ({ $, app }, id) {

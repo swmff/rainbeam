@@ -426,8 +426,13 @@ fieldset:hover {
     border-radius: var(--radius);
     padding: 0.75rem;
     max-width: 100vw;
-    box-shadow: 0 0 2px var(--color-shadow);
+    /* box-shadow: 0 0 2px var(--color-shadow); */
     border: solid 2px var(--color-lowered);
+}
+
+.card-nest {
+    background: transparent;
+    border: none;
 }
 
 .card.padded {
@@ -448,10 +453,17 @@ fieldset:hover {
 }
 
 .card-nest .card:first-child {
+    border-top-left-radius: var(--radius);
+    border-top-right-radius: var(--radius);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
     background: var(--color-lowered);
     color: var(--color-text-lowered) !important;
     box-shadow: none;
-    border-radius: 0 !important;
+    /* border */
+    border-top: solid 2px var(--color-lowered);
+    border-left: solid 2px var(--color-lowered);
+    border-right: solid 2px var(--color-lowered);
 }
 
 .card-nest .card:last-child {
@@ -460,6 +472,10 @@ fieldset:hover {
     border-bottom-left-radius: var(--radius);
     border-bottom-right-radius: var(--radius);
     box-shadow: none;
+    /* border */
+    border-bottom: solid 2px var(--color-lowered);
+    border-left: solid 2px var(--color-lowered);
+    border-right: solid 2px var(--color-lowered);
 }
 
 .card.secondary {
