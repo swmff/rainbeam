@@ -244,7 +244,7 @@ endblock %} {% block nav_left %}
             {% endfor %}
 
             <div class="flex justify-center w-full">
-                {% if messages.len() != 0 %}
+                {% if messages.len() >= 50 %}
                 <a class="button secondary" href="?page={{ page + 1 }}">
                     Load more
                 </a>
