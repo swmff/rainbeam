@@ -2975,7 +2975,7 @@ impl Database {
                     let profile = match self.get_profile(res.get("two").unwrap().to_string()).await
                     {
                         Ok(c) => c,
-                        Err(e) => return Err(e),
+                        Err(_) => continue,
                     };
 
                     // add to out

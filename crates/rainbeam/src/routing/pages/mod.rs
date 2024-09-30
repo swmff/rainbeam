@@ -473,7 +473,7 @@ pub async fn public_posts_timeline_request(
 
     let mut responses = match database.get_posts_paginated(query.page).await {
         Ok(responses) => responses,
-        Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        Err(e) => return Html(e.to_html(database)),
     };
 
     // remove content from blocked users/users that have blocked us
@@ -484,7 +484,7 @@ pub async fn public_posts_timeline_request(
             .await
         {
             Ok(l) => l,
-            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+            Err(_) => Vec::new(),
         }
     } else {
         Vec::new()
@@ -1045,7 +1045,7 @@ pub async fn public_global_timeline_request(
         .await
     {
         Ok(l) => l,
-        Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        Err(_) => Vec::new(),
     };
 
     for user in blocked {
