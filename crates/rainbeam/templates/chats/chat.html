@@ -206,7 +206,7 @@ endblock %} {% block nav_left %}
             // polling
             // we were originally going to do some stupidly complicated websocket thing, but this is easy
             const last_message_id = "{{ last_message_id }}";
-            const times = [1000, 1500, 2500, 3500];
+            const times = [1500, 2500, 3500, 4500, 5500, 6500];
 
             const gen_ran_poll_time = () => {
                 return Math.floor(Math.random() * times.length);
