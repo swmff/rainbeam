@@ -4767,7 +4767,7 @@ impl Database {
             users: serde_json::from_str(res.get("users").unwrap()).unwrap(),
             context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-            name: res.get("name").unwrap().to_string(),
+            name: res.get("name").unwrap_or(&String::new()).to_string(),
         };
 
         // store in cache
@@ -4824,7 +4824,7 @@ impl Database {
             users: serde_json::from_str(res.get("users").unwrap()).unwrap(),
             context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-            name: res.get("name").unwrap().to_string(),
+            name: res.get("name").unwrap_or(&String::new()).to_string(),
         };
 
         // return
@@ -4875,7 +4875,7 @@ impl Database {
                             users,
                             context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-                            name: res.get("name").unwrap().to_string(),
+                            name: res.get("name").unwrap_or(&String::new()).to_string(),
                         },
                         profiles_out,
                     ));
