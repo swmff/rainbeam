@@ -467,6 +467,11 @@ fieldset:hover {
     color: var(--color-text-lowered) !important;
 }
 
+a.card:hover {
+    text-decoration: none;
+    border-color: var(--color-primary);
+}
+
 legend,
 label {
     font-weight: bold;
@@ -940,9 +945,16 @@ dialog::backdrop {
 .notif_content p:last-of-type,
 .warning_title p:last-of-type,
 .warning_content p:last-of-type,
-.profile_warning p:last-of-type {
+.profile_warning p:last-of-type,
+.message_content p:last-of-type {
     margin: 0;
     white-space: pre-wrap;
+}
+
+.username {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 250px;
 }
 
 .question_content {

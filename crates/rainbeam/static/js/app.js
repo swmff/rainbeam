@@ -208,8 +208,20 @@
                 // check y
                 const box = target.getBoundingClientRect();
 
+                let parent = dropdown.parentElement;
+
+                while (!parent.matches("html, .window")) {
+                    parent = parent.parentElement;
+                }
+
+                let parent_height = parent.getBoundingClientRect().y;
+
+                if (parent.nodeName === "HTML") {
+                    parent_height = window.screen.height;
+                }
+
                 const scroll = window.scrollY;
-                const height = window.screen.height;
+                const height = parent_height;
                 const y = box.y + scroll;
 
                 if (y > height - scroll - 300) {

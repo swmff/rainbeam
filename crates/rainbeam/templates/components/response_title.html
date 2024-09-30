@@ -11,7 +11,11 @@
                 style="--size: 20px"
             />
 
-            <a href="/@{{ response.author.username }}" style="color: inherit">
+            <a
+                href="/@{{ response.author.username }}"
+                style="color: inherit"
+                class="username"
+            >
                 <!-- prettier-ignore -->
                 {% let display_name = response.author.metadata.kv.get("sparkler:display_name") %}
 

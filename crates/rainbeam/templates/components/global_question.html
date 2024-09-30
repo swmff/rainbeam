@@ -19,6 +19,7 @@ question = question.clone().0 %}
                     <a
                         href="/@{{ question.author.username }}"
                         style="color: inherit"
+                        class="username"
                     >
                         <!-- prettier-ignore -->
                         {% let display_name = question.author.metadata.kv.get("sparkler:display_name") %}

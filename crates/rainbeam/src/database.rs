@@ -2313,8 +2313,8 @@ impl Database {
                         .auth
                         .create_notification(NotificationCreate {
                             title: format!(
-                                "[@{}](/@{}) responded to a question you asked!",
-                                response.author.username, response.author.username
+                                "[@{}](/+u/{}) responded to a question you asked!",
+                                response.author.username, response.author.id
                             ),
                             content: format!(
                                 "{}: \"{}...\"",
@@ -3367,8 +3367,8 @@ impl Database {
                             .create_notification(NotificationCreate {
                                 title: if !tag.0 {
                                     format!(
-                                        "[@{}](/@{}) replied to a comment you created!",
-                                        comment.author.username, comment.author.username
+                                        "[@{}](/+u/{}) replied to a comment you created!",
+                                        comment.author.username, comment.author.id
                                     )
                                 } else {
                                     "Somebody replied to a comment you created!".to_string()
@@ -4156,8 +4156,8 @@ impl Database {
                         .auth
                         .create_notification(NotificationCreate {
                             title: format!(
-                                "[@{}](/@{}) has invited you to join their circle!",
-                                full_circle.owner.username, full_circle.owner.username
+                                "[@{}](/+u/{}) has invited you to join their circle!",
+                                full_circle.owner.username, full_circle.owner.id
                             ),
                             content: format!(
                                 "{} has invited you to join \"{}\"",
@@ -4720,7 +4720,7 @@ impl Database {
     ///
     /// # Arguments
     /// * `id`
-    pub async fn get_chat(&self, id: String) -> Result<Chat> {
+    pub async fn get_chat(&self, id: String) -> Result<(Chat, Vec<Profile>)> {
         // check in cache
         match self
             .base
@@ -4728,7 +4728,19 @@ impl Database {
             .get(format!("rbeam.app.chat:{}", id))
             .await
         {
-            Some(c) => return Ok(serde_json::from_str::<Chat>(c.as_str()).unwrap()),
+            Some(c) => {
+                let chat = serde_json::from_str::<Chat>(c.as_str()).unwrap();
+                let mut profiles_out = Vec::new();
+
+                for user in chat.users.clone() {
+                    profiles_out.push(match self.get_profile(user).await {
+                        Ok(ua) => ua,
+                        Err(e) => return Err(e),
+                    })
+                }
+
+                return Ok((chat, profiles_out));
+            }
             None => (),
         };
 
@@ -4766,6 +4778,51 @@ impl Database {
                 .await;
         }
 
+        let mut profiles_out = Vec::new();
+
+        for user in chat.users.clone() {
+            profiles_out.push(match self.get_profile(user).await {
+                Ok(ua) => ua,
+                Err(e) => return Err(e),
+            })
+        }
+
+        // return
+        Ok((chat, profiles_out))
+    }
+
+    /// Get an existing chat
+    ///
+    /// # Arguments
+    /// * `id`
+    pub async fn get_chat_by_users(&self, users_list: Vec<String>) -> Result<Chat> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "SELECT * FROM \"xchats\" WHERE \"users\" = ?"
+        } else {
+            "SELECT * FROM \"xchats\" WHERE \"users\" = $1"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query)
+            .bind::<&String>(&serde_json::to_string(&users_list).unwrap())
+            .fetch_one(c)
+            .await
+        {
+            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        let chat = Chat {
+            id: res.get("id").unwrap().to_string(),
+            users: serde_json::from_str(res.get("users").unwrap()).unwrap(),
+            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
+            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+        };
+
         // return
         Ok(chat)
     }
@@ -4774,7 +4831,7 @@ impl Database {
     ///
     /// # Arguments
     /// * `id` - the ID of the user
-    pub async fn get_chats_for_user(&self, id: String) -> Result<Vec<Chat>> {
+    pub async fn get_chats_for_user(&self, id: String) -> Result<Vec<(Chat, Vec<Profile>)>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -4791,18 +4848,32 @@ impl Database {
             .await
         {
             Ok(p) => {
-                let mut out: Vec<Chat> = Vec::new();
+                let mut out: Vec<(Chat, Vec<Profile>)> = Vec::new();
                 // TODO: fetch latest message and order chats by that
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
 
-                    out.push(Chat {
-                        id: res.get("id").unwrap().to_string(),
-                        users: serde_json::from_str(res.get("users").unwrap()).unwrap(),
-                        context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
-                        timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-                    });
+                    let mut profiles_out = Vec::new();
+                    let users: Vec<String> =
+                        serde_json::from_str(res.get("users").unwrap()).unwrap();
+
+                    for user in users.clone() {
+                        profiles_out.push(match self.get_profile(user).await {
+                            Ok(ua) => ua,
+                            Err(e) => return Err(e),
+                        })
+                    }
+
+                    out.push((
+                        Chat {
+                            id: res.get("id").unwrap().to_string(),
+                            users,
+                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
+                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                        },
+                        profiles_out,
+                    ));
                 }
 
                 out
@@ -4821,14 +4892,52 @@ impl Database {
     /// # Arguments
     /// * `user1` - the ID of the chat creator
     /// * `user2` - the ID of the first chat member (NOT the creator)
-    pub async fn create_chat(&self, user1: String, user2: String) -> Result<()> {
+    pub async fn create_chat(&self, user1: String, user2: String) -> Result<Chat> {
         // make sure users exist
-        if let Err(e) = self.get_profile(user1.clone()).await {
-            return Err(e);
+        let user1_profile = match self.get_profile(user1.clone()).await {
+            Ok(p) => p,
+            Err(e) => return Err(e),
+        };
+
+        let user2_profile = match self.get_profile(user2.clone()).await {
+            Ok(p) => {
+                // check permission
+                let relationship = self
+                    .auth
+                    .get_user_relationship(user1.clone(), p.id.clone())
+                    .await
+                    .0;
+
+                if p.metadata.is_true("sparkler:limited_chats") {
+                    // user has it set to only allow friends to add them to chats
+                    if relationship != RelationshipStatus::Friends {
+                        return Err(DatabaseError::NotAllowed);
+                    }
+                }
+
+                if relationship == RelationshipStatus::Blocked {
+                    // user blocked us or we blocked them, why would we chat with them?
+                    return Err(DatabaseError::NotAllowed);
+                }
+
+                p
+            }
+            Err(e) => return Err(e),
+        };
+
+        // make sure this chat doesn't already exist
+        if let Ok(chat) = self
+            .get_chat_by_users(vec![user1.clone(), user2.clone()])
+            .await
+        {
+            return Ok(chat); // return ok so the client still redirects
         }
 
-        if let Err(e) = self.get_profile(user2.clone()).await {
-            return Err(e);
+        if let Ok(chat) = self
+            .get_chat_by_users(vec![user2.clone(), user1.clone()])
+            .await
+        {
+            return Ok(chat);
         }
 
         // ...
@@ -4857,7 +4966,27 @@ impl Database {
             .execute(c)
             .await
         {
-            Ok(_) => return Ok(()),
+            Ok(_) => {
+                // send notification
+                if let Err(_) = self
+                    .auth
+                    .create_notification(NotificationCreate {
+                        title: format!(
+                            "[@{}](/+u/{}) added you to a chat!",
+                            user1_profile.username, user1_profile.id
+                        ),
+                        content: String::new(),
+                        address: format!("/chat/{}", chat.id),
+                        recipient: user2_profile.id,
+                    })
+                    .await
+                {
+                    return Err(DatabaseError::Other);
+                };
+
+                // return
+                return Ok(chat);
+            }
             Err(_) => return Err(DatabaseError::Other),
         };
     }
@@ -4872,7 +5001,7 @@ impl Database {
     pub async fn leave_chat(&self, id: String, user: String) -> Result<()> {
         // make sure comment exists
         let mut chat = match self.get_chat(id.clone()).await {
-            Ok(q) => q,
+            Ok(q) => q.0,
             Err(e) => return Err(e),
         };
 
@@ -4926,9 +5055,9 @@ impl Database {
             // update chat
             let query: String =
                 if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
-                    "UPDATE \"xchats\" SET VALUES \"users\" = ? WHERE \"id\" = ?"
+                    "UPDATE \"xchats\" SET \"users\" = ? WHERE \"id\" = ?"
                 } else {
-                    "UPDATE \"xchats\" SET VALUES (\"users\") = ($1) WHERE \"id\" = $2"
+                    "UPDATE \"xchats\" SET (\"users\") = ($1) WHERE \"id\" = $2"
                 }
                 .to_string();
 
@@ -4979,7 +5108,7 @@ impl Database {
         // return
         let message = Message {
             id: res.get("id").unwrap().to_string(),
-            chat: serde_json::from_str(res.get("chat").unwrap()).unwrap(),
+            chat: res.get("chat").unwrap().to_string(),
             author: res.get("author").unwrap().to_string(),
             content: res.get("content").unwrap().to_string(),
             context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
@@ -5024,7 +5153,7 @@ impl Database {
                     out.push((
                         Message {
                             id: res.get("id").unwrap().to_string(),
-                            chat: serde_json::from_str(res.get("chat").unwrap()).unwrap(),
+                            chat: res.get("chat").unwrap().to_string(),
                             author: res.get("author").unwrap().to_string(),
                             content: res.get("content").unwrap().to_string(),
                             context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
@@ -5076,7 +5205,7 @@ impl Database {
                     out.push((
                         Message {
                             id: res.get("id").unwrap().to_string(),
-                            chat: serde_json::from_str(res.get("chat").unwrap()).unwrap(),
+                            chat: res.get("chat").unwrap().to_string(),
                             author: res.get("author").unwrap().to_string(),
                             content: res.get("content").unwrap().to_string(),
                             context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
@@ -5108,7 +5237,7 @@ impl Database {
     pub async fn create_message(&self, props: MessageCreate, author: String) -> Result<()> {
         // make sure the chat exists
         let chat = match self.get_chat(props.chat.clone()).await {
-            Ok(q) => q,
+            Ok(q) => q.0,
             Err(e) => return Err(e),
         };
 

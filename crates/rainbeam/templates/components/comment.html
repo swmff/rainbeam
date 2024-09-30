@@ -28,6 +28,7 @@ comment = comment.0.clone() %}
                 <a
                     href="/@{{ comment.author.username }}"
                     style="color: inherit"
+                    class="username"
                 >
                     <!-- prettier-ignore -->
                     {% let display_name = comment.author.metadata.kv.get("sparkler:display_name") %}

@@ -19,6 +19,7 @@ use crate::model::{DatabaseError, Question, QuestionResponse, Reaction, Response
 
 use super::api;
 
+mod chats;
 mod circles;
 mod profile;
 mod search;
@@ -1477,6 +1478,9 @@ pub async fn routes(database: Database) -> Router {
         .route("/search/posts", get(search::search_posts_request))
         .route("/search/questions", get(search::search_questions_request))
         .route("/search/users", get(search::search_users_request))
+        // chats
+        .route("/chats", get(chats::chats_homepage_request))
+        .route("/chats/:id", get(chats::chat_request))
         // auth
         .route("/login", get(login_request))
         .route("/sign_up", get(sign_up_request))

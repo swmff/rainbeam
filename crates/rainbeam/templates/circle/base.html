@@ -142,7 +142,7 @@
 
                     <!-- prettier-ignore -->
                     <div id="names">
-                        <h3 class="no-margin">
+                        <h3 class="no-margin username">
                             {% if let Some(display_name) = circle.metadata.kv.get("sparkler:display_name") %}
                                 {{ display_name }}
                             {% else %}
@@ -150,7 +150,7 @@
                             {% endif %}
                         </h3>
 
-                        <h4 class="no-margin" style="font-weight: normal; opacity: 50%">{{ circle.name }}</h4>
+                        <h4 class="no-margin username" style="font-weight: normal; opacity: 50%">{{ circle.name }}</h4>
                     </div>
                 </div>
 
