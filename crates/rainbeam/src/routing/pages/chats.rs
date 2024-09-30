@@ -84,6 +84,7 @@ struct ChatTemplate {
     friends: Vec<(Profile, Profile)>,
     last_message_id: String,
     is_helper: bool,
+    page: i32,
 }
 
 /// GET /chats/:id
@@ -164,6 +165,7 @@ pub async fn chat_request(
                 .unwrap(),
             last_message_id,
             is_helper,
+            page: props.page,
         }
         .render()
         .unwrap(),

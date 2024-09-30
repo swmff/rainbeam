@@ -211,10 +211,30 @@ endblock %} {% block nav_left %}
             </div>
             {% endif %}
 
+            <div class="flex justify-center w-full">
+                {% if page > 0 %}
+                <a
+                    class="button secondary"
+                    href="?page={{ page - 1 }}"
+                    id="previous_button"
+                >
+                    Go back
+                </a>
+                {% endif %}
+            </div>
+
             <!-- prettier-ignore -->
             {% for message in messages %}
                 {% include "components/message.html" %}
             {% endfor %}
+
+            <div class="flex justify-center w-full">
+                {% if messages.len() != 0 %}
+                <a class="button secondary" href="?page={{ page + 1 }}">
+                    Load more
+                </a>
+                {% endif %}
+            </div>
         </div>
 
         <footer class="card w-full">
@@ -293,6 +313,13 @@ endblock %} {% block nav_left %}
             };
 
             const poll = () => {
+                if (document.getElementById("previous_button")) {
+                    // we're exploring old messages, no need to poll
+                    console.log("poll cancelled");
+                    setTimeout(poll, times[gen_ran_poll_time()]); // keep waiting to poll again in case page changes
+                    return;
+                }
+
                 fetch("/api/v1/chats/{{ chat.id }}/last")
                     .then((res) => res.json())
                     .then((res) => {
