@@ -1,6 +1,10 @@
 <div class="card-nest w-full shadow" id="notif:{{ notif.id }}">
     <div class="card flex flex-wrap justify-between gap-2">
-        <span class="notif_title">
+        <span
+            class="notif_title"
+            do="spam_notif_check"
+            data-id="{{ notif.id }}"
+        >
             {{ shared::ui::render_markdown(notif.title)|safe }}
         </span>
         <span class="notif_timestamp date">{{ notif.timestamp }}</span>

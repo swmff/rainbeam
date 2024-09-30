@@ -1905,7 +1905,7 @@ dependencies = [
 
 [[package]]
 name = "rainbeam"
-version = "1.6.0-alpha"
+version = "1.6.0-beta"
 dependencies = [
  "ammonia",
  "askama",

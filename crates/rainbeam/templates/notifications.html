@@ -125,6 +125,24 @@ endblock %} {% block head %}
             element.setAttribute("target", "_blank");
         }
     }
+
+    // remove notifications that could accumulate quick
+    const spam = ["sent you a message"];
+
+    for (const element of Array.from(
+        document.querySelectorAll("[do=spam_notif_check]"),
+    )) {
+        for (const spam_text of spam) {
+            if (element.innerText.includes(spam_text)) {
+                fetch(
+                    `/api/auth/notifications/${element.getAttribute("data-id")}`,
+                    {
+                        method: "DELETE",
+                    },
+                );
+            }
+        }
+    }
 </script>
 
 {% if let Some(profile) = profile %} {% let other = profile.clone() %} {% if

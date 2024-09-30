@@ -138,13 +138,6 @@ endblock %} {% block nav_left %}
             {% endfor %}
         </div>
 
-        <div class="markdown-alert-note">
-            <span>
-                Chats are in a limited testing form and currently have no
-                realtime events.
-            </span>
-        </div>
-
         <div
             class="flex gap-4 window"
             id="messages"
@@ -206,8 +199,39 @@ endblock %} {% block nav_left %}
                     event.target.content.value,
                 ]).then(() => {
                     event.target.reset();
+                    window.location.reload(); // TODO: render message instead of reloading
                 });
             };
+
+            // polling
+            // we were originally going to do some stupidly complicated websocket thing, but this is easy
+            const last_message_id = "{{ last_message_id }}";
+            const times = [1000, 1500, 2500, 3500];
+
+            const gen_ran_poll_time = () => {
+                return Math.floor(Math.random() * times.length);
+            };
+
+            const poll = () => {
+                fetch("/api/v1/chats/{{ chat.id }}/last")
+                    .then((res) => res.json())
+                    .then((res) => {
+                        if (!res.success) {
+                            alert("Something went wrong: " + res.message);
+                            window.location.reload();
+                            return;
+                        }
+
+                        if (res.payload[0].id !== last_message_id) {
+                            // TODO: render message instead of reloading
+                            window.location.reload();
+                        } else {
+                            setTimeout(poll, times[gen_ran_poll_time()]);
+                        }
+                    });
+            };
+
+            setTimeout(poll, times[gen_ran_poll_time()]);
         </script>
     </main>
 </article>

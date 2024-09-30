@@ -5127,11 +5127,53 @@ impl Database {
         ))
     }
 
+    /// Get the last message sent in a chat
+    ///
+    /// # Arguments
+    /// * `id`
+    pub async fn get_last_message_in_chat(&self, id: String) -> Result<(Message, Profile)> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "SELECT * FROM \"xmessages\" WHERE \"chat\" = ? ORDER BY \"timestamp\" DESC LIMIT 1"
+        } else {
+            "SELECT * FROM \"xmessages\" WHERE \"chat\" = $1 ORDER BY \"timestamp\" DESC LIMIT 1"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
+            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        let message = Message {
+            id: res.get("id").unwrap().to_string(),
+            chat: res.get("chat").unwrap().to_string(),
+            author: res.get("author").unwrap().to_string(),
+            content: res.get("content").unwrap().to_string(),
+            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
+            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+        };
+
+        let author = message.author.clone();
+
+        // return
+        Ok((
+            message,
+            match self.auth.get_profile(author).await {
+                Ok(p) => p,
+                Err(_) => return Err(DatabaseError::Other),
+            },
+        ))
+    }
+
     /// Get all messages by their chat
     ///
     /// # Arguments
     /// * `id`
-    pub async fn get_messages_by_chat(&self, id: String) -> Result<Vec<(Message, Profile)>> {
+    /* pub async fn get_messages_by_chat(&self, id: String) -> Result<Vec<(Message, Profile)>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -5173,7 +5215,7 @@ impl Database {
 
         // return
         Ok(res)
-    }
+    } */
 
     /// Get all messages by their chat, 25 at a time
     ///
@@ -5303,7 +5345,34 @@ impl Database {
             .execute(c)
             .await
         {
-            Ok(_) => return Ok(()),
+            Ok(_) => {
+                // send notification
+                for user in chat.users {
+                    if user == author.id {
+                        continue;
+                    }
+
+                    if let Err(_) = self
+                        .auth
+                        .create_notification(NotificationCreate {
+                            title: format!(
+                                "[@{}](/+u/{}) sent you a message in {}!",
+                                author.username,
+                                author.id,
+                                message.chat[..10].to_string()
+                            ),
+                            content: format!("\"{}\"", message.content),
+                            address: format!("/chats/{}", chat.id),
+                            recipient: user,
+                        })
+                        .await
+                    {
+                        return Err(DatabaseError::Other);
+                    };
+                }
+                // return
+                return Ok(());
+            }
             Err(_) => return Err(DatabaseError::Other),
         };
     }

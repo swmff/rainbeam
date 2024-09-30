@@ -81,6 +81,7 @@ struct ChatTemplate {
     chat: Chat,
     members: Vec<Profile>,
     messages: Vec<(Message, Profile)>,
+    last_message_id: String,
     is_helper: bool,
 }
 
@@ -129,6 +130,11 @@ pub async fn chat_request(
         Err(e) => return Html(e.to_html(database)),
     };
 
+    let last_message_id = match messages.first() {
+        Some(l) => l.0.id.clone(),
+        None => return Html(DatabaseError::Other.to_html(database)),
+    };
+
     let is_helper = {
         let group = match database.auth.get_group_by_id(auth_user.group).await {
             Ok(g) => g,
@@ -147,6 +153,7 @@ pub async fn chat_request(
             chat: chat.0,
             members: chat.1,
             messages,
+            last_message_id,
             is_helper,
         }
         .render()
