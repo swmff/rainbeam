@@ -1,182 +1,51 @@
 {% let question = response.0.clone() %} {% let comment_count = response.2 %} {%
-let reaction_count = response.3 %} {% let response = response.1.clone() %}
-<div
-    class="card-nest w-full response"
-    id="response:{{ response.id }}"
-    data-warning="{{ response.context.warning }}"
->
-    {% if (do_not_render_question == false) && (response.context.is_post ==
-    false) %}
-    <div class="card flex flex-col gap-1">
-        <div class="flex justify-between gap-1 question_title">
-            <div class="footernav">
-                <b class="flex items-center gap-2 item">
-                    <!-- prettier-ignore -->
-                    {% let author_tag = crate::database::Database::anonymous_tag(question.author.id.as_ref()) %}
-                    {% if author_tag.0 == false %}
-                    <img
-                        title="{{ question.author.username }}'s avatar"
-                        src="/api/v1/profiles/{{ question.author.username }}/avatar"
-                        alt=""
-                        class="avatar round-sm"
-                        style="--size: 20px"
-                    />
+let reaction_count = response.3 %} {% let reply = response.4.clone() %} {% let
+response = response.1.clone() %}
 
-                    <a
-                        href="/@{{ question.author.username }}"
-                        style="color: inherit"
-                        class="username"
-                    >
-                        <!-- prettier-ignore -->
-                        {% let display_name = question.author.metadata.kv.get("sparkler:display_name") %}
+<div class="flex flex-col gap-2 w-full" id="response:{{ response.id }}">
+    {% if let Some(response) = reply %}
+    <!-- prettier-ignore -->
+    {% if !response.1.reply.is_empty() %}
+    <a href="/response/{{ response.1.id }}" title="Unfold thread">
+        Long thread
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 16 16"
+            width="16"
+            height="16"
+            aria-label="Unfold symbol"
+            class="icon"
+        >
+            <path
+                d="m8.177.677 2.896 2.896a.25.25 0 0 1-.177.427H8.75v1.25a.75.75 0 0 1-1.5 0V4H5.104a.25.25 0 0 1-.177-.427L7.823.677a.25.25 0 0 1 .354 0ZM7.25 10.75a.75.75 0 0 1 1.5 0V12h2.146a.25.25 0 0 1 .177.427l-2.896 2.896a.25.25 0 0 1-.354 0l-2.896-2.896A.25.25 0 0 1 5.104 12H7.25v-1.25Zm-5-2a.75.75 0 0 0 0-1.5h-.5a.75.75 0 0 0 0 1.5h.5ZM6 8a.75.75 0 0 1-.75.75h-.5a.75.75 0 0 1 0-1.5h.5A.75.75 0 0 1 6 8Zm2.25.75a.75.75 0 0 0 0-1.5h-.5a.75.75 0 0 0 0 1.5h.5ZM12 8a.75.75 0 0 1-.75.75h-.5a.75.75 0 0 1 0-1.5h.5A.75.75 0 0 1 12 8Zm2.25.75a.75.75 0 0 0 0-1.5h-.5a.75.75 0 0 0 0 1.5h.5Z"
+            ></path>
+        </svg>
+    </a>
+    {% endif %} {% endif %}
 
-                        {% if let Some(display_name) = display_name %}
-                            {{ display_name }}
-                        {% else %}
-                            {{ question.author.username }}
-                        {% endif %}
-                    </a>
-                    {% else %} {% if let Some(avatar) = anonymous_avatar %} {%
-                    if (avatar.is_empty()) | (!avatar.starts_with("https://"))
-                    %}
-                    <!-- default avatar, setting set but blank or unsafe -->
-                    <img
-                        title="{{ question.author.username }}'s avatar"
-                        src="/static/images/default-avatar.svg"
-                        alt=""
-                        class="avatar round-sm"
-                        style="--size: 20px"
-                    />
-                    {% else %}
-                    <!-- anonymous avatar, setting set and valid -->
-                    <img
-                        title="This profile's anonymous avatar"
-                        src="/api/util/ext/image?img={{ avatar }}"
-                        alt=""
-                        class="avatar round-sm"
-                        style="--size: 20px"
-                    />
-                    {% endif %} {% else %}
-                    <!-- default avatar, setting not set -->
-                    <img
-                        title="{{ question.author.username }}'s avatar"
-                        src="/static/images/default-avatar.svg"
-                        alt=""
-                        class="avatar round-sm"
-                        style="--size: 20px"
-                    />
-                    {% endif %}
+    <div class="flex gap-2 w-full">
+        {% if let Some(response) = reply %} {% if !response.1.reply.is_empty()
+        %}
+        <div class="thread_line"></div>
+        {% endif %} {% endif %}
 
-                    <!-- prettier-ignore -->
-                    {% if let Some(username) = anonymous_username %}
-                        {% if username.is_empty() %}
-                            anonymous
-                        {% else %}
-                            {{ username }}
-                        {% endif %}
-                    {% else %}
-                        anonymous
-                    {% endif %}
-                    {% endif %}
+        <div class="flex flex-col gap-2 w-full">
+            {% if let Some(response) = reply %}
+            <div class="response_reply">
+                <!-- prettier-ignore -->
+                {% let question = response.0.clone() %}
+                {% let comment_count = response.2 %}
+                {% let reaction_count = response.3 %}
+                {% let response = response.1.clone() %}
+                {% include "components/response_inner.html" %}
+            </div>
+            {% endif %}
 
-                    <!-- prettier-ignore -->
-                    {% if let Some(profile) = profile %} 
-                    {% if author_tag.0 && author_tag.1 == profile.id %}
-                    <span class="notification">You</span>
-                    {% endif %} {% endif %}
-
-                    <!-- prettier-ignore -->
-                    {% if is_powerful %}
-                    {% if author_tag.0 %}
-                    <a class="notification" href="/+u/{{ author_tag.1 }}">
-                        {% if author_tag.1.contains("-") %}
-                        <span title="User hiding as anonymous">🤫</span>
-                        {% endif %}
-                        <!-- prettier-ignore -->
-                        {% if author_tag.1.len() >= 10 %}
-                            {{ author_tag.1[..10] }}
-                        {% else %}
-                            {{ author_tag.1 }}
-                        {% endif %}
-                    </a>
-                    {% endif %} {% endif %}
-                </b>
-
-                <span class="date item">{{ question.timestamp }}</span>
-
-                {% if question.recipient.id == "@" %}
-                <a
-                    class="button item primary"
-                    href="/question/{{ question.id }}"
-                    title="Global question"
-                    style="height: 24px; min-height: 24px; padding: 0.25rem"
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 16 16"
-                        width="16"
-                        height="16"
-                        aria-label="Globe symbol"
-                        class="icon"
-                    >
-                        <path
-                            d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM5.78 8.75a9.64 9.64 0 0 0 1.363 4.177c.255.426.542.832.857 1.215.245-.296.551-.705.857-1.215A9.64 9.64 0 0 0 10.22 8.75Zm4.44-1.5a9.64 9.64 0 0 0-1.363-4.177c-.307-.51-.612-.919-.857-1.215a9.927 9.927 0 0 0-.857 1.215A9.64 9.64 0 0 0 5.78 7.25Zm-5.944 1.5H1.543a6.507 6.507 0 0 0 4.666 5.5c-.123-.181-.24-.365-.352-.552-.715-1.192-1.437-2.874-1.581-4.948Zm-2.733-1.5h2.733c.144-2.074.866-3.756 1.58-4.948.12-.197.237-.381.353-.552a6.507 6.507 0 0 0-4.666 5.5Zm10.181 1.5c-.144 2.074-.866 3.756-1.58 4.948-.12.197-.237.381-.353.552a6.507 6.507 0 0 0 4.666-5.5Zm2.733-1.5a6.507 6.507 0 0 0-4.666-5.5c.123.181.24.365.353.552.714 1.192 1.436 2.874 1.58 4.948Z"
-                        ></path>
-                    </svg>
-                </a>
-                {% endif %}
+            <div class="flex gap-2">
+                {% if reply.is_some() %}
+                <div class="thread_line"></div>
+                {% endif %} {% include "components/response_inner.html" %}
             </div>
         </div>
-
-        <!-- prettier-ignore -->
-        <span class="question_content" hook="long" hook-arg="lowered">
-            {{ shared::ui::render_markdown(question.content)|safe }}
-        </span>
     </div>
-    {% else %}
-    <div class="card" style="display: none"></div>
-    {% endif %}
-
-    <div class="card flex flex-col gap-1 response_body">
-        <!-- prettier-ignore -->
-        {% if (do_not_render_question == true) | (response.context.is_post == true) %}
-            {% include "components/response_title.html" %}
-        {% endif %}
-
-        <!-- prettier-ignore -->
-        <span class="response_content" hook="long">
-            {{ shared::ui::render_markdown(response.content)|safe }}
-        </span>
-
-        <span class="response_tags flex gap-2 flex-wrap">
-            {% for tag in response.tags %}
-            <a
-                href="/@{{ response.author.username }}?tag={{ tag }}"
-                class="tag"
-            >
-                #{{ tag }}
-            </a>
-            {% endfor %}
-        </span>
-
-        <!-- prettier-ignore -->
-        {% if (do_not_render_question == false) && (response.context.is_post == false) %}
-            {% include "components/response_title.html" %}
-        {% endif %}
-    </div>
-
-    {% if (do_not_render_question == true) | (response.context.is_post == true)
-    %}
-    <style>
-        #response\:{{ response.id }} .response_body {
-            border-radius: var(--radius) !important;
-        }
-
-        @media screen and (max-width: 600px) {
-            #response\:{{ response.id }} .response_body {
-                flex-direction: column-reverse;
-            }
-        }
-    </style>
-    {% endif %}
 </div>

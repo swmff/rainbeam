@@ -79,7 +79,7 @@ pub async fn create_request(
             }
         }
         AssetType::Response => {
-            let asset = match database.get_response(id.clone()).await {
+            let asset = match database.get_response(id.clone(), false).await {
                 Ok(r) => r.1,
                 Err(e) => {
                     return Json(DefaultReturn {

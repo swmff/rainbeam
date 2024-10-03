@@ -15,7 +15,10 @@ use authbeam::model::{
 
 use crate::config::Config;
 use crate::database::Database;
-use crate::model::{DatabaseError, Question, QuestionResponse, Reaction, ResponseComment};
+use crate::model::{
+    DatabaseError, FullResponse, Question, QuestionResponse, Reaction, ResponseComment,
+    ResponseReply,
+};
 
 use super::api;
 
@@ -54,7 +57,7 @@ struct TimelineTemplate {
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
-    responses: Vec<(Question, QuestionResponse, usize, usize)>,
+    responses: Vec<FullResponse>,
     is_powerful: bool,
     is_helper: bool,
 }
@@ -300,6 +303,7 @@ pub fn remove_tags(input: &str) -> String {
         .replace("&lt;", "<")
         .replace("&gt;", ">")
         .replace("&amp;", "&")
+        .replace("</script>", "</not-script")
 }
 
 /// Clean profile metadata
@@ -326,7 +330,7 @@ struct QuestionTemplate {
     unread: usize,
     notifs: usize,
     question: Question,
-    responses: Vec<(Question, QuestionResponse, usize, usize)>,
+    responses: Vec<FullResponse>,
     reactions: Vec<Reaction>,
     already_responded: bool,
     is_powerful: bool,
@@ -430,7 +434,7 @@ struct PublicPostsTemplate {
     unread: usize,
     notifs: usize,
     page: i32,
-    responses: Vec<(Question, QuestionResponse, usize, usize)>,
+    responses: Vec<FullResponse>,
     is_powerful: bool,
     is_helper: bool,
 }
@@ -539,7 +543,7 @@ struct FollowingPostsTemplate {
     unread: usize,
     notifs: usize,
     page: i32,
-    responses: Vec<(Question, QuestionResponse, usize, usize)>,
+    responses: Vec<FullResponse>,
     is_powerful: bool,
     is_helper: bool,
 }
@@ -623,6 +627,7 @@ struct ResponseTemplate {
     question: Question,
     response: QuestionResponse,
     comments: Vec<(ResponseComment, usize, usize)>,
+    reply: ResponseReply,
     reactions: Vec<Reaction>,
     tags: String,
     page: i32,
@@ -669,7 +674,7 @@ pub async fn response_request(
         0
     };
 
-    let response = match database.get_response(id.clone()).await {
+    let response = match database.get_response(id.clone(), false).await {
         Ok(r) => r,
         Err(e) => return Html(e.to_html(database)),
     };
@@ -709,6 +714,7 @@ pub async fn response_request(
             question: response.0,
             tags: serde_json::to_string(&response.1.tags).unwrap(),
             response: response.1,
+            reply: response.4,
             comments,
             reactions,
             page: query.page,
@@ -735,6 +741,7 @@ struct CommentTemplate {
     page: i32,
     question: Question,
     response: QuestionResponse,
+    reply: ResponseReply,
     reaction_count: usize,
     anonymous_username: Option<String>,
     anonymous_avatar: Option<String>,
@@ -784,7 +791,10 @@ pub async fn comment_request(
         Err(e) => return Html(e.to_html(database)),
     };
 
-    let response = match database.get_response(comment.0.response.clone()).await {
+    let response = match database
+        .get_response(comment.0.response.clone(), false)
+        .await
+    {
         Ok(r) => r,
         Err(e) => return Html(e.to_html(database)),
     };
@@ -828,6 +838,7 @@ pub async fn comment_request(
             question: response.0,
             response: response.1,
             reaction_count: response.3,
+            reply: response.4,
             anonymous_username: Some("anonymous".to_string()), // TODO: fetch recipient setting
             anonymous_avatar: None,
             is_powerful,

@@ -9,7 +9,7 @@ use authbeam::model::{Permission, Profile};
 use super::{SearchHomeQuery, SearchQuery};
 use crate::config::Config;
 use crate::database::Database;
-use crate::model::{DatabaseError, Question, QuestionResponse};
+use crate::model::{DatabaseError, FullResponse, Question};
 
 #[derive(Template)]
 #[template(path = "search/homepage.html")]
@@ -83,7 +83,7 @@ struct ResponsesTemplate {
     page: i32,
     driver: i8,
     // search-specific
-    results: Vec<(Question, QuestionResponse, usize, usize)>,
+    results: Vec<FullResponse>,
     is_powerful: bool, // at least "manager"
     is_helper: bool,   // at least "helper"
 }
@@ -188,7 +188,7 @@ struct PostsTemplate {
     page: i32,
     driver: i8,
     // search-specific
-    results: Vec<(Question, QuestionResponse, usize, usize)>,
+    results: Vec<FullResponse>,
     is_powerful: bool, // at least "manager"
     is_helper: bool,   // at least "helper"
 }

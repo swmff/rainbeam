@@ -62,7 +62,7 @@ block head %}
         {% let is_pinned = false %}
         {% let show_pin_button = false %}
         {% let do_not_render_question = false %}
-        {% let response = (question.clone(), response.clone(), 0, reactions.len()) %}
+        {% let response = (question.clone(), response.clone(), 0, reactions.len(), reply.clone()) %}
         {% let show_comments = false %}
         {% include "components/response.html" %}
 
@@ -84,7 +84,7 @@ block head %}
 
         <hr />
         <h5 id="comments">Comments</h5>
-        <div class="card-nest w-full shadow" id="comment_field">
+        <div class="card-nest w-full" id="comment_field">
             <div class="card flex flex-col gap-1">Leave a comment</div>
 
             <div class="card">

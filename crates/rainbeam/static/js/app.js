@@ -96,6 +96,14 @@
         $.toast("success", "Copied!");
     });
 
+    app.define("intent_twitter", function ({ $ }, text) {
+        window.open(
+            `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`,
+        );
+
+        $.toast("success", "Opened intent!");
+    });
+
     app.define("smooth_remove", function (_, element, ms) {
         // run animation
         element.style.animation = `fadeout ease-in-out 1 ${ms}ms forwards running`;

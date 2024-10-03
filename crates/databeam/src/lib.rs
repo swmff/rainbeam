@@ -1,5 +1,5 @@
 #![doc = include_str!("../README.md")]
-#![doc(issue_tracker_base_url = "https://github.com/hkauso/xsu/issues/")]
+#![doc(issue_tracker_base_url = "https://github.com/swmff/rainbeam/issues/")]
 pub mod cachedb;
 pub mod config;
 pub mod database;

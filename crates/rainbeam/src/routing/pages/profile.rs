@@ -8,7 +8,7 @@ use authbeam::model::{Permission, Profile, UserFollow, Warning};
 
 use crate::config::Config;
 use crate::database::Database;
-use crate::model::{Chat, DatabaseError, Question, QuestionResponse, RelationshipStatus};
+use crate::model::{Chat, DatabaseError, FullResponse, Question, RelationshipStatus};
 
 use super::{clean_metadata, PaginatedQuery, ProfileQuery};
 
@@ -20,7 +20,7 @@ struct ProfileTemplate {
     unread: usize,
     notifs: usize,
     other: Profile,
-    responses: Vec<(Question, QuestionResponse, usize, usize)>,
+    responses: Vec<FullResponse>,
     response_count: usize,
     questions_count: usize,
     followers_count: usize,
@@ -29,7 +29,7 @@ struct ProfileTemplate {
     is_following: bool,
     is_following_you: bool,
     metadata: String,
-    pinned: Option<Vec<(Question, QuestionResponse, usize, usize)>>,
+    pinned: Option<Vec<FullResponse>>,
     page: i32,
     tag: String,
     query: String,
@@ -163,7 +163,7 @@ pub async fn profile_request(
             let mut out = Vec::new();
 
             for id in pinned.split(",") {
-                match database.get_response(id.to_string()).await {
+                match database.get_response(id.to_string(), false).await {
                     Ok(response) => {
                         if response.1.author.id != other.id {
                             // don't allow us to pin responses from other users
@@ -300,8 +300,8 @@ struct ProfileEmbedTemplate {
     config: Config,
     profile: Option<Profile>,
     other: Profile,
-    responses: Vec<(Question, QuestionResponse, usize, usize)>,
-    pinned: Option<Vec<(Question, QuestionResponse, usize, usize)>>,
+    responses: Vec<FullResponse>,
+    pinned: Option<Vec<FullResponse>>,
     is_powerful: bool,
     is_helper: bool,
     lock_profile: bool,
@@ -351,7 +351,7 @@ pub async fn profile_embed_request(
             let mut out = Vec::new();
 
             for id in pinned.split(",") {
-                match database.get_response(id.to_string()).await {
+                match database.get_response(id.to_string(), false).await {
                     Ok(response) => {
                         if response.1.author.id != other.id {
                             // don't allow us to pin responses from other users

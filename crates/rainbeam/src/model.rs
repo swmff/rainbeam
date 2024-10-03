@@ -32,6 +32,9 @@ pub struct Question {
     pub ip: String,
     /// The time this question was asked
     pub timestamp: u128,
+    /// Additional information about the question
+    #[serde(default)]
+    pub context: QuestionContext,
 }
 
 impl Question {
@@ -43,6 +46,7 @@ impl Question {
             id: String::new(),
             ip: String::new(),
             timestamp,
+            context: QuestionContext::default(),
         }
     }
 
@@ -54,6 +58,7 @@ impl Question {
             id: "0".to_string(),
             ip: String::new(),
             timestamp: 0,
+            context: QuestionContext::default(),
         }
     }
 
@@ -64,6 +69,24 @@ impl Question {
             "<lost question>".to_string(),
             0,
         )
+    }
+}
+
+/// Basic information which changes the way the response is deserialized
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct QuestionContext {
+    /// The ID of the response in which this question is replying to
+    ///
+    /// Will fill into the "reply" field of the response that is posted to this question
+    #[serde(default)]
+    pub reply_intent: String,
+}
+
+impl Default for QuestionContext {
+    fn default() -> Self {
+        Self {
+            reply_intent: String::new(),
+        }
     }
 }
 
@@ -82,6 +105,9 @@ pub struct RefQuestion {
     pub ip: String,
     /// The time this question was asked
     pub timestamp: u128,
+    /// Additional information about the question
+    #[serde(default)]
+    pub context: QuestionContext,
 }
 
 impl From<Question> for RefQuestion {
@@ -93,6 +119,7 @@ impl From<Question> for RefQuestion {
             id: value.id,
             ip: value.ip,
             timestamp: value.timestamp,
+            context: value.context,
         }
     }
 }
@@ -114,7 +141,12 @@ pub struct QuestionResponse {
     pub tags: Vec<String>,
     /// Response context
     pub context: ResponseContext,
+    /// The ID of the response this response is replying to
+    pub reply: String,
 }
+
+pub type ResponseReply = Option<Box<(Question, QuestionResponse, usize, usize)>>;
+pub type FullResponse = (Question, QuestionResponse, usize, usize, ResponseReply);
 
 /// Basic information which changes the way the response is deserialized
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -278,7 +310,7 @@ pub struct DataExport {
     /// All of the user's [`Question`]s
     pub questions: Vec<(Question, usize, usize)>,
     /// All of the user's [`QuestionResponse`]s
-    pub responses: Vec<(Question, QuestionResponse, usize, usize)>,
+    pub responses: Vec<FullResponse>,
     /// All of the user's [`ResponseComment`]s
     pub comments: Vec<(ResponseComment, usize, usize)>,
 }
@@ -338,6 +370,8 @@ pub struct QuestionCreate {
     pub recipient: String,
     pub content: String,
     pub anonymous: bool,
+    #[serde(default)]
+    pub reply_intent: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -348,6 +382,8 @@ pub struct ResponseCreate {
     pub tags: Vec<String>,
     #[serde(default)]
     pub warning: String,
+    #[serde(default)]
+    pub reply: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

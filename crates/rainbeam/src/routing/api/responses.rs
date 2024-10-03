@@ -64,7 +64,7 @@ pub async fn get_request(
     Path(id): Path<String>,
     State(database): State<Database>,
 ) -> impl IntoResponse {
-    Json(match database.get_response(id).await {
+    Json(match database.get_response(id, false).await {
         Ok(mut r) => DefaultReturn {
             success: true,
             message: String::new(),
@@ -106,7 +106,7 @@ pub async fn expand_request(
     Path(id): Path<String>,
     State(database): State<Database>,
 ) -> impl IntoResponse {
-    match database.get_response(id).await {
+    match database.get_response(id, false).await {
         Ok(r) => Redirect::to(&format!("/response/{}", r.1.id)),
         Err(_) => Redirect::to("/"),
     }
@@ -276,7 +276,7 @@ pub async fn report_request(
     }
 
     // get response
-    if let Err(_) = database.get_response(id.clone()).await {
+    if let Err(_) = database.get_response(id.clone(), false).await {
         return Json(DefaultReturn {
             success: false,
             message: DatabaseError::NotFound.to_string(),

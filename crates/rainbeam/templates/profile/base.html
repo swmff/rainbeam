@@ -705,6 +705,18 @@ config.name }}{% endblock %} {% block head %}
 {% endif %} {% endif %} {% endif %}
 
 <script>
+    globalThis.search = new URLSearchParams(window.location.search);
+    const reply_intent = search.get("reply_intent");
+
+    if (reply_intent) {
+        const form = document.getElementById("question_form");
+
+        if (form) {
+            form.innerHTML += 
+                `<p class="fade">Replying to <a href="/response/${reply_intent}" target="_blank">${reply_intent.substring(0, 10)}</a> (<a href="?" class="red">cancel</a>)</p>`;
+        }
+    }
+
     function ask(e) {
         e.preventDefault();
 
@@ -712,6 +724,7 @@ config.name }}{% endblock %} {% block head %}
             "{{ other.id }}",
             e.target.content.value,
             (e.target.anonymous || { checked: false }).checked,
+            reply_intent || ""
         ]).then((_) => {
             // reset if successful
             e.target.reset();

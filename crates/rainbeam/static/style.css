@@ -980,7 +980,8 @@ dialog::backdrop {
 .thread_line {
     display: block;
     border-radius: var(--radius);
-    background: var(--color-super-lowered);
+    /* background: var(--color-super-lowered); */
+    background: var(--color-primary);
     /* height: 100%; */
     width: 5px;
 }

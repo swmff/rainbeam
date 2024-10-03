@@ -3,7 +3,7 @@
 
     self.define(
         "create",
-        function ({ $, app }, question, content, tags, warning) {
+        function ({ $, app }, question, content, tags, warning, reply) {
             if (!tags) {
                 tags = "";
             }
@@ -22,6 +22,7 @@
                                 ? []
                                 : tags.split(",").map((t) => t.trim()),
                         warning: warning || "",
+                        reply: reply || "",
                     }),
                 })
                     .then((res) => res.json())

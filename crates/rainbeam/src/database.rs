@@ -4,9 +4,9 @@ use std::collections::HashMap;
 use crate::config::Config;
 use crate::model::{
     anonymous_profile, Chat, ChatAdd, ChatContext, ChatNameEdit, Circle, CircleCreate,
-    CircleMetadata, CommentCreate, DataExport, MembershipStatus, Message, MessageContext,
-    MessageCreate, QuestionCreate, QuestionResponse, Reaction, RefQuestion, ResponseComment,
-    ResponseContext, ResponseCreate,
+    CircleMetadata, CommentCreate, DataExport, FullResponse, MembershipStatus, Message,
+    MessageContext, MessageCreate, QuestionContext, QuestionCreate, QuestionResponse, Reaction,
+    RefQuestion, ResponseComment, ResponseContext, ResponseCreate,
 };
 use crate::model::{DatabaseError, Question};
 
@@ -50,7 +50,8 @@ impl Database {
                 content   TEXT,
                 id        TEXT,
                 timestamp TEXT,
-                ip        TEXT
+                ip        TEXT,
+                context   TEXT
             )",
         )
         .execute(c)
@@ -65,7 +66,8 @@ impl Database {
                 id        TEXT,
                 timestamp TEXT,
                 tags      TEXT,
-                context   TEXT
+                context   TEXT,
+                reply     TEXT
             )",
         )
         .execute(c)
@@ -333,6 +335,7 @@ impl Database {
                     .trim_matches(|c| c == '"')
                     .parse::<u128>()
                     .unwrap(),
+                context: QuestionContext::default(),
             });
         }
 
@@ -366,6 +369,7 @@ impl Database {
                         id: q.id,
                         ip: q.ip,
                         timestamp: q.timestamp,
+                        context: q.context,
                     })
                 }
                 Err(_) => {
@@ -418,6 +422,7 @@ impl Database {
             id: res.get("id").unwrap().to_string(),
             ip: res.get("ip").unwrap().to_string(),
             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
         };
 
         // store in cache
@@ -480,6 +485,7 @@ impl Database {
                         id: res.get("id").unwrap().to_string(),
                         ip: res.get("ip").unwrap().to_string(),
                         timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                        context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
                     });
                 }
 
@@ -540,6 +546,7 @@ impl Database {
                         id: res.get("id").unwrap().to_string(),
                         ip: res.get("ip").unwrap().to_string(),
                         timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                        context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
                     });
                 }
 
@@ -601,6 +608,7 @@ impl Database {
                             id: id.clone(),
                             ip: res.get("ip").unwrap().to_string(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
                         },
                         // get the number of responses the question has
                         self.get_response_count_by_question(id.clone()).await,
@@ -668,6 +676,7 @@ impl Database {
                             id: id.clone(),
                             ip: res.get("ip").unwrap().to_string(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
                         },
                         // get the number of responses the question has
                         self.get_response_count_by_question(id.clone()).await,
@@ -738,6 +747,7 @@ impl Database {
                             id: id.clone(),
                             ip: res.get("ip").unwrap().to_string(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
                         },
                         // get the number of responses the question has
                         self.get_response_count_by_question(id.clone()).await,
@@ -805,6 +815,7 @@ impl Database {
                             id: id.clone(),
                             ip: res.get("ip").unwrap().to_string(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
                         },
                         // get the number of responses the question has
                         self.get_response_count_by_question(id.clone()).await,
@@ -899,6 +910,7 @@ impl Database {
                             id: id.clone(),
                             ip: res.get("ip").unwrap().to_string(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
                         },
                         // get the number of responses the question has
                         self.get_response_count_by_question(id.clone()).await,
@@ -961,6 +973,7 @@ impl Database {
                             id: id.clone(),
                             ip: res.get("ip").unwrap().to_string(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
                         },
                         // get the number of responses the question has
                         self.get_response_count_by_question(id.clone()).await,
@@ -1060,6 +1073,7 @@ impl Database {
                             id: id.clone(),
                             ip: res.get("ip").unwrap().to_string(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
                         },
                         // get the number of responses the question has
                         self.get_response_count_by_question(id.clone()).await,
@@ -1262,6 +1276,16 @@ impl Database {
             return Err(DatabaseError::ContentTooShort);
         }
 
+        // check reply_intent
+        if !props.reply_intent.is_empty() {
+            if let Err(e) = self
+                .get_response(props.reply_intent.trim().to_string(), false)
+                .await
+            {
+                return Err(e);
+            }
+        }
+
         // ...
         let question = Question {
             author: match self.get_profile(author).await {
@@ -1276,14 +1300,17 @@ impl Database {
             id: utility::random_id(),
             timestamp: utility::unix_epoch_timestamp(),
             ip: ip.clone(),
+            context: QuestionContext {
+                reply_intent: props.reply_intent,
+            },
         };
 
         // create question
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            "INSERT INTO \"xquestions\" VALUES (?, ?, ?, ?, ?, ?)"
+            "INSERT INTO \"xquestions\" VALUES (?, ?, ?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xquestions\" VALEUS ($1, $2, $3, $4, $5, $6)"
+            "INSERT INTO \"xquestions\" VALEUS ($1, $2, $3, $4, $5, $6, $7)"
         }
         .to_string();
 
@@ -1295,6 +1322,7 @@ impl Database {
             .bind::<&String>(&question.id)
             .bind::<&String>(&question.timestamp.to_string())
             .bind::<&String>(&ip)
+            .bind::<&String>(&serde_json::to_string(&question.context).unwrap())
             .execute(c)
             .await
         {
@@ -1435,10 +1463,12 @@ impl Database {
     pub async fn gimme_response(
         &self,
         res: HashMap<String, String>,
-    ) -> Result<(Question, QuestionResponse, usize, usize)> {
+        recurse: bool,
+    ) -> Result<FullResponse> {
         let question = res.get("question").unwrap().to_string();
         let id = res.get("id").unwrap().to_string();
         let author = res.get("author").unwrap().to_string();
+        let reply = res.get("reply").unwrap_or(&String::new()).to_string();
         let ctx: ResponseContext =
             match serde_json::from_str(res.get("context").unwrap_or(&"{}".to_string())) {
                 Ok(t) => t,
@@ -1480,9 +1510,18 @@ impl Database {
                     Err(_) => return Err(DatabaseError::ValueError),
                 },
                 context: ctx,
+                reply: reply.clone(),
             },
             self.get_comment_count_by_response(id.clone()).await,
             self.get_reaction_count_by_asset(id).await,
+            if reply.is_empty() {
+                None
+            } else {
+                match Box::pin(self.get_response(reply, recurse)).await {
+                    Ok(r) => Some(Box::new((r.0, r.1, r.2, r.3))),
+                    Err(_) => None,
+                }
+            },
         ))
     }
 
@@ -1490,10 +1529,9 @@ impl Database {
     ///
     /// # Arguments
     /// * `id`
-    pub async fn get_response(
-        &self,
-        id: String,
-    ) -> Result<(Question, QuestionResponse, usize, usize)> {
+    /// * `recurse`
+    #[async_recursion]
+    pub async fn get_response(&self, id: String, recurse: bool) -> Result<FullResponse> {
         // check in cache
         match self
             .base
@@ -1504,7 +1542,7 @@ impl Database {
             Some(c) => {
                 match serde_json::from_str::<HashMap<String, String>>(c.as_str()) {
                     Ok(res) => {
-                        return Ok(match self.gimme_response(res).await {
+                        return Ok(match self.gimme_response(res, recurse).await {
                             Ok(r) => r,
                             Err(e) => return Err(e),
                         })
@@ -1541,7 +1579,7 @@ impl Database {
         };
 
         // return
-        let response = match self.gimme_response(res).await {
+        let response = match self.gimme_response(res, recurse).await {
             Ok(r) => r,
             Err(e) => return Err(e),
         };
@@ -1570,7 +1608,7 @@ impl Database {
         &self,
         question: String,
         author: String,
-    ) -> Result<(Question, QuestionResponse, usize, usize)> {
+    ) -> Result<FullResponse> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -1592,7 +1630,7 @@ impl Database {
         };
 
         // return
-        Ok(match self.gimme_response(res).await {
+        Ok(match self.gimme_response(res, false).await {
             Ok(r) => r,
             Err(e) => return Err(e),
         })
@@ -1602,10 +1640,7 @@ impl Database {
     ///
     /// # Arguments
     /// * `page`
-    pub async fn get_posts_paginated(
-        &self,
-        page: i32,
-    ) -> Result<Vec<(Question, QuestionResponse, usize, usize)>> {
+    pub async fn get_posts_paginated(&self, page: i32) -> Result<Vec<FullResponse>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -1617,11 +1652,11 @@ impl Database {
         let c = &self.base.db.client;
         let res = match sqlquery(&query).fetch_all(c).await {
             Ok(p) => {
-                let mut out: Vec<(Question, QuestionResponse, usize, usize)> = Vec::new();
+                let mut out: Vec<FullResponse> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    out.push(match self.gimme_response(res).await {
+                    out.push(match self.gimme_response(res, false).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
                     });
@@ -1645,7 +1680,7 @@ impl Database {
         &self,
         page: i32,
         user: String,
-    ) -> Result<Vec<(Question, QuestionResponse, usize, usize)>> {
+    ) -> Result<Vec<FullResponse>> {
         // get following
         let following = match self.auth.get_following(user.clone()).await {
             Ok(f) => f,
@@ -1683,11 +1718,11 @@ impl Database {
         let c = &self.base.db.client;
         let res = match sqlquery(&query).bind(&user.id).fetch_all(c).await {
             Ok(p) => {
-                let mut out: Vec<(Question, QuestionResponse, usize, usize)> = Vec::new();
+                let mut out: Vec<FullResponse> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    out.push(match self.gimme_response(res).await {
+                    out.push(match self.gimme_response(res, false).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
                     });
@@ -1711,7 +1746,7 @@ impl Database {
         &self,
         page: i32,
         search: String,
-    ) -> Result<Vec<(Question, QuestionResponse, usize, usize)>> {
+    ) -> Result<Vec<FullResponse>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -1727,11 +1762,11 @@ impl Database {
             .await
         {
             Ok(p) => {
-                let mut out: Vec<(Question, QuestionResponse, usize, usize)> = Vec::new();
+                let mut out: Vec<FullResponse> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    out.push(match self.gimme_response(res).await {
+                    out.push(match self.gimme_response(res, false).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
                     });
@@ -1750,10 +1785,7 @@ impl Database {
     ///
     /// # Arguments
     /// * `author`
-    pub async fn get_responses_by_author(
-        &self,
-        author: String,
-    ) -> Result<Vec<(Question, QuestionResponse, usize, usize)>> {
+    pub async fn get_responses_by_author(&self, author: String) -> Result<Vec<FullResponse>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -1770,11 +1802,11 @@ impl Database {
             .await
         {
             Ok(p) => {
-                let mut out: Vec<(Question, QuestionResponse, usize, usize)> = Vec::new();
+                let mut out: Vec<FullResponse> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    out.push(match self.gimme_response(res).await {
+                    out.push(match self.gimme_response(res, false).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
                     });
@@ -1797,7 +1829,7 @@ impl Database {
         &self,
         author: String,
         page: i32,
-    ) -> Result<Vec<(Question, QuestionResponse, usize, usize)>> {
+    ) -> Result<Vec<FullResponse>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -1813,11 +1845,11 @@ impl Database {
             .await
         {
             Ok(p) => {
-                let mut out: Vec<(Question, QuestionResponse, usize, usize)> = Vec::new();
+                let mut out: Vec<FullResponse> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    out.push(match self.gimme_response(res).await {
+                    out.push(match self.gimme_response(res, false).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
                     });
@@ -1841,7 +1873,7 @@ impl Database {
         author: String,
         search: String,
         page: i32,
-    ) -> Result<Vec<(Question, QuestionResponse, usize, usize)>> {
+    ) -> Result<Vec<FullResponse>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -1858,11 +1890,11 @@ impl Database {
             .await
         {
             Ok(p) => {
-                let mut out: Vec<(Question, QuestionResponse, usize, usize)> = Vec::new();
+                let mut out: Vec<FullResponse> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    out.push(match self.gimme_response(res).await {
+                    out.push(match self.gimme_response(res, false).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
                     });
@@ -1887,7 +1919,7 @@ impl Database {
         author: String,
         tag: String,
         page: i32,
-    ) -> Result<Vec<(Question, QuestionResponse, usize, usize)>> {
+    ) -> Result<Vec<FullResponse>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -1904,11 +1936,11 @@ impl Database {
             .await
         {
             Ok(p) => {
-                let mut out: Vec<(Question, QuestionResponse, usize, usize)> = Vec::new();
+                let mut out: Vec<FullResponse> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    out.push(match self.gimme_response(res).await {
+                    out.push(match self.gimme_response(res, false).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
                     });
@@ -1932,7 +1964,7 @@ impl Database {
         &self,
         tag: String,
         page: i32,
-    ) -> Result<Vec<(Question, QuestionResponse, usize, usize)>> {
+    ) -> Result<Vec<FullResponse>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -1948,11 +1980,11 @@ impl Database {
             .await
         {
             Ok(p) => {
-                let mut out: Vec<(Question, QuestionResponse, usize, usize)> = Vec::new();
+                let mut out: Vec<FullResponse> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    out.push(match self.gimme_response(res).await {
+                    out.push(match self.gimme_response(res, false).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
                     });
@@ -2009,7 +2041,7 @@ impl Database {
         &self,
         page: i32,
         search: String,
-    ) -> Result<Vec<(Question, QuestionResponse, usize, usize)>> {
+    ) -> Result<Vec<FullResponse>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -2025,11 +2057,11 @@ impl Database {
             .await
         {
             Ok(p) => {
-                let mut out: Vec<(Question, QuestionResponse, usize, usize)> = Vec::new();
+                let mut out: Vec<FullResponse> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    out.push(match self.gimme_response(res).await {
+                    out.push(match self.gimme_response(res, false).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
                     });
@@ -2048,10 +2080,7 @@ impl Database {
     ///
     /// # Arguments
     /// * `user`
-    pub async fn get_responses_by_following(
-        &self,
-        user: String,
-    ) -> Result<Vec<(Question, QuestionResponse, usize, usize)>> {
+    pub async fn get_responses_by_following(&self, user: String) -> Result<Vec<FullResponse>> {
         // get following
         let following = match self.auth.get_following(user.clone()).await {
             Ok(f) => f,
@@ -2094,11 +2123,11 @@ impl Database {
             .await
         {
             Ok(p) => {
-                let mut out: Vec<(Question, QuestionResponse, usize, usize)> = Vec::new();
+                let mut out: Vec<FullResponse> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    out.push(match self.gimme_response(res).await {
+                    out.push(match self.gimme_response(res, false).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
                     });
@@ -2117,10 +2146,7 @@ impl Database {
     ///
     /// # Arguments
     /// * `id`
-    pub async fn get_responses_by_question(
-        &self,
-        id: String,
-    ) -> Result<Vec<(Question, QuestionResponse, usize, usize)>> {
+    pub async fn get_responses_by_question(&self, id: String) -> Result<Vec<FullResponse>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -2133,11 +2159,11 @@ impl Database {
         let c = &self.base.db.client;
         let res = match sqlquery(&query).bind::<&String>(&id).fetch_all(c).await {
             Ok(p) => {
-                let mut out: Vec<(Question, QuestionResponse, usize, usize)> = Vec::new();
+                let mut out: Vec<FullResponse> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    out.push(match self.gimme_response(res).await {
+                    out.push(match self.gimme_response(res, false).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
                     });
@@ -2259,6 +2285,16 @@ impl Database {
             return Err(DatabaseError::ContentTooShort);
         }
 
+        // check reply
+        if !props.reply.is_empty() {
+            if let Err(e) = self
+                .get_response(props.reply.trim().to_string(), false)
+                .await
+            {
+                return Err(e);
+            }
+        }
+
         // ...
         let response = QuestionResponse {
             author,
@@ -2271,14 +2307,22 @@ impl Database {
                 warning: props.warning,
             },
             question: question.id,
+            reply: props.reply.trim().to_string(),
         };
+
+        // make sure reply exists
+        if !response.reply.is_empty() {
+            if let Err(e) = self.get_response(response.reply.clone(), false).await {
+                return Err(e);
+            }
+        }
 
         // create response
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            "INSERT INTO \"xresponses\" VALUES (?, ?, ?, ?, ?, ?, ?)"
+            "INSERT INTO \"xresponses\" VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xresponses\" VALEUS ($1, $2, $3, $4, $5, $6, $7)"
+            "INSERT INTO \"xresponses\" VALEUS ($1, $2, $3, $4, $5, $6, $7, $8)"
         }
         .to_string();
 
@@ -2294,6 +2338,7 @@ impl Database {
                 Ok(s) => s,
                 Err(_) => return Err(DatabaseError::ValueError),
             })
+            .bind::<&String>(&response.reply)
             .execute(c)
             .await
         {
@@ -2421,7 +2466,7 @@ impl Database {
         user: Profile,
     ) -> Result<()> {
         // make sure the response exists
-        let response = match self.get_response(id.clone()).await {
+        let response = match self.get_response(id.clone(), false).await {
             Ok(q) => q.1,
             Err(e) => return Err(e),
         };
@@ -2520,7 +2565,7 @@ impl Database {
         user: Profile,
     ) -> Result<()> {
         // make sure the response exists
-        let response = match self.get_response(id.clone()).await {
+        let response = match self.get_response(id.clone(), false).await {
             Ok(q) => q.1,
             Err(e) => return Err(e),
         };
@@ -2600,7 +2645,7 @@ impl Database {
         save_question: bool,
     ) -> Result<()> {
         // make sure response exists
-        let response = match self.get_response(id.clone()).await {
+        let response = match self.get_response(id.clone(), false).await {
             Ok(q) => q,
             Err(e) => return Err(e),
         };
@@ -2699,7 +2744,7 @@ impl Database {
     /// * `user` - the user doing this
     pub async fn unsend_response(&self, id: String, user: Profile) -> Result<()> {
         // make sure the response exists
-        let res = match self.get_response(id.clone()).await {
+        let res = match self.get_response(id.clone(), false).await {
             Ok(q) => q,
             Err(e) => return Err(e),
         };
@@ -3277,7 +3322,7 @@ impl Database {
     /// * `author` - the ID of the user creating the comment
     pub async fn create_comment(&self, props: CommentCreate, author: String) -> Result<()> {
         // make sure the response exists
-        let response = match self.get_response(props.response.clone()).await {
+        let response = match self.get_response(props.response.clone(), false).await {
             Ok(q) => q.1,
             Err(e) => return Err(e),
         };
@@ -3449,7 +3494,7 @@ impl Database {
             Err(e) => return Err(e),
         };
 
-        let res = match self.get_response(comment.response.clone()).await {
+        let res = match self.get_response(comment.response.clone(), false).await {
             Ok(q) => q.1,
             Err(e) => return Err(e),
         };
@@ -4567,10 +4612,7 @@ impl Database {
     ///
     /// ## Arguments:
     /// * `circle`
-    pub async fn get_responses_by_circle(
-        &self,
-        circle: String,
-    ) -> Result<Vec<(Question, QuestionResponse, usize, usize)>> {
+    pub async fn get_responses_by_circle(&self, circle: String) -> Result<Vec<FullResponse>> {
         // get circle
         let circle = match self.get_circle(circle.clone()).await {
             Ok(c) => c,
@@ -4604,11 +4646,11 @@ impl Database {
             .await
         {
             Ok(p) => {
-                let mut out: Vec<(Question, QuestionResponse, usize, usize)> = Vec::new();
+                let mut out: Vec<FullResponse> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    out.push(match self.gimme_response(res).await {
+                    out.push(match self.gimme_response(res, false).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
                     });
@@ -4631,7 +4673,7 @@ impl Database {
         &self,
         circle: String,
         page: i32,
-    ) -> Result<Vec<(Question, QuestionResponse, usize, usize)>> {
+    ) -> Result<Vec<FullResponse>> {
         // get circle
         let circle = match self.get_circle(circle.clone()).await {
             Ok(c) => c,
@@ -4664,11 +4706,11 @@ impl Database {
             .await
         {
             Ok(p) => {
-                let mut out: Vec<(Question, QuestionResponse, usize, usize)> = Vec::new();
+                let mut out: Vec<FullResponse> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    out.push(match self.gimme_response(res).await {
+                    out.push(match self.gimme_response(res, false).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
                     });

@@ -9,9 +9,7 @@ use authbeam::model::{Permission, Profile};
 
 use crate::config::Config;
 use crate::database::Database;
-use crate::model::{
-    Circle, CircleMetadata, DatabaseError, MembershipStatus, Question, QuestionResponse,
-};
+use crate::model::{Circle, CircleMetadata, DatabaseError, FullResponse, MembershipStatus, Question};
 
 use super::PaginatedQuery;
 
@@ -146,11 +144,11 @@ struct ProfileTemplate {
     inbox_count: usize,
     notifs: usize,
     circle: Circle,
-    responses: Vec<(Question, QuestionResponse, usize, usize)>,
+    responses: Vec<FullResponse>,
     response_count: usize,
     member_count: usize,
     metadata: String,
-    pinned: Option<Vec<(Question, QuestionResponse, usize, usize)>>,
+    pinned: Option<Vec<FullResponse>>,
     page: i32,
     // ...
     layout: String,
@@ -229,7 +227,7 @@ pub async fn profile_request(
             let mut out = Vec::new();
 
             for id in pinned.split(",") {
-                match database.get_response(id.to_string()).await {
+                match database.get_response(id.to_string(), false).await {
                     Ok(response) => {
                         // TODO: check author circle membership status
                         // remove from responses
