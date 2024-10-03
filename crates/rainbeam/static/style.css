@@ -430,6 +430,15 @@ fieldset:hover {
     border: solid 2px var(--color-lowered);
 }
 
+.card.shadow,
+.card-nest.shadow {
+    border: none;
+}
+
+.card-nest.shadow .card {
+    border: none;
+}
+
 .card-nest {
     background: transparent;
     border: none;

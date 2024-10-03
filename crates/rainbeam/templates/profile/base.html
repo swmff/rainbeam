@@ -131,7 +131,7 @@ config.name }}{% endblock %} {% block head %}
         
             <div
                 id="profile_card"
-                class="card padded flex flex-col gap-2 w-full"
+                class="card shadow padded flex flex-col gap-2 w-full"
                 style="padding-top: 0; height: max-content"
             >
                 <div class="flex flex-col gap-2 w-full">
@@ -550,7 +550,7 @@ config.name }}{% endblock %} {% block head %}
             <!-- prettier-ignore -->
             {% if let Some(sidebar) = other.metadata.kv.get("sparkler:sidebar") %}
             {% if !sidebar.is_empty() %}
-            <div id="sidebar" class="card">
+            <div id="sidebar" class="card shadow">
                 {{ shared::ui::render_markdown(sidebar)|safe }}
             </div>
             {% endif %} {% endif %} {% block sidebar %}{% endblock %}
@@ -706,7 +706,7 @@ config.name }}{% endblock %} {% block head %}
 
 <script>
     globalThis.search = new URLSearchParams(window.location.search);
-    const reply_intent = search.get("reply_intent");
+    globalThis.reply_intent = search.get("reply_intent");
 
     if (reply_intent) {
         const form = document.getElementById("question_form");
