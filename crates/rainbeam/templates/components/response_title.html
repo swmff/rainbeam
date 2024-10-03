@@ -167,7 +167,7 @@
                 </button>
 
                 <button
-                    onclick="trigger('app:intent_twitter', [trigger('responses:gen_share', [event.target, '{{ short_id }}', 280])])"
+                    onclick="trigger('app:intent_twitter', [trigger('responses:gen_share', [event.target, '{{ short_id }}', 280, false]), '{{ config.host }}/+r/{{ short_id }}'])"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"

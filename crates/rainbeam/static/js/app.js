@@ -96,9 +96,9 @@
         $.toast("success", "Copied!");
     });
 
-    app.define("intent_twitter", function ({ $ }, text) {
+    app.define("intent_twitter", function ({ $ }, text, link) {
         window.open(
-            `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`,
+            `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(link)}`,
         );
 
         $.toast("success", "Opened intent!");
