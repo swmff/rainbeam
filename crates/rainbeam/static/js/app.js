@@ -134,9 +134,9 @@
         if (skin === "sparkler") {
             console.warn(`[app skin] skin is invalid, skipped: ${skin}`);
 
-            if (document.getElementById("skin_import")) {
-                document.getElementById("skin_import").remove();
-            }
+            // if (document.getElementById("skin_import")) {
+            //     document.getElementById("skin_import").remove();
+            // }
 
             return;
         }

@@ -2227,6 +2227,14 @@ impl Database {
                         // cannot respond to a question not asked to us
                         return Err(DatabaseError::NotAllowed);
                     }
+
+                    // make sure we haven't already answered this
+                    if let Ok(_) = self
+                        .get_response_by_question_and_author(question.id.clone(), author.id.clone())
+                        .await
+                    {
+                        return Err(DatabaseError::Other);
+                    }
                 } else {
                     // circles
                     let circle_name = question.recipient.id.replacen("@", "", 1);
