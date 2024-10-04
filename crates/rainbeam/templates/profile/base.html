@@ -733,6 +733,7 @@ config.name }}{% endblock %} {% block head %}
             sammy.create_canvas();
             sammy.onedit = (text) => {
                 document.getElementById("content").value = `--CARP${text}`;
+                document.getElementById("content:counter").innerText = `${text.length}/2048`;
             }
         });
     }
