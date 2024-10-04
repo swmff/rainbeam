@@ -105,6 +105,12 @@ block head %}
     </main>
 </article>
 
+<script>
+    setTimeout(() => {
+        trigger("questions:carp");
+    }, 100);
+</script>
+
 {% if let Some(profile) = profile %} {% let other = profile.clone() %} {% if
 profile.username == other.username %}
 <div id="is_self"></div>

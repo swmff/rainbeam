@@ -293,6 +293,10 @@
             e.target.reset();
         });
     }
+
+    setTimeout(() => {
+        trigger("questions:carp");
+    }, 150);
 </script>
 
 {% if let Some(profile) = profile %} {% let other = profile.clone() %} {% if

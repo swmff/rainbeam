@@ -3,7 +3,14 @@
 
     self.define(
         "create",
-        function ({ $, app }, recipient, content, anonymous, reply_intent) {
+        async function (
+            { $, app },
+            recipient,
+            content,
+            anonymous,
+            reply_intent,
+        ) {
+            await app.debounce("responses:create");
             return new Promise((resolve, reject) => {
                 fetch("/api/v1/questions", {
                     method: "POST",
@@ -54,5 +61,25 @@
                     500,
                 );
             });
+    });
+
+    self.define("carp", function () {
+        use("carp", (carp) => {
+            for (const question of document.querySelectorAll(
+                ".question_content",
+            )) {
+                const p = question.querySelector("p");
+
+                if (!p || !p.innerText.startsWith("--CARP")) {
+                    continue;
+                }
+
+                const gerald = carp.new(question, true);
+                gerald.create_canvas();
+
+                gerald.from_string(p.innerText.replace("--CARP", ""));
+                p.remove();
+            }
+        });
     });
 })();

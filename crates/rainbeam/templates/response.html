@@ -282,6 +282,8 @@ profile.username == other.username %}
                 .replaceAll('"]', "")
                 .replace("[]", "");
         }
+
+        trigger("questions:carp");
     }, 100);
 
     function edit(e) {

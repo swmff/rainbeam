@@ -144,7 +144,7 @@ config.name }}{% endblock %} {% block head %}
 
                     <!-- prettier-ignore -->
                     <div id="names">
-                        <h3 class="no-margin username">
+                        <h3 class="no-margin username" style="max-width: 100%">
                             {% if let Some(display_name) = other.metadata.kv.get("sparkler:display_name") %}
                                 {{ display_name }}
                             {% else %}
@@ -579,6 +579,12 @@ config.name }}{% endblock %} {% block head %}
                         class="flex flex-col gap-2"
                         onsubmit="ask(event)"
                     >
+                        <div id="carp_context" active="true">
+                            <div class="flex gap-2">
+                                
+                            </div>
+                        </div>
+
                         <textarea
                             class="w-full"
                             placeholder="Type your question!"
@@ -707,6 +713,7 @@ config.name }}{% endblock %} {% block head %}
 <script>
     globalThis.search = new URLSearchParams(window.location.search);
     globalThis.reply_intent = search.get("reply_intent");
+    globalThis.whiteboard = search.get("whiteboard");
 
     if (reply_intent) {
         const form = document.getElementById("question_form");
@@ -717,6 +724,23 @@ config.name }}{% endblock %} {% block head %}
         }
     }
 
+    if (whiteboard) {
+        document.getElementById("content").style.display = "none"; // hide textarea
+    
+        use("carp", (carp) => {
+            const sammy = carp.new(document.getElementById("carp_context"));
+            
+            sammy.create_canvas();
+            sammy.onedit = (text) => {
+                document.getElementById("content").value = `--CARP${text}`;
+            }
+        });
+    }
+
+    setTimeout(() => {
+        trigger("questions:carp");
+    }, 150);
+    
     function ask(e) {
         e.preventDefault();
 

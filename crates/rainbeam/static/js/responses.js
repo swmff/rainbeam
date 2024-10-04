@@ -3,7 +3,8 @@
 
     self.define(
         "create",
-        function ({ $, app }, question, content, tags, warning, reply) {
+        async function ({ $, app }, question, content, tags, warning, reply) {
+            await app.debounce("responses:create");
             if (!tags) {
                 tags = "";
             }

@@ -3,6 +3,7 @@
 
     // env
     app.USE_TENNIS_LOADER = true;
+    app.DEBOUNCE = [];
 
     // ...
     app.define("try_use", function (_, ns_name, callback) {
@@ -15,22 +16,20 @@
         use(ns_name, callback);
     });
 
-    app.define("fold_nav", function ({ $ }) {
-        if (!$.nav_folded) {
-            for (const nav of Array.from(document.querySelectorAll("nav"))) {
-                nav.style.display = "none";
+    app.define("debounce", function ({ $ }, name) {
+        return new Promise((resolve, reject) => {
+            if ($.DEBOUNCE.includes(name)) {
+                return reject();
             }
 
-            document.getElementById("folded_nav").style.display = "flex";
-        } else {
-            for (const nav of Array.from(document.querySelectorAll("nav"))) {
-                nav.style.display = "flex";
-            }
+            $.DEBOUNCE.push(name);
 
-            document.getElementById("folded_nav").style.display = "none";
-        }
+            setTimeout(() => {
+                delete $.DEBOUNCE[$.DEBOUNCE.indexOf(name)];
+            }, 1000);
 
-        $.nav_folded = !($.nav_folded || false);
+            return resolve();
+        });
     });
 
     app.define("rel_date", function (_, date) {
