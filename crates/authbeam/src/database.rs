@@ -603,6 +603,7 @@ impl Database {
             "sparkler:display_name",
             "sparkler:limited_friend_requests",
             "sparkler:limited_chats",
+            "sparkler:allow_drawings",
             "sparkler:biography",
             "sparkler:sidebar",
             "sparkler:avatar_url",

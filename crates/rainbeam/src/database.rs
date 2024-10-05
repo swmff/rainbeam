@@ -1145,6 +1145,17 @@ impl Database {
             return Err(DatabaseError::ContentTooLong);
         }
 
+        // check media
+        if props.media.len() > (64 * 128) {
+            return Err(DatabaseError::ContentTooLong);
+        }
+
+        if !props.media.is_empty() {
+            if !props.media.starts_with("https://") && !props.media.starts_with("--CARP") {
+                return Err(DatabaseError::Other);
+            }
+        }
+
         // check recipient
         // "@" is the recipient we use for global questions (questions anybody can respond to)
         let tag = Database::anonymous_tag(&author);
@@ -1302,6 +1313,7 @@ impl Database {
             ip: ip.clone(),
             context: QuestionContext {
                 reply_intent: props.reply_intent,
+                media: props.media,
             },
         };
 

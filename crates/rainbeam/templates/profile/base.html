@@ -579,11 +579,8 @@ config.name }}{% endblock %} {% block head %}
                         class="flex flex-col gap-2"
                         onsubmit="ask(event)"
                     >
-                        <div id="carp_context" active="true">
-                            <div class="flex gap-2">
-                                
-                            </div>
-                        </div>
+                        <div id="carp_context"></div>
+                        <input name="carp_context" id="carp_content" type="text" style="display: none" />
 
                         <textarea
                             class="w-full"
@@ -623,7 +620,13 @@ config.name }}{% endblock %} {% block head %}
                             {% endif %}
                             </div>
 
-                            <button class="round-lg primary bold">Ask</button>
+                            <div class="flex gap-2">
+                                {% if other.metadata.is_true("sparkler:allow_drawings") %}
+                                <button class="round-lg" onclick="attach_carp(event)" type="button">Draw</button>
+                                {% endif %}
+                                
+                                <button class="round-lg primary bold">Ask</button>
+                            </div>
                         </div>
                     </form>
                     {% else %}
@@ -713,7 +716,6 @@ config.name }}{% endblock %} {% block head %}
 <script>
     globalThis.search = new URLSearchParams(window.location.search);
     globalThis.reply_intent = search.get("reply_intent");
-    globalThis.whiteboard = search.get("whiteboard");
 
     if (reply_intent) {
         const form = document.getElementById("question_form");
@@ -724,36 +726,58 @@ config.name }}{% endblock %} {% block head %}
         }
     }
 
-    if (whiteboard) {
-        document.getElementById("content").style.display = "none"; // hide textarea
-    
-        use("carp", (carp) => {
-            const sammy = carp.new(document.getElementById("carp_context"));
-            
-            sammy.create_canvas();
-            sammy.onedit = (text) => {
-                document.getElementById("content").value = `--CARP${text}`;
-                document.getElementById("content:counter").innerText = `${text.length}/2048`;
-            }
-        });
-    }
-
     setTimeout(() => {
         trigger("questions:carp");
     }, 150);
     
     function ask(e) {
         e.preventDefault();
-
         trigger("questions:create", [
             "{{ other.id }}",
             e.target.content.value,
             (e.target.anonymous || { checked: false }).checked,
-            reply_intent || ""
+            reply_intent || "",
+            e.target.carp_content.value.length != 0 
+                ? e.target.carp_content.value
+                : ""
         ]).then((_) => {
             // reset if successful
             e.target.reset();
+
+            if (globalThis.sammy) {
+                globalThis.sammy.clear();
+            }
         });
+    }
+
+    function attach_carp(e) {
+        e.target.innerText = "Remove drawing";
+        e.target.onclick = (e) => {
+            alert("Are you sure you want to do this?"); 
+            globalThis.detach_carp(e);
+        };
+
+        use("carp", (carp) => {
+            const sammy = carp.new(document.getElementById("carp_context"));
+            
+            sammy.create_canvas();
+            sammy.onedit = (text) => {
+                document.getElementById("carp_content").value = `--CARP${text}`;
+            }
+
+            globalThis.sammy = sammy;
+        });
+    }
+
+    function detach_carp(e) {
+        e.target.innerText = "Draw";
+        e.target.onclick = (e) => {
+            globalThis.attach_carp(e);
+        };
+
+        document.getElementById("carp_context").innerHTML = "";
+        document.getElementById("carp_content").value = "";
+        globalThis.sammy = null;
     }
 
     function follow() {

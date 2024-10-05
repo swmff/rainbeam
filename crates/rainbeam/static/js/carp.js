@@ -1,5 +1,7 @@
 //! # Carp
 //! Sending drawn images as questions
+//!
+//! Rainbeam <https://github.com/swmff/rainbeam>
 (() => {
     const self = reg_ns("carp", ["app"]);
 
@@ -16,7 +18,9 @@
         #pos = { x: 0, y: 0 }; // Vec2
 
         STROKE_SIZE = 2;
+        #stroke_size_old = 2;
         COLOR = "#000000";
+        #color_old = "#000000";
 
         LINES = [];
         #line_store = [];
@@ -32,10 +36,6 @@
 
         /// Push #line_store to LINES
         push_state(resolution = 1) {
-            if (this.#line_store.length === 0) {
-                return;
-            }
-
             // clean line_store
             const seen_points = [];
             for (const line of this.LINES) {
@@ -46,8 +46,19 @@
                         continue;
                     }
 
+                    for (let i in point) {
+                        // remove null values from point
+                        if (point[i] === null) {
+                            point.splice(i, 1);
+                        }
+                    }
+
                     seen_points.push(point);
                 }
+            }
+
+            if (this.#line_store.length === 0) {
+                return;
             }
 
             // push
@@ -117,7 +128,51 @@
                         this.move_event(e);
                     });
                 }
+
+                // add controls
+                const container = document.createElement("div");
+                container.classList.add("flex");
+                container.classList.add("gap-4");
+                this.#element.appendChild(container);
+
+                const color_picker = document.createElement("input");
+                color_picker.type = "color";
+                container.appendChild(color_picker);
+
+                color_picker.addEventListener("change", (e) => {
+                    this.set_old_color(this.COLOR);
+                    this.COLOR = e.target.value;
+                });
+
+                const stroke_range = document.createElement("input");
+                stroke_range.type = "range";
+                stroke_range.setAttribute("min", "2");
+                stroke_range.setAttribute("max", "10");
+                stroke_range.setAttribute("step", "1");
+                stroke_range.value = "2";
+                container.appendChild(stroke_range);
+
+                stroke_range.addEventListener("change", (e) => {
+                    this.set_old_stroke_size(this.STROKE_SIZE);
+                    this.STROKE_SIZE = e.target.value;
+                });
             }
+        }
+
+        /// Clear the canvas
+        clear() {
+            const canvas = this.#ctx.canvas;
+            this.#ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        /// Set the old color
+        set_old_color(value) {
+            this.#color_old = value;
+        }
+
+        /// Set the old stroke_size
+        set_old_stroke_size(value) {
+            this.#stroke_size_old = value;
         }
 
         /// Update position (from event)
@@ -162,10 +217,33 @@
             if (!skip_line_store) {
                 // yes flooring the values will make the image SLIGHTLY different,
                 // but it also saves THOUSANDS of characters
-                this.#line_store.push([
+                let point = [
                     Math.floor(this.#pos.x),
                     Math.floor(this.#pos.y),
-                ]);
+                    // only include these values if they changed
+                    this.#color_old !== this.COLOR ? this.COLOR : null,
+                    this.#stroke_size_old !== this.STROKE_SIZE
+                        ? this.STROKE_SIZE
+                        : null,
+                ];
+
+                for (let i in point) {
+                    // remove null values from point
+                    if (point[i] === null) {
+                        point.splice(i, 1);
+                    }
+                }
+
+                this.#line_store.push(point);
+
+                if (this.#color_old != this.COLOR) {
+                    // we've already seen it once, time to update it
+                    this.set_old_color(this.COLOR);
+                }
+
+                if (this.#stroke_size_old != this.STROKE_SIZE) {
+                    this.set_old_stroke_size(this.STROKE_SIZE);
+                }
             }
 
             this.#ctx.stroke();
@@ -179,6 +257,7 @@
 
         /// Export lines as string
         as_string() {
+            this.push_state();
             return JSON.stringify(this.LINES);
         }
 
@@ -188,7 +267,7 @@
             let rendered = [];
 
             // lines format:
-            // [[[x, y], ...], ...]
+            // [[[x, y, Option<color>, Option<stroke_size>], ...], ...]
             for (const line of this.LINES) {
                 if (line[0]) {
                     // if line has at least one point, go ahead and start at that
@@ -205,6 +284,14 @@
                     const x = point[0];
                     const y = point[1];
                     rendered.push(point);
+
+                    if (point[2]) {
+                        this.COLOR = point[2] || "#000000";
+                    }
+
+                    if (point[3]) {
+                        this.STROKE_SIZE = point[3] || 2;
+                    }
 
                     this.draw({ x, y }, true);
                 }

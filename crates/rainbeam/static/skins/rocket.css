@@ -129,11 +129,13 @@ nav .dropdown .inner:is(.dark *) {
     background: var(--color-surface);
 }
 
-.dropdown .inner a {
+.dropdown .inner a,
+.dropdown .inner button {
     padding: 0.15rem 1rem;
+    border-radius: 0 !important;
 }
 
-.dropdown:not(nav *):has(.inner[open]) button {
+.dropdown:not(nav *):has(.inner[open]) button:not(.inner *) {
     background: var(--color-primary-alpha) !important;
 }
 

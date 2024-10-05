@@ -126,15 +126,10 @@
         </div>
 
         <!-- prettier-ignore -->
-        {% if !question.content.starts_with("--CARP") %}
         <span class="question_content" hook="long" hook-arg="lowered">
+            <p style="display: none">{{ question.context.media }}</p>
             {{ shared::ui::render_markdown(question.content)|safe }}
         </span>
-        {% else %}
-        <span class="question_content">
-            <p style="display: none">{{ question.content }}</p>
-        </span>
-        {% endif %}
     </div>
     {% else %}
     <div class="card" style="display: none"></div>

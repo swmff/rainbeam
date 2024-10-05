@@ -8,7 +8,8 @@
             recipient,
             content,
             anonymous,
-            reply_intent,
+            reply_intent = "",
+            media = "",
         ) {
             await app.debounce("responses:create");
             return new Promise((resolve, reject) => {
@@ -22,6 +23,7 @@
                         content,
                         anonymous,
                         reply_intent: reply_intent || "",
+                        media: media || "",
                     }),
                 })
                     .then((res) => res.json())

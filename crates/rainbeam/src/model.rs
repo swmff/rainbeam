@@ -80,12 +80,20 @@ pub struct QuestionContext {
     /// Will fill into the "reply" field of the response that is posted to this question
     #[serde(default)]
     pub reply_intent: String,
+    /// The media property of the question
+    ///
+    /// Media is prefixed to decide what its type is:
+    /// * (no prefix): URL
+    /// * `--CARP`: carp canvas drawing
+    #[serde(default)]
+    pub media: String,
 }
 
 impl Default for QuestionContext {
     fn default() -> Self {
         Self {
             reply_intent: String::new(),
+            media: String::new(),
         }
     }
 }
@@ -372,6 +380,8 @@ pub struct QuestionCreate {
     pub anonymous: bool,
     #[serde(default)]
     pub reply_intent: String,
+    #[serde(default)]
+    pub media: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
