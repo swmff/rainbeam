@@ -594,30 +594,30 @@ config.name }}{% endblock %} {% block head %}
                         ></textarea>
 
                         <!-- prettier-ignore -->
-                        <div class="flex justify-between w-full gap-1">
-                        <div class="footernav items-center gap-2">
-                            <span id="content:counter" class="notification item"></span>
-                            {% if profile.is_some() && (disallow_anonymous == false) %}
-                            <div class="checkbox_container item">
-                                <input
-                                    type="checkbox"
-                                    name="anonymous"
-                                    id="anonymous"
-                                />
+                        <div class="flex justify-between w-full gap-1 flex-wrap">
+                            <div class="footernav items-center gap-2">
+                                <span id="content:counter" class="notification item"></span>
+                                {% if profile.is_some() && (disallow_anonymous == false) %}
+                                <div class="checkbox_container item">
+                                    <input
+                                        type="checkbox"
+                                        name="anonymous"
+                                        id="anonymous"
+                                    />
 
-                                <label for="anonymous" class="normal">
-                                    Hide your name
-                                </label>
-                            </div>
+                                    <label for="anonymous" class="normal">
+                                        Hide your name
+                                    </label>
+                                </div>
 
-                            <script>
-                                if (window.localStorage.getItem("always_anon") === "true") {
-                                    document.getElementById("anonymous").checked = true
-                                }
-                            </script>
-                            {% else %}
-                            <div></div>
-                            {% endif %}
+                                <script>
+                                    if (window.localStorage.getItem("always_anon") === "true") {
+                                        document.getElementById("anonymous").checked = true
+                                    }
+                                </script>
+                                {% else %}
+                                <div></div>
+                                {% endif %}
                             </div>
 
                             <div class="flex gap-2">

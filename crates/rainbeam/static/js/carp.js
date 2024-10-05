@@ -81,44 +81,69 @@
             this.#ctx = canvas.getContext("2d");
 
             if (!this.read_only) {
-                if (!("ontouchstart" in document.documentElement)) {
-                    // desktop
-                    canvas.addEventListener("mousemove", (e) => {
+                // desktop
+                canvas.addEventListener(
+                    "mousemove",
+                    (e) => {
                         this.draw_event(e);
-                    });
+                    },
+                    false,
+                );
 
-                    canvas.addEventListener("mouseup", (e) => {
+                canvas.addEventListener(
+                    "mouseup",
+                    (e) => {
                         this.push_state();
-                    });
+                    },
+                    false,
+                );
 
-                    canvas.addEventListener("mousedown", (e) => {
+                canvas.addEventListener(
+                    "mousedown",
+                    (e) => {
                         this.move_event(e);
-                    });
+                    },
+                    false,
+                );
 
-                    canvas.addEventListener("mouseenter", (e) => {
+                canvas.addEventListener(
+                    "mouseenter",
+                    (e) => {
                         this.move_event(e);
-                    });
-                } else {
-                    // mobile
-                    canvas.addEventListener("touchmove", (e) => {
+                    },
+                    false,
+                );
+
+                // mobile
+                canvas.addEventListener(
+                    "touchmove",
+                    (e) => {
                         e.preventDefault();
 
                         e.clientX = e.changedTouches[0].clientX;
                         e.clientY = e.changedTouches[0].clientY;
 
-                        this.draw_event(e);
-                    });
+                        this.draw_event(e, true);
+                    },
+                    false,
+                );
 
-                    canvas.addEventListener("touchstart", (e) => {
+                canvas.addEventListener(
+                    "touchstart",
+                    (e) => {
                         e.preventDefault();
 
                         e.clientX = e.changedTouches[0].clientX;
                         e.clientY = e.changedTouches[0].clientY;
 
                         this.move_event(e);
-                    });
+                    },
+                    false,
+                );
 
-                    canvas.addEventListener("touchleave", (e) => {
+                canvas.addEventListener(
+                    "touchend",
+                    (e) => {
                         e.preventDefault();
 
                         e.clientX = e.changedTouches[0].clientX;
@@ -126,8 +151,9 @@
 
                         this.push_state();
                         this.move_event(e);
-                    });
-                }
+                    },
+                    false,
+                );
 
                 // add controls
                 const container = document.createElement("div");
@@ -192,8 +218,8 @@
         }
 
         /// Draw on the canvas (from event)
-        draw_event(e) {
-            if (e.buttons !== 1) return;
+        draw_event(e, mobile = false) {
+            if (e.buttons !== 1 && mobile === false) return;
             const rect = this.#ctx.canvas.getBoundingClientRect();
 
             const x = e.clientX - rect.left;
