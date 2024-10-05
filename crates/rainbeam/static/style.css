@@ -1299,6 +1299,7 @@ canvas {
     border: solid 2px var(--color-primary);
     border-radius: var(--radius);
     box-shadow: 0 0 4px var(--color-shadow);
+    max-width: 100%;
 }
 
 /* utility */

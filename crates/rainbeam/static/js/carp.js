@@ -176,19 +176,44 @@
                 media_container.classList.add("gap-2");
                 container.appendChild(media_container);
 
+                // color picker
                 const color_picker = document.createElement("input");
                 color_picker.type = "color";
+                color_picker.style.display = "none";
                 control_container.appendChild(color_picker);
 
                 color_picker.addEventListener("change", (e) => {
                     this.set_old_color(this.COLOR);
                     this.COLOR = e.target.value;
+                    color_button.style.color = this.COLOR;
                 });
 
+                const color_button = document.createElement("button");
+                color_button.classList.add("primary");
+                color_button.title = "Select color";
+                color_button.innerHTML = `<svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 16 16"
+    width="16"
+    height="16"
+    class="icon"
+>
+    <path
+        d="M11.134 1.535c.7-.509 1.416-.942 2.076-1.155.649-.21 1.463-.267 2.069.34.603.601.568 1.411.368 2.07-.202.668-.624 1.39-1.125 2.096-1.011 1.424-2.496 2.987-3.775 4.249-1.098 1.084-2.132 1.839-3.04 2.3a3.744 3.744 0 0 1-1.055 3.217c-.431.431-1.065.691-1.657.861-.614.177-1.294.287-1.914.357A21.151 21.151 0 0 1 .797 16H.743l.007-.75H.749L.742 16a.75.75 0 0 1-.743-.742l.743-.008-.742.007v-.054a21.25 21.25 0 0 1 .13-2.284c.067-.647.187-1.287.358-1.914.17-.591.43-1.226.86-1.657a3.746 3.746 0 0 1 3.227-1.054c.466-.893 1.225-1.907 2.314-2.982 1.271-1.255 2.833-2.75 4.245-3.777ZM1.62 13.089c-.051.464-.086.929-.104 1.395.466-.018.932-.053 1.396-.104a10.511 10.511 0 0 0 1.668-.309c.526-.151.856-.325 1.011-.48a2.25 2.25 0 1 0-3.182-3.182c-.155.155-.329.485-.48 1.01a10.515 10.515 0 0 0-.309 1.67Zm10.396-10.34c-1.224.89-2.605 2.189-3.822 3.384l1.718 1.718c1.21-1.205 2.51-2.597 3.387-3.833.47-.662.78-1.227.912-1.662.134-.444.032-.551.009-.575h-.001V1.78c-.014-.014-.113-.113-.548.027-.432.14-.995.462-1.655.942Zm-4.832 7.266-.001.001a9.859 9.859 0 0 0 1.63-1.142L7.155 7.216a9.7 9.7 0 0 0-1.161 1.607c.482.302.889.71 1.19 1.192Z"
+    ></path>
+</svg>`;
+
+                color_button.addEventListener("click", () => {
+                    color_picker.click();
+                });
+
+                control_container.appendChild(color_button);
+
+                // stroke size selector
                 const stroke_range = document.createElement("input");
                 stroke_range.type = "range";
-                stroke_range.setAttribute("min", "2");
-                stroke_range.setAttribute("max", "10");
+                stroke_range.setAttribute("min", "1");
+                stroke_range.setAttribute("max", "25");
                 stroke_range.setAttribute("step", "1");
                 stroke_range.value = "2";
                 control_container.appendChild(stroke_range);
@@ -198,6 +223,7 @@
                     this.STROKE_SIZE = e.target.value;
                 });
 
+                // media buttons
                 const download_button = document.createElement("button");
                 download_button.title = "Download graph";
                 download_button.innerHTML = `<svg
@@ -216,6 +242,7 @@
 </svg>`;
 
                 media_container.appendChild(download_button);
+                download_button.setAttribute("type", "button");
                 download_button.addEventListener("click", () => {
                     this.download();
                 });
@@ -238,6 +265,7 @@
 </svg>`;
 
                 media_container.appendChild(upload_button);
+                upload_button.setAttribute("type", "button");
                 upload_button.addEventListener("click", () => {
                     const input = document.createElement("input");
                     input.type = "file";
@@ -429,7 +457,7 @@
         /// Download image as `.carpgraph`
         download() {
             const string = this.as_string();
-            const blob = new Blob([string], { type: "text/plain" });
+            const blob = new Blob([string], { type: "image/carpgraph" });
             const url = URL.createObjectURL(blob);
 
             const anchor = document.createElement("a");

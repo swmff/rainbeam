@@ -100,6 +100,14 @@
                     {% if !lock_profile %}
                     {% if (require_account && profile.is_some()) | (disallow_anonymous && profile.is_some()) | (!require_account && !disallow_anonymous) %}
                     <form id="question_form" class="flex flex-col gap-2">
+                        <div id="carp_context"></div>
+                        <input
+                            name="carp_context"
+                            id="carp_content"
+                            type="text"
+                            style="display: none"
+                        />
+
                         <textarea
                             class="w-full"
                             placeholder="Type your question!"
@@ -132,7 +140,13 @@
                             {% endif %}
                             </div>
 
-                            <button class="round-lg primary bold">Ask</button>
+                            <div class="flex gap-2">
+                                {% if other.metadata.is_true("sparkler:allow_drawings") %}
+                                <button class="round-lg" onclick="attach_carp(event)" type="button">Draw</button>
+                                {% endif %}
+                                
+                                <button class="round-lg primary bold">Ask</button>
+                            </div>
                         </div>
                     </form>
                     {% else %}
@@ -204,6 +218,10 @@
                 }
 
                 // questions
+                setTimeout(() => {
+                    trigger("questions:carp");
+                }, 150);
+
                 document
                     .getElementById("question_form")
                     .addEventListener("submit", (e) => {
@@ -213,9 +231,17 @@
                             "{{ other.id }}",
                             e.target.content.value,
                             (e.target.anonymous || { checked: false }).checked,
+                            reply_intent || "",
+                            e.target.carp_content.value.length != 0
+                                ? e.target.carp_content.value
+                                : "",
                         ]).then((_) => {
                             // reset if successful
                             e.target.reset();
+
+                            if (globalThis.sammy) {
+                                globalThis.sammy.clear();
+                            }
                         });
                     });
             })();
