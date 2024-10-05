@@ -23,6 +23,7 @@
         #color_old = "#000000";
 
         LINES = [];
+        HISTORY = [];
         #line_store = [];
 
         onedit;
@@ -63,6 +64,7 @@
 
             // push
             this.LINES.push(this.#line_store);
+            this.HISTORY.push(this.LINES);
             this.#line_store = [];
 
             if (this.onedit) {
@@ -158,12 +160,25 @@
                 // add controls
                 const container = document.createElement("div");
                 container.classList.add("flex");
+                container.classList.add("justify-between");
+                container.classList.add("flex-wrap");
                 container.classList.add("gap-4");
+                container.classList.add("carp:toolbar");
                 this.#element.appendChild(container);
+
+                const control_container = document.createElement("div");
+                control_container.classList.add("flex");
+                control_container.classList.add("gap-4");
+                container.appendChild(control_container);
+
+                const media_container = document.createElement("div");
+                media_container.classList.add("flex");
+                media_container.classList.add("gap-2");
+                container.appendChild(media_container);
 
                 const color_picker = document.createElement("input");
                 color_picker.type = "color";
-                container.appendChild(color_picker);
+                control_container.appendChild(color_picker);
 
                 color_picker.addEventListener("change", (e) => {
                     this.set_old_color(this.COLOR);
@@ -176,13 +191,78 @@
                 stroke_range.setAttribute("max", "10");
                 stroke_range.setAttribute("step", "1");
                 stroke_range.value = "2";
-                container.appendChild(stroke_range);
+                control_container.appendChild(stroke_range);
 
                 stroke_range.addEventListener("change", (e) => {
                     this.set_old_stroke_size(this.STROKE_SIZE);
                     this.STROKE_SIZE = e.target.value;
                 });
+
+                const download_button = document.createElement("button");
+                download_button.title = "Download graph";
+                download_button.innerHTML = `<svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 16 16"
+    width="16"
+    height="16"
+    class="icon"
+>
+    <path
+        d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14Z"
+    ></path>
+    <path
+        d="M7.25 7.689V2a.75.75 0 0 1 1.5 0v5.689l1.97-1.969a.749.749 0 1 1 1.06 1.06l-3.25 3.25a.749.749 0 0 1-1.06 0L4.22 6.78a.749.749 0 1 1 1.06-1.06l1.97 1.969Z"
+    ></path>
+</svg>`;
+
+                media_container.appendChild(download_button);
+                download_button.addEventListener("click", () => {
+                    this.download();
+                });
+
+                const upload_button = document.createElement("button");
+                upload_button.title = "Upload graph";
+                upload_button.innerHTML = `<svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 16 16"
+    width="16"
+    height="16"
+    class="icon"
+>
+    <path
+        d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14Z"
+    ></path>
+    <path
+        d="M11.78 4.72a.749.749 0 1 1-1.06 1.06L8.75 3.811V9.5a.75.75 0 0 1-1.5 0V3.811L5.28 5.78a.749.749 0 1 1-1.06-1.06l3.25-3.25a.749.749 0 0 1 1.06 0l3.25 3.25Z"
+    ></path>
+</svg>`;
+
+                media_container.appendChild(upload_button);
+                upload_button.addEventListener("click", () => {
+                    const input = document.createElement("input");
+                    input.type = "file";
+                    input.accept = ".carpgraph";
+
+                    input.addEventListener("change", async () => {
+                        if (input.files.length === 0) {
+                            return;
+                        }
+
+                        const file = input.files[0];
+                        const text = await file.text();
+                        this.from_string(text);
+                    });
+
+                    input.click();
+                    input.remove();
+                });
             }
+        }
+
+        /// Resize the canvas
+        resize(size) {
+            this.#ctx.canvas.width = size.x;
+            this.#ctx.canvas.height = size.y;
         }
 
         /// Clear the canvas
@@ -284,12 +364,34 @@
         /// Export lines as string
         as_string() {
             this.push_state();
-            return JSON.stringify(this.LINES);
+            return JSON.stringify({
+                // Canvas info
+                i: {
+                    // Canvas width
+                    w: this.#ctx.canvas.width,
+                    // Canvas height
+                    h: this.#ctx.canvas.height,
+                },
+                // Canvas data
+                d: this.LINES,
+            });
         }
 
         /// Import string as lines
         from_string(input) {
-            this.LINES = JSON.parse(input);
+            let parsed = JSON.parse(input);
+
+            if (Array.isArray(parsed)) {
+                // legacy format
+                parsed = { d: parsed };
+            } else {
+                // new format, includes width and height
+                if (parsed.i && parsed.i.w && parsed.i.h) {
+                    this.resize({ x: parsed.i.w, y: parsed.i.h });
+                }
+            }
+
+            this.LINES = parsed.d;
             let rendered = [];
 
             // lines format:
@@ -322,6 +424,22 @@
                     this.draw({ x, y }, true);
                 }
             }
+        }
+
+        /// Download image as `.carpgraph`
+        download() {
+            const string = this.as_string();
+            const blob = new Blob([string], { type: "text/plain" });
+            const url = URL.createObjectURL(blob);
+
+            const anchor = document.createElement("a");
+            anchor.href = url;
+            anchor.setAttribute("download", "image.carpgraph");
+            document.body.appendChild(anchor);
+            anchor.click();
+            anchor.remove();
+
+            URL.revokeObjectURL(url);
         }
     }
 })();

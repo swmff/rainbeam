@@ -1146,7 +1146,7 @@ impl Database {
         }
 
         // check media
-        if props.media.len() > (64 * 128) {
+        if props.media.len() > (64 * 512) {
             return Err(DatabaseError::ContentTooLong);
         }
 

@@ -174,6 +174,15 @@ pub async fn about_request(jar: CookieJar, State(database): State<Database>) -> 
 }
 
 #[derive(Template)]
+#[template(path = "fun/carp.html")]
+struct CarpTemplate {}
+
+/// GET /site/fun/carp
+pub async fn carp_request() -> impl IntoResponse {
+    Html(CarpTemplate {}.render().unwrap())
+}
+
+#[derive(Template)]
 #[template(path = "login.html")]
 struct LoginTemplate {
     config: Config,
@@ -1425,6 +1434,7 @@ pub async fn routes(database: Database) -> Router {
         .route("/", get(homepage_request))
         .route("/site/about", get(about_request))
         .route("/site/report", get(report_request))
+        .route("/site/fun/carp", get(carp_request))
         // inbox
         .route("/inbox", get(inbox_request))
         .route("/inbox/posts", get(public_posts_timeline_request))
