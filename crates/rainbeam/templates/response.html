@@ -19,14 +19,8 @@ block head %}
 <meta name="twitter:card" content="summary" />
 
 <!-- prettier-ignore -->
-{% if question.content.len() > 25 %}
-{% let text = question.content[..25] %}
-<meta name="og:title" content="@{{ response.author.username }} answered: {{ text }}..." />
-<meta name="twitter:title" content="@{{ response.author.username }} answered: {{ text }}..." />
-{% else %}
 <meta name="og:title" content="@{{ response.author.username }} answered: {{ question.content }}" />
 <meta name="twitter:title" content="@{{ response.author.username }} answered: {{ question.content }}" />
-{% endif %}
 
 {% if response.content.len() > 50 %}
 {% let text = response.content[..50] %}
