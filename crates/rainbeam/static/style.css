@@ -986,6 +986,31 @@ dialog::backdrop {
     font-weight: 500;
 }
 
+.response_reply {
+    cursor: pointer;
+    position: relative;
+}
+
+.response_reply .shield {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: var(--radius);
+    backdrop-filter: blur(2px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0%;
+    transition: opacity 0.15s;
+}
+
+.response_reply .shield:hover {
+    opacity: 100%;
+    text-decoration: none;
+}
+
 .thread_line {
     display: block;
     border-radius: var(--radius);

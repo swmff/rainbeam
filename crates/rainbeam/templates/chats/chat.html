@@ -350,6 +350,10 @@ endblock %} {% block nav_left %}
             };
 
             const poll = () => {
+                if (!window.location.pathname.startsWith("/chats")) {
+                    return;
+                }
+
                 if (document.getElementById("previous_button")) {
                     // we're exploring old messages, no need to poll
                     console.log("poll cancelled");
