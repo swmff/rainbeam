@@ -14,14 +14,31 @@ use crate::model::{Circle, CircleMetadata, DatabaseError, FullResponse, Membersh
 use super::PaginatedQuery;
 
 /// Clean profile metadata
-fn clean_metadata(metadata: &CircleMetadata) -> String {
+pub fn remove_tags(input: &str) -> String {
     Builder::default()
         .rm_tags(&["img", "a", "span", "p", "h1", "h2", "h3", "h4", "h5", "h6"])
-        .clean(&serde_json::to_string(&metadata).unwrap())
+        .clean(input)
         .to_string()
         .replace("&lt;", "<")
         .replace("&gt;", ">")
         .replace("&amp;", "&")
+        .replace("</script>", "</not-script")
+}
+
+/// Clean profile metadata
+pub fn clean_metadata(metadata: &CircleMetadata) -> String {
+    // remove stupid characters
+    let mut metadata = metadata.to_owned();
+
+    for field in metadata.kv.clone() {
+        metadata.kv.insert(
+            field.0.to_string(),
+            field.1.replace("<", "&lt;").replace(">", "&gt;"),
+        );
+    }
+
+    // ...
+    remove_tags(&serde_json::to_string(&metadata).unwrap())
 }
 
 #[derive(Template)]
@@ -162,7 +179,7 @@ struct ProfileTemplate {
     is_owner: bool,
 }
 
-/// GET /circles/@:name
+/// GET /+:name
 pub async fn profile_request(
     jar: CookieJar,
     Path(name): Path<String>,
@@ -190,8 +207,13 @@ pub async fn profile_request(
         0
     };
 
+    let circle = match database.get_circle_by_name(name.clone()).await {
+        Ok(ua) => ua,
+        Err(_) => return Html(DatabaseError::NotFound.to_html(database)),
+    };
+
     let inbox_count = match database
-        .get_questions_by_recipient(format!("@{name}"))
+        .get_questions_by_recipient(format!("circle:{}", circle.id))
         .await
     {
         Ok(unread) => unread.len(),
@@ -205,11 +227,6 @@ pub async fn profile_request(
             .await
     } else {
         0
-    };
-
-    let circle = match database.get_circle_by_name(name.clone()).await {
-        Ok(ua) => ua,
-        Err(_) => return Html(DatabaseError::NotFound.to_html(database)),
     };
 
     let mut responses = match database
@@ -390,8 +407,13 @@ pub async fn memberlist_request(
         0
     };
 
+    let circle = match database.get_circle_by_name(name.clone()).await {
+        Ok(ua) => ua,
+        Err(_) => return Html(DatabaseError::NotFound.to_html(database)),
+    };
+
     let inbox_count = match database
-        .get_questions_by_recipient(format!("@{name}"))
+        .get_questions_by_recipient(format!("circle:{}", circle.id))
         .await
     {
         Ok(unread) => unread.len(),
@@ -405,11 +427,6 @@ pub async fn memberlist_request(
             .await
     } else {
         0
-    };
-
-    let circle = match database.get_circle_by_name(name.clone()).await {
-        Ok(ua) => ua,
-        Err(_) => return Html(DatabaseError::NotFound.to_html(database)),
     };
 
     let members = match database.get_circle_memberships(circle.id.to_owned()).await {
@@ -551,8 +568,13 @@ pub async fn accept_invite_request(
         0
     };
 
+    let circle = match database.get_circle_by_name(name.clone()).await {
+        Ok(ua) => ua,
+        Err(_) => return Html(DatabaseError::NotFound.to_html(database)),
+    };
+
     let inbox_count = match database
-        .get_questions_by_recipient(format!("@{name}"))
+        .get_questions_by_recipient(format!("circle:{}", circle.id))
         .await
     {
         Ok(unread) => unread.len(),
@@ -566,11 +588,6 @@ pub async fn accept_invite_request(
             .await
     } else {
         0
-    };
-
-    let circle = match database.get_circle_by_name(name.clone()).await {
-        Ok(ua) => ua,
-        Err(_) => return Html(DatabaseError::NotFound.to_html(database)),
     };
 
     let posting_as = if let Some(ref ua) = auth_user {
@@ -760,7 +777,7 @@ pub async fn inbox_request(
     }
 
     let questions = match database
-        .get_questions_by_recipient(format!("@{name}"))
+        .get_questions_by_recipient(format!("circle:{}", circle.id))
         .await
     {
         Ok(unread) => unread,

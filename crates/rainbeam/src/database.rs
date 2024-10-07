@@ -1152,6 +1152,7 @@ impl Database {
 
         if !props.media.is_empty() {
             if !props.media.starts_with("https://") && !props.media.starts_with("--CARP") {
+                dbg!(1);
                 return Err(DatabaseError::Other);
             }
         }
@@ -1160,70 +1161,44 @@ impl Database {
         // "@" is the recipient we use for global questions (questions anybody can respond to)
         let tag = Database::anonymous_tag(&author);
         if props.recipient != "@" {
-            if props.recipient.starts_with("@") {
+            if props.recipient.starts_with("circle:") {
                 // circle
-                let circle_name = props.recipient.replacen("@", "", 1);
+                let circle_id = props.recipient.replacen("circle:", "", 1);
 
-                let circle = match self.get_circle_by_name(circle_name).await {
+                let circle = match self.get_circle(circle_id).await {
                     Ok(c) => c,
                     Err(e) => return Err(e),
                 };
 
-                let profile_locked = circle
-                    .metadata
-                    .kv
-                    .get("sparkler:lock_profile")
-                    .unwrap_or(&"false".to_string())
-                    == "true";
-
-                let block_anonymous = circle
-                    .metadata
-                    .kv
-                    .get("sparkler:disallow_anonymous")
-                    .unwrap_or(&"false".to_string())
-                    == "true";
+                let profile_locked = circle.metadata.is_true("sparkler:lock_profile");
+                let block_anonymous = circle.metadata.is_true("sparkler:disallow_anonymous");
 
                 if profile_locked {
-                    return Err(DatabaseError::NotAllowed);
+                    return Err(DatabaseError::ProfileLocked);
                 }
 
                 if (block_anonymous == true) && (tag.0 == true) {
-                    return Err(DatabaseError::NotAllowed);
+                    return Err(DatabaseError::AnonymousNotAllowed);
                 }
             } else {
                 // profile
-                let recipient = match self
-                    .auth
-                    .get_profile_by_username(props.recipient.clone())
-                    .await
-                {
+                let recipient = match self.get_profile(props.recipient.clone()).await {
                     Ok(ua) => ua,
-                    Err(_) => return Err(DatabaseError::NotFound),
+                    Err(e) => return Err(e),
                 };
 
-                let profile_locked = recipient
-                    .metadata
-                    .kv
-                    .get("sparkler:lock_profile")
-                    .unwrap_or(&"false".to_string())
-                    == "true";
-
-                let block_anonymous = recipient
-                    .metadata
-                    .kv
-                    .get("sparkler:disallow_anonymous")
-                    .unwrap_or(&"false".to_string())
-                    == "true";
+                let profile_locked = recipient.metadata.is_true("sparkler:lock_profile");
+                let block_anonymous = recipient.metadata.is_true("sparkler:disallow_anonymous");
 
                 if profile_locked {
-                    return Err(DatabaseError::NotAllowed);
+                    return Err(DatabaseError::ProfileLocked);
                 }
 
                 if (block_anonymous == true) && (tag.0 == true) {
-                    return Err(DatabaseError::NotAllowed);
+                    return Err(DatabaseError::AnonymousNotAllowed);
                 }
 
-                if tag.0 == false {
+                if !tag.0 {
                     let author = match self.get_profile(author.clone()).await {
                         Ok(ua) => ua,
                         Err(e) => return Err(e),
@@ -1236,7 +1211,7 @@ impl Database {
                         .0;
 
                     if relationship == RelationshipStatus::Blocked {
-                        return Err(DatabaseError::NotAllowed);
+                        return Err(DatabaseError::Blocked);
                     }
                 }
 
@@ -1266,9 +1241,9 @@ impl Database {
 
         // check author permissions
         if tag.0 == false {
-            let author = match self.auth.get_profile_by_username(author.clone()).await {
+            let author = match self.get_profile(author.clone()).await {
                 Ok(ua) => ua,
-                Err(_) => return Err(DatabaseError::NotFound),
+                Err(e) => return Err(e),
             };
 
             if author.group == -1 {
@@ -1305,7 +1280,7 @@ impl Database {
             },
             recipient: match self.get_profile(props.recipient.clone()).await {
                 Ok(ua) => ua,
-                Err(_) => anonymous_profile("anonymous".to_string()),
+                Err(_) => anonymous_profile(format!("anonymous.{}", props.recipient)), // future note: this is anonymous because the recipient will be anonymous for cirles
             },
             content: props.content.trim().to_string(),
             id: utility::random_id(),
@@ -1373,11 +1348,11 @@ impl Database {
 
         // check username
         if (user.id != question.recipient.id) && (user.id != question.author.id) {
-            if question.recipient.id.starts_with("@") && question.recipient.id != "@" {
+            if question.recipient.id.starts_with("circle:") && question.recipient.id != "@" {
                 // circles
-                let circle_name = question.recipient.id.replacen("@", "", 1);
+                let circle_id = question.recipient.id.replacen("circle:", "", 1);
 
-                let circle = match self.get_circle_by_name(circle_name).await {
+                let circle = match self.get_circle(circle_id).await {
                     Ok(c) => c,
                     Err(e) => return Err(e),
                 };
@@ -2234,7 +2209,7 @@ impl Database {
         if props.question != "0" {
             // normal questions
             if question.recipient.username != "@" {
-                if !question.recipient.id.starts_with("@") {
+                if !question.recipient.id.starts_with("circle:") {
                     if question.recipient.id != author.id {
                         // cannot respond to a question not asked to us
                         return Err(DatabaseError::NotAllowed);
@@ -2249,9 +2224,9 @@ impl Database {
                     }
                 } else {
                     // circles
-                    let circle_name = question.recipient.id.replacen("@", "", 1);
+                    let circle_id = question.recipient.id.replacen("circle:", "", 1);
 
-                    let circle = match self.get_circle_by_name(circle_name).await {
+                    let circle = match self.get_circle(circle_id).await {
                         Ok(c) => c,
                         Err(e) => return Err(e),
                     };

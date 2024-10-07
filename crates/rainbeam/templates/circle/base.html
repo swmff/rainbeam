@@ -513,30 +513,30 @@
 {% endif %} {% endif %} {% endif %}
 
 <script>
+    globalThis.search = new URLSearchParams(window.location.search);
+    globalThis.reply_intent = search.get("reply_intent");
+
+    if (reply_intent) {
+        const form = document.getElementById("question_form");
+
+        if (form) {
+            form.innerHTML += 
+                `<p class="fade">Replying to <a href="/response/${reply_intent}" target="_blank">${reply_intent.substring(0, 10)}</a> (<a href="?" class="red">cancel</a>)</p>`;
+        }
+    }
+    
     document.getElementById("question_form").addEventListener("submit", (e) => {
         e.preventDefault();
-        fetch("/api/v1/questions", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                recipient: "@{{ circle.name }}",
-                content: e.target.content.value,
-                anonymous: (e.target.anonymous || { checked: true }).checked,
-            }),
-        })
-            .then((res) => res.json())
-            .then((res) => {
-                trigger("app:shout", [
-                    res.success ? "tip" : "caution",
-                    res.message || "Question asked!",
-                ]);
-
-                if (res.success === true) {
-                    e.target.reset();
-                }
-            });
+        trigger("questions:create", [
+            "circle:{{ circle.id }}",
+            e.target.content.value,
+            (e.target.anonymous || { checked: false }).checked,
+            reply_intent || "",
+            ""
+        ]).then((_) => {
+            // reset if successful
+            e.target.reset();
+        });
     });
 </script>
 

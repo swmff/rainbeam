@@ -274,6 +274,30 @@ pub struct CircleMetadata {
     pub kv: HashMap<String, String>,
 }
 
+impl CircleMetadata {
+    /// Check if a value exists in `kv` (and isn't empty)
+    pub fn exists(&self, key: &str) -> bool {
+        if let Some(ref value) = self.kv.get(key) {
+            if value.is_empty() {
+                return false;
+            }
+
+            return true;
+        }
+
+        false
+    }
+
+    /// Check if a value in `kv` is "true"
+    pub fn is_true(&self, key: &str) -> bool {
+        if !self.exists(key) {
+            return false;
+        }
+
+        self.kv.get(key).unwrap() == "true"
+    }
+}
+
 /// The status of a user's membership in a [`FeedList`]
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub enum ListMembershipStatus {
@@ -454,14 +478,17 @@ pub struct ChatAdd {
 /// General API errors
 #[derive(Debug)]
 pub enum DatabaseError {
+    AnonymousNotAllowed,
     ContentTooShort,
     ContentTooLong,
+    ProfileLocked,
     InvalidName,
     NotAllowed,
     ValueError,
     OutOfTime,
     NotFound,
     Filtered,
+    Blocked,
     Other,
 }
 
@@ -469,8 +496,12 @@ impl DatabaseError {
     pub fn to_string(&self) -> String {
         use DatabaseError::*;
         match self {
+            AnonymousNotAllowed => {
+                String::from("This profile is not currently accepting anonymous questions.")
+            }
             ContentTooShort => String::from("Content too short!"),
             ContentTooLong => String::from("Content too long!"),
+            ProfileLocked => String::from("This profile is not currently accepting questions."),
             InvalidName => String::from("This name cannot be used!"),
             NotAllowed => String::from("You are not allowed to do this!"),
             ValueError => String::from("One of the field values given is invalid!"),
@@ -481,6 +512,7 @@ impl DatabaseError {
                 String::from("Nothing with this path exists or you do not have access to it!")
             }
             Filtered => String::from("This content has been blocked by a content filter."),
+            Blocked => String::from("You're blocked."),
             _ => String::from("An unspecified error has occured"),
         }
     }

@@ -299,7 +299,8 @@ pub fn color_escape(color: &&&String) -> String {
             .replace(">", "%gt;")
             .replace("}", "")
             .replace("{", "")
-            .replace("url(\"", "url(\"/api/util/ext/image?img="),
+            .replace("url(\"", "url(\"/api/util/ext/image?img=")
+            .replace("url(https://", "url(/api/util/ext/image?img=https://"),
     )
 }
 

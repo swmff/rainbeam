@@ -442,7 +442,11 @@
                     rendered.push(point);
 
                     if (point[2]) {
-                        this.COLOR = point[2] || "#000000";
+                        if (point[2].startsWith("#")) {
+                            this.COLOR = point[2] || "#000000";
+                        } else {
+                            this.STROKE_SIZE = point[2] || 2;
+                        }
                     }
 
                     if (point[3]) {
