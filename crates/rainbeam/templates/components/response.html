@@ -4,48 +4,38 @@ response = response.1.clone() %}
 
 <div class="flex flex-col gap-2 w-full" id="response:{{ response.id }}">
     {% if let Some(response) = reply %}
-    <!-- prettier-ignore -->
-    {% if !response.1.reply.is_empty() %}
-    <a href="/response/{{ response.1.id }}" title="Unfold thread">
-        Long thread
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 16 16"
-            width="16"
-            height="16"
-            aria-label="Unfold symbol"
-            class="icon"
-        >
-            <path
-                d="m8.177.677 2.896 2.896a.25.25 0 0 1-.177.427H8.75v1.25a.75.75 0 0 1-1.5 0V4H5.104a.25.25 0 0 1-.177-.427L7.823.677a.25.25 0 0 1 .354 0ZM7.25 10.75a.75.75 0 0 1 1.5 0V12h2.146a.25.25 0 0 1 .177.427l-2.896 2.896a.25.25 0 0 1-.354 0l-2.896-2.896A.25.25 0 0 1 5.104 12H7.25v-1.25Zm-5-2a.75.75 0 0 0 0-1.5h-.5a.75.75 0 0 0 0 1.5h.5ZM6 8a.75.75 0 0 1-.75.75h-.5a.75.75 0 0 1 0-1.5h.5A.75.75 0 0 1 6 8Zm2.25.75a.75.75 0 0 0 0-1.5h-.5a.75.75 0 0 0 0 1.5h.5ZM12 8a.75.75 0 0 1-.75.75h-.5a.75.75 0 0 1 0-1.5h.5A.75.75 0 0 1 12 8Zm2.25.75a.75.75 0 0 0 0-1.5h-.5a.75.75 0 0 0 0 1.5h.5Z"
-            ></path>
-        </svg>
-    </a>
-    {% endif %} {% endif %}
+    <div class="response_reply">
+        <!-- prettier-ignore -->
+        {% let question = response.0.clone() %}
+        {% let comment_count = response.2 %}
+        {% let reaction_count = response.3 %}
+        {% let response = response.1.clone() %}
+        {% include "components/response_inner.html" %}
+    </div>
+    {% endif %}
 
     <div class="flex gap-2 w-full">
-        {% if let Some(response) = reply %} {% if !response.1.reply.is_empty()
-        %}
-        <div class="thread_line"></div>
-        {% endif %} {% endif %}
-
-        <div class="flex flex-col gap-2 w-full">
-            {% if let Some(response) = reply %}
-            <div class="response_reply">
-                <!-- prettier-ignore -->
-                {% let question = response.0.clone() %}
-                {% let comment_count = response.2 %}
-                {% let reaction_count = response.3 %}
-                {% let response = response.1.clone() %}
-                {% include "components/response_inner.html" %}
-            </div>
-            {% endif %}
-
-            <div class="flex gap-2">
-                {% if reply.is_some() %}
-                <div class="thread_line"></div>
-                {% endif %} {% include "components/response_inner.html" %}
-            </div>
+        {% if reply.is_some() %}
+        <div class="flex flex-col">
+            <div
+                class="thread_line"
+                style="
+                    width: 5px;
+                    height: 40px;
+                    border-bottom-left-radius: 0;
+                    border-bottom-right-radius: 0;
+                "
+            ></div>
+            <div
+                class="thread_line"
+                style="
+                    width: 20px;
+                    height: 5px;
+                    border-top-left-radius: 0;
+                    margin-top: -1px;
+                "
+            ></div>
         </div>
+        {% endif %} {% include "components/response_inner.html" %}
     </div>
 </div>
