@@ -1512,6 +1512,7 @@ pub async fn routes(database: Database) -> Router {
         .route("/+r/:id", get(api::responses::expand_request))
         .route("/+c/:id", get(api::comments::expand_request))
         .route("/+u/:id", get(api::profiles::expand_request))
+        .route("/+i/:ip", get(api::profiles::expand_ip_request))
         // ...
         .with_state(database)
 }

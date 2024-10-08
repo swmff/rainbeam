@@ -283,6 +283,55 @@ impl Database {
             .await
     }
 
+    /// Get a [`Profile`] by their IP
+    ///
+    /// # Arguments:
+    /// * `hashed` - `String` of the profile's IP
+    pub async fn get_profile_by_ip(&self, ip: String) -> Result<Profile> {
+        // fetch from database
+        let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+            "SELECT * FROM \"xprofiles\" WHERE \"ips\" LIKE ?"
+        } else {
+            "SELECT * FROM \"xprofiles\" WHERE \"ips\" LIKE $1"
+        };
+
+        let c = &self.base.db.client;
+        let row = match sqlquery(query)
+            .bind::<&String>(&format!("%\"{ip}\"%"))
+            .fetch_one(c)
+            .await
+        {
+            Ok(u) => self.base.textify_row(u, Vec::new()).0,
+            Err(_) => return Err(AuthError::Other),
+        };
+
+        // return
+        Ok(Profile {
+            id: row.get("id").unwrap().to_string(),
+            username: row.get("username").unwrap().to_string(),
+            password: row.get("password").unwrap().to_string(),
+            salt: row.get("salt").unwrap_or(&"".to_string()).to_string(),
+            tokens: match serde_json::from_str(row.get("tokens").unwrap()) {
+                Ok(m) => m,
+                Err(_) => return Err(AuthError::ValueError),
+            },
+            ips: match serde_json::from_str(row.get("ips").unwrap()) {
+                Ok(m) => m,
+                Err(_) => return Err(AuthError::ValueError),
+            },
+            metadata: match serde_json::from_str(row.get("metadata").unwrap()) {
+                Ok(m) => m,
+                Err(_) => return Err(AuthError::ValueError),
+            },
+            badges: match serde_json::from_str(row.get("badges").unwrap()) {
+                Ok(m) => m,
+                Err(_) => return Err(AuthError::ValueError),
+            },
+            group: row.get("gid").unwrap().parse::<i32>().unwrap_or(0),
+            joined: row.get("joined").unwrap().parse::<u128>().unwrap(),
+        })
+    }
+
     /// Get a user by their unhashed secondary token
     ///
     /// # Arguments:

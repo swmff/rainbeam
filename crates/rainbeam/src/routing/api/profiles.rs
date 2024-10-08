@@ -1,5 +1,6 @@
 use crate::database::Database;
 use crate::model::{DatabaseError, RelationshipStatus};
+use axum::http::{HeaderMap, HeaderValue};
 use axum_extra::extract::CookieJar;
 use hcaptcha::Hcaptcha;
 use std::{fs::File, io::Read};
@@ -52,6 +53,35 @@ pub async fn expand_request(
     State(database): State<Database>,
 ) -> impl IntoResponse {
     match database.get_profile(id).await {
+        Ok(r) => Redirect::to(&format!("/@{}", r.username)),
+        Err(_) => Redirect::to("/"),
+    }
+}
+
+/// Redirect an IP to a full username
+pub async fn expand_ip_request(
+    jar: CookieJar,
+    Path(ip): Path<String>,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    // get user from token
+    match jar.get("__Secure-Token") {
+        Some(c) => {
+            if let Err(_) = database
+                .auth
+                .get_profile_by_unhashed(c.value_trimmed().to_string())
+                .await
+            {
+                return Redirect::to("/");
+            }
+        }
+        None => {
+            return Redirect::to("/");
+        }
+    };
+
+    // return
+    match database.auth.get_profile_by_ip(ip).await {
         Ok(r) => Redirect::to(&format!("/@{}", r.username)),
         Err(_) => Redirect::to("/"),
     }
@@ -227,7 +257,8 @@ pub async fn banner_request(
 
 /// Report a user profile
 pub async fn report_request(
-    Path(username): Path<String>,
+    headers: HeaderMap,
+    Path(input): Path<String>,
     State(database): State<Database>,
     Json(req): Json<super::CreateReport>,
 ) -> impl IntoResponse {
@@ -244,24 +275,36 @@ pub async fn report_request(
     }
 
     // get user
-    if let Err(_) = database
-        .auth
-        .get_profile_by_username(username.clone())
-        .await
-    {
-        return Json(DefaultReturn {
-            success: false,
-            message: DatabaseError::NotFound.to_string(),
-            payload: (),
-        });
+    let profile = match database.get_profile(input.clone()).await {
+        Ok(p) => p,
+        Err(e) => {
+            return Json(DefaultReturn {
+                success: false,
+                message: e.to_string(),
+                payload: (),
+            })
+        }
     };
 
+    // get real ip
+    let real_ip = if let Some(ref real_ip_header) = database.server_options.real_ip_header {
+        headers
+            .get(real_ip_header.to_owned())
+            .unwrap_or(&HeaderValue::from_static(""))
+            .to_str()
+            .unwrap_or("")
+            .to_string()
+    } else {
+        String::new()
+    };
+
+    // report
     match database
         .auth
         .create_notification(NotificationCreate {
-            title: format!("**PROFILE REPORT**: [/@{username}](/@{username})"),
-            content: req.content,
-            address: format!("/@{username}"),
+            title: format!("**PROFILE REPORT**: [/@{input}](/+u/{})", profile.id),
+            content: format!("{}\n\n***\n\n[{real_ip}](/+i/{real_ip})", req.content),
+            address: format!("/@{input}"),
             recipient: "*".to_string(), // all staff
         })
         .await

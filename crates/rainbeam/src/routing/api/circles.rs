@@ -1,5 +1,6 @@
 use crate::database::Database;
 use crate::model::{CircleCreate, DatabaseError, EditCircleMetadata, MembershipStatus};
+use axum::http::{HeaderMap, HeaderValue};
 use hcaptcha::Hcaptcha;
 use authbeam::model::{NotificationCreate, ProfileMetadata};
 use databeam::DefaultReturn;
@@ -395,6 +396,7 @@ pub async fn delete_request(
 
 /// Report a circle
 pub async fn report_request(
+    headers: HeaderMap,
     Path(id): Path<String>,
     State(database): State<Database>,
     Json(req): Json<super::CreateReport>,
@@ -423,11 +425,24 @@ pub async fn report_request(
         }
     };
 
+    // get real ip
+    let real_ip = if let Some(ref real_ip_header) = database.server_options.real_ip_header {
+        headers
+            .get(real_ip_header.to_owned())
+            .unwrap_or(&HeaderValue::from_static(""))
+            .to_str()
+            .unwrap_or("")
+            .to_string()
+    } else {
+        String::new()
+    };
+
+    // report
     match database
         .auth
         .create_notification(NotificationCreate {
             title: format!("**CIRCLE REPORT**: [/+{}](/+{})", circle.name, circle.name),
-            content: req.content,
+            content: format!("{}\n\n***\n\n[{real_ip}](/+i/{real_ip})", req.content),
             address: format!("/+{}", circle.name),
             recipient: "*".to_string(), // all staff
         })
