@@ -2450,8 +2450,8 @@ impl Database {
     /// Get an existing [`IpBan`] by its IP
     ///
     /// ## Arguments:
-    /// * `id`
-    pub async fn get_ipban_by_ip(&self, id: String) -> Result<IpBan> {
+    /// * `ip`
+    pub async fn get_ipban_by_ip(&self, ip: String) -> Result<IpBan> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -2462,7 +2462,7 @@ impl Database {
         .to_string();
 
         let c = &self.base.db.client;
-        let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
+        let res = match sqlquery(&query).bind::<&String>(&ip).fetch_one(c).await {
             Ok(p) => self.base.textify_row(p, Vec::new()).0,
             Err(_) => return Err(AuthError::NotFound),
         };

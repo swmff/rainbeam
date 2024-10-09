@@ -144,6 +144,15 @@ pub async fn report_request(
         String::new()
     };
 
+    // check ip
+    if database.auth.get_ipban_by_ip(real_ip.clone()).await.is_ok() {
+        return Json(DefaultReturn {
+            success: false,
+            message: DatabaseError::Banned.to_string(),
+            payload: (),
+        });
+    }
+
     // report
     match database
         .auth

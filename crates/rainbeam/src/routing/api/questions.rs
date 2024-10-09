@@ -68,6 +68,21 @@ pub async fn create_request(
         String::new()
     };
 
+    // check ip
+    if database.auth.get_ipban_by_ip(real_ip.clone()).await.is_ok() {
+        return (
+            [
+                ("Content-Type".to_string(), "text/plain".to_string()),
+                ("Set-Cookie".to_string(), String::new()),
+            ],
+            Json(DefaultReturn {
+                success: false,
+                message: DatabaseError::Banned.to_string(),
+                payload: None,
+            }),
+        );
+    }
+
     // get correct username
     let use_anonymous_anyways = req.anonymous; // this is the "Hide your name" field
 
@@ -260,6 +275,15 @@ pub async fn report_request(
     } else {
         String::new()
     };
+
+    // check ip
+    if database.auth.get_ipban_by_ip(real_ip.clone()).await.is_ok() {
+        return Json(DefaultReturn {
+            success: false,
+            message: DatabaseError::Banned.to_string(),
+            payload: (),
+        });
+    }
 
     // report
     match database

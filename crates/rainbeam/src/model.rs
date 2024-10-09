@@ -489,6 +489,7 @@ pub enum DatabaseError {
     NotFound,
     Filtered,
     Blocked,
+    Banned,
     Other,
 }
 
@@ -513,6 +514,7 @@ impl DatabaseError {
             }
             Filtered => String::from("This content has been blocked by a content filter."),
             Blocked => String::from("You're blocked."),
+            Banned => String::from("You're banned for suspected systems abuse or violating TOS."),
             _ => String::from("An unspecified error has occured"),
         }
     }
