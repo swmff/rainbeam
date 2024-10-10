@@ -58,6 +58,7 @@ struct TimelineTemplate {
     unread: usize,
     notifs: usize,
     responses: Vec<FullResponse>,
+    friends: Vec<(Profile, Profile)>,
     is_powerful: bool,
     is_helper: bool,
 }
@@ -113,10 +114,18 @@ pub async fn homepage_request(
         return Html(
             TimelineTemplate {
                 config: database.server_options,
-                profile: auth_user,
+                profile: auth_user.clone(),
                 unread,
                 notifs,
                 responses,
+                friends: database
+                    .auth
+                    .get_user_participating_relationships_of_status(
+                        ua.id.clone(),
+                        RelationshipStatus::Friends,
+                    )
+                    .await
+                    .unwrap(),
                 is_powerful,
                 is_helper,
             }

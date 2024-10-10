@@ -57,7 +57,7 @@ block head %}
 </a>
 {% endblock %} {% block content %}
 <article>
-    <main class="flex flex-col gap-4">
+    <main class="flex flex-col gap-2">
         <div class="pillmenu convertible">
             <a href="/" class="active">Timeline</a>
             <a href="/inbox/posts">Posts</a>
@@ -73,35 +73,67 @@ block head %}
         </div>
         {% endif %}
 
-        <div class="flex justify-between">
-            <div></div>
-            <a href="/search?driver=0" class="button secondary bold">
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 16 16"
-                    width="16"
-                    height="16"
-                    aria-label="Search symbol"
-                    class="icon"
-                >
-                    <path
-                        d="M10.68 11.74a6 6 0 0 1-7.922-8.982 6 6 0 0 1 8.982 7.922l3.04 3.04a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215ZM11.5 7a4.499 4.499 0 1 0-8.997 0A4.499 4.499 0 0 0 11.5 7Z"
-                    ></path>
-                </svg>
-                Search
+        <h5 id="friends">My Friends</h5>
+        <div class="flex gap-2 w-full" style="max-width: 100%; overflow: auto">
+            <!-- TODO: show user daily note -->
+            {% if let Some(other) = profile %} {% for user in friends %} {% if
+            other.id != user.0.id %}
+            <a href="/@{{ user.0.username }}">
+                <img
+                    title="{{ user.0.username }}'s avatar"
+                    src="/api/v1/profiles/{{ user.0.username }}/avatar"
+                    alt="@{{ user.0.username }}"
+                    class="avatar round-sm"
+                    style="--size: 50px"
+                />
             </a>
+            {% else %}
+            <a href="/@{{ user.1.username }}">
+                <img
+                    title="{{ user.1.username }}'s avatar"
+                    src="/api/v1/profiles/{{ user.1.username }}/avatar"
+                    alt="@{{ user.1.username }}"
+                    class="avatar round-sm"
+                    style="--size: 50px"
+                />
+            </a>
+            {% endif %} {% endfor %} {% endif %}
+        </div>
+
+        <div class="flex justify-between gap-2">
+            <h5 id="feed">Feed</h5>
+            <div class="flex justify-between">
+                <div></div>
+                <a href="/search?driver=0" class="button secondary bold">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 16 16"
+                        width="16"
+                        height="16"
+                        aria-label="Search symbol"
+                        class="icon"
+                    >
+                        <path
+                            d="M10.68 11.74a6 6 0 0 1-7.922-8.982 6 6 0 0 1 8.982 7.922l3.04 3.04a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215ZM11.5 7a4.499 4.499 0 1 0-8.997 0A4.499 4.499 0 0 0 11.5 7Z"
+                        ></path>
+                    </svg>
+                    Search
+                </a>
+            </div>
         </div>
 
         <!-- prettier-ignore -->
-        {% for response in responses %}
-            {% let is_pinned = false %}
-            {% let show_pin_button = false %}
-            {% let do_not_render_question = false %}
-            {% let anonymous_username = Some("anonymous") %}
-            {% let anonymous_avatar = Some("") %}
-            {% let show_comments = true %}
-            {% include "components/response.html" %}
-        {% endfor %}
+        <div class="flex flex-col gap-4">
+            {% for response in responses %}
+                {% let is_pinned = false %}
+                {% let show_pin_button = false %}
+                {% let do_not_render_question = false %}
+                {% let anonymous_username = Some("anonymous") %}
+                {% let anonymous_avatar = Some("") %}
+                {% let show_comments = true %}
+                {% include "components/response.html" %}
+            {% endfor %}
+        </div>
     </main>
 </article>
 

@@ -57,7 +57,7 @@ block head %}
 </a>
 {% endblock %} {% block content %}
 <article>
-    <main class="flex flex-col gap-4">
+    <main class="flex flex-col gap-2">
         <div class="pillmenu convertible">
             <a href="/">Timeline</a>
             <a href="/inbox/posts">Posts</a>
@@ -131,9 +131,11 @@ block head %}
         </div>
 
         <!-- prettier-ignore -->
-        {% for question in questions %}
-            {% include "components/global_question.html" %}
-        {% endfor %}
+        <div class="flex flex-col gap-4" id="feed">
+            {% for question in questions %}
+                {% include "components/global_question.html" %}
+            {% endfor %}
+        </div>
 
         <!-- pagination buttons -->
         <div class="flex justify-between gap-2 w-full">
