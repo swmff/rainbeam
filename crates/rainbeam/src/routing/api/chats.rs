@@ -81,11 +81,7 @@ pub async fn get_last_message_request(
 
     Json(match database.get_last_message_in_chat(id).await {
         Ok(mut r) => {
-            r.1.salt = String::new();
-            r.1.password = String::new();
-            r.1.tokens = Vec::new();
-            r.1.ips = Vec::new();
-
+            r.1.clean();
             DefaultReturn {
                 success: true,
                 message: String::new(),

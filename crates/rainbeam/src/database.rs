@@ -1631,9 +1631,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xresponses\" WHERE \"context\" LIKE '%\"is_post\":true%' ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xresponses\" WHERE \"context\" LIKE '%\"is_post\":true%' AND \"context\" NOT LIKE '%\"unlisted\":true%' ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
         } else {
-            format!("SELECT * FROM \"xresponses\" WHERE \"context\" LIKE '%\"is_post\":true%' ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xresponses\" WHERE \"context\" LIKE '%\"is_post\":true%' AND \"context\" NOT LIKE '%\"unlisted\":true%' ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
         };
 
         let c = &self.base.db.client;
@@ -1737,9 +1737,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xresponses\" WHERE \"context\" LIKE '%\"is_post\":true%' AND \"content\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xresponses\" WHERE \"context\" LIKE '%\"is_post\":true%' AND \"context\" NOT LIKE '%\"unlisted\":true%' AND \"content\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
         } else {
-            format!("SELECT * FROM \"xresponses\" WHERE \"context\" LIKE '%\"is_post\":true%' AND \"content\" LIKE $1 ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xresponses\" WHERE \"context\" LIKE '%\"is_post\":true%' AND \"context\" NOT LIKE '%\"unlisted\":true%' AND \"content\" LIKE $1 ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
         };
 
         let c = &self.base.db.client;
@@ -2032,9 +2032,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xresponses\" WHERE \"content\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xresponses\" WHERE \"content\" LIKE ? AND \"context\" NOT LIKE '%\"unlisted\":true%' ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
         } else {
-            format!("SELECT * FROM \"xresponses\" WHERE \"content\" LIKE $1 ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xresponses\" WHERE \"content\" LIKE $1 AND \"context\" NOT LIKE '%\"unlisted\":true%' ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
         };
 
         let c = &self.base.db.client;
@@ -2299,6 +2299,7 @@ impl Database {
             tags: Vec::new(),
             context: ResponseContext {
                 is_post: question.id == "0",
+                unlisted: props.unlisted,
                 warning: props.warning,
             },
             question: question.id,
@@ -4220,7 +4221,7 @@ impl Database {
                     if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
                         "UPDATE \"xcircle_memberships\" SET \"membership\" = ? WHERE \"user\" = ? AND \"circle\" = ?"
                     } else {
-                        "UPDATE \"xcircle_memberships\" SET (\"membership\") = (?) WHERE \"user\" = ? AND \"circle\" = ?"                    
+                        "UPDATE \"xcircle_memberships\" SET (\"membership\") = (?) WHERE \"user\" = ? AND \"circle\" = ?"
                     }
                     .to_string();
 

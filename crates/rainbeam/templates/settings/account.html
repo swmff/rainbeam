@@ -119,6 +119,21 @@
         <div class="checkbox_container">
             <input
                 type="checkbox"
+                name="sparkler:private_profile"
+                id="sparkler:private_profile"
+                onchange="update_kv('sparkler:private_profile', event.target.checked.toString())"
+            />
+
+            <label for="sparkler:private_profile" class="normal">
+                Only allow friends to view your profile/responses
+            </label>
+        </div>
+    </div>
+
+    <div class="flex flex-col gap-1">
+        <div class="checkbox_container">
+            <input
+                type="checkbox"
                 name="sparkler:limited_chats"
                 id="sparkler:limited_chats"
                 onchange="update_kv('sparkler:limited_chats', event.target.checked.toString())"

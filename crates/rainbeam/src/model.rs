@@ -162,6 +162,9 @@ pub struct ResponseContext {
     /// If the response is a post and the question shouldn't be rendered at all
     #[serde(default)]
     pub is_post: bool,
+    /// If the response is unlisted (not shown on PUBLIC timelines/searches)
+    #[serde(default)]
+    pub unlisted: bool,
     /// The warning shown on the response. Users must accept this warning to view the response
     ///
     /// Empty means no warning.
@@ -173,6 +176,7 @@ impl Default for ResponseContext {
     fn default() -> Self {
         Self {
             is_post: false,
+            unlisted: false,
             warning: String::new(),
         }
     }
@@ -418,6 +422,8 @@ pub struct ResponseCreate {
     pub warning: String,
     #[serde(default)]
     pub reply: String,
+    #[serde(default)]
+    pub unlisted: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

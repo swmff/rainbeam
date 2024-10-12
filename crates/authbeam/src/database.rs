@@ -652,6 +652,7 @@ impl Database {
             "sparkler:display_name",
             "sparkler:limited_friend_requests",
             "sparkler:limited_chats",
+            "sparkler:private_profile",
             "sparkler:allow_drawings",
             "sparkler:biography",
             "sparkler:sidebar",
@@ -2771,7 +2772,7 @@ impl Database {
                     if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
                         "UPDATE \"xrelationships\" SET \"status\" = ? WHERE \"one\" = ? AND \"two\" = ?"
                     } else {
-                        "UPDATE \"xrelationships\" SET (\"status\") = (?) WHERE \"one\" = ? AND \"two\" = ?"                    
+                        "UPDATE \"xrelationships\" SET (\"status\") = (?) WHERE \"one\" = ? AND \"two\" = ?"
                     }
                     .to_string();
 
@@ -2862,7 +2863,7 @@ impl Database {
                     if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
                         "UPDATE \"xrelationships\" SET \"status\" = ? WHERE \"one\" = ? AND \"two\" = ?"
                     } else {
-                        "UPDATE \"xrelationships\" SET (\"status\") = (?) WHERE \"one\" = ? AND \"two\" = ?"                    
+                        "UPDATE \"xrelationships\" SET (\"status\") = (?) WHERE \"one\" = ? AND \"two\" = ?"
                     }
                     .to_string();
 

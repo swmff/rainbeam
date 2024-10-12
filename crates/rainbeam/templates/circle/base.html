@@ -115,15 +115,15 @@
         <div class="flex flex-col gap-4 sm:w-full profile_container" style="width: 20rem; height: max-content">
             <style>
                 .profile_avatar {
-                    --size: 160px; 
+                    --size: 160px;
                     margin: -80px auto 0;
                 }
 
                 @media screen and (max-width: 900px) {
                     .profile_avatar {
-                        --size: 120px; 
+                        --size: 120px;
                         margin: -40px auto 0;
-                    }   
+                    }
                 }
             </style>
 
@@ -181,7 +181,7 @@
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 16 16"
                         width="16"
-                        height="16" 
+                        height="16"
                         aria-label="Trash symbol"
                         class="icon"
                     >
@@ -374,7 +374,7 @@
                             ></path>
                         </svg>
                     </button>
-    
+
                     <div class="inner shadow-md w-content left" exclude="dropdown">
                         <b class="title">This circle</b>
                         <a
@@ -399,7 +399,7 @@
                 {% endif %}
             </div>
         </div>
-    
+
         <section id="feed" class="flex flex-col gap-4 w-full">
             <!-- upper -->
             <!-- new question -->
@@ -520,11 +520,11 @@
         const form = document.getElementById("question_form");
 
         if (form) {
-            form.innerHTML += 
+            form.innerHTML +=
                 `<p class="fade">Replying to <a href="/response/${reply_intent}" target="_blank">${reply_intent.substring(0, 10)}</a> (<a href="?" class="red">cancel</a>)</p>`;
         }
     }
-    
+
     document.getElementById("question_form").addEventListener("submit", (e) => {
         e.preventDefault();
         trigger("questions:create", [

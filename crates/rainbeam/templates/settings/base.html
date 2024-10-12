@@ -150,6 +150,23 @@ other = profile.clone() %} {% if profile.username == other.username %}
                     }
                 }
             }
+
+            for (let [key, value] of Object.entries(window.localStorage)) {
+                if (key.length === 0) {
+                    continue;
+                }
+
+                key = `sparkler:${key}`;
+                if (document.getElementById(key)) {
+                    document.getElementById(key).value = value;
+
+                    if (value === "true") {
+                        document
+                            .getElementById(key)
+                            .setAttribute("checked", "true");
+                    }
+                }
+            }
         }, 50);
 
         // handle submit

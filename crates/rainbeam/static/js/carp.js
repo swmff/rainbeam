@@ -47,7 +47,7 @@
                         continue;
                     }
 
-                    for (let i in point) {
+                    for (const i in point) {
                         // remove null values from point
                         if (point[i] === null) {
                             point.splice(i, 1);
@@ -351,7 +351,7 @@
             if (!skip_line_store) {
                 // yes flooring the values will make the image SLIGHTLY different,
                 // but it also saves THOUSANDS of characters
-                let point = [
+                const point = [
                     Math.floor(this.#pos.x),
                     Math.floor(this.#pos.y),
                     // only include these values if they changed
@@ -361,7 +361,7 @@
                         : null,
                 ];
 
-                for (let i in point) {
+                for (const i in point) {
                     // remove null values from point
                     if (point[i] === null) {
                         point.splice(i, 1);
@@ -370,12 +370,12 @@
 
                 this.#line_store.push(point);
 
-                if (this.#color_old != this.COLOR) {
+                if (this.#color_old !== this.COLOR) {
                     // we've already seen it once, time to update it
                     this.set_old_color(this.COLOR);
                 }
 
-                if (this.#stroke_size_old != this.STROKE_SIZE) {
+                if (this.#stroke_size_old !== this.STROKE_SIZE) {
                     this.set_old_stroke_size(this.STROKE_SIZE);
                 }
             }
@@ -420,7 +420,7 @@
             }
 
             this.LINES = parsed.d;
-            let rendered = [];
+            const rendered = [];
 
             // lines format:
             // [[[x, y, Option<color>, Option<stroke_size>], ...], ...]

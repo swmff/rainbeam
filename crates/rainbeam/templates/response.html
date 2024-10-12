@@ -82,13 +82,20 @@ block head %}
 <article>
     <main class="flex flex-col gap-2">
         <!-- prettier-ignore -->
-        {% let is_pinned = false %}
-        {% let show_pin_button = false %}
-        {% let do_not_render_question = false %}
-        {% let response = (question.clone(), response.clone(), 0, reactions.len(), reply.clone()) %}
-        {% let show_comments = false %}
-        {% include "components/response.html" %}
+        {% if relationship != crate::model::RelationshipStatus::Friends
+            && response.author.metadata.is_true("sparkler:private_profile") %}
+            {% include "components/private_response.html" %}
+        {% else %}
+            {% let is_pinned = false %}
+            {% let show_pin_button = false %}
+            {% let do_not_render_question = false %}
+            {% let response = (question.clone(), response.clone(), 0, reactions.len(), reply.clone()) %}
+            {% let show_comments = false %}
+            {% include "components/response.html" %}
+        {% endif %}
 
+        {% if (relationship == crate::model::RelationshipStatus::Friends)
+            | !response.author.metadata.is_true("sparkler:private_profile") %}
         <hr />
         <h5 id="reactions">Reactions</h5>
         <div id="reactions" class="flex gap-2 flex-wrap w-full">
@@ -140,7 +147,7 @@ block head %}
         <!-- prettier-ignore -->
         {% for comment in comments %}
             {% let show_replies = true %}
-            {% include "components/comment.html" %} 
+            {% include "components/comment.html" %}
         {% endfor %}
 
         <!-- pagination buttons -->
@@ -153,6 +160,7 @@ block head %}
             <a class="button secondary" href="?page={{ page + 1 }}">Next</a>
             {% endif %}
         </div>
+        {% endif %}
     </main>
 </article>
 

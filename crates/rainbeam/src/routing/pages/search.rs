@@ -1,10 +1,12 @@
+use std::collections::HashMap;
+
 use askama_axum::Template;
 use axum::extract::Query;
 use axum::response::IntoResponse;
 use axum::{extract::State, response::Html};
 use axum_extra::extract::CookieJar;
 
-use authbeam::model::{Permission, Profile};
+use authbeam::model::{Permission, Profile, RelationshipStatus};
 
 use super::{SearchHomeQuery, SearchQuery};
 use crate::config::Config;
@@ -84,6 +86,7 @@ struct ResponsesTemplate {
     driver: i8,
     // search-specific
     results: Vec<FullResponse>,
+    relationships: HashMap<String, RelationshipStatus>,
     is_powerful: bool, // at least "manager"
     is_helper: bool,   // at least "helper"
 }
@@ -157,6 +160,41 @@ pub async fn search_responses_request(
         false
     };
 
+    // build relationships list
+    let mut relationships: HashMap<String, RelationshipStatus> = HashMap::new();
+
+    if let Some(ref ua) = auth_user {
+        for response in &results {
+            if relationships.contains_key(&response.1.author.id) {
+                continue;
+            }
+
+            if response.1.author.id == ua.id {
+                // make sure we can view our own responses
+                relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
+                continue;
+            };
+
+            relationships.insert(
+                response.1.author.id.clone(),
+                database
+                    .auth
+                    .get_user_relationship(response.1.author.id.clone(), ua.id.clone())
+                    .await
+                    .0,
+            );
+        }
+    } else {
+        for response in &results {
+            // no user, no relationships
+            if relationships.contains_key(&response.1.author.id) {
+                continue;
+            }
+
+            relationships.insert(response.1.author.id.clone(), RelationshipStatus::Unknown);
+        }
+    }
+
     // render
     Html(
         ResponsesTemplate {
@@ -169,6 +207,7 @@ pub async fn search_responses_request(
             driver: if query.tag.is_empty() { 0 } else { 4 },
             // search-specific
             results,
+            relationships,
             is_powerful,
             is_helper,
         }
@@ -189,6 +228,7 @@ struct PostsTemplate {
     driver: i8,
     // search-specific
     results: Vec<FullResponse>,
+    relationships: HashMap<String, RelationshipStatus>,
     is_powerful: bool, // at least "manager"
     is_helper: bool,   // at least "helper"
 }
@@ -252,6 +292,41 @@ pub async fn search_posts_request(
         false
     };
 
+    // build relationships list
+    let mut relationships: HashMap<String, RelationshipStatus> = HashMap::new();
+
+    if let Some(ref ua) = auth_user {
+        for response in &results {
+            if relationships.contains_key(&response.1.author.id) {
+                continue;
+            }
+
+            if response.1.author.id == ua.id {
+                // make sure we can view our own responses
+                relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
+                continue;
+            };
+
+            relationships.insert(
+                response.1.author.id.clone(),
+                database
+                    .auth
+                    .get_user_relationship(response.1.author.id.clone(), ua.id.clone())
+                    .await
+                    .0,
+            );
+        }
+    } else {
+        for response in &results {
+            // no user, no relationships
+            if relationships.contains_key(&response.1.author.id) {
+                continue;
+            }
+
+            relationships.insert(response.1.author.id.clone(), RelationshipStatus::Unknown);
+        }
+    }
+
     // render
     Html(
         PostsTemplate {
@@ -264,6 +339,7 @@ pub async fn search_posts_request(
             driver: 2,
             // search-specific
             results,
+            relationships,
             is_powerful,
             is_helper,
         }

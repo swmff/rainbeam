@@ -100,16 +100,16 @@
                     bottom: 0;
                     margin-bottom: 0 !important;
                 }
-            
+
                 nav .dropdown .inner {
                     top: unset;
                     bottom: calc(100% + 5px);
                 }
-            
+
                 nav .nav_side {
                     display: contents;
                 }
-            
+
                 article {
                     margin-top: 0.75rem;
                     margin-bottom: 5rem;
@@ -148,6 +148,8 @@
 
         if (profile_theme !== "" && (theme_pref !== "no" || is_self_theme)) {
             document.documentElement.setAttribute("class", profile_theme);
+            globalThis.USES_DIFF_THEME = true;
+            globalThis.IS_SELF_THEME = true;
         }
 
         // profile skin

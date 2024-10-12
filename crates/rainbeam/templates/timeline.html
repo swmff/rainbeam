@@ -74,11 +74,11 @@ block head %}
         {% endif %}
 
         <h5 id="friends">My Friends</h5>
-        <div class="flex gap-2 w-full" style="max-width: 100%; overflow: auto">
+        <div class="flex w-full" style="max-width: 100%; overflow: auto">
             <!-- TODO: show user daily note -->
             {% if let Some(other) = profile %} {% for user in friends %} {% if
             other.id != user.0.id %}
-            <a href="/@{{ user.0.username }}">
+            <a href="/@{{ user.0.username }}" style="margin-right: 0.25rem">
                 <img
                     title="{{ user.0.username }}'s avatar"
                     src="/api/v1/profiles/{{ user.0.username }}/avatar"
@@ -88,7 +88,7 @@ block head %}
                 />
             </a>
             {% else %}
-            <a href="/@{{ user.1.username }}">
+            <a href="/@{{ user.1.username }}" style="margin-right: 0.25rem">
                 <img
                     title="{{ user.1.username }}'s avatar"
                     src="/api/v1/profiles/{{ user.1.username }}/avatar"
@@ -100,7 +100,7 @@ block head %}
             {% endif %} {% endfor %} {% endif %}
         </div>
 
-        <div class="flex justify-between gap-2">
+        <div class="flex justify-between items-center gap-2">
             <h5 id="feed">Feed</h5>
             <div class="flex justify-between">
                 <div></div>
@@ -125,13 +125,18 @@ block head %}
         <!-- prettier-ignore -->
         <div class="flex flex-col gap-4">
             {% for response in responses %}
-                {% let is_pinned = false %}
-                {% let show_pin_button = false %}
-                {% let do_not_render_question = false %}
-                {% let anonymous_username = Some("anonymous") %}
-                {% let anonymous_avatar = Some("") %}
-                {% let show_comments = true %}
-                {% include "components/response.html" %}
+                {% if relationships.get(response.1.author.id).unwrap().to_owned() != crate::model::RelationshipStatus::Friends
+                    && response.1.author.metadata.is_true("sparkler:private_profile") %}
+                    {% include "components/private_response.html" %}
+                {% else %}
+                    {% let is_pinned = false %}
+                    {% let show_pin_button = false %}
+                    {% let do_not_render_question = false %}
+                    {% let anonymous_username = Some("anonymous") %}
+                    {% let anonymous_avatar = Some("") %}
+                    {% let show_comments = true %}
+                    {% include "components/response.html" %}
+                {% endif %}
             {% endfor %}
         </div>
     </main>

@@ -3,7 +3,15 @@
 
     self.define(
         "create",
-        async function ({ $, app }, question, content, tags, warning, reply) {
+        async function (
+            { $, app },
+            question,
+            content,
+            tags,
+            warning,
+            reply,
+            unlisted,
+        ) {
             await app.debounce("responses:create");
             if (!tags) {
                 tags = "";
@@ -24,6 +32,7 @@
                                 : tags.split(",").map((t) => t.trim()),
                         warning: warning || "",
                         reply: reply || "",
+                        unlisted: unlisted || false,
                     }),
                 })
                     .then((res) => res.json())

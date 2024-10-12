@@ -1,12 +1,19 @@
 {% extends "base.html" %} {% block results %}
 <!-- prettier-ignore -->
 {% for response in results %}
-    {% let is_pinned = false %}
-    {% let show_pin_button = false %}
-    {% let do_not_render_question = false %}
-    {% let anonymous_username = Some("anonymous") %}
-    {% let anonymous_avatar = Some("") %}
-    {% let show_comments = true %}
-    {% include "components/response.html" %}
+    {% for response in results %}
+        {% if relationships.get(response.1.author.id).unwrap().to_owned() != crate::model::RelationshipStatus::Friends
+            && response.1.author.metadata.is_true("sparkler:private_profile") %}
+            {% include "components/private_response.html" %}
+        {% else %}
+            {% let is_pinned = false %}
+            {% let show_pin_button = false %}
+            {% let do_not_render_question = false %}
+            {% let anonymous_username = Some("anonymous") %}
+            {% let anonymous_avatar = Some("") %}
+            {% let show_comments = true %}
+            {% include "components/response.html" %}
+        {% endif %}
+    {% endfor %}
 {% endfor %}
 {% call super() %} {% endblock %}

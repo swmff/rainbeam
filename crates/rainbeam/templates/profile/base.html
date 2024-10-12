@@ -117,18 +117,18 @@ config.name }}{% endblock %} {% block head %}
         <div class="flex flex-col gap-4 sm:w-full profile_container" style="width: 20rem; height: max-content">
             <style>
                 .profile_avatar {
-                    --size: 160px; 
+                    --size: 160px;
                     margin: -80px auto 0;
                 }
 
                 @media screen and (max-width: 900px) {
                     .profile_avatar {
-                        --size: 120px; 
+                        --size: 120px;
                         margin: -40px auto 0;
-                    }   
+                    }
                 }
             </style>
-        
+
             <div
                 id="profile_card"
                 class="card shadow padded flex flex-col gap-2 w-full"
@@ -309,9 +309,9 @@ config.name }}{% endblock %} {% block head %}
                 </script>
                 {% else if relationship == crate::model::RelationshipStatus::Pending %}
                 <button class="round-lg w-full" onclick="cancel_fr()">
-                    Cancel Friend Request                
+                    Cancel Friend Request
                 </button>
-                
+
                 <script>
                     globalThis.cancel_fr = function (username) {
                         if (!confirm("Are you sure you want to do this?")) {
@@ -332,7 +332,7 @@ config.name }}{% endblock %} {% block head %}
                             });
                     };
                 </script>
-                
+
                 {% endif %}
 
                 <!-- actions -->
@@ -557,6 +557,28 @@ config.name }}{% endblock %} {% block head %}
             <hr class="mobile small" />
         </div>
 
+        <!-- locked message -->
+        {% if relationship != crate::model::RelationshipStatus::Friends &&
+        other.metadata.is_true("sparkler:private_profile") %}
+        <div
+            class="card padded shadow flex flex-col w-full gap-4 items-center justify-center"
+        >
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 16 16"
+                width="48"
+                height="48"
+                aria-label="Locked shield symbol"
+                class="icon"
+            >
+                <path
+                    d="m8.533.133 5.25 1.68A1.75 1.75 0 0 1 15 3.48V7c0 1.566-.32 3.182-1.303 4.682-.983 1.498-2.585 2.813-5.032 3.855a1.697 1.697 0 0 1-1.33 0c-2.447-1.042-4.049-2.357-5.032-3.855C1.32 10.182 1 8.566 1 7V3.48a1.75 1.75 0 0 1 1.217-1.667l5.25-1.68a1.748 1.748 0 0 1 1.066 0Zm-.61 1.429.001.001-5.25 1.68a.251.251 0 0 0-.174.237V7c0 1.36.275 2.666 1.057 3.859.784 1.194 2.121 2.342 4.366 3.298a.196.196 0 0 0 .154 0c2.245-.957 3.582-2.103 4.366-3.297C13.225 9.666 13.5 8.358 13.5 7V3.48a.25.25 0 0 0-.174-.238l-5.25-1.68a.25.25 0 0 0-.153 0ZM9.5 6.5c0 .536-.286 1.032-.75 1.3v2.45a.75.75 0 0 1-1.5 0V7.8A1.5 1.5 0 1 1 9.5 6.5Z"
+                ></path>
+            </svg>
+
+            <h4>This profile only allows friends to view their profile.</h4>
+        </div>
+        {% else %}
         <section id="feed" class="flex flex-col gap-4 w-full">
             <!-- upper -->
             <!-- new question -->
@@ -611,9 +633,13 @@ config.name }}{% endblock %} {% block head %}
                                 </div>
 
                                 <script>
+                                function ls_anon_check() {
                                     if (window.localStorage.getItem("always_anon") === "true") {
                                         document.getElementById("anonymous").checked = true
                                     }
+                                }
+
+                                ls_anon_check();
                                 </script>
                                 {% else %}
                                 <div></div>
@@ -624,7 +650,7 @@ config.name }}{% endblock %} {% block head %}
                                 {% if other.metadata.is_true("sparkler:allow_drawings") %}
                                 <button class="round-lg" onclick="attach_carp(event)" type="button">Draw</button>
                                 {% endif %}
-                                
+
                                 <button class="round-lg primary bold">Ask</button>
                             </div>
                         </div>
@@ -648,6 +674,7 @@ config.name }}{% endblock %} {% block head %}
                 {% block panel %}{% endblock %}
             </div>
         </section>
+        {% endif %}
     </div>
 </article>
 
@@ -721,15 +748,21 @@ config.name }}{% endblock %} {% block head %}
         const form = document.getElementById("question_form");
 
         if (form) {
-            form.innerHTML += 
+            form.innerHTML +=
                 `<p class="fade">Replying to <a href="/response/${reply_intent}" target="_blank">${reply_intent.substring(0, 10)}</a> (<a href="?" class="red">cancel</a>)</p>`;
         }
     }
 
     setTimeout(() => {
         trigger("questions:carp");
+        use("app", function (app) {
+            if (app.PREVIOUSLY_EXISTED === true) {
+                window.location.reload();
+                app.PREVIOUSLY_EXISTED = false;
+            }
+        });
     }, 150);
-    
+
     function ask(e) {
         e.preventDefault();
         trigger("questions:create", [
@@ -737,7 +770,7 @@ config.name }}{% endblock %} {% block head %}
             e.target.content.value,
             (e.target.anonymous || { checked: false }).checked,
             reply_intent || "",
-            e.target.carp_content.value.length != 0 
+            e.target.carp_content.value.length != 0
                 ? e.target.carp_content.value
                 : ""
         ]).then((_) => {
@@ -747,19 +780,23 @@ config.name }}{% endblock %} {% block head %}
             if (globalThis.sammy) {
                 globalThis.sammy.clear();
             }
+
+            if (ls_anon_check) {
+                ls_anon_check();
+            }
         });
     }
 
     function attach_carp(e) {
         e.target.innerText = "Remove drawing";
         e.target.onclick = (e) => {
-            alert("Are you sure you want to do this?"); 
+            alert("Are you sure you want to do this?");
             globalThis.detach_carp(e);
         };
 
         use("carp", (carp) => {
             const sammy = carp.new(document.getElementById("carp_context"));
-            
+
             sammy.create_canvas();
             sammy.onedit = (text) => {
                 document.getElementById("carp_content").value = `--CARP${text}`;

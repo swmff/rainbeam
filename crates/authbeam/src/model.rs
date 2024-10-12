@@ -90,6 +90,15 @@ impl Profile {
             input.to_string(),
         )
     }
+
+    /// Clean profile information
+    pub fn clean(&mut self) -> () {
+        self.ips = Vec::new();
+        self.tokens = Vec::new();
+        self.salt = String::new();
+        self.password = String::new();
+        self.metadata = ProfileMetadata::default();
+    }
 }
 
 impl Default for Profile {

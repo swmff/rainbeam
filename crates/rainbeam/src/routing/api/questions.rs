@@ -1,7 +1,7 @@
 use crate::database::Database;
 use crate::model::{anonymous_profile, DatabaseError, QuestionCreate};
 use axum::http::{HeaderMap, HeaderValue};
-use authbeam::model::{NotificationCreate, ProfileMetadata};
+use authbeam::model::NotificationCreate;
 use databeam::DefaultReturn;
 
 use axum::response::{IntoResponse, Redirect};
@@ -171,17 +171,8 @@ pub async fn get_request(
                 }
 
                 // hide tokens, password, salt, and metadata
-                r.author.password = String::new();
-                r.author.salt = String::new();
-                r.author.tokens = Vec::new();
-                r.author.ips = Vec::new();
-                r.author.metadata = ProfileMetadata::default();
-
-                r.recipient.password = String::new();
-                r.recipient.salt = String::new();
-                r.recipient.tokens = Vec::new();
-                r.recipient.ips = Vec::new();
-                r.recipient.metadata = ProfileMetadata::default();
+                r.author.clean();
+                r.recipient.clean();
 
                 // return
                 Some(r)

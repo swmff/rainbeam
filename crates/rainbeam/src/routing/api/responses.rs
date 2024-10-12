@@ -3,7 +3,7 @@ use crate::model::{DatabaseError, ResponseCreate, ResponseEdit, ResponseEditTags
 use axum::http::{HeaderMap, HeaderValue};
 use axum::routing::put;
 use hcaptcha::Hcaptcha;
-use authbeam::model::{NotificationCreate, ProfileMetadata};
+use authbeam::model::NotificationCreate;
 use databeam::DefaultReturn;
 
 use axum::response::{IntoResponse, Redirect};
@@ -24,6 +24,8 @@ pub fn routes(database: Database) -> Router {
         .route("/:id", delete(delete_request))
         .route("/:id/unsend", post(unsend_request))
         .route("/:id/report", post(report_request))
+        // timelines
+        .route("/timeline/home", get(home_timeline_request))
         // ...
         .with_state(database)
 }
@@ -76,23 +78,9 @@ pub async fn get_request(
                 }
 
                 // hide tokens, password, salt, and metadata
-                r.0.author.password = String::new();
-                r.0.author.salt = String::new();
-                r.0.author.tokens = Vec::new();
-                r.0.author.ips = Vec::new();
-                r.0.author.metadata = ProfileMetadata::default();
-
-                r.0.recipient.password = String::new();
-                r.0.recipient.salt = String::new();
-                r.0.recipient.tokens = Vec::new();
-                r.0.recipient.ips = Vec::new();
-                r.0.recipient.metadata = ProfileMetadata::default();
-
-                r.1.author.password = String::new();
-                r.1.author.salt = String::new();
-                r.1.author.tokens = Vec::new();
-                r.1.author.ips = Vec::new();
-                r.1.author.metadata = ProfileMetadata::default();
+                r.0.author.clean();
+                r.0.recipient.clean();
+                r.1.author.clean();
 
                 // return
                 Some(r)
@@ -331,4 +319,50 @@ pub async fn report_request(
             payload: (),
         }),
     }
+}
+
+/// Home timeline request ("/")
+pub async fn home_timeline_request(
+    jar: CookieJar,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    // get user from token
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => {
+                return Json(DatabaseError::NotAllowed.into());
+            }
+        },
+        None => {
+            return Json(DatabaseError::NotAllowed.into());
+        }
+    };
+
+    // ...
+    Json(
+        match database
+            .get_responses_by_following(auth_user.id.to_owned())
+            .await
+        {
+            Ok(mut r) => {
+                for response in &mut r {
+                    response.1.author.clean();
+                    response.0.recipient.clean();
+                    response.0.author.clean();
+                }
+
+                DefaultReturn {
+                    success: true,
+                    message: String::new(),
+                    payload: Some(r),
+                }
+            }
+            Err(e) => e.into(),
+        },
+    )
 }

@@ -335,6 +335,15 @@ select {
     color: var(--color-text-lowered);
 }
 
+@media screen and (max-width: 900px) {
+    input,
+    textarea,
+    select {
+        /* fix safari auto zoom */
+        font-size: 16px;
+    }
+}
+
 input.secondary,
 textarea.secondary,
 select.secondary {

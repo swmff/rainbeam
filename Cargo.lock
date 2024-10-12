@@ -1886,6 +1886,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "providence"
+version = "0.1.0"
+dependencies = [
+ "authbeam",
+ "databeam",
+ "shared",
+]
+
+[[package]]
 name = "quick-xml"
 version = "0.32.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1905,7 +1914,7 @@ dependencies = [
 
 [[package]]
 name = "rainbeam"
-version = "1.8.3"
+version = "1.8.4"
 dependencies = [
  "ammonia",
  "askama",
@@ -1919,6 +1928,7 @@ dependencies = [
  "futures-util",
  "hcaptcha",
  "mime_guess",
+ "providence",
  "regex",
  "reqwest",
  "serde",

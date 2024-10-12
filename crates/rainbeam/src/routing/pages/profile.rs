@@ -209,14 +209,20 @@ pub async fn profile_request(
         false
     };
 
-    let relationship = if let Some(ref profile) = auth_user {
-        database
-            .auth
-            .get_user_relationship(other.id.clone(), profile.id.clone())
-            .await
-            .0
+    let relationship = if is_self {
+        // we're always friends with ourselves!
+        // allows user to bypass their own locked profile
+        RelationshipStatus::Friends
     } else {
-        RelationshipStatus::Unknown
+        if let Some(ref profile) = auth_user {
+            database
+                .auth
+                .get_user_relationship(other.id.clone(), profile.id.clone())
+                .await
+                .0
+        } else {
+            RelationshipStatus::Unknown
+        }
     };
 
     let is_blocked = relationship == RelationshipStatus::Blocked;
@@ -580,14 +586,20 @@ pub async fn followers_request(
         return Html(DatabaseError::NotAllowed.to_html(database));
     }
 
-    let relationship = if let Some(ref profile) = auth_user {
-        database
-            .auth
-            .get_user_relationship(other.id.clone(), profile.id.clone())
-            .await
-            .0
+    let relationship = if is_self {
+        // we're always friends with ourselves!
+        // allows user to bypass their own locked profile
+        RelationshipStatus::Friends
     } else {
-        RelationshipStatus::Unknown
+        if let Some(ref profile) = auth_user {
+            database
+                .auth
+                .get_user_relationship(other.id.clone(), profile.id.clone())
+                .await
+                .0
+        } else {
+            RelationshipStatus::Unknown
+        }
     };
 
     let is_blocked = relationship == RelationshipStatus::Blocked;
@@ -791,14 +803,20 @@ pub async fn following_request(
         return Html(DatabaseError::NotAllowed.to_html(database));
     }
 
-    let relationship = if let Some(ref profile) = auth_user {
-        database
-            .auth
-            .get_user_relationship(other.id.clone(), profile.id.clone())
-            .await
-            .0
+    let relationship = if is_self {
+        // we're always friends with ourselves!
+        // allows user to bypass their own locked profile
+        RelationshipStatus::Friends
     } else {
-        RelationshipStatus::Unknown
+        if let Some(ref profile) = auth_user {
+            database
+                .auth
+                .get_user_relationship(other.id.clone(), profile.id.clone())
+                .await
+                .0
+        } else {
+            RelationshipStatus::Unknown
+        }
     };
 
     let is_blocked = relationship == RelationshipStatus::Blocked;
@@ -1002,14 +1020,20 @@ pub async fn friends_request(
         return Html(DatabaseError::NotAllowed.to_html(database));
     }
 
-    let relationship = if let Some(ref profile) = auth_user {
-        database
-            .auth
-            .get_user_relationship(other.id.clone(), profile.id.clone())
-            .await
-            .0
+    let relationship = if is_self {
+        // we're always friends with ourselves!
+        // allows user to bypass their own locked profile
+        RelationshipStatus::Friends
     } else {
-        RelationshipStatus::Unknown
+        if let Some(ref profile) = auth_user {
+            database
+                .auth
+                .get_user_relationship(other.id.clone(), profile.id.clone())
+                .await
+                .0
+        } else {
+            RelationshipStatus::Unknown
+        }
     };
 
     let is_blocked = relationship == RelationshipStatus::Blocked;
@@ -1229,14 +1253,20 @@ pub async fn questions_request(
         false
     };
 
-    let relationship = if let Some(ref profile) = auth_user {
-        database
-            .auth
-            .get_user_relationship(other.id.clone(), profile.id.clone())
-            .await
-            .0
+    let relationship = if is_self {
+        // we're always friends with ourselves!
+        // allows user to bypass their own locked profile
+        RelationshipStatus::Friends
     } else {
-        RelationshipStatus::Unknown
+        if let Some(ref profile) = auth_user {
+            database
+                .auth
+                .get_user_relationship(other.id.clone(), profile.id.clone())
+                .await
+                .0
+        } else {
+            RelationshipStatus::Unknown
+        }
     };
 
     let is_blocked = relationship == RelationshipStatus::Blocked;
@@ -1429,18 +1459,7 @@ pub async fn mod_request(
     };
 
     let is_self = auth_user.id == other.id;
-
-    let relationship = database
-        .auth
-        .get_user_relationship(other.id.clone(), auth_user.id.clone())
-        .await
-        .0;
-
-    let is_blocked = relationship == RelationshipStatus::Blocked;
-
-    if !is_helper && is_blocked {
-        return Html(DatabaseError::NotFound.to_html(database));
-    }
+    let relationship = RelationshipStatus::Friends; // moderators should always be your friend! (bypass private profile)
 
     let chats = match database.get_chats_for_user(other.id.clone()).await {
         Ok(c) => c,

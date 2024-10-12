@@ -5,7 +5,7 @@ members = [
   "crates/authbeam",
   "crates/databeam",
   "crates/shared"
-]
+, "crates/providence"]
 
 [profile.release]
 opt-level = "z"

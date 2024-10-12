@@ -41,7 +41,7 @@
         <script>
             globalThis.ns_config = {
                 root: "/static/js/",
-                version: "1.8.0",
+                version: "1.8.4",
             };
 
             globalThis._app_base = {
@@ -53,23 +53,28 @@
         <script src="/static/js/app.js"></script>
 
         <script>
-            if (
-                window.matchMedia("(prefers-color-scheme: dark)").matches &&
-                !window.localStorage.getItem("theme")
-            ) {
-                document.documentElement.classList.add("dark");
-                // window.localStorage.setItem("theme", "dark");
-            } else if (
-                window.matchMedia("(prefers-color-scheme: light)").matches &&
-                !window.localStorage.getItem("theme")
-            ) {
-                document.documentElement.classList.remove("dark");
-                // window.localStorage.setItem("theme", "light");
-            } else if (window.localStorage.getItem("theme")) {
-                /* restore theme */
-                const current = window.localStorage.getItem("theme");
-                document.documentElement.className = current;
+            function media_theme_pref() {
+                if (
+                    window.matchMedia("(prefers-color-scheme: dark)").matches &&
+                    !window.localStorage.getItem("theme")
+                ) {
+                    document.documentElement.classList.add("dark");
+                    // window.localStorage.setItem("theme", "dark");
+                } else if (
+                    window.matchMedia("(prefers-color-scheme: light)")
+                        .matches &&
+                    !window.localStorage.getItem("theme")
+                ) {
+                    document.documentElement.classList.remove("dark");
+                    // window.localStorage.setItem("theme", "light");
+                } else if (window.localStorage.getItem("theme")) {
+                    /* restore theme */
+                    const current = window.localStorage.getItem("theme");
+                    document.documentElement.className = current;
+                }
             }
+
+            media_theme_pref();
         </script>
     </head>
 
@@ -363,6 +368,25 @@
                 const app = ns("app");
                 app.clean_date_codes();
                 app.link_filter();
+
+                setTimeout(() => {
+                    // this is so some pages can choose to refresh even with turbo="true"
+                    app.PREVIOUSLY_EXISTED = true;
+
+                    if (
+                        !window.location.pathname.startsWith("@") &&
+                        !window.location.pathname.startsWith("+")
+                    ) {
+                        // everything that isn't a profile will go back to respecting user theme choice
+                        if (
+                            globalThis.USES_DIFF_THEME === true &&
+                            globalThis.IS_SELF_THEME === false
+                        ) {
+                            media_theme_pref();
+                            console.log("use media theme pref");
+                        }
+                    }
+                }, 1000);
 
                 app["hook.scroll"](document.body, document.documentElement);
                 app["hook.dropdown.init"](window);

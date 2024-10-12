@@ -155,6 +155,7 @@ endblock %} {% block head %}
             e.target.tags.value,
             e.target.warning.value,
             e.target.reply.value,
+            e.target.unlisted.checked,
         ]).then((_) => {
             // reset if successful
             e.target.reset();

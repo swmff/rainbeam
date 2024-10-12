@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use askama_axum::Template;
 use axum::debug_handler;
 use axum::extract::{Path, Query};
@@ -58,6 +60,7 @@ struct TimelineTemplate {
     unread: usize,
     notifs: usize,
     responses: Vec<FullResponse>,
+    relationships: HashMap<String, RelationshipStatus>,
     friends: Vec<(Profile, Profile)>,
     is_powerful: bool,
     is_helper: bool,
@@ -98,6 +101,42 @@ pub async fn homepage_request(
             Err(e) => return Html(e.to_html(database)),
         };
 
+        // build relationships list
+        let mut relationships: HashMap<String, RelationshipStatus> = HashMap::new();
+
+        if let Some(ref ua) = auth_user {
+            for response in &responses {
+                if relationships.contains_key(&response.1.author.id) {
+                    continue;
+                }
+
+                if response.1.author.id == ua.id {
+                    // make sure we can view our own responses
+                    relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
+                    continue;
+                };
+
+                relationships.insert(
+                    response.1.author.id.clone(),
+                    database
+                        .auth
+                        .get_user_relationship(response.1.author.id.clone(), ua.id.clone())
+                        .await
+                        .0,
+                );
+            }
+        } else {
+            for response in &responses {
+                // no user, no relationships
+                if relationships.contains_key(&response.1.author.id) {
+                    continue;
+                }
+
+                relationships.insert(response.1.author.id.clone(), RelationshipStatus::Unknown);
+            }
+        }
+
+        // ...
         let mut is_helper: bool = false;
         let is_powerful = if let Some(ref ua) = auth_user {
             let group = match database.auth.get_group_by_id(ua.group).await {
@@ -118,6 +157,7 @@ pub async fn homepage_request(
                 unread,
                 notifs,
                 responses,
+                relationships,
                 friends: database
                     .auth
                     .get_user_participating_relationships_of_status(
@@ -454,6 +494,7 @@ struct PublicPostsTemplate {
     notifs: usize,
     page: i32,
     responses: Vec<FullResponse>,
+    relationships: HashMap<String, RelationshipStatus>,
     is_powerful: bool,
     is_helper: bool,
 }
@@ -524,6 +565,41 @@ pub async fn public_posts_timeline_request(
         }
     }
 
+    // build relationships list
+    let mut relationships: HashMap<String, RelationshipStatus> = HashMap::new();
+
+    if let Some(ref ua) = auth_user {
+        for response in &responses {
+            if relationships.contains_key(&response.1.author.id) {
+                continue;
+            }
+
+            if response.1.author.id == ua.id {
+                // make sure we can view our own responses
+                relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
+                continue;
+            };
+
+            relationships.insert(
+                response.1.author.id.clone(),
+                database
+                    .auth
+                    .get_user_relationship(response.1.author.id.clone(), ua.id.clone())
+                    .await
+                    .0,
+            );
+        }
+    } else {
+        for response in &responses {
+            // no user, no relationships
+            if relationships.contains_key(&response.1.author.id) {
+                continue;
+            }
+
+            relationships.insert(response.1.author.id.clone(), RelationshipStatus::Unknown);
+        }
+    }
+
     // ...
     let mut is_helper: bool = false;
     let is_powerful = if let Some(ref ua) = auth_user {
@@ -546,6 +622,7 @@ pub async fn public_posts_timeline_request(
             notifs,
             page: query.page,
             responses,
+            relationships,
             is_powerful,
             is_helper,
         }
@@ -563,6 +640,7 @@ struct FollowingPostsTemplate {
     notifs: usize,
     page: i32,
     responses: Vec<FullResponse>,
+    relationships: HashMap<String, RelationshipStatus>,
     is_powerful: bool,
     is_helper: bool,
 }
@@ -606,6 +684,31 @@ pub async fn following_posts_timeline_request(
         Err(_) => return Html(DatabaseError::Other.to_html(database)),
     };
 
+    // build relationships list
+    let mut relationships: HashMap<String, RelationshipStatus> = HashMap::new();
+
+    for response in &responses {
+        if relationships.contains_key(&response.1.author.id) {
+            continue;
+        }
+
+        if response.1.author.id == auth_user.id {
+            // make sure we can view our own responses
+            relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
+            continue;
+        };
+
+        relationships.insert(
+            response.1.author.id.clone(),
+            database
+                .auth
+                .get_user_relationship(response.1.author.id.clone(), auth_user.id.clone())
+                .await
+                .0,
+        );
+    }
+
+    // ...
     let mut is_helper: bool = false;
     let is_powerful = {
         let group = match database.auth.get_group_by_id(auth_user.group).await {
@@ -628,6 +731,7 @@ pub async fn following_posts_timeline_request(
             notifs,
             page: query.page,
             responses,
+            relationships,
             is_powerful,
             is_helper,
         }
@@ -645,6 +749,7 @@ struct ResponseTemplate {
     notifs: usize,
     question: Question,
     response: QuestionResponse,
+    relationship: RelationshipStatus,
     comments: Vec<(ResponseComment, usize, usize)>,
     reply: ResponseReply,
     reactions: Vec<Reaction>,
@@ -724,6 +829,23 @@ pub async fn response_request(
         false
     };
 
+    // get_relationship
+    let mut relationship = RelationshipStatus::Unknown;
+
+    if let Some(ref ua) = auth_user {
+        if (response.1.author.id == ua.id) | is_helper {
+            // make sure we can view our own responses
+            relationship = RelationshipStatus::Friends;
+        } else {
+            relationship = database
+                .auth
+                .get_user_relationship(response.1.author.id.clone(), ua.id.clone())
+                .await
+                .0;
+        }
+    }
+
+    // ...
     Html(
         ResponseTemplate {
             config: database.server_options.clone(),
@@ -733,6 +855,7 @@ pub async fn response_request(
             question: response.0,
             tags: serde_json::to_string(&response.1.tags).unwrap(),
             response: response.1,
+            relationship,
             reply: response.4,
             comments,
             reactions,

@@ -2,7 +2,7 @@ use crate::database::Database;
 use crate::model::{CircleCreate, DatabaseError, EditCircleMetadata, MembershipStatus};
 use axum::http::{HeaderMap, HeaderValue};
 use hcaptcha::Hcaptcha;
-use authbeam::model::{NotificationCreate, ProfileMetadata};
+use authbeam::model::NotificationCreate;
 use databeam::DefaultReturn;
 
 use axum::response::IntoResponse;
@@ -92,13 +92,7 @@ pub async fn get_request(
             success: true,
             message: String::new(),
             payload: {
-                // hide tokens, password, salt, and metadata
-                r.owner.password = String::new();
-                r.owner.salt = String::new();
-                r.owner.tokens = Vec::new();
-                r.owner.metadata = ProfileMetadata::default();
-
-                // return
+                r.owner.clean();
                 Some(r)
             },
         },
