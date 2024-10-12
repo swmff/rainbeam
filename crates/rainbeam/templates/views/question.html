@@ -60,7 +60,7 @@ block head %}
     <main class="flex flex-col gap-2">
         <!-- question -->
         <div
-            class="{% if !already_responded %}card-nest{% endif %} w-full"
+            class="{% if !already_responded %}card-nest{% endif %} w-full shadow"
             id="question:{{ question.id }}"
         >
             <div
@@ -236,7 +236,7 @@ block head %}
                 {% let anonymous_username = Some("anonymous") %}
                 {% let anonymous_avatar = Some("") %}
                 {% let show_comments = true %}
-                {% include "components/response.html" %} 
+                {% include "components/response.html" %}
             {% endfor %}
         </div>
     </main>

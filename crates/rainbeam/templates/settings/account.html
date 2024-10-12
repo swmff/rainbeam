@@ -257,6 +257,12 @@
 
     <script>
         (() => {
+            setTimeout(() => {
+                if (window.location.search === "?note") {
+                    document.getElementById("set_note_dialog").showModal();
+                }
+            }, 100);
+
             globalThis.block_dialog = function () {
                 // show confirmation
                 document.getElementById("block_dialog").showModal();
@@ -330,6 +336,38 @@
             </button>
         </div>
     </div>
+</dialog>
+
+<dialog id="set_note_dialog">
+    <form class="inner">
+        <textarea
+            name="sparkler:status_note"
+            id="sparkler:status_note"
+            onchange="update_kv('sparkler:status_note', event.target.value)"
+            placeholder="Tell your friennds what you're up to!"
+        ></textarea>
+
+        <p class="fade">
+            Your status note is shown on the homepage of your friends.
+        </p>
+
+        <hr />
+        <div class="flex gap-2">
+            <button
+                class="primary bold"
+                onclick="globalThis.save_settings(event).then(() => window.close())"
+            >
+                Confirm
+            </button>
+            <button
+                class="bold"
+                onclick="document.getElementById('set_note_dialog').close(); window.close()"
+                type="button"
+            >
+                Cancel
+            </button>
+        </div>
+    </form>
 </dialog>
 
 {% let profile = profile.as_ref().unwrap() %}

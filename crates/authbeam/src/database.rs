@@ -650,6 +650,7 @@ impl Database {
     pub fn allowed_custom_keys(&self) -> Vec<&'static str> {
         vec![
             "sparkler:display_name",
+            "sparkler:status_note",
             "sparkler:limited_friend_requests",
             "sparkler:limited_chats",
             "sparkler:private_profile",

@@ -74,29 +74,19 @@ block head %}
         {% endif %}
 
         <h5 id="friends">My Friends</h5>
-        <div class="flex w-full" style="max-width: 100%; overflow: auto">
-            <!-- TODO: show user daily note -->
-            {% if let Some(other) = profile %} {% for user in friends %} {% if
+        <!-- prettier-ignore -->
+        <div class="flex flex-wrap w-full">
+            {% if let Some(other) = profile %}
+                <!-- show self -->
+                {% let user = other.clone() %}
+                {% include "components/big_friend.html" %}
+            {% for user in friends %} {% if
             other.id != user.0.id %}
-            <a href="/@{{ user.0.username }}" style="margin-right: 0.25rem">
-                <img
-                    title="{{ user.0.username }}'s avatar"
-                    src="/api/v1/profiles/{{ user.0.username }}/avatar"
-                    alt="@{{ user.0.username }}"
-                    class="avatar round-sm"
-                    style="--size: 50px"
-                />
-            </a>
+                {% let user = user.0.clone() %}
+                {% include "components/big_friend.html" %}
             {% else %}
-            <a href="/@{{ user.1.username }}" style="margin-right: 0.25rem">
-                <img
-                    title="{{ user.1.username }}'s avatar"
-                    src="/api/v1/profiles/{{ user.1.username }}/avatar"
-                    alt="@{{ user.1.username }}"
-                    class="avatar round-sm"
-                    style="--size: 50px"
-                />
-            </a>
+                {% let user = user.1.clone() %}
+                {% include "components/big_friend.html" %}
             {% endif %} {% endfor %} {% endif %}
         </div>
 

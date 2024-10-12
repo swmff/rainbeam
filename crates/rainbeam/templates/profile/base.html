@@ -118,14 +118,27 @@ config.name }}{% endblock %} {% block head %}
             <style>
                 .profile_avatar {
                     --size: 160px;
+                }
+
+                .profile_avatar_container {
                     margin: -80px auto 0;
                 }
 
                 @media screen and (max-width: 900px) {
                     .profile_avatar {
                         --size: 120px;
+                    }
+
+                    .profile_avatar_container {
                         margin: -40px auto 0;
                     }
+                }
+
+                .status_note {
+                    font-size: 14px !important;
+                    height: 32px !important;
+                    width: 32px !important;
+                    min-width: 32px !important;
                 }
             </style>
 
@@ -135,12 +148,17 @@ config.name }}{% endblock %} {% block head %}
                 style="padding-top: 0; height: max-content"
             >
                 <div class="flex flex-col gap-2 w-full">
-                    <img
-                        title="{{ other.username }}'s avatar"
-                        src="/api/v1/profiles/{{ other.username }}/avatar"
-                        alt=""
-                        class="avatar shadow-md profile_avatar"
-                    />
+                    <div style="position: relative" class="profile_avatar_container">
+                        <img
+                            title="{{ other.username }}'s avatar"
+                            src="/api/v1/profiles/{{ other.username }}/avatar"
+                            alt=""
+                            class="avatar shadow-md profile_avatar"
+                        />
+
+                        {% let user = other.clone() %}
+                        {% include "components/user_note.html" %}
+                    </div>
 
                     <!-- prettier-ignore -->
                     <div id="names">
