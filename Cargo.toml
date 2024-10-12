@@ -1,11 +1,12 @@
 [workspace]
 resolver = "2"
 members = [
-  "crates/rainbeam",
-  "crates/authbeam",
-  "crates/databeam",
-  "crates/shared"
-, "crates/providence"]
+    "crates/rainbeam",
+    "crates/authbeam",
+    "crates/databeam",
+    "crates/shared",
+    "crates/providence",
+]
 
 [profile.release]
 opt-level = "z"
@@ -13,4 +14,4 @@ lto = true
 codegen-units = 1
 # panic = "abort"
 panic = "unwind"
-strip = true 
+strip = true

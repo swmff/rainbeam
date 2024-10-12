@@ -53,7 +53,7 @@ struct HomepageTemplate {
 }
 
 #[derive(Template)]
-#[template(path = "timeline.html")]
+#[template(path = "timelines/timeline.html")]
 struct TimelineTemplate {
     config: Config,
     profile: Option<Profile>,
@@ -232,7 +232,7 @@ pub async fn carp_request() -> impl IntoResponse {
 }
 
 #[derive(Template)]
-#[template(path = "login.html")]
+#[template(path = "auth/login.html")]
 struct LoginTemplate {
     config: Config,
     profile: Option<Profile>,
@@ -263,7 +263,7 @@ pub async fn login_request(jar: CookieJar, State(database): State<Database>) -> 
 }
 
 #[derive(Template)]
-#[template(path = "sign_up.html")]
+#[template(path = "auth/sign_up.html")]
 struct SignUpTemplate {
     config: Config,
     profile: Option<Profile>,
@@ -382,7 +382,7 @@ pub fn clean_metadata(metadata: &ProfileMetadata) -> String {
 }
 
 #[derive(Template)]
-#[template(path = "question.html")]
+#[template(path = "views/question.html")]
 struct QuestionTemplate {
     config: Config,
     profile: Option<Profile>,
@@ -486,7 +486,7 @@ pub async fn question_request(
 }
 
 #[derive(Template)]
-#[template(path = "posts.html")]
+#[template(path = "timelines/posts.html")]
 struct PublicPostsTemplate {
     config: Config,
     profile: Option<Profile>,
@@ -632,7 +632,7 @@ pub async fn public_posts_timeline_request(
 }
 
 #[derive(Template)]
-#[template(path = "posts_following.html")]
+#[template(path = "timelines/posts_following.html")]
 struct FollowingPostsTemplate {
     config: Config,
     profile: Option<Profile>,
@@ -741,7 +741,7 @@ pub async fn following_posts_timeline_request(
 }
 
 #[derive(Template)]
-#[template(path = "response.html")]
+#[template(path = "views/response.html")]
 struct ResponseTemplate {
     config: Config,
     profile: Option<Profile>,
@@ -871,7 +871,7 @@ pub async fn response_request(
 }
 
 #[derive(Template)]
-#[template(path = "comment.html")]
+#[template(path = "views/comment.html")]
 struct CommentTemplate {
     config: Config,
     profile: Option<Profile>,
@@ -1069,7 +1069,7 @@ pub async fn inbox_request(jar: CookieJar, State(database): State<Database>) -> 
 }
 
 #[derive(Template)]
-#[template(path = "global_question_timeline.html")]
+#[template(path = "timelines/global_question_timeline.html")]
 struct GlobalTimelineTemplate {
     config: Config,
     profile: Option<Profile>,
@@ -1144,7 +1144,7 @@ pub async fn global_timeline_request(
 }
 
 #[derive(Template)]
-#[template(path = "public_global_question_timeline.html")]
+#[template(path = "timelines/public_global_question_timeline.html")]
 struct PublicGlobalTimelineTemplate {
     config: Config,
     profile: Option<Profile>,

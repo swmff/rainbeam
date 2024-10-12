@@ -757,7 +757,7 @@ config.name }}{% endblock %} {% block head %}
         trigger("questions:carp");
         use("app", function (app) {
             if (app.PREVIOUSLY_EXISTED === true) {
-                window.location.reload();
+                // window.location.reload();
                 app.PREVIOUSLY_EXISTED = false;
             }
         });
