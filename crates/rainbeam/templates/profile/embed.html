@@ -283,6 +283,8 @@
             }
         </style>
 
-        {% include "components/theming.html" %}
+        {% let raw_metadata =
+        crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
+        "components/theming.html" %}
     </body>
 </html>

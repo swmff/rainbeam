@@ -131,7 +131,7 @@
                     } else {
                         success.style.display = "flex";
                         success.innerHTML = `<p>Circle created!</p>
-                    
+
                     <hr />
                     <a href="/circles/@${e.target.name.value}" class="button primary bold">Continue</a>`;
                         forms.style.display = "none";
@@ -144,5 +144,6 @@
 {% if let Some(profile) = profile %} {% let other = profile.clone() %} {% if
 profile.username == other.username %}
 <div id="is_self"></div>
-{% endif %} {% include "components/theming.html" %} {% endif %} {% call super()
-%} {% endblock %}
+{% endif %} {% let raw_metadata =
+crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
+"components/theming.html" %} {% endif %} {% call super() %} {% endblock %}

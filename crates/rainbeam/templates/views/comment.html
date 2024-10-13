@@ -89,7 +89,7 @@ block head %}
 
         <!-- reply -->
         <!-- prettier-ignore -->
-        {% if let Some(comment) = comment.0.reply %} 
+        {% if let Some(comment) = comment.0.reply %}
         {% let comment = (comment, 0, 0) %}
         <h5 id="comment" class="flex items-center gap-1">
             Replying to
@@ -213,5 +213,6 @@ block head %}
 {% if let Some(profile) = profile %} {% let other = profile.clone() %} {% if
 profile.username == other.username %}
 <div id="is_self"></div>
-{% endif %} {% include "components/theming.html" %} {% endif %} {% call super()
-%} {% endblock %}
+{% endif %} {% let raw_metadata =
+crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
+"components/theming.html" %} {% endif %} {% call super() %} {% endblock %}

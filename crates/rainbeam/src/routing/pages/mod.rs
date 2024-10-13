@@ -349,6 +349,7 @@ pub fn color_escape(color: &&&String) -> String {
             .replace("}", "")
             .replace("{", "")
             .replace("url(\"", "url(\"/api/util/ext/image?img=")
+            .replace("url('", "url('/api/util/ext/image?img=")
             .replace("url(https://", "url(/api/util/ext/image?img=https://"),
     )
 }
@@ -367,6 +368,11 @@ pub fn remove_tags(input: &str) -> String {
 
 /// Clean profile metadata
 pub fn clean_metadata(metadata: &ProfileMetadata) -> String {
+    remove_tags(&serde_json::to_string(&clean_metadata_raw(metadata)).unwrap())
+}
+
+/// Clean profile metadata
+pub fn clean_metadata_raw(metadata: &ProfileMetadata) -> ProfileMetadata {
     // remove stupid characters
     let mut metadata = metadata.to_owned();
 
@@ -378,12 +384,14 @@ pub fn clean_metadata(metadata: &ProfileMetadata) -> String {
                 .replace("<", "&lt;")
                 .replace(">", "&gt;")
                 .replace("url(\"", "url(\"/api/util/ext/image?img=")
-                .replace("url(https://", "url(/api/util/ext/image?img=https://"),
+                .replace("url(https://", "url(/api/util/ext/image?img=https://")
+                .replace("<style>", "")
+                .replace("</style>", ""),
         );
     }
 
     // ...
-    remove_tags(&serde_json::to_string(&metadata).unwrap())
+    metadata
 }
 
 #[derive(Template)]

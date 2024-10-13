@@ -56,7 +56,9 @@ endblock %} {% block nav_left %}
 {% endblock %} {% block content %} {% if let Some(profile) = profile %} {% let
 other = profile.clone() %} {% if profile.username == other.username %}
 <div id="is_self"></div>
-{% endif %} {% include "components/theming.html" %} {% endif %}
+{% endif %} {% let raw_metadata =
+crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
+"components/theming.html" %} {% endif %}
 
 <article class="flex flex-collapse gap-2">
     <div

@@ -420,16 +420,16 @@ profile.username == other.username %}
             {% for user in friends %}
             {% if other.id != user.0.id %}
             <!-- prettier-ignore -->
-            <option 
-                value="{{ user.0.id }}" 
+            <option
+                value="{{ user.0.id }}"
                 {% if chat.users.contains(user.0.id) %}disabled{% endif %}
             >
                 {{ user.0.username }}
             </option>
             {% else %}
             <!-- prettier-ignore -->
-            <option 
-                value="{{ user.1.id }}" 
+            <option
+                value="{{ user.1.id }}"
                 {% if chat.users.contains(user.1.id) %}disabled{% endif %}
             >
                 {{ user.1.username }}
@@ -452,5 +452,6 @@ profile.username == other.username %}
 </dialog>
 
 <div id="is_self"></div>
-{% endif %} {% include "components/theming.html" %} {% endif %} {% call super()
-%} {% endblock %}
+{% endif %} {% let raw_metadata =
+crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
+"components/theming.html" %} {% endif %} {% call super() %} {% endblock %}

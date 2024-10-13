@@ -592,8 +592,8 @@
 </script>
 {% endif %}
 
-{% if let Some(profile) = profile %} {% let other = profile.clone() %} {% if
-profile.username == other.username %}
-<div id="is_self"></div>
-{% endif %} {% include "components/theming.html" %} {% endif %} {% call super()
+<!-- prettier-ignore -->
+{% let other = circle.clone() %}
+{% let raw_metadata = crate::routing::pages::circles::clean_metadata_raw(other.metadata) %}
+{% include "../components/theming.html" %} {% call super()
 %} {% endblock %}

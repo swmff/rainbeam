@@ -919,5 +919,6 @@ config.name }}{% endblock %} {% block head %}
     <div id="is_self"></div>
 {% endif %}
 
+{% let raw_metadata = crate::routing::pages::clean_metadata_raw(other.metadata) %}
 {% include "components/theming.html" %}
 {% call super() %} {% endblock %}

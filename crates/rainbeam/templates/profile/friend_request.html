@@ -106,5 +106,6 @@
 
 {% if let Some(profile) = profile %} {% let other = profile.clone() %}
 <div id="is_self"></div>
-{% include "components/theming.html" %} {% endif %} {% call super() %} {%
+{% let raw_metadata = crate::routing::pages::clean_metadata_raw(other.metadata)
+%} {% include "components/theming.html" %} {% endif %} {% call super() %} {%
 endblock %}

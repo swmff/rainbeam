@@ -25,20 +25,32 @@ pub fn remove_tags(input: &str) -> String {
         .replace("</script>", "</not-script")
 }
 
-/// Clean profile metadata
+/// Clean circle metadata
 pub fn clean_metadata(metadata: &CircleMetadata) -> String {
+    remove_tags(&serde_json::to_string(&clean_metadata_raw(metadata)).unwrap())
+}
+
+/// Clean circle metadata
+pub fn clean_metadata_raw(metadata: &CircleMetadata) -> CircleMetadata {
     // remove stupid characters
     let mut metadata = metadata.to_owned();
 
     for field in metadata.kv.clone() {
         metadata.kv.insert(
             field.0.to_string(),
-            field.1.replace("<", "&lt;").replace(">", "&gt;"),
+            field
+                .1
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("url(\"", "url(\"/api/util/ext/image?img=")
+                .replace("url(https://", "url(/api/util/ext/image?img=https://")
+                .replace("<style>", "")
+                .replace("</style>", ""),
         );
     }
 
     // ...
-    remove_tags(&serde_json::to_string(&metadata).unwrap())
+    metadata
 }
 
 #[derive(Template)]
