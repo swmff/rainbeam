@@ -28,7 +28,11 @@
         <link rel="stylesheet" href="/static/style.css" />
 
         <!-- shared js -->
-        <script src="https://unpkg.com/regns@1.0.1/index.js"></script>
+        <script
+            src="/static/js/loader.js"
+            id="loader.js"
+            data-turbo-permanent
+        ></script>
         <script src="https://unpkg.com/@twemoji/api@15.1.0/dist/twemoji.min.js"></script>
         <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
         <script
@@ -39,9 +43,11 @@
         ></script>
 
         <script>
+            globalThis.ns_verbose = false;
             globalThis.ns_config = {
                 root: "/static/js/",
-                version: "1.9.2",
+                version: "1.9.3",
+                verbose: globalThis.ns_verbose,
             };
 
             globalThis._app_base = {
@@ -50,7 +56,11 @@
             };
         </script>
 
-        <script src="/static/js/app.js"></script>
+        <script
+            src="/static/js/app.js"
+            id="app.js"
+            data-turbo-permanent
+        ></script>
 
         <script>
             function media_theme_pref() {
@@ -348,7 +358,8 @@
             </div>
         </div>
 
-        <script>
+        <script data-turbo-eval="false">
+            // load resources
             use("dialogs", () => {});
             use("warnings", () => {});
             use("search", () => {});
@@ -363,7 +374,9 @@
 
             use("reports", () => {});
             use("account_warnings", () => {});
+        </script>
 
+        <script>
             (() => {
                 const app = ns("app");
                 app.clean_date_codes();

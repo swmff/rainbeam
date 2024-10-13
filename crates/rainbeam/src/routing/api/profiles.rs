@@ -22,8 +22,6 @@ pub fn routes(database: Database) -> Router {
         .route("/:username/banner", get(banner_request))
         .route("/:username/report", post(report_request))
         .route("/:username/follow", post(follow_request))
-        .route("/:username/unfollow", post(unfollow_request)) // force unfollow
-        .route("/:username/unfollow-me", post(unfollow_me_request)) // force them to unfollow you
         .route("/:username/export", get(export_request)) // staff
         .route("/:username/relationship/friend", post(friend_request))
         .route("/:username/relationship/block", post(block_request))
@@ -387,31 +385,12 @@ pub async fn follow_request(
         .0;
 
     if relationship == RelationshipStatus::Blocked {
-        // remove the user follow and return
         // blocked users cannot follow the people who blocked them!
-        match database
-            .auth
-            .force_remove_user_follow(&mut UserFollow {
-                user: auth_user.id,
-                following: attempting_to_follow.id,
-            })
-            .await
-        {
-            Ok(_) => {
-                return Json(DefaultReturn {
-                    success: true,
-                    message: "Acceptable".to_string(),
-                    payload: (),
-                })
-            }
-            Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: (),
-                })
-            }
-        }
+        return Json(DefaultReturn {
+            success: false,
+            message: DatabaseError::NotAllowed.to_string(),
+            payload: (),
+        });
     }
 
     // return
@@ -433,152 +412,6 @@ pub async fn follow_request(
             message: e.to_string(),
             payload: (),
         }),
-    }
-}
-
-/// Force unfollow on the given user
-pub async fn unfollow_request(
-    jar: CookieJar,
-    Path(username): Path<String>,
-    State(database): State<Database>,
-) -> impl IntoResponse {
-    // get user from token
-    let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
-            Ok(ua) => ua,
-            Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: (),
-                });
-            }
-        },
-        None => {
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: (),
-            });
-        }
-    };
-
-    // ...
-    let attempting_to_follow = match database
-        .auth
-        .get_profile_by_username(username.to_owned())
-        .await
-    {
-        Ok(ua) => ua,
-        Err(_) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotFound.to_string(),
-                payload: (),
-            })
-        }
-    };
-
-    // return
-    match database
-        .auth
-        .force_remove_user_follow(&mut UserFollow {
-            user: auth_user.id,
-            following: attempting_to_follow.id,
-        })
-        .await
-    {
-        Ok(_) => {
-            return Json(DefaultReturn {
-                success: true,
-                message: "Acceptable".to_string(),
-                payload: (),
-            })
-        }
-        Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: (),
-            })
-        }
-    }
-}
-
-/// Force unfollow the current user on the given user
-pub async fn unfollow_me_request(
-    jar: CookieJar,
-    Path(username): Path<String>,
-    State(database): State<Database>,
-) -> impl IntoResponse {
-    // get user from token
-    let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
-            Ok(ua) => ua,
-            Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: (),
-                });
-            }
-        },
-        None => {
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: (),
-            });
-        }
-    };
-
-    // ...
-    let other_user = match database
-        .auth
-        .get_profile_by_username(username.to_owned())
-        .await
-    {
-        Ok(ua) => ua,
-        Err(_) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotFound.to_string(),
-                payload: (),
-            })
-        }
-    };
-
-    // return
-    match database
-        .auth
-        .force_remove_user_follow(&mut UserFollow {
-            user: other_user.id,
-            following: auth_user.id,
-        })
-        .await
-    {
-        Ok(_) => {
-            return Json(DefaultReturn {
-                success: true,
-                message: "Acceptable".to_string(),
-                payload: (),
-            })
-        }
-        Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: (),
-            })
-        }
     }
 }
 

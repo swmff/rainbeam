@@ -2737,18 +2737,18 @@ impl Database {
         disable_notifications: bool,
     ) -> Result<()> {
         // get current membership status
-        let relationship = self.get_user_relationship(one.clone(), two.clone()).await;
+        let mut relationship = self.get_user_relationship(one.clone(), two.clone()).await;
 
         if relationship.0 == status {
             return Ok(());
         }
 
-        let uone = match self.get_profile(relationship.1).await {
+        let mut uone = match self.get_profile(relationship.1).await {
             Ok(ua) => ua,
             Err(e) => return Err(e),
         };
 
-        let utwo = match self.get_profile(relationship.2).await {
+        let mut utwo = match self.get_profile(relationship.2).await {
             Ok(ua) => ua,
             Err(e) => return Err(e),
         };
@@ -2756,6 +2756,33 @@ impl Database {
         // ...
         match status {
             RelationshipStatus::Blocked => {
+                // if the relationship exists but we aren't user one, delete it
+                if relationship.0 != RelationshipStatus::Unknown && uone.id != one {
+                    // delete
+                    let query: String =
+                        if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+                            "DELETE FROM \"xrelationships\" WHERE \"one\" = ? AND \"two\" = ?"
+                        } else {
+                            "DELETE FROM \"xrelationships\" WHERE \"one\" = ? AND \"two\" = ?"
+                        }
+                        .to_string();
+
+                    let c = &self.base.db.client;
+                    if let Err(_) = sqlquery(&query)
+                        .bind::<&String>(&uone.id)
+                        .bind::<&String>(&utwo.id)
+                        .execute(c)
+                        .await
+                    {
+                        return Err(AuthError::Other);
+                    };
+
+                    relationship.0 = RelationshipStatus::Unknown; // act like it never happened
+                    uone.id = one;
+                    utwo.id = two;
+                }
+
+                // ...
                 if relationship.0 != RelationshipStatus::Unknown {
                     if relationship.0 == RelationshipStatus::Friends {
                         // decr friendship counts since we were previously friends but are not now

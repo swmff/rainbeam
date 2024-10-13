@@ -847,11 +847,13 @@ config.name }}{% endblock %} {% block head %}
 
                 if (button.innerText === "Follow") {
                     button.classList.remove("primary");
+                    button.classList.remove("bold");
                     button.innerText = "Unfollow";
 
                     trigger("app:toast", ["success", "User followed!"]);
                 } else {
                     button.classList.add("primary");
+                    button.classList.add("bold");
                     button.innerText = "Follow";
 
                     trigger("app:toast", ["success", "User unfollowed!"]);
