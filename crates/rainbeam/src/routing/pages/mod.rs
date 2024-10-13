@@ -373,7 +373,12 @@ pub fn clean_metadata(metadata: &ProfileMetadata) -> String {
     for field in metadata.kv.clone() {
         metadata.kv.insert(
             field.0.to_string(),
-            field.1.replace("<", "&lt;").replace(">", "&gt;"),
+            field
+                .1
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("url(\"", "url(\"/api/util/ext/image?img=")
+                .replace("url(https://", "url(/api/util/ext/image?img=https://"),
         );
     }
 

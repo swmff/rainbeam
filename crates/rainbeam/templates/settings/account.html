@@ -339,6 +339,11 @@
 </dialog>
 
 <dialog id="set_note_dialog">
+    <script
+        type="module"
+        src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"
+    ></script>
+
     <form class="inner">
         <textarea
             name="sparkler:status_note"
@@ -349,6 +354,52 @@
 
         <p class="fade">
             Your status note is shown on the homepage of your friends.
+        </p>
+
+        <details id="emoji_details">
+            <summary class="flex gap-2 items-center">
+                <div id="sparkler:status_emoji"></div>
+                Choose emoji
+            </summary>
+
+            <div class="flex gap-2">
+                <div class="thread_line"></div>
+                <emoji-picker
+                    style="
+                        --border-radius: var(--radius);
+                        --background: var(--color-super-raised);
+                        --input-border-radiFus: var(--radius);
+                        --input-border-color: var(--color-primary);
+                        --indicator-color: var(--color-primary);
+                        --emoji-padding: 0.5rem;
+                        box-shadow: 0 0 4px var(--color-shadow);
+                    "
+                    class="w-full"
+                ></emoji-picker>
+            </div>
+        </details>
+        <script>
+            // I'm not making a whole emoji picker for this one thing, sorry
+            document
+                .querySelector("emoji-picker")
+                .addEventListener("emoji-click", (event) => {
+                    update_kv("sparkler:status_emoji", event.detail.unicode);
+                    document.getElementById("sparkler:status_emoji").innerText =
+                        event.detail.unicode;
+                    document
+                        .getElementById("emoji_details")
+                        .removeAttribute("open");
+                });
+
+            setTimeout(() => {
+                document.getElementById("sparkler:status_emoji").innerText =
+                    document.getElementById("sparkler:status_emoji").value ||
+                    "💭";
+            }, 100);
+        </script>
+
+        <p class="fade">
+            Your status emoji is shown in place of the default thought balloon.
         </p>
 
         <hr />

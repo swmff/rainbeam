@@ -358,8 +358,11 @@ select:focus {
 }
 
 input:disabled,
-textarea:disabledprimary,
-select:disabled {
+textarea:disabled,
+select:disabled,
+input[disabled],
+textarea[disabled],
+select[disabled] {
     opacity: 75%;
     cursor: not-allowed;
 }
@@ -851,9 +854,13 @@ dialog .inner {
     max-width: 100%;
 }
 
-dialog .inner hr:last-of-type {
+dialog .inner hr:not(.flipped):last-of-type {
     /* options separator */
     margin-top: 2rem;
+}
+
+dialog .inner hr.flipped:last-of-type {
+    margin-bottom: 2rem;
 }
 
 dialog[open] {
@@ -932,8 +939,8 @@ dialog::backdrop {
     background: var(--color-raised);
 }
 
-.card:not(:has(form)) button,
-.card:not(:has(form)) a.button {
+.card:not(:has(form)) button:not(dialog *),
+.card:not(:has(form)) a.button:not(dialog *) {
     border-radius: 360px;
 }
 
@@ -1345,9 +1352,10 @@ canvas {
     border: solid 2px var(--color-surface) !important;
     padding: 0.25rem !important;
     min-height: max-content !important;
-    height: 24px !important;
-    width: 24px !important;
-    min-width: 24px !important;
+    height: 26px !important;
+    max-height: 26px !important;
+    width: 26px !important;
+    min-width: 26px !important;
 }
 
 /* utility */

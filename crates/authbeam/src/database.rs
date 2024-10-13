@@ -651,6 +651,7 @@ impl Database {
         vec![
             "sparkler:display_name",
             "sparkler:status_note",
+            "sparkler:status_emoji",
             "sparkler:limited_friend_requests",
             "sparkler:limited_chats",
             "sparkler:private_profile",
