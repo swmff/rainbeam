@@ -148,17 +148,34 @@ pub async fn avatar_request(
         .unwrap_or("application/octet-stream");
 
     match database.auth.http.get(avatar_url).send().await {
-        Ok(stream) => (
-            [(
-                "Content-Type",
-                if guessed_mime == "text/html" {
-                    "text/plain"
-                } else {
-                    guessed_mime
-                },
-            )],
-            Body::from_stream(stream.bytes_stream()),
-        ),
+        Ok(stream) => {
+            if let Some(ct) = stream.headers().get("Content-Type") {
+                if !ct.to_str().unwrap().starts_with("image/") {
+                    // if we failed to load the image, we might get back text/html or something
+                    // we're going to return the default image if we got something that isn't
+                    // an image (or has an incorrect mime)
+                    return (
+                        [("Content-Type", "image/svg+xml")],
+                        Body::from(read_image(
+                            database.server_options.static_dir,
+                            "default-avatar.svg".to_string(),
+                        )),
+                    );
+                }
+            }
+
+            (
+                [(
+                    "Content-Type",
+                    if guessed_mime == "text/html" {
+                        "text/plain"
+                    } else {
+                        guessed_mime
+                    },
+                )],
+                Body::from_stream(stream.bytes_stream()),
+            )
+        }
         Err(_) => (
             [("Content-Type", "image/svg+xml")],
             Body::from(read_image(
@@ -232,17 +249,34 @@ pub async fn banner_request(
         .unwrap_or("application/octet-stream");
 
     match database.auth.http.get(banner_url).send().await {
-        Ok(stream) => (
-            [(
-                "Content-Type",
-                if guessed_mime == "text/html" {
-                    "text/plain"
-                } else {
-                    guessed_mime
-                },
-            )],
-            Body::from_stream(stream.bytes_stream()),
-        ),
+        Ok(stream) => {
+            if let Some(ct) = stream.headers().get("Content-Type") {
+                if !ct.to_str().unwrap().starts_with("image/") {
+                    // if we failed to load the image, we might get back text/html or something
+                    // we're going to return the default image if we got something that isn't
+                    // an image (or has an incorrect mime)
+                    return (
+                        [("Content-Type", "image/svg+xml")],
+                        Body::from(read_image(
+                            database.server_options.static_dir,
+                            "default-banner.svg".to_string(),
+                        )),
+                    );
+                }
+            }
+
+            (
+                [(
+                    "Content-Type",
+                    if guessed_mime == "text/html" {
+                        "text/plain"
+                    } else {
+                        guessed_mime
+                    },
+                )],
+                Body::from_stream(stream.bytes_stream()),
+            )
+        }
         Err(_) => (
             [("Content-Type", "image/svg+xml")],
             Body::from(read_image(

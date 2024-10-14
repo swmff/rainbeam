@@ -66,17 +66,33 @@ pub async fn external_image_request(
         .unwrap_or("application/octet-stream");
 
     match database.auth.http.get(image_url).send().await {
-        Ok(stream) => (
-            [(
-                "Content-Type",
-                if guessed_mime == "text/html" {
-                    "text/plain"
-                } else {
-                    guessed_mime
-                },
-            )],
-            Body::from_stream(stream.bytes_stream()),
-        ),
+        Ok(stream) => {
+            if let Some(ct) = stream.headers().get("Content-Type") {
+                let bad_ct = vec!["text/html", "text/plain"];
+                if bad_ct.contains(&ct.to_str().unwrap()) {
+                    // if we got html, return default banner (likely an error page)
+                    return (
+                        [("Content-Type", "image/svg+xml")],
+                        Body::from(read_image(
+                            database.server_options.static_dir,
+                            "default-banner.svg".to_string(),
+                        )),
+                    );
+                }
+            }
+
+            (
+                [(
+                    "Content-Type",
+                    if guessed_mime == "text/html" {
+                        "text/plain"
+                    } else {
+                        guessed_mime
+                    },
+                )],
+                Body::from_stream(stream.bytes_stream()),
+            )
+        }
         Err(_) => (
             [("Content-Type", "image/svg+xml")],
             Body::from(read_image(
