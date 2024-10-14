@@ -14,9 +14,13 @@ just build sqlite
 
 Instead of “sqlite”, you can also use “mysql" or "postgres” for MySQL/MariaDB and PostgreSQL respectively!
 
+### Configuration
+
+You can configure Rainbeam in the configuration file located at `./.config/config.toml`. This file will be created for you when the server is first run.
+
 ### hCaptcha
 
-Rainbeam requires hCaptcha to secure logins and registers. You can provide your h-captcha configuration in `~/.config/xsu-apps/rainbeam/config.toml`:
+Rainbeam requires hCaptcha to secure logins and registers. You can provide your h-captcha configuration in `./.config/config.toml`:
 
 ```toml
 # ...
@@ -27,16 +31,6 @@ secret = "..."
 
 You can sign up for an hCaptcha account at <https://www.hcaptcha.com/>!
 
-### Static assets
-
-For Rainbeam to properly serve static assets, you must link the `static` directory to `~/.config/xsu-apps/rainbeam/static`:
-
-```bash
-ln -s /path/to/rainbeam/crates/rainbeam/static ~/.config/xsu-apps/rainbeam/static
-```
-
-You can provide a Markdown file for `/site/about` by creating `static/site/about.md`. This file can be used to provide information about your specific instance!
-
 ### Moderation
 
 After you have created your first account, you'll need to manually create a permissions group in the database so that you can mark the account as a `Manager`. The manager permission allows you to delete accounts, responses, comments, and questions. You can also view profile warnings and reports with this permission. You can view an example SQL query to do this [here](https://github.com/swmff/rainbeam/blob/master/sql/moderation.sql)!
@@ -45,7 +39,7 @@ You can add additional moderators with the `Helper` role. They can also be given
 
 ### Account registration
 
-To open your instance up for free account registration, you'll need to set `registration_enabled` to `true` in `~/.config/xsu-apps/rainbeam/config.toml`.
+To open your instance up for free account registration, you'll need to set `registration_enabled` to `true` in `./.config/config.toml`.
 
 ### PWA
 

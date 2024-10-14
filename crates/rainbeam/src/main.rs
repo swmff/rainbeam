@@ -11,6 +11,7 @@ use tracing::{info, Level};
 
 use authbeam::{api as AuthApi, Database as AuthDatabase};
 use databeam::config::Config as DataConf;
+use shared::fs;
 
 mod config;
 mod database;
@@ -22,8 +23,9 @@ mod routing;
 pub async fn main() {
     let mut config = config::Config::get_config();
 
-    let home = std::env::var("HOME").expect("failed to read $HOME");
-    let static_dir = format!("{home}/.config/xsu-apps/rainbeam/static");
+    let c = fs::canonicalize(".").unwrap();
+    let here = c.to_str().unwrap();
+    let static_dir = format!("{here}/.config/static");
     config.static_dir = static_dir.clone();
 
     tracing_subscriber::fmt()
