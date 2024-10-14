@@ -1611,6 +1611,10 @@ pub async fn routes(database: Database) -> Router {
             "/@:username/relationship/friend_accept",
             get(profile::friend_request),
         )
+        .route(
+            "/@:username/_app/card.html",
+            get(profile::render_card_request),
+        )
         .route("/@:username", get(profile::profile_request))
         // circles
         .route("/circles", get(circles::circles_request))

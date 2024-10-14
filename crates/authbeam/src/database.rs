@@ -1707,12 +1707,9 @@ impl Database {
                 // create notification
                 if let Err(e) = self
                     .create_notification(NotificationCreate {
-                        title: format!(
-                            "[@{}](/@{}) followed you!",
-                            user_1.username, user_1.username
-                        ),
+                        title: format!("[@{}](/+u/{}) followed you!", user_1.username, user_1.id),
                         content: String::new(),
-                        address: format!("/@{}", props.user),
+                        address: format!("/+u/{}", user_1.id),
                         recipient: props.following.clone(),
                     })
                     .await
@@ -2874,11 +2871,11 @@ impl Database {
                     if let Err(_) = self
                         .create_notification(NotificationCreate {
                             title: format!(
-                                "[@{}](/@{}) has sent you a friend request!",
-                                uone.username, uone.username
+                                "[@{}](/+u/{}) has sent you a friend request!",
+                                uone.username, uone.id
                             ),
                             content: format!("{} wants to be your friend.", uone.username),
-                            address: format!("/@{}/relationship/friend_accept", uone.username),
+                            address: format!("/@{}/relationship/friend_accept", uone.id),
                             recipient: utwo.id,
                         })
                         .await

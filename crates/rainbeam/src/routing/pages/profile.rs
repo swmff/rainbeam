@@ -1992,3 +1992,41 @@ pub async fn friend_request(
         .unwrap(),
     )
 }
+
+#[derive(Template)]
+#[template(path = "fun/styled_profile_card.html")]
+struct CardTemplate {
+    profile: Option<Profile>,
+    user: Profile,
+}
+
+/// GET /@:username/_app/card.html
+pub async fn render_card_request(
+    jar: CookieJar,
+    Path(username): Path<String>,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => Some(ua),
+            Err(_) => None,
+        },
+        None => None,
+    };
+
+    Html(
+        CardTemplate {
+            profile: auth_user,
+            user: match database.get_profile(username).await {
+                Ok(ua) => ua,
+                Err(e) => return Html(e.to_html(database)),
+            },
+        }
+        .render()
+        .unwrap(),
+    )
+}
