@@ -7,3 +7,4 @@ crates/rainbeam/static/manifest.json
 crates/rainbeam/static/images/logo/
 crates/rainbeam/static/favicon.svg
 *.db
+.config/config.toml

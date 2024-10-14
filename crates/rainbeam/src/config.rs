@@ -1,6 +1,6 @@
 //! Application config manager
 use serde::{Deserialize, Serialize};
-use std::{env, io::Result};
+use std::io::Result;
 
 use authbeam::database::HCaptchaConfig;
 use shared::fs;
@@ -14,7 +14,7 @@ pub struct Config {
     pub name: String,
     /// The description of the site
     pub description: String,
-    /// The location of the static directory, should not be supplied manually as it will be overwritten with `$HOME/.config/xsu-apps/rainbeam/static`
+    /// The location of the static directory, should not be supplied manually as it will be overwritten with `./.config/static`
     #[serde(default)]
     pub static_dir: String,
     /// HCaptcha configuration
@@ -62,22 +62,10 @@ impl Config {
 
     /// Pull configuration file
     pub fn get_config() -> Self {
-        let home = env::var("HOME").expect("failed to read $HOME");
+        let c = fs::canonicalize(".").unwrap();
+        let here = c.to_str().unwrap();
 
-        if let Err(_) = fs::read_dir(format!("{home}/.config/xsu-apps/rainbeam")) {
-            // make sure .config exists
-            fs::mkdir(format!("{home}/.config")).expect("failed to create .config directory");
-
-            // make sure .config/xsu-apps exists
-            fs::mkdir(format!("{home}/.config/xsu-apps"))
-                .expect("failed to create xsu-apps directory");
-
-            // create .config/xsu-apps/slime
-            fs::mkdir(format!("{home}/.config/xsu-apps/rainbeam"))
-                .expect("failed to create application directory")
-        }
-
-        match fs::read(format!("{home}/.config/xsu-apps/rainbeam/config.toml")) {
+        match fs::read(format!("{here}/.config/config.toml")) {
             Ok(c) => Config::read(c),
             Err(_) => {
                 Self::update_config(Self::default()).expect("failed to write default config");
@@ -88,10 +76,11 @@ impl Config {
 
     /// Update configuration file
     pub fn update_config(contents: Self) -> Result<()> {
-        let home = env::var("HOME").expect("failed to read $HOME");
+        let c = fs::canonicalize(".").unwrap();
+        let here = c.to_str().unwrap();
 
         fs::write(
-            format!("{home}/.config/xsu-apps/rainbeam/config.toml"),
+            format!("{here}/.config/config.toml"),
             toml::to_string_pretty::<Self>(&contents).unwrap(),
         )
     }

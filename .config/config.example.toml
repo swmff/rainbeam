@@ -1,0 +1,14 @@
+port = 8080
+host = "https://example.com"
+blocked_hosted = ["https://example.com", "https://example2.com"]
+
+name = "Rainbeam"
+description = "My Rainbeam instance"
+
+real_ip_header = "CF-Connecting-IP"
+registration_enabled = true
+
+[captcha]
+# CHANGE THIS
+site_key = "10000000-ffff-ffff-ffff-000000000001"
+secret = "0x0000000000000000000000000000000000000000"
