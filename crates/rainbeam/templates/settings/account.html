@@ -5,7 +5,8 @@
 <a href="/settings/privacy">Privacy</a>
 {% endblock %} {% block panel %}
 
-<div class="flex flex-col gap-2">
+<div class="flex flex-col gap-4">
+    <h4 class="title">Local Theming</h4>
     <div class="flex flex-col gap-1">
         <label for="sparkler:website_theme">Website theme</label>
 
@@ -64,6 +65,7 @@
         </p>
     </div>
 
+    <h4 class="title">Local Behaviour</h4>
     <div class="flex flex-col gap-1">
         <div class="checkbox_container">
             <input
@@ -78,7 +80,7 @@
             </label>
         </div>
 
-        <p class="fade">
+        <p class="fade subtext">
             Clear specific notifications automatically whenever you open them.
         </p>
     </div>
@@ -97,9 +99,10 @@
             </label>
         </div>
 
-        <p class="fade">"Hide your name" will be checked by default.</p>
+        <p class="fade subtext">"Hide your name" will be checked by default.</p>
     </div>
 
+    <h4 class="title">Profile Controls</h4>
     <div class="flex flex-col gap-1">
         <div class="checkbox_container">
             <input
@@ -160,12 +163,16 @@
         </div>
     </div>
 
-    <hr />
+    <h4 class="title">My Account</h4>
     <form class="flex flex-col gap-1" id="change_username">
-        <h3>Change username</h3>
+        <b class="heading">Change username</b>
 
-        <label for="current_password">Current password</label>
-        <input type="password" name="current_password" id="current_password" />
+        <label for="current_password_username">Current password</label>
+        <input
+            type="password"
+            name="current_password_username"
+            id="current_password_username"
+        />
 
         <label for="new_name">New username</label>
         <input type="text" name="new_name" id="new_name" minlength="2" />
@@ -173,9 +180,8 @@
         <button>Submit</button>
     </form>
 
-    <hr />
     <form class="flex flex-col gap-1" id="change_password">
-        <h3>Change password</h3>
+        <b class="heading">Change password</b>
 
         <label for="current_password">Current password</label>
         <input type="password" name="current_password" id="current_password" />
@@ -191,25 +197,26 @@
         <button>Submit</button>
     </form>
 
-    <hr />
     <form class="flex flex-col gap-1" id="delete_account">
-        <h3>Delete account</h3>
-        <p>
+        <b class="heading">Delete account</b>
+        <p class="fade subtext">
             Note you
             <b>cannot</b>
             undo this! Please be sure this is what you want before you continue.
         </p>
 
-        <label for="current_password">Current password</label>
-        <input type="password" name="current_password" id="current_password" />
+        <label for="current_password_delete">Current password</label>
+        <input
+            type="password"
+            name="current_password_delete"
+            id="current_password_delete"
+        />
 
         <button>Submit</button>
     </form>
 
-    <hr />
-    <div class="flex flex-col gap-1">
-        <label for="sparkler:relationships">Relationships</label>
-
+    <h4 class="title">Relationships</h4>
+    <div class="flex flex-col gap-1" id="sparkler:relationships">
         <div class="card">
             <ul style="margin-bottom: 0">
                 {% for relationship in relationships %}
@@ -406,7 +413,7 @@
         <div class="flex gap-2">
             <button
                 class="primary bold"
-                onclick="globalThis.save_settings(event).then(() => window.close())"
+                onclick="globalThis.save_settings().then(() => window.close())"
             >
                 Confirm
             </button>
@@ -481,7 +488,7 @@
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
-                        password: e.target.current_password.value,
+                        password: e.target.current_password_username.value,
                         new_name: e.target.new_name.value,
                     }),
                 })
@@ -540,7 +547,7 @@
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
-                        password: e.target.current_password.value,
+                        password: e.target.current_password_delete.value,
                     }),
                 })
                     .then((res) => res.json())

@@ -1,4 +1,5 @@
-<div class="flex flex-col gap-2">
+<div class="flex flex-col gap-4">
+    <h4 class="title">About Me</h4>
     <div class="flex flex-col gap-1">
         <label for="sparkler:display_name">Display name</label>
 
@@ -15,7 +16,22 @@
     </div>
 
     <div class="flex flex-col gap-1">
-        <label for="sparkler:biography">Biography</label>
+        <label for="sparkler:biography" class="flex gap-2 items-center"
+            >Biography
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 16 16"
+                width="16"
+                height="16"
+                title="Supports Markdown formatting"
+                aria-label="Markdown logo"
+                class="icon"
+            >
+                <path
+                    d="M14.85 3c.63 0 1.15.52 1.14 1.15v7.7c0 .63-.51 1.15-1.15 1.15H1.15C.52 13 0 12.48 0 11.84V4.15C0 3.52.52 3 1.15 3ZM9 11V5H7L5.5 7 4 5H2v6h2V8l1.5 1.92L7 8v3Zm2.99.5L14.5 8H13V5h-2v3H9.5Z"
+                ></path>
+            </svg>
+        </label>
 
         <textarea
             name="sparkler:biography"
@@ -27,7 +43,22 @@
     </div>
 
     <div class="flex flex-col gap-1">
-        <label for="sparkler:sidebar">Sidebar</label>
+        <label for="sparkler:sidebar" class="flex gap-2 items-center"
+            >Sidebar
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 16 16"
+                width="16"
+                height="16"
+                title="Supports Markdown formatting"
+                aria-label="Markdown logo"
+                class="icon"
+            >
+                <path
+                    d="M14.85 3c.63 0 1.15.52 1.14 1.15v7.7c0 .63-.51 1.15-1.15 1.15H1.15C.52 13 0 12.48 0 11.84V4.15C0 3.52.52 3 1.15 3ZM9 11V5H7L5.5 7 4 5H2v6h2V8l1.5 1.92L7 8v3Zm2.99.5L14.5 8H13V5h-2v3H9.5Z"
+                ></path>
+            </svg>
+        </label>
 
         <textarea
             name="sparkler:sidebar"
@@ -42,7 +73,7 @@
         </p>
     </div>
 
-    <hr />
+    <h4 class="title">Images</h4>
     <div class="flex flex-col gap-1">
         <label for="sparkler:avatar_url">Avatar URL</label>
 
@@ -95,9 +126,26 @@
         </p>
     </div>
 
-    <hr />
+    <h4 class="title">Greetings</h4>
     <div class="flex flex-col gap-1">
-        <label for="sparkler:motivational_header">Motivational header</label>
+        <label
+            for="sparkler:motivational_header"
+            class="flex gap-2 items-center"
+            >Motivational header
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 16 16"
+                width="16"
+                height="16"
+                title="Supports Markdown formatting"
+                aria-label="Markdown logo"
+                class="icon"
+            >
+                <path
+                    d="M14.85 3c.63 0 1.15.52 1.14 1.15v7.7c0 .63-.51 1.15-1.15 1.15H1.15C.52 13 0 12.48 0 11.84V4.15C0 3.52.52 3 1.15 3ZM9 11V5H7L5.5 7 4 5H2v6h2V8l1.5 1.92L7 8v3Zm2.99.5L14.5 8H13V5h-2v3H9.5Z"
+                ></path>
+            </svg>
+        </label>
 
         <input
             name="sparkler:motivational_header"
@@ -112,7 +160,22 @@
     </div>
 
     <div class="flex flex-col gap-1">
-        <label for="sparkler:warning">Profile warning</label>
+        <label for="sparkler:warning" class="flex gap-2 items-center"
+            >Profile warning
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 16 16"
+                width="16"
+                height="16"
+                title="Supports Markdown formatting"
+                aria-label="Markdown logo"
+                class="icon"
+            >
+                <path
+                    d="M14.85 3c.63 0 1.15.52 1.14 1.15v7.7c0 .63-.51 1.15-1.15 1.15H1.15C.52 13 0 12.48 0 11.84V4.15C0 3.52.52 3 1.15 3ZM9 11V5H7L5.5 7 4 5H2v6h2V8l1.5 1.92L7 8v3Zm2.99.5L14.5 8H13V5h-2v3H9.5Z"
+                ></path>
+            </svg>
+        </label>
 
         <textarea
             name="sparkler:warning"
@@ -127,6 +190,7 @@
         </p>
     </div>
 
+    <h4 class="title">Anonymous</h4>
     <div class="flex flex-col gap-1">
         <label for="sparkler:anonymous_username">Anonymous username</label>
 
@@ -158,6 +222,7 @@
         </p>
     </div>
 
+    <h4 class="title">Feed</h4>
     <div class="flex flex-col gap-1">
         <label for="sparkler:pinned">Pinned</label>
 
@@ -175,8 +240,7 @@
         </p>
     </div>
 
-    <hr />
-
+    <h4 class="title">Theming</h4>
     <div class="flex flex-col gap-1">
         <label for="sparkler:profile_theme">Profile theme</label>
 
@@ -211,6 +275,7 @@
         <p class="fade">This is the base skin used on your profile.</p>
     </div>
 
+    <h4 class="title">Layout</h4>
     <div class="flex flex-col gap-1">
         <label for="sparkler:layout">Profile layout</label>
 
@@ -243,7 +308,7 @@
         <p class="fade">The layout used on your profile.</p>
     </div>
 
-    <hr />
+    <h4 class="title">Colors</h4>
 
     <div
         class="markdown-alert-important flex flex-col gap-2"
@@ -260,8 +325,6 @@
             </li>
         </ol>
     </div>
-
-    <p>Or, you can define your own colors! Leave blank for defaults.</p>
 
     <div class="flex flex-col gap-1">
         <label for="sparkler:color_surface">Surface</label>
@@ -468,25 +531,9 @@
         <p class="fade">Color used for shadows.</p>
     </div>
 
+    <h4 class="title">Advanced</h4>
     <div class="flex flex-col gap-1">
-        <label for="sparkler:custom_css" class="flex gap-4 items-center"
-            >Custom CSS
-            <span class="flex items-center fade gap-2">
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 16 16"
-                    width="16"
-                    height="16"
-                    aria-label="Warning symbol"
-                    class="icon"
-                >
-                    <path
-                        d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575Zm1.763.707a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm.53 3.996v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"
-                    ></path>
-                </svg>
-                Advanced
-            </span>
-        </label>
+        <label for="sparkler:custom_css">Custom CSS </label>
 
         <textarea
             name="sparkler:custom_css"
