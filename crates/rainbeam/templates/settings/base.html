@@ -59,6 +59,30 @@ other = profile.clone() %} {% if profile.username == other.username %}
 {% endif %} {% let raw_metadata =
 crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
 "components/theming.html" %} {% endif %}
+<style>
+    label:not(.checkbox_container *),
+    .setting {
+        text-transform: uppercase;
+        opacity: 75%;
+        font-weight: 700;
+        font-size: 14px;
+    }
+
+    .heading {
+        text-transform: title;
+        font-weight: 700;
+        opacity: 100%;
+    }
+
+    label + * + p.fade,
+    p.fade.subtext {
+        font-size: 13px;
+    }
+
+    .title:not(:first-of-type) {
+        margin-top: 2rem;
+    }
+</style>
 
 <article class="flex flex-collapse gap-2">
     <div
@@ -76,13 +100,7 @@ crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
 
     <section id="settings_content" class="card flex flex-col gap-2 w-full">
         <div id="admonition_zone"></div>
-
         {% block panel %}{% endblock %}
-
-        <hr />
-        <form id="submit_form" onsubmit="save_settings(event)">
-            <button class="primary bold">Save changes</button>
-        </form>
     </section>
 </article>
 
@@ -94,6 +112,7 @@ crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
 
 <script>
     (() => {
+        const app = ns("app");
         let metadata = JSON.parse(
             document.getElementById("my_metadata").innerHTML,
         );
@@ -101,6 +120,7 @@ crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
         // handle update
         globalThis.update_kv = (key, value) => {
             metadata.kv[key] = value;
+            save_settings(); // auto save
 
             // live theme
             if (key.startsWith("sparkler:color_")) {
@@ -172,9 +192,8 @@ crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
         }, 50);
 
         // handle submit
-        globalThis.save_settings = async (e) => {
-            e.preventDefault();
-
+        globalThis.save_settings = async () => {
+            await app.debounce("settings:save_settings");
             const res = await (
                 await fetch(
                     "/api/auth/profile/{{ profile.username }}/metadata",

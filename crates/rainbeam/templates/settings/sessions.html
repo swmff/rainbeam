@@ -4,9 +4,9 @@
 <a href="/settings/profile">Profile</a>
 <a href="/settings/privacy">Privacy</a>
 {% endblock %} {% block panel %}
-<div class="flex flex-col gap-2">
+<div class="flex flex-col gap-4">
     <div class="flex flex-col gap-1" id="manage_sessions">
-        <h3>Manage sessions</h3>
+        <h4 class="title">My Sessions</h4>
 
         {% for (i, session) in tokens_src.iter().rev().enumerate() %}
         <div class="card card-nest" id="session:{{ session }}">
