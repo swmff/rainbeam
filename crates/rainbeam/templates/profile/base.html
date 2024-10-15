@@ -836,7 +836,10 @@ config.name }}{% endblock %} {% block head %}
     function attach_carp(e) {
         e.target.innerText = "Remove drawing";
         e.target.onclick = (e) => {
-            alert("Are you sure you want to do this?");
+            if (!confirm("Are you sure you want to do this?")) {
+                return;
+            }
+
             globalThis.detach_carp(e);
         };
 

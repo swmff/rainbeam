@@ -5917,7 +5917,7 @@ impl Database {
     /// # Arguments
     /// * `props` - [`PageCreate`]
     /// * `author` - the ID of the user creating the page
-    pub async fn create_page(&self, props: PageCreate, author: String) -> Result<()> {
+    pub async fn create_page(&self, props: PageCreate, author: String) -> Result<Page> {
         // make sure page doesn't already exist
         if let Ok(_) = self
             .get_page_by_owner_slug(author.clone(), props.slug.clone())
@@ -5992,7 +5992,7 @@ impl Database {
             .execute(c)
             .await
         {
-            Ok(_) => Ok(()),
+            Ok(_) => Ok(page),
             Err(_) => Err(DatabaseError::Other),
         }
     }
