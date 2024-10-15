@@ -24,11 +24,16 @@ You can lock a given set of features behind the `tier` column of profiles using 
 
 ```toml
 [tiers]
-DoubleLimits = 1
+double_limits = 2
+stylish_card = 1
+avatar_crown = 1
+profile_badge = 1
 # ...
 ```
 
 The `tiers` configuration key contains a map of features where the key is the feature name, and the value is the minimum required tier.
+
+By default, every benefit is at tier `1`.
 
 ### hCaptcha
 
