@@ -5721,7 +5721,7 @@ impl Database {
             content: res.get("content").unwrap().to_string(),
             context: match serde_json::from_str(res.get("context").unwrap()) {
                 Ok(ctx) => ctx,
-                Err(e) => return Err(DatabaseError::ValueError),
+                Err(_) => return Err(DatabaseError::ValueError),
             },
         })
     }

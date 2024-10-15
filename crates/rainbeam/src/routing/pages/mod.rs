@@ -1662,6 +1662,7 @@ pub async fn routes(database: Database) -> Router {
         .route("/+c/:id", get(api::comments::expand_request))
         .route("/+u/:id", get(api::profiles::expand_request))
         .route("/+i/:ip", get(api::profiles::expand_ip_request))
+        .route("/+p/:id", get(api::pages::expand_request))
         // ...
         .with_state(database)
 }
