@@ -18,6 +18,18 @@ Instead of “sqlite”, you can also use “mysql" or "postgres” for MySQL/Ma
 
 You can configure Rainbeam in the configuration file located at `./.config/config.toml`. This file will be created for you when the server is first run.
 
+#### Tier features
+
+You can lock a given set of features behind the `tier` column of profiles using the `tiers` configuration key.
+
+```toml
+[tiers]
+DoubleLimits = 1
+# ...
+```
+
+The `tiers` configuration key contains a map of features where the key is the feature name, and the value is the minimum required tier.
+
 ### hCaptcha
 
 Rainbeam requires hCaptcha to secure logins and registers. You can provide your h-captcha configuration in `./.config/config.toml`:

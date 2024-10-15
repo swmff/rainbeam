@@ -159,6 +159,11 @@ config.name }}{% endblock %} {% block head %}
 
                         {% let user = other.clone() %}
                         {% include "components/user_note.html" %}
+
+                        <!-- profile crown -->
+                        {% if other.tier >= config.tiers.avatar_crown %}
+                        <div class="avatar_crown" title="Supporter ❤️">👑</div>
+                        {% endif %}
                     </div>
 
                     <!-- prettier-ignore -->
@@ -181,6 +186,15 @@ config.name }}{% endblock %} {% block head %}
                             {% for badge in other.badges %}
                             <span class="notification ff-inherit fs-md bold" style="background: {{ badge.1 }}; color: {{ badge.2 }}">{{ badge.0 }}</span>
                             {% endfor %}
+
+                            {% if other.tier >= config.tiers.profile_badge %}
+                            <span
+                                class="notification ff-inherit fs-md bold"
+                                style="background: var(--color-primary); color: var(--color-text-primary)"
+                            >
+                                👑 Supporter
+                            </span>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -623,6 +637,18 @@ config.name }}{% endblock %} {% block head %}
                         <div id="carp_context"></div>
                         <input name="carp_context" id="carp_content" type="text" style="display: none" />
 
+                        {% if let Some(profile) = profile %}
+                        <textarea
+                            class="w-full"
+                            placeholder="Type your question!"
+                            minlength="1"
+                            maxlength="{% if profile.tier >= config.tiers.double_limits %}4096{% else %}2048{% endif %}"
+                            required
+                            name="content"
+                            id="content"
+                            hook="counter"
+                        ></textarea>
+                        {% else %}
                         <textarea
                             class="w-full"
                             placeholder="Type your question!"
@@ -633,6 +659,7 @@ config.name }}{% endblock %} {% block head %}
                             id="content"
                             hook="counter"
                         ></textarea>
+                        {% endif %}
 
                         <!-- prettier-ignore -->
                         <div class="flex justify-between w-full gap-1 flex-wrap">

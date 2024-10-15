@@ -36,6 +36,8 @@ pub struct Profile {
     pub group: i32,
     /// User join timestamp
     pub joined: u128,
+    /// User tier for paid benefits
+    pub tier: i32,
 }
 
 impl Profile {
@@ -52,6 +54,7 @@ impl Profile {
             joined: 0,
             metadata: ProfileMetadata::default(),
             badges: Vec::new(),
+            tier: 0,
         }
     }
 
@@ -68,6 +71,7 @@ impl Profile {
             joined: 0,
             metadata: ProfileMetadata::default(),
             badges: Vec::new(),
+            tier: 0,
         }
     }
 
@@ -114,6 +118,7 @@ impl Default for Profile {
             badges: Vec::new(),
             group: 0,
             joined: databeam::utility::unix_epoch_timestamp(),
+            tier: 0,
         }
     }
 }

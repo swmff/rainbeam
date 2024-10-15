@@ -242,6 +242,18 @@
                     class="flex flex-col gap-2"
                     onsubmit="respond(event, '{{ question.id }}')"
                 >
+                    {% if let Some(profile) = profile %}
+                    <textarea
+                        class="w-full"
+                        placeholder="Type your response!"
+                        minlength="1"
+                        maxlength="{% if profile.tier >= config.tiers.double_limits %}8192{% else %}4096{% endif %}"
+                        required
+                        name="content"
+                        id="content-{{ question.id }}"
+                        hook="counter"
+                    ></textarea>
+                    {% else %}
                     <textarea
                         class="w-full"
                         placeholder="Type your response!"
@@ -252,8 +264,8 @@
                         id="content-{{ question.id }}"
                         hook="counter"
                     ></textarea>
-
-                    {% include "components/more_response_options.html" %}
+                    {% endif %} {% include
+                    "components/more_response_options.html" %}
 
                     <div class="flex justify-between w-full gap-1">
                         <span

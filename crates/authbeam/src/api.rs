@@ -667,10 +667,7 @@ pub async fn set_group_request(
 
     // push update
     // TODO: try not to clone
-    if let Err(e) = database
-        .edit_profile_group_by_name(username, props.group)
-        .await
-    {
+    if let Err(e) = database.edit_profile_group(username, props.group).await {
         return Json(DefaultReturn {
             success: false,
             message: e.to_string(),

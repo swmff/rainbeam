@@ -1136,15 +1136,6 @@ impl Database {
         author: String,
         ip: String,
     ) -> Result<()> {
-        // check content length
-        if props.content.trim().len() < 2 {
-            return Err(DatabaseError::ContentTooShort);
-        }
-
-        if props.content.len() > (64 * 32) {
-            return Err(DatabaseError::ContentTooLong);
-        }
-
         // check media
         if props.media.len() > (64 * 512) {
             return Err(DatabaseError::ContentTooLong);
@@ -1250,9 +1241,62 @@ impl Database {
                 // group -1 (even if it exists) is for marking users as banned
                 return Err(DatabaseError::NotAllowed);
             }
+
+            // check content length
+            if props.content.trim().len() < 2 {
+                return Err(DatabaseError::ContentTooShort);
+            }
+
+            if author.tier >= self.server_options.tiers.double_limits {
+                if props.content.len() > (64 * 64) {
+                    return Err(DatabaseError::ContentTooLong);
+                }
+            } else {
+                if props.content.len() > (64 * 32) {
+                    return Err(DatabaseError::ContentTooLong);
+                }
+            }
         } else {
             // anonymous users cannot post images
             props.content = props.content.replace("![", "[").replace("<img", "<bimg");
+
+            // check content length
+            if tag.1.len() == 36 {
+                // this is a user id, fetch author and check their limits
+                let author = match self.get_profile(tag.1.clone()).await {
+                    Ok(ua) => ua,
+                    Err(e) => return Err(e),
+                };
+
+                if author.group == -1 {
+                    // group -1 (even if it exists) is for marking users as banned
+                    return Err(DatabaseError::NotAllowed);
+                }
+
+                // check content length
+                if props.content.trim().len() < 2 {
+                    return Err(DatabaseError::ContentTooShort);
+                }
+
+                if author.tier >= self.server_options.tiers.double_limits {
+                    if props.content.len() > (64 * 64) {
+                        return Err(DatabaseError::ContentTooLong);
+                    }
+                } else {
+                    if props.content.len() > (64 * 32) {
+                        return Err(DatabaseError::ContentTooLong);
+                    }
+                }
+            } else {
+                // true anonymous
+                if props.content.trim().len() < 2 {
+                    return Err(DatabaseError::ContentTooShort);
+                }
+
+                if props.content.len() > (64 * 32) {
+                    return Err(DatabaseError::ContentTooLong);
+                }
+            }
         }
 
         // check markdown content
@@ -2185,15 +2229,6 @@ impl Database {
             Question::post()
         };
 
-        // check content length
-        if props.content.len() > (64 * 64) {
-            return Err(DatabaseError::ContentTooLong);
-        }
-
-        if props.content.len() < 2 {
-            return Err(DatabaseError::ContentTooShort);
-        }
-
         // check author permissions
         let mut author = match self.get_profile(author.clone()).await {
             Ok(ua) => ua,
@@ -2203,6 +2238,21 @@ impl Database {
         if author.group == -1 {
             // group -1 (even if it exists) is for marking users as banned
             return Err(DatabaseError::NotAllowed);
+        }
+
+        // check content length
+        if props.content.trim().len() < 2 {
+            return Err(DatabaseError::ContentTooShort);
+        }
+
+        if author.tier >= self.server_options.tiers.double_limits {
+            if props.content.len() > (64 * 128) {
+                return Err(DatabaseError::ContentTooLong);
+            }
+        } else {
+            if props.content.len() > (64 * 64) {
+                return Err(DatabaseError::ContentTooLong);
+            }
         }
 
         // check permissions
@@ -3354,6 +3404,21 @@ impl Database {
         if author.group == -1 {
             // group -1 (even if it exists) is for marking users as banned
             return Err(DatabaseError::NotAllowed);
+        }
+
+        // check content length
+        if props.content.trim().len() < 2 {
+            return Err(DatabaseError::ContentTooShort);
+        }
+
+        if author.tier >= self.server_options.tiers.double_limits {
+            if props.content.len() > (64 * 64) {
+                return Err(DatabaseError::ContentTooLong);
+            }
+        } else {
+            if props.content.len() > (64 * 32) {
+                return Err(DatabaseError::ContentTooLong);
+            }
         }
 
         // check markdown content
