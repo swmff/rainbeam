@@ -40,7 +40,8 @@
             <!-- prettier-ignore -->
             <li>Joined: <span class="date">{{ other.joined }}</span></li>
             <li>Group: {{ other.group }}</li>
-            <li>Tier: {{ other.tier }}</li>
+            <!-- prettier-ignore -->
+            <li>Tier: <a href="javascript:change_tier()">{{ other.tier }}</a></li>
             <!-- prettier-ignore -->
             <li><a href="/inbox/notifications?profile={{ other.id }}">View notifications</a></li>
         </ul>
@@ -255,7 +256,7 @@
             .then((res) => {
                 trigger("app:toast", [
                     res.success ? "success" : "error",
-                    res.message || "User warned!",
+                    res.success ? "User warned!" : res.message,
                 ]);
 
                 if (res.success === true) {
@@ -287,7 +288,32 @@
             .then((res) => {
                 trigger("app:toast", [
                     res.success ? "success" : "error",
-                    res.message || "IP banned!",
+                    res.success ? "IP banned!" : res.message,
+                ]);
+            });
+    };
+
+    globalThis.change_tier = () => {
+        const tier = prompt("Enter tier number:");
+
+        if (!tier) {
+            return;
+        }
+
+        fetch("/api/auth/profile/{{ other.username }}/tier", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                tier: parseInt(tier),
+            }),
+        })
+            .then((res) => res.json())
+            .then((res) => {
+                trigger("app:toast", [
+                    res.success ? "success" : "error",
+                    res.success ? "Tier updated!" : res.message,
                 ]);
             });
     };

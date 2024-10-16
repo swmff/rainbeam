@@ -323,6 +323,11 @@ pub struct SetProfileGroup {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct SetProfileTier {
+    pub tier: i32,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct SetProfilePassword {
     pub password: String,
     pub new_password: String,

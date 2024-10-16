@@ -13,3 +13,4 @@ ALTER TABLE "xcircle_memberships" CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8m
 ALTER TABLE "xrelationships" CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 ALTER TABLE "xchats" CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 ALTER TABLE "xmessages" CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+ALTER TABLE "xpages" CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;

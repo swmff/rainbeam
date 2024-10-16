@@ -2,8 +2,8 @@
 use crate::database::Database;
 use crate::model::{
     AuthError, IpBanCreate, NotificationCreate, Permission, ProfileCreate, ProfileLogin,
-    SetProfileBadges, SetProfileGroup, SetProfileMetadata, SetProfilePassword, SetProfileUsername,
-    WarningCreate,
+    SetProfileBadges, SetProfileGroup, SetProfileMetadata, SetProfilePassword, SetProfileTier,
+    SetProfileUsername, WarningCreate,
 };
 use axum::body::Bytes;
 use axum::http::{HeaderMap, HeaderValue};
@@ -23,6 +23,7 @@ pub fn routes(database: Database) -> Router {
     Router::new()
         // profiles
         // .route("/profile/:username/group", post(set_group_request))
+        .route("/profile/:username/tier", post(set_tier_request))
         .route("/profile/:username/password", post(set_password_request))
         .route("/profile/:username/username", post(set_username_request))
         .route("/profile/:username/metadata", post(update_metdata_request))
@@ -680,6 +681,109 @@ pub async fn set_group_request(
         success: true,
         message: "Acceptable".to_string(),
         payload: Some(props.group),
+    })
+}
+
+/// Change a profile's tier
+pub async fn set_tier_request(
+    jar: CookieJar,
+    Path(username): Path<String>,
+    State(database): State<Database>,
+    Json(props): Json<SetProfileTier>,
+) -> impl IntoResponse {
+    // get user from token
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(e) => {
+                return Json(DefaultReturn {
+                    success: false,
+                    message: e.to_string(),
+                    payload: None,
+                });
+            }
+        },
+        None => {
+            return Json(DefaultReturn {
+                success: false,
+                message: AuthError::NotAllowed.to_string(),
+                payload: None,
+            });
+        }
+    };
+
+    // check permission
+    let group = match database.get_group_by_id(auth_user.group).await {
+        Ok(g) => g,
+        Err(e) => {
+            return Json(DefaultReturn {
+                success: false,
+                message: e.to_string(),
+                payload: None,
+            })
+        }
+    };
+
+    if !group.permissions.contains(&Permission::Manager) {
+        // we must have the "Manager" permission to edit other users
+        return Json(DefaultReturn {
+            success: false,
+            message: AuthError::NotAllowed.to_string(),
+            payload: None,
+        });
+    }
+
+    // get other user
+    let other_user = match database.get_profile_by_username(username.clone()).await {
+        Ok(ua) => ua,
+        Err(e) => {
+            return Json(DefaultReturn {
+                success: false,
+                message: e.to_string(),
+                payload: None,
+            });
+        }
+    };
+
+    // check permission
+    let group = match database.get_group_by_id(other_user.group).await {
+        Ok(g) => g,
+        Err(e) => {
+            return Json(DefaultReturn {
+                success: false,
+                message: e.to_string(),
+                payload: None,
+            })
+        }
+    };
+
+    if group.permissions.contains(&Permission::Manager) {
+        // we cannot manager other managers
+        return Json(DefaultReturn {
+            success: false,
+            message: AuthError::NotAllowed.to_string(),
+            payload: None,
+        });
+    }
+
+    // push update
+    // TODO: try not to clone
+    if let Err(e) = database.edit_profile_tier(username, props.tier).await {
+        return Json(DefaultReturn {
+            success: false,
+            message: e.to_string(),
+            payload: None,
+        });
+    }
+
+    // return
+    Json(DefaultReturn {
+        success: true,
+        message: "Acceptable".to_string(),
+        payload: Some(props.tier),
     })
 }
 
