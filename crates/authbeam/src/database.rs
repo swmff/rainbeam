@@ -618,9 +618,9 @@ impl Database {
 
         // ...
         let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
-            "INSERT INTO \"xprofiles\" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            "INSERT INTO \"xprofiles\" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xprofiles\" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)"
+            "INSERT INTO \"xprofiles\" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)"
         };
 
         let user_token_unhashed: String = databeam::utility::uuid();
@@ -645,6 +645,7 @@ impl Database {
             .bind::<&String>(&salt)
             .bind::<&String>(&serde_json::to_string::<Vec<String>>(&vec![user_ip]).unwrap())
             .bind::<&str>("[]")
+            .bind::<i32>(0)
             .execute(c)
             .await
         {
