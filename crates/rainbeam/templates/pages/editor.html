@@ -1,0 +1,230 @@
+{% extends "../base.html" %} {% block title %}Edit page - {{ config.name }}{%
+endblock %} {% block head %}
+<meta name="description" content="{{ config.description }}" />
+{% endblock %} {% block nav_left %}
+<a class="button" href="/" title="Timeline">
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        width="18"
+        height="18"
+        aria-label="Home symbol"
+        class="icon"
+    >
+        <path
+            d="M12.97 2.59a1.5 1.5 0 0 0-1.94 0l-7.5 6.363A1.5 1.5 0 0 0 3 10.097V19.5A1.5 1.5 0 0 0 4.5 21h4.75a.75.75 0 0 0 .75-.75V14h4v6.25c0 .414.336.75.75.75h4.75a1.5 1.5 0 0 0 1.5-1.5v-9.403a1.5 1.5 0 0 0-.53-1.144l-7.5-6.363Z"
+        ></path>
+    </svg>
+    <span class="desktop">Timeline</span>
+    <span class="mobile">Home</span>
+</a>
+
+<a class="button" href="/inbox" title="My inbox">
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 16 16"
+        width="16"
+        height="16"
+        aria-label="Inbox symbol"
+        class="icon"
+    >
+        <path
+            d="M2.8 2.06A1.75 1.75 0 0 1 4.41 1h7.18c.7 0 1.333.417 1.61 1.06l2.74 6.395c.04.093.06.194.06.295v4.5A1.75 1.75 0 0 1 14.25 15H1.75A1.75 1.75 0 0 1 0 13.25v-4.5c0-.101.02-.202.06-.295Zm1.61.44a.25.25 0 0 0-.23.152L1.887 8H4.75a.75.75 0 0 1 .6.3L6.625 10h2.75l1.275-1.7a.75.75 0 0 1 .6-.3h2.863L11.82 2.652a.25.25 0 0 0-.23-.152Zm10.09 7h-2.875l-1.275 1.7a.75.75 0 0 1-.6.3h-3.5a.75.75 0 0 1-.6-.3L4.375 9.5H1.5v3.75c0 .138.112.25.25.25h12.5a.25.25 0 0 0 .25-.25Z"
+        ></path>
+    </svg>
+    <span>Inbox</span>
+    {% if unread != 0 %}
+    <span class="notification tr">{{ unread }}</span>
+    {% endif %}
+</a>
+{% endblock %} {% block nav_right %}
+<a class="button" href="/inbox/notifications" title="My notifications">
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 16 16"
+        width="16"
+        height="16"
+        aria-label="Bell symbol"
+        class="icon"
+    >
+        <path
+            d="M8 16a2 2 0 0 0 1.985-1.75c.017-.137-.097-.25-.235-.25h-3.5c-.138 0-.252.113-.235.25A2 2 0 0 0 8 16ZM3 5a5 5 0 0 1 10 0v2.947c0 .05.015.098.042.139l1.703 2.555A1.519 1.519 0 0 1 13.482 13H2.518a1.516 1.516 0 0 1-1.263-2.36l1.703-2.554A.255.255 0 0 0 3 7.947Zm5-3.5A3.5 3.5 0 0 0 4.5 5v2.947c0 .346-.102.683-.294.97l-1.703 2.556a.017.017 0 0 0-.003.01l.001.006c0 .002.002.004.004.006l.006.004.007.001h10.964l.007-.001.006-.004.004-.006.001-.007a.017.017 0 0 0-.003-.01l-1.703-2.554a1.745 1.745 0 0 1-.294-.97V5A3.5 3.5 0 0 0 8 1.5Z"
+        ></path>
+    </svg>
+    {% if notifs != 0 %}
+    <span class="notification tr">{{ notifs }}</span>
+    {% endif %}
+</a>
+{% endblock %} {% block content %}
+<article>
+    <main class="flex flex-col gap-2">
+        <div class="pillmenu">
+            <a href="/pages">List</a>
+            <a href="/pages/editor" class="active">Editor</a>
+        </div>
+
+        <div class="card-nest shadow w-full" id="editor">
+            <div class="card flex justify-between gap-2">
+                <div class="flex gap-2" id="tabs">
+                    <button class="button tab primary" id="text_button">
+                        Edit
+                    </button>
+
+                    <button class="button tab" id="preview_button">
+                        Preview
+                    </button>
+                </div>
+
+                {% if let Some(page) = page %}
+                <!-- save existing -->
+                <div class="flex gap-2">
+                    <button class="red" onclick="delete_()">Delete</button>
+                    <button class="secondary bold" onclick="save()">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 16 16"
+                            width="16"
+                            height="16"
+                            aria-label="Check mark symbol"
+                            class="icon"
+                        >
+                            <path
+                                d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"
+                            ></path>
+                        </svg>
+                        Save
+                    </button>
+                </div>
+
+                <script>
+                    function save() {
+                        trigger("pages:edit", [
+                            "{{ page.id }}",
+                            globalThis.editor.getValue(),
+                        ]).then((_) => {
+                            window.location.href = "/+p/{{ page.id }}";
+                        });
+                    }
+
+                    function delete_() {
+                        trigger("pages:delete", ["{{ page.id }}"]).then((_) => {
+                            window.location.href = "/pages";
+                        });
+                    }
+                </script>
+                {% else %}
+                <!-- create new -->
+                <button
+                    class="secondary bold"
+                    onclick="document.getElementById('save_as').showModal()"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 16 16"
+                        width="16"
+                        height="16"
+                        aria-label="Check mark symbol"
+                        class="icon"
+                    >
+                        <path
+                            d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"
+                        ></path>
+                    </svg>
+                    Save
+                </button>
+                {% endif %}
+            </div>
+
+            <div class="card">
+                <div id="text_tab"></div>
+                <div id="preview_tab" style="display: none"></div>
+            </div>
+
+            <style>
+                #text_tab {
+                    height: 40rem;
+                }
+
+                @media screen and (max-width: 900px) {
+                    #text_tab {
+                        height: 35rem;
+                    }
+                }
+            </style>
+        </div>
+
+        <!-- editor -->
+        <script src="https://unpkg.com/codemirror@5.39.2/lib/codemirror.js"></script>
+        <script src="https://unpkg.com/codemirror@5.39.2/mode/markdown/markdown.js"></script>
+
+        <link
+            rel="stylesheet"
+            href="https://unpkg.com/codemirror@5.39.2/lib/codemirror.css"
+        />
+
+        {% if let Some(page) = page %}
+        <!-- prettier-ignore -->
+        <script type="text/markdown" id="content">{{ page.content|safe }}</script>
+        {% endif %}
+
+        <script>
+            use("codemirror", (codemirror) => {
+                const existing_content = document.getElementById("content");
+
+                if (existing_content) {
+                    codemirror.create_editor(existing_content.innerText.trim());
+                } else {
+                    codemirror.create_editor("");
+                }
+
+                codemirror.init_tabs();
+            });
+        </script>
+    </main>
+</article>
+
+<dialog id="save_as">
+    <form class="inner" onsubmit="save_as(event)">
+        <label for="slug">Slug</label>
+
+        <input
+            type="text"
+            name="slug"
+            id="slug"
+            placeholder="custom_path"
+            required
+            minlength="1"
+            maxlength="32"
+        />
+
+        <hr />
+        <div class="flex gap-2">
+            <button class="primary bold">Confirm</button>
+            <button
+                class="bold"
+                onclick="document.getElementById('save_as').close()"
+            >
+                Cancel
+            </button>
+        </div>
+    </form>
+
+    <script>
+        function save_as(e) {
+            e.preventDefault();
+            trigger("pages:create", [
+                e.target.slug.value,
+                globalThis.editor.getValue(),
+            ]).then((_) => {
+                document.getElementById("save_as").close();
+            });
+        }
+    </script>
+</dialog>
+
+{% if let Some(profile) = profile %} {% let other = profile.clone() %} {% if
+profile.username == other.username %}
+<div id="is_self"></div>
+{% endif %} {% let raw_metadata =
+crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
+"components/theming.html" %} {% endif %} {% call super() %} {% endblock %}

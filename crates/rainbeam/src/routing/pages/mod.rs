@@ -26,6 +26,7 @@ use super::api;
 
 mod chats;
 mod circles;
+mod pages;
 mod profile;
 mod search;
 mod settings;
@@ -1653,6 +1654,10 @@ pub async fn routes(database: Database) -> Router {
         .route("/chats", get(chats::chats_homepage_request))
         .route("/chats/:id", get(chats::chat_request))
         .route("/chats/_app/msg.html", post(chats::render_message_request))
+        // pages
+        .route("/pages", get(pages::pages_homepage_request))
+        .route("/pages/editor", get(pages::page_editor_request))
+        .route("/@:username/blog/:slug", get(pages::page_view_request))
         // auth
         .route("/login", get(login_request))
         .route("/sign_up", get(sign_up_request))

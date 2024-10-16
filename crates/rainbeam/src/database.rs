@@ -153,9 +153,9 @@ impl Database {
         // create pages table
         let _ = sqlquery(
             "CREATE TABLE IF NOT EXISTS \"xpages\" (
+                id        TEXT,
                 slug      TEXT,
                 owner     TEXT,
-                id        TEXT,
                 published TEXT,
                 edited    TEXT,
                 content   TEXT,
@@ -5875,7 +5875,7 @@ impl Database {
         &self,
         author: String,
         page: i32,
-    ) -> Result<Vec<FullResponse>> {
+    ) -> Result<Vec<Page>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -5891,11 +5891,11 @@ impl Database {
             .await
         {
             Ok(p) => {
-                let mut out: Vec<FullResponse> = Vec::new();
+                let mut out: Vec<Page> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    out.push(match self.gimme_response(res, false).await {
+                    out.push(match self.gimme_page(res).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
                     });
@@ -5947,6 +5947,15 @@ impl Database {
         }
 
         if props.content.len() > (64 * 4096) {
+            return Err(DatabaseError::ContentTooLong);
+        }
+
+        // check slug length
+        if props.slug.len() < 2 {
+            return Err(DatabaseError::ContentTooLong);
+        }
+
+        if props.slug.len() > 32 {
             return Err(DatabaseError::ContentTooLong);
         }
 

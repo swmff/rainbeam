@@ -22,6 +22,7 @@ pub fn routes(database: Database) -> Router {
         .route("/:id", put(edit_request))
         .route("/:id", delete(delete_request))
         .route("/:id/report", post(report_request))
+        .route("/_app/render", post(render_markdown_request))
         // ...
         .with_state(database)
 }
@@ -234,4 +235,9 @@ pub async fn report_request(
             payload: (),
         }),
     }
+}
+
+/// [`shared::ui::render_markdown`]
+pub async fn render_markdown_request(Json(req): Json<ResponseEdit>) -> impl IntoResponse {
+    shared::ui::render_markdown(&req.content)
 }
