@@ -149,6 +149,18 @@ block head %}
                     class="flex flex-col gap-2"
                     onsubmit="comment(event, '{{ response.id }}')"
                 >
+                    {% if let Some(profile) = profile %}
+                    <textarea
+                        class="w-full"
+                        placeholder="Type your reply!"
+                        minlength="1"
+                        maxlength="{% if profile.tier >= config.tiers.double_limits %}4096{% else %}2048{% endif %}"
+                        required
+                        name="content"
+                        id="content"
+                        hook="counter"
+                    ></textarea>
+                    {% else %}
                     <textarea
                         class="w-full"
                         placeholder="Type your reply!"
@@ -159,6 +171,7 @@ block head %}
                         id="content"
                         hook="counter"
                     ></textarea>
+                    {% endif %}
 
                     <div class="flex justify-between w-full gap-1">
                         <span

@@ -200,7 +200,7 @@ checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 
 [[package]]
 name = "authbeam"
-version = "0.5.3"
+version = "0.5.4"
 dependencies = [
  "axum",
  "axum-extra",
@@ -1914,7 +1914,7 @@ dependencies = [
 
 [[package]]
 name = "rainbeam"
-version = "1.9.5"
+version = "1.10.0"
 dependencies = [
  "ammonia",
  "askama",

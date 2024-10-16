@@ -1,0 +1,1 @@
+ALTER TABLE "xprofiles" ADD COLUMN "tier" TEXT DEFAULT '0';

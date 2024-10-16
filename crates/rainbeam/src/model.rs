@@ -302,42 +302,6 @@ impl CircleMetadata {
     }
 }
 
-/// The status of a user's membership in a [`FeedList`]
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
-pub enum ListMembershipStatus {
-    /// An active member of a list
-    Active,
-    /// Not an active member of a list
-    Inactive,
-}
-
-/// The stored version of a user's membership in a [`FeedList`]
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ListMembership {
-    /// The ID of the user
-    pub user: String,
-    /// The ID of the list
-    pub list: String,
-    /// The status of the user's membership in the list
-    pub membership: ListMembershipStatus,
-    /// The time the membership was last updated
-    pub timestamp: u128,
-}
-
-/// A list of users which will build a custom feed of all the responses by the users
-/// with an `Active` [`ListMembershipStatus`] in the list
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct FeedList {
-    /// The name of the list
-    pub name: String,
-    /// The ID of the list
-    pub id: String,
-    /// The owner of the list
-    pub owner: Profile,
-    /// The time the list was created
-    pub timestamp: u128,
-}
-
 /// An export of a user's entire history
 #[derive(Serialize, Deserialize)]
 pub struct DataExport {
@@ -391,6 +355,29 @@ pub struct Message {
 /// Additional information about a [`Message`]
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct MessageContext {}
+
+/// A long blog-like post that can be edited an unlimited number of times
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Page {
+    /// The ID of the page
+    pub id: String,
+    /// The **unique** slug of the page
+    pub slug: String,
+    /// The owner of the page (also the only one who can edit it)
+    pub owner: String,
+    /// The time in which the page was created
+    pub published: u128,
+    /// The time in which the page was edited
+    pub edited: u128,
+    /// The content of the page
+    pub content: String,
+    /// Additional context for the page
+    pub context: PageContext,
+}
+
+/// Additional information about a [`Page`]
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct PageContext {}
 
 // ...
 
@@ -481,10 +468,17 @@ pub struct ChatAdd {
     pub friend: String,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct PageCreate {
+    pub slug: String,
+    pub content: String,
+}
+
 /// General API errors
 #[derive(Debug)]
 pub enum DatabaseError {
     AnonymousNotAllowed,
+    InvalidNameUnique,
     ContentTooShort,
     ContentTooLong,
     ProfileLocked,
@@ -506,6 +500,7 @@ impl DatabaseError {
             AnonymousNotAllowed => {
                 String::from("This profile is not currently accepting anonymous questions.")
             }
+            InvalidNameUnique => String::from("This name cannot be used as it is already in use."),
             ContentTooShort => String::from("Content too short!"),
             ContentTooLong => String::from("Content too long!"),
             ProfileLocked => String::from("This profile is not currently accepting questions."),

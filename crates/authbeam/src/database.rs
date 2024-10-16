@@ -110,7 +110,8 @@ impl Database {
                 gid      TEXT,
                 salt     TEXT,
                 ips      TEXT,
-                badges   TEXT
+                badges   TEXT,
+                tier     TEXT
             )",
         )
         .execute(c)
@@ -271,6 +272,7 @@ impl Database {
             },
             group: row.get("gid").unwrap().parse::<i32>().unwrap_or(0),
             joined: row.get("joined").unwrap().parse::<u128>().unwrap(),
+            tier: row.get("tier").unwrap().parse::<i32>().unwrap_or(0),
         })
     }
 
@@ -329,6 +331,7 @@ impl Database {
             },
             group: row.get("gid").unwrap().parse::<i32>().unwrap_or(0),
             joined: row.get("joined").unwrap().parse::<u128>().unwrap(),
+            tier: row.get("tier").unwrap().parse::<i32>().unwrap_or(0),
         })
     }
 
@@ -385,6 +388,7 @@ impl Database {
             },
             group: row.get("gid").unwrap().parse::<i32>().unwrap_or(0),
             joined: row.get("joined").unwrap().parse::<u128>().unwrap(),
+            tier: row.get("tier").unwrap().parse::<i32>().unwrap_or(0),
         })
     }
 
@@ -455,6 +459,7 @@ impl Database {
             },
             group: row.get("gid").unwrap().parse::<i32>().unwrap_or(0),
             joined: row.get("joined").unwrap().parse::<u128>().unwrap(),
+            tier: row.get("tier").unwrap().parse::<i32>().unwrap_or(0),
         };
 
         self.base
@@ -532,6 +537,7 @@ impl Database {
             },
             group: row.get("gid").unwrap().parse::<i32>().unwrap_or(0),
             joined: row.get("joined").unwrap().parse::<u128>().unwrap(),
+            tier: row.get("tier").unwrap().parse::<i32>().unwrap_or(0),
         };
 
         self.base
@@ -845,10 +851,49 @@ impl Database {
         }
     }
 
-    /// Update a [`Profile`]'s `gid` by its `username`
-    pub async fn edit_profile_group_by_name(&self, name: String, group: i32) -> Result<()> {
+    /// Update a [`Profile`]'s tier by its ID
+    pub async fn edit_profile_tier(&self, id: String, tier: i32) -> Result<()> {
         // make sure user exists
-        let ua = match self.get_profile_by_username(name.clone()).await {
+        let ua = match self.get_profile(id.clone()).await {
+            Ok(ua) => ua,
+            Err(e) => return Err(e),
+        };
+
+        // update user
+        let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+            "UPDATE \"xprofiles\" SET \"tier\" = ? WHERE \"username\" = ?"
+        } else {
+            "UPDATE \"xprofiles\" SET (\"tier\") = ($1) WHERE \"username\" = $2"
+        };
+
+        let c = &self.base.db.client;
+        match sqlquery(query)
+            .bind::<&String>(&tier.to_string())
+            .bind::<&String>(&id)
+            .execute(c)
+            .await
+        {
+            Ok(_) => {
+                self.base
+                    .cachedb
+                    .remove(format!("rbeam.auth.profile:{}", id))
+                    .await;
+
+                self.base
+                    .cachedb
+                    .remove(format!("rbeam.auth.profile:{}", ua.id))
+                    .await;
+
+                Ok(())
+            }
+            Err(_) => Err(AuthError::Other),
+        }
+    }
+
+    /// Update a [`Profile`]'s `gid` by its `username`
+    pub async fn edit_profile_group(&self, id: String, group: i32) -> Result<()> {
+        // make sure user exists
+        let ua = match self.get_profile(id.clone()).await {
             Ok(ua) => ua,
             Err(e) => return Err(e),
         };
@@ -863,14 +908,14 @@ impl Database {
         let c = &self.base.db.client;
         match sqlquery(query)
             .bind::<&i32>(&group)
-            .bind::<&String>(&name)
+            .bind::<&String>(&id)
             .execute(c)
             .await
         {
             Ok(_) => {
                 self.base
                     .cachedb
-                    .remove(format!("rbeam.auth.profile:{}", name))
+                    .remove(format!("rbeam.auth.profile:{}", id))
                     .await;
 
                 self.base
@@ -1058,7 +1103,7 @@ impl Database {
                     return Err(AuthError::Other);
                 };
 
-                // sparkler stuff
+                // rainbeam crate stuff
                 // questions to user
                 let query: &str =
                     if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
@@ -1133,11 +1178,24 @@ impl Database {
                     return Err(AuthError::Other);
                 };
 
+                // user circle memberships
                 let query: &str =
                     if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
                         "DELETE FROM \"xcircle_memberships\" WHERE \"user\" = ?"
                     } else {
                         "DELETE FROM \"xcircle_memberships\" WHERE \"user\" = $1"
+                    };
+
+                if let Err(_) = sqlquery(query).bind::<&String>(&id).execute(c).await {
+                    return Err(AuthError::Other);
+                };
+
+                // pages by user
+                let query: &str =
+                    if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+                        "DELETE FROM \"xpages\" WHERE \"owner\" = ?"
+                    } else {
+                        "DELETE FROM \"xpages\" WHERE \"owner\" = $1"
                     };
 
                 if let Err(_) = sqlquery(query).bind::<&String>(&id).execute(c).await {

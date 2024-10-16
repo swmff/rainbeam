@@ -54,7 +54,7 @@ pub fn clean_metadata_raw(metadata: &CircleMetadata) -> CircleMetadata {
 }
 
 #[derive(Template)]
-#[template(path = "circle/list.html")]
+#[template(path = "circle/homepage.html")]
 struct CirclesTemplate {
     config: Config,
     profile: Option<Profile>,

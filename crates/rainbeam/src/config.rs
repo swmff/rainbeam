@@ -5,6 +5,45 @@ use std::io::Result;
 use authbeam::database::HCaptchaConfig;
 use shared::fs;
 
+/// Premium features
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct Tiers {
+    /// Doubled character limits for everything
+    ///
+    /// * Questions: ~~2048~~ **4096**
+    /// * Responses: ~~4096~~ **8192**
+    /// * CommentS: ~~2048~~ **4096**
+    ///
+    /// *\*Carpgraph drawings stay at 32kb maximum*
+    #[serde(default)]
+    pub double_limits: i32,
+    /// Styled profile card in the followers/following/friends section of other users
+    #[serde(default)]
+    pub stylish_card: i32,
+    /// A small little crown shown on the user's profile avatar
+    #[serde(default)]
+    pub avatar_crown: i32,
+    /// A small badge shwon on the user's profile
+    #[serde(default)]
+    pub profile_badge: i32,
+    /// Pages access (super long blog-like posts)
+    #[serde(default)]
+    pub pages: i32,
+}
+
+impl Default for Tiers {
+    /// Everything is tier 1 by default
+    fn default() -> Self {
+        Self {
+            double_limits: 1,
+            stylish_card: 1,
+            avatar_crown: 1,
+            profile_badge: 1,
+            pages: 1,
+        }
+    }
+}
+
 /// Configuration file
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Config {
@@ -35,6 +74,9 @@ pub struct Config {
     /// If a migration should be run
     #[serde(default)]
     pub migration: bool,
+    /// Tiered benefits
+    #[serde(default)]
+    pub tiers: Tiers,
 }
 
 impl Default for Config {
@@ -50,6 +92,7 @@ impl Default for Config {
             host: String::new(),
             blocked_hosts: Vec::new(),
             migration: false,
+            tiers: Tiers::default(),
         }
     }
 }
