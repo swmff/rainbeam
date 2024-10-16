@@ -1,5 +1,5 @@
-{% extends "../base.html" %} {% block title %}Edit page - {{ config.name }}{%
-endblock %} {% block head %}
+{% extends "../base.html" %} {% block title %}{{ page.slug }}{% endblock %} {%
+block head %}
 <meta name="description" content="{{ config.description }}" />
 {% endblock %} {% block nav_left %}
 <a class="button" href="/" title="Timeline">

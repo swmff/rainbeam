@@ -1365,7 +1365,6 @@ canvas {
     left: -10px;
     font-size: 25px;
     transform: rotateZ(-25deg);
-    box-shadow: 0 0 2px var(--color-primary);
 }
 
 /* codemirror */
