@@ -75,6 +75,18 @@ endblock %} {% block head %}
                     class="flex flex-col gap-2"
                     onsubmit="create_post(event)"
                 >
+                    {% if let Some(profile) = profile %}
+                    <textarea
+                        class="w-full"
+                        placeholder="Type your post!"
+                        minlength="1"
+                        maxlength="{% if profile.tier >= config.tiers.double_limits %}8192{% else %}4096{% endif %}"
+                        required
+                        name="content"
+                        id="post_content"
+                        hook="counter"
+                    ></textarea>
+                    {% else %}
                     <textarea
                         class="w-full"
                         placeholder="Type your post!"
@@ -85,8 +97,8 @@ endblock %} {% block head %}
                         id="post_content"
                         hook="counter"
                     ></textarea>
-
-                    {% include "components/more_response_options.html" %}
+                    {% endif %} {% include
+                    "components/more_response_options.html" %}
 
                     <div class="flex justify-between w-full gap-1">
                         <span
@@ -121,6 +133,18 @@ endblock %} {% block head %}
                         {% endfor %}
                     </select>
 
+                    {% if let Some(profile) = profile %}
+                    <textarea
+                        class="w-full"
+                        placeholder="Type your question!"
+                        minlength="1"
+                        maxlength="{% if profile.tier >= config.tiers.double_limits %}4096{% else %}2048{% endif %}"
+                        required
+                        name="content"
+                        id="content"
+                        hook="counter"
+                    ></textarea>
+                    {% else %}
                     <textarea
                         class="w-full"
                         placeholder="Type your question!"
@@ -131,6 +155,7 @@ endblock %} {% block head %}
                         id="content"
                         hook="counter"
                     ></textarea>
+                    {% endif %}
 
                     <div class="flex justify-between w-full gap-1">
                         <span
