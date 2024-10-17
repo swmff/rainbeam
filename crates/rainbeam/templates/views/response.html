@@ -178,6 +178,10 @@ block head %}
 </article>
 
 <script>
+    setTimeout(() => {
+        trigger("questions:carp");
+    }, 100);
+
     function comment(e, response) {
         e.preventDefault();
 
@@ -293,8 +297,6 @@ profile.username == other.username %}
                 .replaceAll('"]', "")
                 .replace("[]", "");
         }
-
-        trigger("questions:carp");
     }, 100);
 
     function edit(e) {
