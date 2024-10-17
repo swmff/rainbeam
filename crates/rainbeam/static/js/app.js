@@ -181,6 +181,34 @@
         await $.skin(skin);
     });
 
+    app.define("ban_ip", function (_, ip) {
+        const reason = prompt(
+            "Please explain your reason for banning this IP below:",
+        );
+
+        if (!reason) {
+            return;
+        }
+
+        fetch("/api/auth/ipbans", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                ip,
+                reason,
+            }),
+        })
+            .then((res) => res.json())
+            .then((res) => {
+                trigger("app:toast", [
+                    res.success ? "success" : "error",
+                    res.message || "IP banned!",
+                ]);
+            });
+    });
+
     // hooks
     app.define("hook.scroll", function (_, scroll_element, track_element) {
         const goals = [150, 250, 500, 1000];
@@ -388,6 +416,31 @@
             if (element.getAttribute("alt") && !element.getAttribute("title")) {
                 element.setAttribute("title", element.getAttribute("alt"));
             }
+        }
+    });
+
+    app.define("hook.ips", function ({ $ }) {
+        for (const anchor of Array.from(document.querySelectorAll("a"))) {
+            try {
+                const href = new URL(anchor.href);
+
+                if (href.pathname.startsWith("/+i/")) {
+                    // IP expander
+                    anchor.addEventListener("click", (e) => {
+                        e.preventDefault();
+
+                        if (
+                            confirm(
+                                'Would you like to ban this IP? Please press "Cancel" to open the first profile found with this IP instead of banning it.',
+                            )
+                        ) {
+                            $.ban_ip(href.pathname.replace("/+i/", ""));
+                        } else {
+                            window.open(href.href, "_blank");
+                        }
+                    });
+                }
+            } catch {}
         }
     });
 
