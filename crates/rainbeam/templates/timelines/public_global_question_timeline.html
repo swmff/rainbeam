@@ -130,11 +130,9 @@ block head %}
             </a>
         </div>
 
-        <!-- prettier-ignore -->
         <div class="flex flex-col gap-4" id="feed">
-            {% for question in questions %}
-                {% include "components/global_question.html" %}
-            {% endfor %}
+            {% include "partials/timelines/public_global_question_timeline.html"
+            %}
         </div>
 
         <!-- pagination buttons -->

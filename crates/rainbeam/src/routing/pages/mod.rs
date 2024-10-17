@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use askama_axum::Template;
-use axum::debug_handler;
 use axum::extract::{Path, Query};
 use axum::http::status::StatusCode;
 use axum::response::IntoResponse;
@@ -68,7 +67,6 @@ struct TimelineTemplate {
 }
 
 /// GET /
-#[debug_handler]
 pub async fn homepage_request(
     jar: CookieJar,
     State(database): State<Database>,
@@ -184,6 +182,95 @@ pub async fn homepage_request(
         .render()
         .unwrap(),
     )
+}
+
+#[derive(Template)]
+#[template(path = "partials/timelines/timeline.html")]
+struct PartialTimelineTemplate {
+    config: Config,
+    profile: Option<Profile>,
+    responses: Vec<FullResponse>,
+    relationships: HashMap<String, RelationshipStatus>,
+    is_powerful: bool,
+    is_helper: bool,
+}
+
+/// GET /_app/timeline.html
+pub async fn partial_timeline_request(
+    jar: CookieJar,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => return Html(DatabaseError::NotAllowed.to_html(database)),
+        },
+        None => return Html(DatabaseError::NotAllowed.to_html(database)),
+    };
+
+    let responses = match database
+        .get_responses_by_following(auth_user.id.to_owned())
+        .await
+    {
+        Ok(responses) => responses,
+        Err(e) => return Html(e.to_html(database)),
+    };
+
+    // build relationships list
+    let mut relationships: HashMap<String, RelationshipStatus> = HashMap::new();
+
+    for response in &responses {
+        if relationships.contains_key(&response.1.author.id) {
+            continue;
+        }
+
+        if response.1.author.id == auth_user.id {
+            // make sure we can view our own responses
+            relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
+            continue;
+        };
+
+        relationships.insert(
+            response.1.author.id.clone(),
+            database
+                .auth
+                .get_user_relationship(response.1.author.id.clone(), auth_user.id.clone())
+                .await
+                .0,
+        );
+    }
+
+    // ...
+    let mut is_helper: bool = false;
+    let is_powerful = {
+        let group = match database.auth.get_group_by_id(auth_user.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        if group.permissions.contains(&Permission::Helper) {
+            is_helper = true
+        }
+
+        group.permissions.contains(&Permission::Manager)
+    };
+
+    return Html(
+        PartialTimelineTemplate {
+            config: database.server_options,
+            profile: Some(auth_user.clone()),
+            responses,
+            relationships,
+            is_powerful,
+            is_helper,
+        }
+        .render()
+        .unwrap(),
+    );
 }
 
 #[derive(Template)]
@@ -643,6 +730,114 @@ pub async fn public_posts_timeline_request(
         .render()
         .unwrap(),
     )
+}
+
+#[derive(Template)]
+#[template(path = "partials/timelines/posts.html")]
+struct PartialPostsTemplate {
+    config: Config,
+    profile: Option<Profile>,
+    responses: Vec<FullResponse>,
+    relationships: HashMap<String, RelationshipStatus>,
+    is_powerful: bool,
+    is_helper: bool,
+}
+
+/// GET /_app/posts.html
+pub async fn partial_posts_request(
+    jar: CookieJar,
+    State(database): State<Database>,
+    Query(props): Query<PaginatedQuery>,
+) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => return Html(DatabaseError::NotAllowed.to_html(database)),
+        },
+        None => return Html(DatabaseError::NotAllowed.to_html(database)),
+    };
+
+    let mut responses = match database.get_posts_paginated(props.page).await {
+        Ok(responses) => responses,
+        Err(e) => return Html(e.to_html(database)),
+    };
+
+    // remove content from blocked users/users that have blocked us
+    let blocked = match database
+        .auth
+        .get_user_relationships_of_status(auth_user.id.clone(), RelationshipStatus::Blocked)
+        .await
+    {
+        Ok(l) => l,
+        Err(_) => Vec::new(),
+    };
+
+    for user in blocked {
+        for (i, _) in responses
+            .clone()
+            .iter()
+            .filter(|x| x.1.author.id == user.0.id)
+            .enumerate()
+        {
+            responses.remove(i);
+        }
+    }
+
+    // build relationships list
+    let mut relationships: HashMap<String, RelationshipStatus> = HashMap::new();
+
+    for response in &responses {
+        if relationships.contains_key(&response.1.author.id) {
+            continue;
+        }
+
+        if response.1.author.id == auth_user.id {
+            // make sure we can view our own responses
+            relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
+            continue;
+        };
+
+        relationships.insert(
+            response.1.author.id.clone(),
+            database
+                .auth
+                .get_user_relationship(response.1.author.id.clone(), auth_user.id.clone())
+                .await
+                .0,
+        );
+    }
+
+    // ...
+    let mut is_helper: bool = false;
+    let is_powerful = {
+        let group = match database.auth.get_group_by_id(auth_user.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        if group.permissions.contains(&Permission::Helper) {
+            is_helper = true
+        }
+
+        group.permissions.contains(&Permission::Manager)
+    };
+
+    return Html(
+        PartialPostsTemplate {
+            config: database.server_options,
+            profile: Some(auth_user.clone()),
+            responses,
+            relationships,
+            is_powerful,
+            is_helper,
+        }
+        .render()
+        .unwrap(),
+    );
 }
 
 #[derive(Template)]
@@ -1668,6 +1863,9 @@ pub async fn routes(database: Database) -> Router {
         .route("/+u/:id", get(api::profiles::expand_request))
         .route("/+i/:ip", get(api::profiles::expand_ip_request))
         .route("/+p/:id", get(api::pages::expand_request))
+        // partials
+        .route("/_app/timeline.html", get(partial_timeline_request))
+        .route("/_app/posts.html", get(partial_posts_request))
         // ...
         .with_state(database)
 }

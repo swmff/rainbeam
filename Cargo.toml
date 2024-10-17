@@ -6,6 +6,7 @@ members = [
     "crates/databeam",
     "crates/shared",
     "crates/providence",
+    "crates/desktop/src-tauri"
 ]
 
 [profile.release]

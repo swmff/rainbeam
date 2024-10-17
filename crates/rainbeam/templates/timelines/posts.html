@@ -100,22 +100,8 @@ block head %}
             </a>
         </div>
 
-        <!-- prettier-ignore -->
         <div class="flex flex-col gap-4" id="feed">
-            {% for response in responses %}
-                {% if relationships.get(response.1.author.id).unwrap().to_owned() != crate::model::RelationshipStatus::Friends
-                    && response.1.author.metadata.is_true("sparkler:private_profile") %}
-                    {% include "components/private_response.html" %}
-                {% else %}
-                    {% let is_pinned = false %}
-                    {% let show_pin_button = false %}
-                    {% let do_not_render_question = false %}
-                    {% let anonymous_username = Some("anonymous") %}
-                    {% let anonymous_avatar = Some("") %}
-                    {% let show_comments = true %}
-                    {% include "components/response.html" %}
-                {% endif %}
-            {% endfor %}
+            {% include "partials/timelines/posts.html" %}
         </div>
 
         <!-- pagination buttons -->
