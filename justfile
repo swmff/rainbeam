@@ -12,4 +12,4 @@ test:
 
 # ...
 doc:
-    cargo doc --no-deps --document-private-items
+    cargo doc --no-deps --document-private-items --workspace --exclude neospring-desktop
