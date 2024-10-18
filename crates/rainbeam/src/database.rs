@@ -2892,17 +2892,26 @@ impl Database {
             .get(format!("rbeam.app.comment:{}", id))
             .await
         {
-            Some(c) => {
-                return Ok((
-                    serde_json::from_str::<ResponseComment>(c.as_str()).unwrap(),
-                    if recurse == true {
-                        self.get_reply_count_by_comment(id.clone()).await
-                    } else {
-                        0
-                    },
-                    self.get_reaction_count_by_asset(id).await,
-                ))
-            }
+            Some(c) => match serde_json::from_str::<ResponseComment>(c.as_str()) {
+                Ok(c) => {
+                    return Ok((
+                        c,
+                        if recurse == true {
+                            self.get_reply_count_by_comment(id.clone()).await
+                        } else {
+                            0
+                        },
+                        self.get_reaction_count_by_asset(id).await,
+                    ))
+                }
+                Err(_) => {
+                    // bad cache entry, remove and continue
+                    self.base
+                        .cachedb
+                        .remove(format!("rbeam.app.comment:{}", id))
+                        .await;
+                }
+            },
             None => (),
         };
 
@@ -4980,7 +4989,7 @@ impl Database {
                     for user in users.clone() {
                         profiles_out.push(match self.get_profile(user).await {
                             Ok(ua) => ua,
-                            Err(e) => return Err(e),
+                            Err(_) => continue,
                         })
                     }
 

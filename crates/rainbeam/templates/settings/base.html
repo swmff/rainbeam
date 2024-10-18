@@ -87,7 +87,7 @@ crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
 <article class="flex flex-collapse gap-2">
     <div
         id="settings_nav"
-        class="sidenav sm:static sm:w-full shadow"
+        class="flex flex-col gap-4"
         style="
             width: 20rem;
             padding-top: 0;
@@ -95,7 +95,13 @@ crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
             top: calc(56px + 0.5rem);
         "
     >
-        {% block sidenav %}{% endblock %}
+        <div class="sidenav sm:static sm:w-full shadow">
+            {% block sidenav %}{% endblock %}
+        </div>
+
+        <div class="sidenav sm:static sm:w-full shadow app_only">
+            {% block app_sidenav %}{% endblock %}
+        </div>
     </div>
 
     <section id="settings_content" class="card flex flex-col gap-2 w-full">

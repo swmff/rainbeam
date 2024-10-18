@@ -1610,3 +1610,7 @@ canvas {
 .red {
     color: var(--color-red) !important;
 }
+
+.app_only {
+    display: none !important;
+}

@@ -209,6 +209,22 @@
             });
     });
 
+    app.define("check_app", function (_) {
+        const is_app = window.__TAURI_INTERNALS__ !== undefined;
+
+        if (is_app) {
+            for (const element of Array.from(
+                document.querySelectorAll(".app_only"),
+            )) {
+                element.classList.remove("app_only");
+            }
+        } else {
+            return [false, {}];
+        }
+
+        return [true, window.__TAURI_INTERNALS__];
+    });
+
     // hooks
     app.define("hook.scroll", function (_, scroll_element, track_element) {
         const goals = [150, 250, 500, 1000];
