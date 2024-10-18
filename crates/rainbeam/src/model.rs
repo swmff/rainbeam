@@ -151,6 +151,8 @@ pub struct QuestionResponse {
     pub context: ResponseContext,
     /// The ID of the response this response is replying to
     pub reply: String,
+    /// The time this response was last edited
+    pub edited: u128,
 }
 
 pub type ResponseReply = Option<Box<(Question, QuestionResponse, usize, usize)>>;
@@ -485,7 +487,6 @@ pub enum DatabaseError {
     InvalidName,
     NotAllowed,
     ValueError,
-    OutOfTime,
     NotFound,
     Filtered,
     Blocked,
@@ -507,9 +508,6 @@ impl DatabaseError {
             InvalidName => String::from("This name cannot be used!"),
             NotAllowed => String::from("You are not allowed to do this!"),
             ValueError => String::from("One of the field values given is invalid!"),
-            OutOfTime => String::from(
-                "You can only edit a response within the first 24 hours of posting it!",
-            ),
             NotFound => {
                 String::from("Nothing with this path exists or you do not have access to it!")
             }

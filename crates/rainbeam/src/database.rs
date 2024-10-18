@@ -67,7 +67,8 @@ impl Database {
                 timestamp TEXT,
                 tags      TEXT,
                 context   TEXT,
-                reply     TEXT
+                reply     TEXT,
+                edited    TEXT
             )",
         )
         .execute(c)
@@ -1557,6 +1558,7 @@ impl Database {
                 },
                 context: ctx,
                 reply: reply.clone(),
+                edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
             },
             self.get_comment_count_by_response(id.clone()).await,
             self.get_reaction_count_by_asset(id).await,
@@ -2356,11 +2358,12 @@ impl Database {
         }
 
         // ...
+        let timestamp = utility::unix_epoch_timestamp();
         let response = QuestionResponse {
             author,
             content: props.content.trim().to_string(),
             id: utility::random_id(),
-            timestamp: utility::unix_epoch_timestamp(),
+            timestamp,
             tags: Vec::new(),
             context: ResponseContext {
                 is_post: question.id == "0",
@@ -2369,6 +2372,7 @@ impl Database {
             },
             question: question.id,
             reply: props.reply.trim().to_string(),
+            edited: timestamp,
         };
 
         // make sure reply exists
@@ -2381,9 +2385,9 @@ impl Database {
         // create response
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            "INSERT INTO \"xresponses\" VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+            "INSERT INTO \"xresponses\" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xresponses\" VALEUS ($1, $2, $3, $4, $5, $6, $7, $8)"
+            "INSERT INTO \"xresponses\" VALEUS ($1, $2, $3, $4, $5, $6, $7, $8, $9)"
         }
         .to_string();
 
@@ -2400,6 +2404,7 @@ impl Database {
                 Err(_) => return Err(DatabaseError::ValueError),
             })
             .bind::<&String>(&response.reply)
+            .bind::<&String>(&response.edited.to_string())
             .execute(c)
             .await
         {
@@ -2532,15 +2537,6 @@ impl Database {
             Err(e) => return Err(e),
         };
 
-        // check time
-        let now = shared::unix_epoch_timestamp();
-        let diff = now - response.timestamp;
-        let twenty_four_hours = 14400000;
-
-        if diff >= twenty_four_hours {
-            return Err(DatabaseError::OutOfTime);
-        }
-
         // check content length
         if content.len() > 4096 {
             return Err(DatabaseError::ContentTooLong);
@@ -2588,15 +2584,16 @@ impl Database {
         // update response
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            "UPDATE \"xresponses\" SET \"content\" = ? WHERE \"id\" = ?"
+            "UPDATE \"xresponses\" SET \"content\" = ?, \"edited\" = ? WHERE \"id\" = ?"
         } else {
-            "UPDATE \"xresponses\" SET (\"content\") = ($1) WHERE \"id\" = $2"
+            "UPDATE \"xresponses\" SET (\"content\", \"edited\") = ($1, $2) WHERE \"id\" = $3"
         }
         .to_string();
 
         let c = &self.base.db.client;
         match sqlquery(&query)
             .bind::<&String>(&content)
+            .bind::<&String>(&utility::unix_epoch_timestamp().to_string())
             .bind::<&String>(&id)
             .execute(c)
             .await

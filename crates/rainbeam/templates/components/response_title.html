@@ -31,7 +31,15 @@
             </a>
         </b>
 
-        <span class="date item">{{ response.timestamp }}</span>
+        <span class="flex">
+            {% if (response.edited != 0) && (response.edited !=
+            response.timestamp) %}
+            <span class="date item">{{ response.edited }}</span>
+            <sup title="Edited">*</sup>
+            {% else %}
+            <span class="date item">{{ response.timestamp }}</span>
+            {% endif %}
+        </span>
 
         {% if is_pinned == true %}
         <span class="item" title="This question/response is pinned">
