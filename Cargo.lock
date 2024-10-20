@@ -3532,15 +3532,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "providence"
-version = "0.1.0"
-dependencies = [
- "authbeam",
- "databeam",
- "shared",
-]
-
-[[package]]
 name = "psl-types"
 version = "2.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3638,7 +3629,6 @@ dependencies = [
  "futures-util",
  "hcaptcha",
  "mime_guess",
- "providence",
  "regex",
  "reqwest",
  "serde",
