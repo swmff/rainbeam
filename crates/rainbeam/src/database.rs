@@ -1222,6 +1222,15 @@ impl Database {
                     }
                 }
 
+                // check if we're ip blocked by the recipient
+                if let Ok(_) = self
+                    .auth
+                    .get_ipblock_by_ip(ip.clone(), recipient.id.clone())
+                    .await
+                {
+                    return Err(DatabaseError::Blocked);
+                }
+
                 // check filter
                 for filter_string in recipient
                     .metadata

@@ -261,7 +261,22 @@ pub struct Relationship {
     pub timestamp: u128,
 }
 
-/// rainbeam system permission
+/// An IP-based block
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct IpBlock {
+    /// The ID of the block
+    pub id: String,
+    /// The IP that was blocked
+    pub ip: String,
+    /// The user that blocked this IP
+    pub user: String,
+    /// The context of this block (question content, etc.)
+    pub context: String,
+    /// The timestamp of when the block was created
+    pub timestamp: u128,
+}
+
+/// Rainbeam system permission
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub enum Permission {
     /// Permission to manage the server and managers
@@ -357,6 +372,12 @@ pub struct WarningCreate {
 pub struct IpBanCreate {
     pub ip: String,
     pub reason: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct IpBlockCreate {
+    pub ip: String,
+    pub context: String,
 }
 
 /// General API errors

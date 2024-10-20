@@ -1,6 +1,6 @@
 use crate::model::{
-    AuthError, IpBan, IpBanCreate, Profile, ProfileCreate, ProfileMetadata, RelationshipStatus,
-    Warning, WarningCreate,
+    AuthError, IpBan, IpBanCreate, IpBlock, IpBlockCreate, Profile, ProfileCreate, ProfileMetadata,
+    RelationshipStatus, Warning, WarningCreate,
 };
 use crate::model::{Group, Notification, NotificationCreate, Permission, UserFollow};
 
@@ -178,6 +178,18 @@ impl Database {
                 one       TEXT,
                 two       TEXT,
                 status    TEXT,
+                timestamp TEXT
+            )",
+        )
+        .execute(c)
+        .await;
+
+        let _ = sqlquery(
+            "CREATE TABLE IF NOT EXISTS \"xipblocks\" (
+                id        TEXT,
+                ip        TEXT,
+                user      TEXT,
+                context   TEXT,
                 timestamp TEXT
             )",
         )
@@ -2445,7 +2457,7 @@ impl Database {
         };
     }
 
-    // warnings
+    // ip bans
 
     // GET
     /// Get an existing [`IpBan`]
@@ -2550,7 +2562,7 @@ impl Database {
     ///
     /// ## Arguments:
     /// * `user` - the user doing this
-    pub async fn get_ipbans(&self, recipient: String, user: Profile) -> Result<Vec<IpBan>> {
+    pub async fn get_ipbans(&self, user: Profile) -> Result<Vec<IpBan>> {
         // make sure user is a manager
         let group = match self.get_group_by_id(user.group).await {
             Ok(g) => g,
@@ -2571,11 +2583,7 @@ impl Database {
         .to_string();
 
         let c = &self.base.db.client;
-        let res = match sqlquery(&query)
-            .bind::<&String>(&recipient.to_lowercase())
-            .fetch_all(c)
-            .await
-        {
+        let res = match sqlquery(&query).fetch_all(c).await {
             Ok(p) => {
                 let mut out: Vec<IpBan> = Vec::new();
 
@@ -3268,5 +3276,255 @@ impl Database {
             .await;
 
         count
+    }
+
+    // ip blocks
+
+    // GET
+    /// Get an existing [`IpBlock`]
+    ///
+    /// ## Arguments:
+    /// * `id`
+    pub async fn get_ipblock(&self, id: String) -> Result<IpBlock> {
+        // check in cache
+        match self
+            .base
+            .cachedb
+            .get(format!("rbeam.auth.ipblock:{}", id))
+            .await
+        {
+            Some(c) => return Ok(serde_json::from_str::<IpBlock>(c.as_str()).unwrap()),
+            None => (),
+        };
+
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "SELECT * FROM \"xipblocks\" WHERE \"id\" = ?"
+        } else {
+            "SELECT * FROM \"xipblocks\" WHERE \"id\" = $1"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
+            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Err(_) => return Err(AuthError::NotFound),
+        };
+
+        // return
+        let block = IpBlock {
+            id: res.get("id").unwrap().to_string(),
+            ip: res.get("ip").unwrap().to_string(),
+            user: res.get("user").unwrap().to_string(),
+            context: res.get("context").unwrap().to_string(),
+            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+        };
+
+        // store in cache
+        self.base
+            .cachedb
+            .set(
+                format!("rbeam.auth.ipblock:{}", id),
+                serde_json::to_string::<IpBlock>(&block).unwrap(),
+            )
+            .await;
+
+        // return
+        Ok(block)
+    }
+
+    /// Get an existing [`IpBlock`] by its IP and its `user`
+    ///
+    /// ## Arguments:
+    /// * `ip`
+    /// * `user`
+    pub async fn get_ipblock_by_ip(&self, ip: String, user: String) -> Result<IpBlock> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "SELECT * FROM \"xipblocks\" WHERE \"ip\" = ? AND \"user\" = ?"
+        } else {
+            "SELECT * FROM \"xipblocks\" WHERE \"ip\" = $1 AND \"user\" = $2"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query)
+            .bind::<&String>(&ip)
+            .bind::<&String>(&user)
+            .fetch_one(c)
+            .await
+        {
+            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Err(_) => return Err(AuthError::NotFound),
+        };
+
+        // return
+        let block = IpBlock {
+            id: res.get("id").unwrap().to_string(),
+            ip: res.get("ip").unwrap().to_string(),
+            user: res.get("user").unwrap().to_string(),
+            context: res.get("context").unwrap().to_string(),
+            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+        };
+
+        // return
+        Ok(block)
+    }
+
+    /// Get all [`IpBlocks`]s for the given `query_user`
+    ///
+    /// ## Arguments:
+    /// * `query_user` - the ID of the user the blocks belong to
+    pub async fn get_ipblocks(&self, query_user: String) -> Result<Vec<IpBlock>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "SELECT * FROM \"xipblocks\" WHERE \"user\" = ? ORDER BY \"timestamp\" DESC"
+        } else {
+            "SELECT * FROM \"xipblocks\" WHERE \"user\" = $1 ORDER BY \"timestamp\" DESC"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query)
+            .bind::<&String>(&query_user)
+            .fetch_all(c)
+            .await
+        {
+            Ok(p) => {
+                let mut out: Vec<IpBlock> = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+                    out.push(IpBlock {
+                        id: res.get("id").unwrap().to_string(),
+                        ip: res.get("ip").unwrap().to_string(),
+                        user: res.get("user").unwrap().to_string(),
+                        context: res.get("context").unwrap().to_string(),
+                        timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                    });
+                }
+
+                out
+            }
+            Err(_) => return Err(AuthError::NotFound),
+        };
+
+        // return
+        Ok(res)
+    }
+
+    // SET
+    /// Create a new [`IpBlock`]
+    ///
+    /// ## Arguments:
+    /// * `props` - [`IpBlockCreate`]
+    /// * `user` - the user creating this block
+    pub async fn create_ipblock(&self, props: IpBlockCreate, user: Profile) -> Result<()> {
+        // make sure this ip isn't already banned
+        if self
+            .get_ipblock_by_ip(props.ip.clone(), user.id.clone())
+            .await
+            .is_ok()
+        {
+            return Err(AuthError::MustBeUnique);
+        }
+
+        // ...
+        let block = IpBlock {
+            id: utility::random_id(),
+            ip: props.ip,
+            user: user.id,
+            context: props.context,
+            timestamp: utility::unix_epoch_timestamp(),
+        };
+
+        // create notification
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "INSERT INTO \"xipblocks\" VALUES (?, ?, ?, ?, ?)"
+        } else {
+            "INSERT INTO \"xipblocks\" VALEUS ($1, $2, $3, $4, $5)"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query)
+            .bind::<&String>(&block.id)
+            .bind::<&String>(&block.ip)
+            .bind::<&String>(&block.user)
+            .bind::<&String>(&block.context)
+            .bind::<&String>(&block.timestamp.to_string())
+            .execute(c)
+            .await
+        {
+            Ok(_) => return Ok(()),
+            Err(_) => return Err(AuthError::Other),
+        };
+    }
+
+    /// Delete an existing IpBlock
+    ///
+    /// ## Arguments:
+    /// * `id` - the ID of the block
+    /// * `user` - the user doing this
+    pub async fn delete_ipblock(&self, id: String, user: Profile) -> Result<()> {
+        // make sure block exists
+        let block = match self.get_ipblock(id.clone()).await {
+            Ok(n) => n,
+            Err(e) => return Err(e),
+        };
+
+        // check id
+        if user.id != block.user {
+            // check permission
+            let group = match self.get_group_by_id(user.group).await {
+                Ok(g) => g,
+                Err(_) => return Err(AuthError::Other),
+            };
+
+            if !group.permissions.contains(&Permission::Manager) {
+                return Err(AuthError::NotAllowed);
+            } else {
+                let actor_id = user.id.clone();
+                if let Err(e) = self
+                    .create_notification(NotificationCreate {
+                        title: format!("[{actor_id}](/+u/{actor_id})"),
+                        content: format!("Unblocked an IP: {}", block.ip),
+                        address: format!("/+u/{actor_id}"),
+                        recipient: "*(audit)".to_string(), // all staff, audit
+                    })
+                    .await
+                {
+                    return Err(e);
+                }
+            }
+        }
+
+        // delete block
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "DELETE FROM \"xipblocks\" WHERE \"id\" = ?"
+        } else {
+            "DELETE FROM \"xipblocks\" WHERE \"id\" = $1"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query).bind::<&String>(&id).execute(c).await {
+            Ok(_) => {
+                // remove from cache
+                self.base
+                    .cachedb
+                    .remove(format!("rbeam.auth.ipblock:{}", id))
+                    .await;
+
+                // return
+                return Ok(());
+            }
+            Err(_) => return Err(AuthError::Other),
+        };
     }
 }

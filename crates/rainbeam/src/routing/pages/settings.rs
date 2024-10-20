@@ -3,7 +3,7 @@ use axum::response::IntoResponse;
 use axum::{extract::State, response::Html};
 use axum_extra::extract::CookieJar;
 
-use authbeam::model::Profile;
+use authbeam::model::{IpBlock, Profile};
 
 use crate::config::Config;
 use crate::database::Database;
@@ -20,6 +20,7 @@ struct AccountSettingsTemplate {
     notifs: usize,
     metadata: String,
     relationships: Vec<(Profile, RelationshipStatus)>,
+    ipblocks: Vec<IpBlock>,
 }
 
 /// GET /settings
@@ -54,9 +55,14 @@ pub async fn account_settings(
 
     let relationships = match database
         .auth
-        .get_user_relationships(auth_user.id.clone())
+        .get_user_relationships_of_status(auth_user.id.clone(), RelationshipStatus::Blocked)
         .await
     {
+        Ok(r) => r,
+        Err(_) => Vec::new(),
+    };
+
+    let ipblocks = match database.auth.get_ipblocks(auth_user.id.clone()).await {
         Ok(r) => r,
         Err(_) => Vec::new(),
     };
@@ -69,6 +75,7 @@ pub async fn account_settings(
             unread,
             notifs,
             relationships,
+            ipblocks,
         }
         .render()
         .unwrap(),

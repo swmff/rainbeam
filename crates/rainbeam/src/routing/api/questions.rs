@@ -1,7 +1,7 @@
 use crate::database::Database;
 use crate::model::{anonymous_profile, DatabaseError, QuestionCreate};
 use axum::http::{HeaderMap, HeaderValue};
-use authbeam::model::NotificationCreate;
+use authbeam::model::{IpBlockCreate, NotificationCreate};
 use databeam::DefaultReturn;
 
 use axum::response::{IntoResponse, Redirect};
@@ -20,6 +20,7 @@ pub fn routes(database: Database) -> Router {
         .route("/:id", get(get_request))
         .route("/:id", delete(delete_request))
         .route("/:id/report", post(report_request))
+        .route("/:id/ipblock", post(ipblock_request))
         // ...
         .with_state(database)
 }
@@ -297,6 +298,68 @@ pub async fn report_request(
         Err(_) => Json(DefaultReturn {
             success: false,
             message: DatabaseError::NotFound.to_string(),
+            payload: (),
+        }),
+    }
+}
+
+/// IP block a question's author
+pub async fn ipblock_request(
+    jar: CookieJar,
+    Path(id): Path<String>,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    // get user from token
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => {
+                return Json(DatabaseError::NotAllowed.into());
+            }
+        },
+        None => {
+            return Json(DatabaseError::NotAllowed.into());
+        }
+    };
+
+    // get question
+    let question = match database.get_question(id.clone()).await {
+        Ok(q) => q,
+        Err(e) => {
+            return Json(DefaultReturn {
+                success: false,
+                message: e.to_string(),
+                payload: (),
+            })
+        }
+    };
+
+    // block
+    match database
+        .auth
+        .create_ipblock(
+            IpBlockCreate {
+                ip: question.ip,
+                context: question.content,
+            },
+            auth_user,
+        )
+        .await
+    {
+        Ok(_) => {
+            return Json(DefaultReturn {
+                success: true,
+                message: "IP blocked!".to_string(),
+                payload: (),
+            })
+        }
+        Err(_) => Json(DefaultReturn {
+            success: false,
+            message: DatabaseError::Other.to_string(),
             payload: (),
         }),
     }
