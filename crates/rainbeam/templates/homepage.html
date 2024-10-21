@@ -6,7 +6,7 @@ block head %}
     <div
         class="card padded flex flex-col gap-2 justify-center items-center"
         style="
-            background: var(--color-primary);
+            background: hsl(var(--color-primary));
             color: var(--color-text-primary) !important;
         "
     >
@@ -16,13 +16,11 @@ block head %}
         </h3>
 
         <div class="flex items-center gap-2" style="margin-top: 1rem">
-            <a class="button round-lg bold" href="/sign_up" data-turbo="false">
+            <a class="button bold" href="/sign_up" data-turbo="false">
                 Register
             </a>
             <em>or</em>
-            <a class="button round-lg bold" href="/login" data-turbo="false">
-                Login
-            </a>
+            <a class="button bold" href="/login" data-turbo="false"> Login </a>
         </div>
     </div>
 
@@ -71,7 +69,7 @@ block head %}
 <style>
     .hl-tag {
         color: var(--color-text-primary);
-        background: var(--color-primary);
+        background: hsl(var(--color-primary));
         padding: 0.25rem 0.5rem;
         border-radius: var(--radius);
     }

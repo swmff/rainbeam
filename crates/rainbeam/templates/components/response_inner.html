@@ -15,7 +15,7 @@
                         title="{{ question.author.username }}'s avatar"
                         src="/api/v1/profiles/{{ question.author.username }}/avatar"
                         alt=""
-                        class="avatar round-sm"
+                        class="avatar"
                         style="--size: 20px"
                     />
 
@@ -41,7 +41,7 @@
                         title="{{ question.author.username }}'s avatar"
                         src="/static/images/default-avatar.svg"
                         alt=""
-                        class="avatar round-sm"
+                        class="avatar"
                         style="--size: 20px"
                     />
                     {% else %}
@@ -50,7 +50,7 @@
                         title="This profile's anonymous avatar"
                         src="/api/util/ext/image?img={{ avatar }}"
                         alt=""
-                        class="avatar round-sm"
+                        class="avatar"
                         style="--size: 20px"
                     />
                     {% endif %} {% else %}
@@ -59,7 +59,7 @@
                         title="{{ question.author.username }}'s avatar"
                         src="/static/images/default-avatar.svg"
                         alt=""
-                        class="avatar round-sm"
+                        class="avatar"
                         style="--size: 20px"
                     />
                     {% endif %}

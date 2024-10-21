@@ -704,7 +704,6 @@ impl Database {
             "sparkler:color_link",
             "sparkler:color_primary",
             "sparkler:color_primary_lowered",
-            "sparkler:color_primary_alpha",
             "sparkler:color_primary_raised",
             "sparkler:color_text_primary",
             "sparkler:color_shadow",

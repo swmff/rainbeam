@@ -36,18 +36,18 @@ input[type="checkbox"] {
     color: var(--color-primary-raised);
     width: max-content;
     padding: 0.5rem 1rem;
-    border-radius: 360px;
+    border-radius: var(--circle);
 
     &:hover {
-        background: var(--color-primary-alpha) !important;
+        background: hsla(var(--color-primary), 25%) !important;
     }
 }
 
 button,
 a.button {
-    border-radius: 360px;
+    border-radius: var(--circle);
 }
 
 .dropdown:not(nav *):has(.inner[open]) button {
-    background: var(--color-primary-alpha) !important;
+    background: hsla(var(--color-primary), 25%) !important;
 }

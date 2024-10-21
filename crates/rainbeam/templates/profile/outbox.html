@@ -64,7 +64,7 @@
                             title="{{ question.author.username }}'s avatar"
                             src="/api/v1/profiles/{{ question.author.username }}/avatar"
                             alt=""
-                            class="avatar round-sm"
+                            class="avatar"
                             style="--size: 20px"
                         />
 
@@ -87,7 +87,7 @@
                             title="{{ question.author.username }}'s avatar"
                             src="/static/images/default-avatar.svg"
                             alt=""
-                            class="avatar round-sm"
+                            class="avatar"
                             style="--size: 20px"
                         />
 
@@ -99,7 +99,7 @@
 
                 <div class="dropdown">
                     <button
-                        class="secondary"
+                        class="camo"
                         onclick="trigger('app:hook.dropdown', [event])"
                         exclude="dropdown"
                     >
@@ -166,7 +166,7 @@
                 title="{{ question.recipient.username }}'s avatar"
                 src="/api/v1/profiles/{{ question.recipient.username }}/avatar"
                 alt=""
-                class="avatar round-sm"
+                class="avatar"
                 style="--size: 20px"
             />
 

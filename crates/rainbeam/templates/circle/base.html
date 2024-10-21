@@ -167,7 +167,7 @@
                 <!-- options for account owner -->
                 <!-- <hr /> -->
                 <a
-                    class="button round-lg w-full bold primary"
+                    class="button w-full bold primary"
                     href="/circles/@{{ circle.name }}/settings"
                 >
                     Edit Circle
@@ -175,7 +175,7 @@
                 {% endif %} {% if is_owner %}
                 <a
                     href="javascript:delete_circle_as_owner()"
-                    class="button round-lg w-full"
+                    class="button w-full"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -212,7 +212,7 @@
                 </script>
                 {% else if is_member %}
                 <!-- is member, but not owner -->
-                <a href="javascript:leave_circle()" class="button round-lg w-full">
+                <a href="javascript:leave_circle()" class="button w-full">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 16 16"
@@ -253,7 +253,7 @@
                     <button
                         onclick="trigger('app:hook.dropdown', [event])"
                         exclude="dropdown"
-                        class="round-lg w-full"
+                        class="w-full"
                     >
                         Actions
                         <svg
@@ -358,7 +358,7 @@
                     <button
                         onclick="trigger('app:hook.dropdown', [event])"
                         exclude="dropdown"
-                        class="round-lg w-full"
+                        class="w-full"
                     >
                         Actions
                         <svg
@@ -450,7 +450,7 @@
                             {% endif %}
                             </div>
 
-                            <button class="round-lg primary bold">Ask</button>
+                            <button class="primary bold">Ask</button>
                         </div>
                     </form>
                     {% else %}

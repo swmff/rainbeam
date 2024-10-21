@@ -12,10 +12,9 @@
     --color-raised: hsl(0, 0%, 98%);
     --color-super-lowered: hsl(0, 0%, 90%);
     --color-super-raised: hsl(0, 0%, 100%);
-    --color-primary: hsl(341, 59%, 45%);
+    --color-primary: 341, 59%, 45%;
     --color-primary-lowered: hsl(341, 59%, 40%);
-    --color-primary-raised: var(--color-primary);
-    --color-primary-alpha: hsla(341, 59%, 40%, 25%);
+    --color-primary-raised: hsl(var(--color-primary));
     --color-text: hsl(0, 0%, 0%);
     --color-text-raised: var(--color-text);
     --color-text-lowered: var(--color-text);
@@ -23,20 +22,30 @@
     --color-text-primary: hsl(0, 0%, 100%);
     --color-shadow: rgba(0, 0, 0, 0.15);
     --color-red: hsl(0, 84%, 60%);
-    --radius: 0.35rem;
+    --radius: 0.25rem;
+    --circle: 360px;
 }
 
 .dark,
 .dark * {
-    --color-surface: hsl(0, 0%, 12%);
-    --color-lowered: hsl(0, 0%, 18%);
-    --color-raised: hsl(0, 0%, 15%);
-    --color-super-lowered: hsl(0, 0%, 17%);
-    --color-super-raised: hsl(0, 0%, 20%);
+    --color-surface: hsl(0, 0%, 18%);
+    --color-lowered: hsl(0, 0%, 24%);
+    --color-raised: hsl(0, 0%, 21%);
+    --color-super-lowered: hsl(0, 0%, 28%);
+    --color-super-raised: hsl(0, 0%, 26%);
     --color-text: hsl(0, 0%, 95%);
     --color-link: #93c5fd;
     --color-primary-raised: hsl(341, 59%, 55%);
     --color-red: hsl(0, 94%, 82%);
+}
+
+.dark.midnight,
+.dark.midnight * {
+    --color-surface: hsl(0, 0%, 12%);
+    --color-lowered: hsl(0, 0%, 18%);
+    --color-raised: hsl(0, 0%, 15%);
+    --color-super-lowered: hsl(0, 0%, 21%);
+    --color-super-raised: hsl(0, 0%, 20%);
 }
 
 html,
@@ -190,6 +199,7 @@ pre {
     background: var(--color-surface);
     overflow: auto;
     max-width: 100%;
+    border-radius: var(--radius);
 }
 
 code:not(pre code) {
@@ -227,7 +237,8 @@ a.button {
         outline 0.08s,
         outline-color 0.15s,
         border-radius 0.15s,
-        opacity 0.15s;
+        opacity 0.15s,
+        box-shadow 0.3s;
     user-select: none;
     display: flex;
     justify-content: center;
@@ -236,6 +247,7 @@ a.button {
     text-decoration: none !important;
     /* font-size: 13.3333px; */
     font-size: 0.9rem;
+    box-shadow: 0 0 0 transparent;
 }
 
 button:not(nav *):hover,
@@ -273,13 +285,23 @@ a.button.camo:hover {
 
 button.primary,
 a.button.primary {
-    background: var(--color-primary);
+    background: linear-gradient(
+        to top,
+        var(--color-primary-lowered),
+        hsl(var(--color-primary)) 50%
+    );
     color: var(--color-text-primary);
 }
 
 button.primary:hover,
 a.button.primary:hover {
-    background: var(--color-primary-lowered);
+    /* box-shadow: inset 0 0 10px 5px var(--color-primary-lowered); */
+    background: linear-gradient(
+        to top,
+        var(--color-primary-lowered),
+        hsl(var(--color-primary)) 80%
+    );
+    box-shadow: 0 0 8px hsla(var(--color-primary), 25%);
 }
 
 button.secondary,
@@ -303,7 +325,7 @@ a.button.secondary:hover {
 }
 
 button.reaction.active {
-    background: var(--color-primary);
+    background: hsl(var(--color-primary));
     color: var(--color-text-primary);
 }
 
@@ -353,7 +375,7 @@ select.secondary {
 input:focus,
 textarea:focus,
 select:focus {
-    outline: solid 2px var(--color-primary);
+    outline: solid 2px hsl(var(--color-primary));
     outline-offset: 2px;
 }
 
@@ -507,7 +529,7 @@ fieldset:hover {
 
 a.card:hover {
     text-decoration: none;
-    border-color: var(--color-primary);
+    border-color: hsl(var(--color-primary));
 }
 
 legend,
@@ -597,7 +619,7 @@ a:hover {
 }
 
 nav {
-    background: var(--color-primary);
+    background: hsl(var(--color-primary));
     color: var(--color-text-primary) !important;
     width: 100%;
     display: flex;
@@ -778,7 +800,7 @@ nav a:not(.inner a):hover::after {
 }
 
 .footnote-definition:target {
-    outline: solid 2px var(--color-primary);
+    outline: solid 2px hsl(var(--color-primary));
     outline-offset: 2px;
     background: var(--color-raised);
 }
@@ -824,7 +846,7 @@ img.emoji {
 
 .avatar {
     --size: 50px;
-    border-radius: var(--radius);
+    border-radius: var(--circle);
     width: var(--size);
     min-width: var(--size);
     max-width: var(--size);
@@ -891,7 +913,7 @@ dialog::backdrop {
     width: max-content;
     min-width: 10rem;
     max-width: 100dvw;
-    padding: 0.5rem 0;
+    padding: 0.5rem 0.25rem;
 }
 
 .dropdown .inner.top {
@@ -923,7 +945,7 @@ dialog::backdrop {
 .dropdown .inner a,
 .dropdown .inner button {
     width: 100%;
-    padding: 0.25rem 1rem;
+    padding: 0.15rem 1rem;
     transition: background 0.05s;
     text-decoration: none;
     display: flex;
@@ -933,17 +955,20 @@ dialog::backdrop {
     box-shadow: none !important;
     background: transparent;
     justify-content: flex-start;
-    border-radius: 0;
+    border-radius: var(--radius) !important;
+    font-size: 14px;
+    min-height: 25px;
+
+    & svg {
+        width: 14px;
+        height: 14px;
+    }
 }
 
 .dropdown .inner a:hover,
 .dropdown .inner button:hover {
     background: var(--color-raised);
-}
-
-.card:not(:has(form)) button:not(dialog *),
-.card:not(:has(form)) a.button:not(dialog *) {
-    border-radius: 360px;
+    box-shadow: 0 0 0 1px var(--color-super-lowered) !important;
 }
 
 .dropdown:not(nav *):has(.inner[open]) button:not(.inner button) {
@@ -958,7 +983,7 @@ dialog::backdrop {
     padding: 0.05rem 0.3rem;
     font-family: monospace;
     font-size: 10px;
-    border-radius: 360px;
+    border-radius: var(--radius);
     height: max-content;
 }
 
@@ -1033,7 +1058,7 @@ dialog::backdrop {
     display: block;
     border-radius: var(--radius);
     /* background: var(--color-super-lowered); */
-    background: var(--color-primary);
+    background: hsl(var(--color-primary));
     /* height: 100%; */
     width: 5px;
 }
@@ -1070,7 +1095,7 @@ dialog::backdrop {
 }
 
 .sidenav a.active {
-    background: var(--color-primary);
+    background: hsl(var(--color-primary));
     color: var(--color-text-primary);
 }
 
@@ -1110,7 +1135,7 @@ dialog::backdrop {
 }
 
 .pillmenu a.active {
-    background: var(--color-primary);
+    background: hsl(var(--color-primary));
     color: var(--color-text-primary);
 }
 
@@ -1246,7 +1271,7 @@ dialog::backdrop {
     content: "Show full content";
     border-radius: calc(var(--radius) * 4);
     padding: 0.25rem 0.75rem;
-    background: var(--color-primary);
+    background: hsl(var(--color-primary));
     font-weight: 600;
     bottom: 20px;
     opacity: 0%;
@@ -1277,7 +1302,7 @@ dialog::backdrop {
 }
 
 .turbo-progress-bar {
-    background: var(--color-primary);
+    background: hsl(var(--color-primary));
 }
 
 details summary {
@@ -1301,7 +1326,7 @@ details summary::-webkit-details-marker {
 }
 
 details[open] summary {
-    background: var(--color-primary-alpha);
+    background: hsla(var(--color-primary), 25%);
     margin-bottom: 0.25rem;
 }
 
@@ -1339,7 +1364,7 @@ details[open] summary:before {
 
 canvas {
     background: white;
-    border: solid 2px var(--color-primary);
+    border: solid 2px hsl(var(--color-primary));
     border-radius: var(--radius);
     box-shadow: 0 0 4px var(--color-shadow);
     max-width: 100%;
@@ -1350,7 +1375,7 @@ canvas {
     bottom: -10px;
     right: -10px;
     font-size: 12px !important;
-    border-radius: 360px !important;
+    border-radius: var(--circle) !important;
     border: solid 2px var(--color-surface) !important;
     padding: 0.25rem !important;
     min-height: max-content !important;
@@ -1360,12 +1385,21 @@ canvas {
     min-width: 26px !important;
 }
 
+.status_note.static {
+    position: static;
+}
+
+.status_note .emoji {
+    margin: 0;
+    cursor: pointer;
+}
+
 .avatar_crown {
     position: absolute;
-    top: -20px;
-    left: -10px;
+    top: -12px;
+    left: 16px;
     font-size: 25px;
-    transform: rotateZ(-25deg);
+    transform: rotateZ(-33deg);
 }
 
 /* codemirror */

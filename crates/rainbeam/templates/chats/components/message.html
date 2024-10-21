@@ -6,7 +6,7 @@
                     title="{{ message.1.username }}'s avatar"
                     src="/api/v1/profiles/{{ message.1.username }}/avatar"
                     alt=""
-                    class="avatar round-sm"
+                    class="avatar"
                     style="--size: 20px"
                 />
 
@@ -105,7 +105,7 @@
                 </a>
 
                 <!-- prettier-ignore -->
-                {% if let Some(profile) = profile %} 
+                {% if let Some(profile) = profile %}
                     {% if profile.id != message.1.id %}
                 <!-- actions for users that ARE NOT the author -->
                 <a

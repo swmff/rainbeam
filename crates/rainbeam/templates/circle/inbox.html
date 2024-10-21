@@ -28,7 +28,7 @@
                             title="{{ question.author.username }}'s avatar"
                             src="/api/v1/profiles/{{ question.author.username }}/avatar"
                             alt=""
-                            class="avatar round-sm"
+                            class="avatar"
                             style="--size: 20px"
                         />
 
@@ -54,7 +54,7 @@
                             title="{{ question.author.username }}'s avatar"
                             src="/static/images/default-avatar.svg"
                             alt=""
-                            class="avatar round-sm"
+                            class="avatar"
                             style="--size: 20px"
                         />
                         {% else %}
@@ -63,7 +63,7 @@
                             title="This profile's anonymous avatar"
                             src="/api/util/ext/image?img={{ avatar }}"
                             alt=""
-                            class="avatar round-sm"
+                            class="avatar"
                             style="--size: 20px"
                         />
                         {% endif %} {% else %}
@@ -72,7 +72,7 @@
                             title="{{ question.author.username }}'s avatar"
                             src="/static/images/default-avatar.svg"
                             alt=""
-                            class="avatar round-sm"
+                            class="avatar"
                             style="--size: 20px"
                         />
                         {% endif %}
@@ -166,7 +166,7 @@
                         id="content-{{ question.id }}:counter"
                         class="notification item"
                     ></span>
-                    <button class="round-lg primary bold">Submit</button>
+                    <button class="primary bold">Submit</button>
                 </div>
             </form>
         </div>

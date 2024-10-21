@@ -253,6 +253,7 @@
             <option value="">User-choice</option>
             <option value="light" id="light">Light</option>
             <option value="dark" id="dark">Dark</option>
+            <option value="dark midnight" id="dark midnight">Midnight</option>
         </select>
 
         <p class="fade">This is the base theme used on your profile.</p>
@@ -469,23 +470,6 @@
 
         <p class="fade">
             That primary pink-ish color when you hover over it (buttons).
-        </p>
-    </div>
-
-    <div class="flex flex-col gap-1">
-        <label for="sparkler:color_primary_alpha">Primary alpha</label>
-
-        <input
-            name="sparkler:color_primary_alpha"
-            id="sparkler:color_primary_alpha"
-            onchange="update_kv('sparkler:color_primary_alpha', event.target.value)"
-        />
-
-        <p class="fade">
-            A
-            <code>25%</code>
-            opacity version of your primary color. Used by some skins to have
-            nicer looking buttons.
         </p>
     </div>
 

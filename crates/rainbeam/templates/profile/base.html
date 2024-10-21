@@ -133,14 +133,6 @@ config.name }}{% endblock %} {% block head %}
                         margin: -40px auto 0;
                     }
                 }
-
-                .status_note {
-                    font-size: 14px !important;
-                    height: 32px !important;
-                    max-height: 32px !important;
-                    width: 32px !important;
-                    min-width: 32px !important;
-                }
             </style>
 
             <div
@@ -157,9 +149,6 @@ config.name }}{% endblock %} {% block head %}
                             class="avatar shadow-md profile_avatar"
                         />
 
-                        {% let user = other.clone() %}
-                        {% include "components/user_note.html" %}
-
                         <!-- profile crown -->
                         {% if other.tier >= config.tiers.avatar_crown %}
                         <div class="avatar_crown" title="Supporter ❤️">👑</div>
@@ -168,12 +157,16 @@ config.name }}{% endblock %} {% block head %}
 
                     <!-- prettier-ignore -->
                     <div id="names">
-                        <h3 class="no-margin username" style="max-width: 100%">
+                        <h3 class="no-margin username flex gap-2 items-center" style="max-width: 100%">
                             {% if let Some(display_name) = other.metadata.kv.get("sparkler:display_name") %}
                                 {{ display_name }}
                             {% else %}
                                 {{ other.username }}
                             {% endif %}
+
+                            {% let use_static = true %}
+                            {% let user = other.clone() %}
+                            {% include "components/user_note.html" %}
                         </h3>
 
                         <h4 class="no-margin username" style="font-weight: normal; opacity: 50%">{{ other.username }}</h4>
@@ -190,7 +183,7 @@ config.name }}{% endblock %} {% block head %}
                             {% if other.tier >= config.tiers.profile_badge %}
                             <span
                                 class="notification ff-inherit fs-md bold"
-                                style="background: var(--color-primary); color: var(--color-text-primary)"
+                                style="background: hsl(var(--color-primary)); color: var(--color-text-primary)"
                             >
                                 👑 Supporter
                             </span>
@@ -212,7 +205,7 @@ config.name }}{% endblock %} {% block head %}
                 <!-- options for account owner -->
                 <!-- <hr /> -->
                 <a
-                    class="button round-lg w-full bold primary"
+                    class="button w-full bold primary"
                     href="/settings/profile"
                 >
                     Edit Profile
@@ -222,7 +215,7 @@ config.name }}{% endblock %} {% block head %}
                     <button
                         onclick="trigger('app:hook.dropdown', [event])"
                         exclude="dropdown"
-                        class="round-lg w-full"
+                        class="w-full"
                     >
                         More
                         <svg
@@ -290,7 +283,7 @@ config.name }}{% endblock %} {% block head %}
                 </button>
                 {% else %}
                 <button
-                    class="round-lg w-full"
+                    class="w-full"
                     onclick="follow()"
                     id="follow_button"
                 >
@@ -318,7 +311,7 @@ config.name }}{% endblock %} {% block head %}
                     };
                 </script>
                 {% else if relationship == crate::model::RelationshipStatus::Friends %}
-                <button class="round-lg w-full" onclick="unfriend()">
+                <button class="w-full" onclick="unfriend()">
                     Remove Friend
                 </button>
 
@@ -341,7 +334,7 @@ config.name }}{% endblock %} {% block head %}
                     };
                 </script>
                 {% else if relationship == crate::model::RelationshipStatus::Pending %}
-                <button class="round-lg w-full" onclick="cancel_fr()">
+                <button class="w-full" onclick="cancel_fr()">
                     Cancel Friend Request
                 </button>
 
@@ -373,7 +366,7 @@ config.name }}{% endblock %} {% block head %}
                     <button
                         onclick="trigger('app:hook.dropdown', [event])"
                         exclude="dropdown"
-                        class="round-lg w-full"
+                        class="w-full"
                     >
                         Actions
                         <svg
@@ -536,7 +529,7 @@ config.name }}{% endblock %} {% block head %}
                     <button
                         onclick="trigger('app:hook.dropdown', [event])"
                         exclude="dropdown"
-                        class="round-lg w-full"
+                        class="w-full"
                     >
                         Actions
                         <svg
@@ -694,10 +687,10 @@ config.name }}{% endblock %} {% block head %}
 
                             <div class="flex gap-2">
                                 {% if other.metadata.is_true("sparkler:allow_drawings") %}
-                                <button class="round-lg" onclick="attach_carp(event)" type="button">Draw</button>
+                                <button onclick="attach_carp(event)" type="button">Draw</button>
                                 {% endif %}
 
-                                <button class="round-lg primary bold">Ask</button>
+                                <button class="primary bold">Ask</button>
                             </div>
                         </div>
                     </form>

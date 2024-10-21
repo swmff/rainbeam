@@ -19,22 +19,21 @@
     </div>
 
     <div class="card flex gap-2">
-        <div style="position: relative; margin: -50px 0.5rem 0">
-            <a href="/@{{ user.username }}">
-                <img
-                    title="{{ user.username }}'s avatar"
-                    src="/api/v1/profiles/{{ user.username }}/avatar"
-                    alt=""
-                    class="avatar shadow-md"
-                    style="--size: 80px"
-                />
-            </a>
+        <a href="/@{{ user.username }}">
+            <img
+                title="{{ user.username }}'s avatar"
+                src="/api/v1/profiles/{{ user.username }}/avatar"
+                alt=""
+                class="avatar shadow-md"
+                style="--size: 80px; margin: -50px 0.5rem 0"
+            />
+        </a>
 
-            {% include "components/user_note.html" %}
-        </div>
-
-        <h3 class="no-margin">
+        <h3 class="no-margin flex items-center gap-2">
             <a href="/@{{ user.username }}">{{ user.username }}</a>
+            <!-- prettier-ignore -->
+            {% let use_static = true %}
+            {% include "components/user_note.html" %}
         </h3>
     </div>
 </div>

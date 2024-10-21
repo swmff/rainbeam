@@ -1,7 +1,7 @@
 {% if let Some(profile) = profile %} {% if
 user.metadata.exists("sparkler:status_note") | (profile.id == user.id) %}
 <button
-    class="status_note primary"
+    class="status_note primary {% if use_static == true %}static{% endif %}"
     title="View note"
     onclick="document.getElementById('status:{{ user.id }}').showModal()"
 >

@@ -5,11 +5,11 @@
                 title="{{ user.username }}'s avatar"
                 src="/api/v1/profiles/{{ user.username }}/avatar"
                 alt="@{{ user.username }}"
-                class="avatar round-sm"
+                class="avatar"
                 style="--size: 50px"
             />
         </a>
 
-        {% include "components/user_note.html" %}
+        {% let use_static = false %} {% include "components/user_note.html" %}
     </div>
 </div>
