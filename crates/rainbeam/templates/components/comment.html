@@ -71,11 +71,11 @@ comment = comment.0.clone() %}
             <span class="date item">{{ comment.timestamp }}</span>
         </div>
 
-        <div class="flex gap-2 sm:w-full">
+        <div class="flex justify-between gap-2 sm:w-full actions_bar">
             <!-- reactions -->
             <button
                 title="{{ reaction_count }} reactions"
-                class="w-full camo"
+                class="camo"
                 onclick="trigger('reactions:toggle', ['{{ comment.id }}', 'Comment'])"
             >
                 <svg
@@ -83,15 +83,17 @@ comment = comment.0.clone() %}
                     viewBox="0 0 16 16"
                     width="16"
                     height="16"
-                    aria-label="Smiley symbol"
+                    aria-label="Heart symbol"
                     class="icon"
                 >
                     <path
-                        d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm3.82 1.636a.75.75 0 0 1 1.038.175l.007.009c.103.118.22.222.35.31.264.178.683.37 1.285.37.602 0 1.02-.192 1.285-.371.13-.088.247-.192.35-.31l.007-.008a.75.75 0 0 1 1.222.87l-.022-.015c.02.013.021.015.021.015v.001l-.001.002-.002.003-.005.007-.014.019a2.066 2.066 0 0 1-.184.213c-.16.166-.338.316-.53.445-.63.418-1.37.638-2.127.629-.946 0-1.652-.308-2.126-.63a3.331 3.331 0 0 1-.715-.657l-.014-.02-.005-.006-.002-.003v-.002h-.001l.613-.432-.614.43a.75.75 0 0 1 .183-1.044ZM12 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM5 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm5.25 2.25.592.416a97.71 97.71 0 0 0-.592-.416Z"
+                        d="m8 14.25.345.666a.75.75 0 0 1-.69 0l-.008-.004-.018-.01a7.152 7.152 0 0 1-.31-.17 22.055 22.055 0 0 1-3.434-2.414C2.045 10.731 0 8.35 0 5.5 0 2.836 2.086 1 4.25 1 5.797 1 7.153 1.802 8 3.02 8.847 1.802 10.203 1 11.75 1 13.914 1 16 2.836 16 5.5c0 2.85-2.045 5.231-3.885 6.818a22.066 22.066 0 0 1-3.744 2.584l-.018.01-.006.003h-.002ZM4.25 2.5c-1.336 0-2.75 1.164-2.75 3 0 2.15 1.58 4.144 3.365 5.682A20.58 20.58 0 0 0 8 13.393a20.58 20.58 0 0 0 3.135-2.211C12.92 9.644 14.5 7.65 14.5 5.5c0-1.836-1.414-3-2.75-3-1.373 0-2.609.986-3.029 2.456a.749.749 0 0 1-1.442 0C6.859 3.486 5.623 2.5 4.25 2.5Z"
                     ></path>
                 </svg>
 
+                {% if reaction_count > 0 %}
                 <span class="notification camo">{{ reaction_count }}</span>
+                {% endif %}
             </button>
 
             <!-- replies -->
@@ -99,7 +101,7 @@ comment = comment.0.clone() %}
             <a
                 href="/comment/{{ comment.id }}"
                 title="{{ reply_count }} replies"
-                class="button w-full camo"
+                class="button camo"
             >
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -114,12 +116,14 @@ comment = comment.0.clone() %}
                     ></path>
                 </svg>
 
+                {% if reply_count > 0 %}
                 <span class="notification camo">{{ reply_count }}</span>
+                {% endif %}
             </a>
             {% endif %}
 
             <!-- sharing -->
-            <div class="dropdown w-full">
+            <div class="dropdown">
                 <button
                     class="w-full camo"
                     onclick="trigger('app:hook.dropdown', [event])"
@@ -134,7 +138,7 @@ comment = comment.0.clone() %}
                         class="icon"
                     >
                         <path
-                            d="M15 3a3 3 0 0 1-5.175 2.066l-3.92 2.179a2.994 2.994 0 0 1 0 1.51l3.92 2.179a3 3 0 1 1-.73 1.31l-3.92-2.178a3 3 0 1 1 0-4.133l3.92-2.178A3 3 0 1 1 15 3Zm-1.5 10a1.5 1.5 0 1 0-3.001.001A1.5 1.5 0 0 0 13.5 13Zm-9-5a1.5 1.5 0 1 0-3.001.001A1.5 1.5 0 0 0 4.5 8Zm9-5a1.5 1.5 0 1 0-3.001.001A1.5 1.5 0 0 0 13.5 3Z"
+                            d="M3.75 6.5a.25.25 0 0 0-.25.25v6.5c0 .138.112.25.25.25h8.5a.25.25 0 0 0 .25-.25v-6.5a.25.25 0 0 0-.25-.25h-1a.75.75 0 0 1 0-1.5h1c.966 0 1.75.784 1.75 1.75v6.5A1.75 1.75 0 0 1 12.25 15h-8.5A1.75 1.75 0 0 1 2 13.25v-6.5C2 5.784 2.784 5 3.75 5h1a.75.75 0 0 1 0 1.5ZM7.823.177a.25.25 0 0 1 .354 0l2.896 2.896a.25.25 0 0 1-.177.427H8.75v5.75a.75.75 0 0 1-1.5 0V3.5H5.104a.25.25 0 0 1-.177-.427Z"
                         ></path>
                     </svg>
                 </button>
@@ -169,7 +173,7 @@ comment = comment.0.clone() %}
             </div>
 
             <!-- options -->
-            <div class="dropdown w-full">
+            <div class="dropdown">
                 <button
                     onclick="trigger('app:hook.dropdown', [event])"
                     exclude="dropdown"

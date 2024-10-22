@@ -46,7 +46,7 @@
             globalThis.ns_verbose = false;
             globalThis.ns_config = {
                 root: "/static/js/",
-                version: "1.11.1",
+                version: "1.11.2",
                 verbose: globalThis.ns_verbose,
             };
 
@@ -375,6 +375,26 @@
                 {% block content %}{% endblock %}
             </div>
         </div>
+
+        <a
+            href="#top"
+            id="backtotop"
+            class="button primary"
+            title="Back to top"
+        >
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                width="24"
+                height="24"
+                aria-label="Upwards chevron"
+                class="icon"
+            >
+                <path
+                    d="M18.78 15.78a.749.749 0 0 1-1.06 0L12 10.061 6.28 15.78a.749.749 0 1 1-1.06-1.06l6.25-6.25a.749.749 0 0 1 1.06 0l6.25 6.25a.749.749 0 0 1 0 1.06Z"
+                ></path>
+            </svg>
+        </a>
 
         <script data-turbo-eval="false">
             // load resources

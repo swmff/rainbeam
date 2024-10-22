@@ -314,6 +314,29 @@ a.button.secondary:hover {
     background: var(--color-raised);
 }
 
+#backtotop {
+    position: fixed;
+    bottom: 0.5rem;
+    left: 0.5rem;
+    border-radius: var(--circle);
+    width: 48px;
+    height: 48px;
+    transition: all 0.15s;
+    opacity: 0%;
+    transform: scale(0);
+}
+
+#backtotop svg {
+    margin: 0;
+}
+
+@media screen and (max-width: 900px) {
+    #backtotop:is(html[data-scroll-500="true"] *) {
+        opacity: 100%;
+        transform: scale(1);
+    }
+}
+
 .card button.secondary,
 .card a.button.secondary {
     background: var(--color-raised);
@@ -461,7 +484,7 @@ fieldset:hover {
     padding: 0.75rem;
     max-width: 100vw;
     /* box-shadow: 0 0 2px var(--color-shadow); */
-    border: solid 2px var(--color-lowered);
+    border: solid 1px var(--color-super-lowered);
 }
 
 .card.shadow,
@@ -504,9 +527,9 @@ fieldset:hover {
     color: var(--color-text-lowered) !important;
     box-shadow: none;
     /* border */
-    border-top: solid 2px var(--color-lowered);
-    border-left: solid 2px var(--color-lowered);
-    border-right: solid 2px var(--color-lowered);
+    border-top: solid 1px var(--color-super-lowered);
+    border-left: solid 1px var(--color-super-lowered);
+    border-right: solid 1px var(--color-super-lowered);
 }
 
 .card-nest .card:last-child,
@@ -517,9 +540,9 @@ fieldset:hover {
     border-bottom-right-radius: var(--radius);
     box-shadow: none;
     /* border */
-    border-bottom: solid 2px var(--color-lowered);
-    border-left: solid 2px var(--color-lowered);
-    border-right: solid 2px var(--color-lowered);
+    border-bottom: solid 1px var(--color-super-lowered);
+    border-left: solid 1px var(--color-super-lowered);
+    border-right: solid 1px var(--color-super-lowered);
 }
 
 .card.secondary {
@@ -530,6 +553,12 @@ fieldset:hover {
 a.card:hover {
     text-decoration: none;
     border-color: hsl(var(--color-primary));
+}
+
+.actions_bar a.button,
+.actions_bar button {
+    padding: 0.25rem 0.75rem;
+    min-height: 26px !important;
 }
 
 legend,
@@ -914,6 +943,7 @@ dialog::backdrop {
     min-width: 10rem;
     max-width: 100dvw;
     padding: 0.5rem 0.25rem;
+    border: solid 1px var(--color-super-lowered);
 }
 
 .dropdown .inner.top {
@@ -938,8 +968,12 @@ dialog::backdrop {
     color: var(--color-text-raised);
 }
 
+.dropdown .inner b.title {
+    font-weight: 600;
+}
+
 .dropdown .inner .title:not(:first-of-type) {
-    padding-top: 1rem;
+    padding-top: 0.5rem;
 }
 
 .dropdown .inner a,
@@ -957,7 +991,8 @@ dialog::backdrop {
     justify-content: flex-start;
     border-radius: var(--radius) !important;
     font-size: 14px;
-    min-height: 25px;
+    min-height: 28px;
+    font-weight: normal !important;
 
     & svg {
         width: 14px;

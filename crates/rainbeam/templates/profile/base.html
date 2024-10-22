@@ -272,10 +272,11 @@ config.name }}{% endblock %} {% block head %}
                     </div>
                 </div>
                 {% else %}
+                <div class="flex gap-2">
                 <!-- follow, unfollow -->
                 {% if !is_following %}
                 <button
-                    class="round-lg w-full bold primary"
+                    class="w-full bold primary"
                     onclick="follow()"
                     id="follow_button"
                 >
@@ -292,8 +293,8 @@ config.name }}{% endblock %} {% block head %}
                 {% endif %}
 
                 {% if relationship == crate::model::RelationshipStatus::Unknown %}
-                <button class="round-lg w-full primary bold" onclick="friend()">
-                    Add Friend
+                <button class="w-full primary bold" onclick="friend()">
+                    Add friend
                 </button>
 
                 <script>
@@ -312,7 +313,7 @@ config.name }}{% endblock %} {% block head %}
                 </script>
                 {% else if relationship == crate::model::RelationshipStatus::Friends %}
                 <button class="w-full" onclick="unfriend()">
-                    Remove Friend
+                    Unfriend
                 </button>
 
                 <script>
@@ -334,8 +335,8 @@ config.name }}{% endblock %} {% block head %}
                     };
                 </script>
                 {% else if relationship == crate::model::RelationshipStatus::Pending %}
-                <button class="w-full" onclick="cancel_fr()">
-                    Cancel Friend Request
+                <button class="w-full" onclick="cancel_fr()" title="Cancel friend request">
+                    Cancel
                 </button>
 
                 <script>
@@ -358,8 +359,8 @@ config.name }}{% endblock %} {% block head %}
                             });
                     };
                 </script>
-
                 {% endif %}
+                </div>
 
                 <!-- actions -->
                 <div class="dropdown">

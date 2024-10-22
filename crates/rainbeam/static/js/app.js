@@ -72,7 +72,19 @@
 
             element.setAttribute("title", then.toLocaleString());
 
-            const pretty = $.rel_date(then);
+            let pretty = $.rel_date(then);
+
+            if (screen.width < 900 && pretty) {
+                // shorten dates even more for mobile
+                pretty = pretty
+                    .replaceAll(" minutes ago", "m")
+                    .replaceAll(" hours ago", "h")
+                    .replaceAll(" days ago", "d")
+                    .replaceAll(" weeks ago", "w")
+                    .replaceAll(" months ago", "m")
+                    .replaceAll(" years ago", "y");
+            }
+
             element.innerText =
                 pretty === undefined ? then.toLocaleDateString() : pretty;
         }
