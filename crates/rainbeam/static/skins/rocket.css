@@ -18,7 +18,7 @@
     --color-raised: hsl(0, 0%, 8%) !important;
     --color-super-lowered: hsl(0, 0%, 12%) !important;
     --color-super-raised: hsl(0, 0%, 13%) !important;
-    --color-link: hsl(var(--color-primary)) !important;
+    --color-link: var(--color-primary) !important;
 }
 
 /* buttons */
@@ -74,7 +74,7 @@ a.button:not(nav *):hover {
     color: var(--color-primary-raised);
 
     &:hover {
-        background: hsla(var(--color-primary), 25%) !important;
+        background: hsla(var(--color-primary-hsl), 25%) !important;
     }
 }
 
@@ -136,7 +136,7 @@ nav .dropdown .inner:is(.dark *) {
 }
 
 .dropdown:not(nav *):has(.inner[open]) button:not(.inner *) {
-    background: hsla(var(--color-primary), 25%) !important;
+    background: hsla(var(--color-primary-hsl), 25%) !important;
 }
 
 #toast_zone {

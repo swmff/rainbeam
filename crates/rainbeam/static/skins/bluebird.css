@@ -39,7 +39,7 @@ input[type="checkbox"] {
     border-radius: var(--circle);
 
     &:hover {
-        background: hsla(var(--color-primary), 25%) !important;
+        background: hsla(var(--color-primary-hsl), 25%) !important;
     }
 }
 
@@ -49,5 +49,5 @@ a.button {
 }
 
 .dropdown:not(nav *):has(.inner[open]) button {
-    background: hsla(var(--color-primary), 25%) !important;
+    background: hsla(var(--color-primary-hsl), 25%) !important;
 }
