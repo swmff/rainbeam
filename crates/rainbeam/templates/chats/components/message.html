@@ -1,157 +1,141 @@
-<div id="message:{{ message.0.id }}" class="flex flex-col gap-2 message">
-    <div class="flex justify-between gap-2">
-        <div class="footernav items-center" style="user-select: none">
-            <b class="flex items-center gap-2 item">
-                <img
-                    title="{{ message.1.username }}'s avatar"
-                    src="/api/v1/profiles/{{ message.1.username }}/avatar"
-                    alt=""
-                    class="avatar"
-                    style="--size: 20px"
-                />
+<div
+    id="message:{{ message.0.id }}"
+    class="message {% if is_own %}own{% endif %}"
+>
+    <a
+        class="flex items-center gap-2 item"
+        href="/@{{ message.1.username }}"
+        title="{{ message.1.username }}"
+    >
+        <img
+            src="/api/v1/profiles/{{ message.1.username }}/avatar"
+            alt=""
+            class="avatar"
+            style="--size: 35px"
+        />
+    </a>
 
-                <!-- prettier-ignore -->
-                {% let author_tag = crate::database::Database::anonymous_tag(message.1.username.as_ref()) %}
-                {% if author_tag.0 == false %}
-                <a
-                    href="/@{{ message.1.username }}"
-                    style="color: inherit"
-                    class="username"
-                >
-                    <!-- prettier-ignore -->
-                    {% let display_name = message.1.metadata.kv.get("sparkler:display_name") %}
+    <span class="message_content" hook="long">
+        {{ shared::ui::render_markdown(message.0.content)|safe }}
+    </span>
 
-                    {% if let Some(display_name) = display_name %}
-                        {{ display_name }}
-                    {% else %}
-                        {{ message.1.username }}
-                    {% endif %}
-                </a>
-                {% else %} {{ message.1.username }} {% endif %}
-            </b>
+    <div class="dropdown">
+        <button
+            onclick="trigger('app:hook.dropdown', [event])"
+            exclude="dropdown"
+            class="camo message_actions"
+        >
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 16 16"
+                width="16"
+                height="16"
+                aria-label="Ellipsis symbol"
+                class="icon"
+            >
+                <path
+                    d="M8 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM1.5 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm13 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"
+                ></path>
+            </svg>
+        </button>
 
-            <span class="date item">{{ message.0.timestamp }}</span>
-        </div>
+        <div
+            class="inner shadow-md w-content {% if !is_own %}left{% endif %}"
+            exclude="dropdown"
+        >
+            <span class="date title">{{ message.0.timestamp }}</span>
 
-        <!-- options -->
-        <div class="dropdown">
-            <button
-                onclick="trigger('app:hook.dropdown', [event])"
-                exclude="dropdown"
-                class="camo"
+            {% if let Some(profile) = profile %} {% if is_own %}
+            <!-- actions for the message author only -->
+            <b class="title">Manage</b>
+
+            <a
+                href="#"
+                onclick="trigger('chats:msg_delete', ['{{ message.0.id }}'])"
+                class="red"
             >
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 16 16"
                     width="16"
                     height="16"
-                    aria-label="Ellipsis symbol"
+                    aria-label="Trash symbol"
                     class="icon"
                 >
                     <path
-                        d="M8 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM1.5 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm13 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"
+                        d="M11 1.75V3h2.25a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75ZM4.496 6.675l.66 6.6a.25.25 0 0 0 .249.225h5.19a.25.25 0 0 0 .249-.225l.66-6.6a.75.75 0 0 1 1.492.149l-.66 6.6A1.748 1.748 0 0 1 10.595 15h-5.19a1.75 1.75 0 0 1-1.741-1.575l-.66-6.6a.75.75 0 1 1 1.492-.15ZM6.5 1.75V3h3V1.75a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25Z"
                     ></path>
                 </svg>
-            </button>
+                Delete
+            </a>
+            {% endif %} {% endif %}
+            <!-- actions for everybody -->
+            <b class="title">Tools</b>
+            <a
+                href="#"
+                onclick="trigger('app:copy_text', ['{{ message.0.id }}'])"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 16 16"
+                    width="16"
+                    height="16"
+                    aria-label="Copy symbol"
+                    class="icon"
+                >
+                    <path
+                        d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"
+                    ></path>
+                    <path
+                        d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"
+                    ></path>
+                </svg>
+                Copy ID
+            </a>
 
-            <div class="inner shadow-md w-content" exclude="dropdown">
-                {% if let Some(profile) = profile %} {% if profile.id ==
-                message.1.id %}
-                <!-- actions for the message author only -->
-                <b class="title">Manage</b>
-
-                <a
-                    href="#"
-                    onclick="trigger('chats:msg_delete', ['{{ message.0.id }}'])"
-                    class="red"
+            <!-- prettier-ignore -->
+            {% if let Some(profile) = profile %}
+                {% if !is_own %}
+            <!-- actions for users that ARE NOT the author -->
+            <a
+                href="javascript:trigger('reports:bootstrap', ['messages', '{{ message.0.id }}'])"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 16 16"
+                    width="16"
+                    height="16"
+                    aria-label="Report symbol"
+                    class="icon"
                 >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 16 16"
-                        width="16"
-                        height="16"
-                        aria-label="Trash symbol"
-                        class="icon"
-                    >
-                        <path
-                            d="M11 1.75V3h2.25a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75ZM4.496 6.675l.66 6.6a.25.25 0 0 0 .249.225h5.19a.25.25 0 0 0 .249-.225l.66-6.6a.75.75 0 0 1 1.492.149l-.66 6.6A1.748 1.748 0 0 1 10.595 15h-5.19a1.75 1.75 0 0 1-1.741-1.575l-.66-6.6a.75.75 0 1 1 1.492-.15ZM6.5 1.75V3h3V1.75a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25Z"
-                        ></path>
-                    </svg>
-                    Delete
-                </a>
-                {% endif %} {% endif %}
-                <!-- actions for everybody -->
-                <b class="title">Tools</b>
-                <a
-                    href="#"
-                    onclick="trigger('app:copy_text', ['{{ message.0.id }}'])"
+                    <path
+                        d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"
+                    ></path>
+                </svg>
+                Report
+            </a>
+            {% endif %} {% if is_helper %}
+            <b class="title">Mod</b>
+            <a
+                href="#"
+                onclick="trigger('chats:msg_delete', ['{{ message.0.id }}'])"
+                class="red"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 16 16"
+                    width="16"
+                    height="16"
+                    aria-label="Trash symbol"
+                    class="icon"
                 >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 16 16"
-                        width="16"
-                        height="16"
-                        aria-label="Copy symbol"
-                        class="icon"
-                    >
-                        <path
-                            d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"
-                        ></path>
-                        <path
-                            d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"
-                        ></path>
-                    </svg>
-                    Copy ID
-                </a>
-
-                <!-- prettier-ignore -->
-                {% if let Some(profile) = profile %}
-                    {% if profile.id != message.1.id %}
-                <!-- actions for users that ARE NOT the author -->
-                <a
-                    href="javascript:trigger('reports:bootstrap', ['messages', '{{ message.0.id }}'])"
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 16 16"
-                        width="16"
-                        height="16"
-                        aria-label="Report symbol"
-                        class="icon"
-                    >
-                        <path
-                            d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"
-                        ></path>
-                    </svg>
-                    Report
-                </a>
-                {% endif %} {% if is_helper %}
-                <b class="title">Mod</b>
-                <a
-                    href="#"
-                    onclick="trigger('chats:msg_delete', ['{{ message.0.id }}'])"
-                    class="red"
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 16 16"
-                        width="16"
-                        height="16"
-                        aria-label="Trash symbol"
-                        class="icon"
-                    >
-                        <path
-                            d="M11 1.75V3h2.25a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75ZM4.496 6.675l.66 6.6a.25.25 0 0 0 .249.225h5.19a.25.25 0 0 0 .249-.225l.66-6.6a.75.75 0 0 1 1.492.149l-.66 6.6A1.748 1.748 0 0 1 10.595 15h-5.19a1.75 1.75 0 0 1-1.741-1.575l-.66-6.6a.75.75 0 1 1 1.492-.15ZM6.5 1.75V3h3V1.75a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25Z"
-                        ></path>
-                    </svg>
-                    Delete
-                </a>
-                {% endif %} {% endif %}
-            </div>
+                    <path
+                        d="M11 1.75V3h2.25a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75ZM4.496 6.675l.66 6.6a.25.25 0 0 0 .249.225h5.19a.25.25 0 0 0 .249-.225l.66-6.6a.75.75 0 0 1 1.492.149l-.66 6.6A1.748 1.748 0 0 1 10.595 15h-5.19a1.75 1.75 0 0 1-1.741-1.575l-.66-6.6a.75.75 0 1 1 1.492-.15ZM6.5 1.75V3h3V1.75a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25Z"
+                    ></path>
+                </svg>
+                Delete
+            </a>
+            {% endif %} {% endif %}
         </div>
     </div>
-
-    <span class="message_content" hook="long">
-        {{ shared::ui::render_markdown(message.0.content)|safe }}
-    </span>
 </div>

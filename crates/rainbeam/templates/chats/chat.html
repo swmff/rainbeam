@@ -239,9 +239,12 @@ endblock %} {% block nav_left %}
             </div>
 
             <!-- prettier-ignore -->
-            {% for message in messages %}
-                {% include "components/message.html" %}
-            {% endfor %}
+            {% if let Some(user) = profile %}
+                {% for message in messages %}
+                    {% let is_own = user.id == message.1.id %}
+                    {% include "components/message.html" %}
+                {% endfor %}
+            {% endif %}
 
             <div class="flex justify-center w-full">
                 {% if messages.len() >= 50 %}
@@ -339,10 +342,27 @@ endblock %} {% block nav_left %}
                         if (res.payload[0].id !== last_message_id) {
                             // render message and show
                             last_message_id = res.payload[0].id;
-                            trigger("chats:msg.html", [
-                                res.payload,
-                                document.getElementById("messages"),
-                            ]);
+
+                            // fetch whole page again (in case we missed some messages)
+                            fetch("/api/v1/chats/{{ chat.id }}/messages")
+                                .then((res) => res.json())
+                                .then((res) => {
+                                    for (msg of res.payload) {
+                                        if (
+                                            document.getElementById(
+                                                `message:${msg[0].id}`,
+                                            )
+                                        ) {
+                                            // message already exists on page
+                                            continue;
+                                        }
+
+                                        trigger("chats:msg.html", [
+                                            msg,
+                                            document.getElementById("messages"),
+                                        ]);
+                                    }
+                                });
                         }
 
                         callback();

@@ -392,7 +392,7 @@ pub async fn sign_up_request(
 #[derive(Serialize, Deserialize)]
 pub struct PaginatedQuery {
     #[serde(default)]
-    page: i32,
+    pub page: i32,
 }
 
 #[derive(Serialize, Deserialize)]

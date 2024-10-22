@@ -1,5 +1,7 @@
 use crate::database::Database;
 use crate::model::{ChatAdd, ChatNameEdit, DatabaseError};
+use crate::routing::pages::PaginatedQuery;
+use axum::extract::Query;
 use axum::http::{HeaderMap, HeaderValue};
 use hcaptcha::Hcaptcha;
 use authbeam::model::NotificationCreate;
@@ -19,6 +21,7 @@ pub fn routes(database: Database) -> Router {
         .route("/from_user/:id", post(create_request))
         // .route("/:id", get(get_request))
         .route("/:id/last", get(get_last_message_request))
+        .route("/:id/messages", get(get_messages_request))
         .route("/:id/name", post(edit_name_request))
         .route("/:id/add", post(add_friend_request))
         .route("/:id", delete(delete_request))
@@ -90,6 +93,50 @@ pub async fn get_last_message_request(
         }
         Err(e) => e.into(),
     })
+}
+
+/// [`Database::get_messages_by_chat_paginated`]
+pub async fn get_messages_request(
+    jar: CookieJar,
+    Path(id): Path<String>,
+    State(database): State<Database>,
+    Query(props): Query<PaginatedQuery>,
+) -> impl IntoResponse {
+    // get user from token
+    match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => return Json(DatabaseError::NotAllowed.into()),
+        },
+        None => return Json(DatabaseError::NotAllowed.into()),
+    };
+
+    Json(
+        match database
+            .get_messages_by_chat_paginated(id, props.page)
+            .await
+        {
+            Ok(r) => {
+                let mut r_clean = Vec::new();
+
+                for mut r in r.clone() {
+                    r.1.clean();
+                    r_clean.push(r);
+                }
+
+                DefaultReturn {
+                    success: true,
+                    message: String::new(),
+                    payload: Some(r_clean),
+                }
+            }
+            Err(e) => e.into(),
+        },
+    )
 }
 
 /// [`Database::update_chat_name`]

@@ -179,6 +179,7 @@ struct MessageTemplate {
     profile: Option<Profile>,
     message: (Message, Profile),
     is_helper: bool,
+    is_own: bool,
 }
 
 /// GET /chats/_app/msg.html
@@ -211,6 +212,7 @@ pub async fn render_message_request(
     Html(
         MessageTemplate {
             profile: Some(auth_user.clone()),
+            is_own: auth_user.id == message.1.id,
             message,
             is_helper,
         }

@@ -1344,22 +1344,54 @@ details[open] summary:before {
     content: "▼";
 } */
 
+.message_group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
 .message {
     background: transparent;
     color: var(--color-text);
     border-radius: var(--radius);
-    padding: 0.75rem;
     box-shadow: inset 0 0 2px transparent;
     transition:
         background 0.15s,
         color 0.15s,
         box-shadow 0.2s;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.25rem;
 }
 
-.message:hover {
+.message .message_actions {
+    display: none;
+}
+
+.message:hover .message_actions {
+    display: flex;
+}
+
+.message .message_content {
     background: var(--color-raised);
     color: var(--color-text-raised) !important;
-    box-shadow: inset 0 0 2px var(--color-shadow);
+    padding: 0.75rem;
+    border-radius: calc(var(--radius) * 2);
+    border-bottom-left-radius: 0;
+}
+
+.message.own {
+    flex-direction: row-reverse;
+}
+
+.message.own .message_content {
+    background: hsl(var(--color-primary));
+    color: var(--color-text-primary) !important;
+    border-bottom-left-radius: calc(var(--radius) * 2);
+    border-bottom-right-radius: 0;
 }
 
 canvas {
