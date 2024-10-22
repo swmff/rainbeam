@@ -1236,6 +1236,18 @@ impl Database {
                     .remove(format!("rbeam.app.friends_count:{}", id))
                     .await;
 
+                // ipblocks by user
+                let query: &str =
+                    if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+                        "DELETE FROM \"xipblocks\" WHERE \"user\" = ?"
+                    } else {
+                        "DELETE FROM \"xipblocks\" WHERE \"user\" = $1"
+                    };
+
+                if let Err(_) = sqlquery(query).bind::<&String>(&id).execute(c).await {
+                    return Err(AuthError::Other);
+                };
+
                 // ...
                 self.base
                     .cachedb
