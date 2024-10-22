@@ -195,8 +195,8 @@ ol {
 
 pre {
     padding: 0.5rem;
-    border: solid 1px var(--color-lowered);
-    background: var(--color-surface);
+    border: solid 1px var(--color-super-lowered);
+    background: var(--color-raised);
     overflow: auto;
     max-width: 100%;
     border-radius: var(--radius);
@@ -891,14 +891,15 @@ dialog {
     bottom: 0;
     top: 0;
     display: flex;
-    background: var(--color-raised);
+    background: var(--color-surface);
+    border: solid 1px var(--color-super-lowered) !important;
     border-radius: var(--radius);
     max-width: 100%;
     border-style: none;
     display: none;
     margin: auto;
     color: var(--color-text);
-    animation: popin ease-in-out 1 0.15s forwards running;
+    animation: popin ease-in-out 1 0.1s forwards running;
 }
 
 dialog .inner {

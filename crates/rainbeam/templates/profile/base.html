@@ -157,17 +157,19 @@ config.name }}{% endblock %} {% block head %}
 
                     <!-- prettier-ignore -->
                     <div id="names">
-                        <h3 class="no-margin username flex gap-2 items-center" style="max-width: 100%">
-                            {% if let Some(display_name) = other.metadata.kv.get("sparkler:display_name") %}
-                                {{ display_name }}
-                            {% else %}
-                                {{ other.username }}
-                            {% endif %}
+                        <div class="flex gap-2 items-center" style="max-width: 100%">
+                            <h3 class="no-margin username">
+                                {% if let Some(display_name) = other.metadata.kv.get("sparkler:display_name") %}
+                                    {{ display_name }}
+                                {% else %}
+                                    {{ other.username }}
+                                {% endif %}
+                            </h3>
 
                             {% let use_static = true %}
                             {% let user = other.clone() %}
                             {% include "components/user_note.html" %}
-                        </h3>
+                        </div>
 
                         <h4 class="no-margin username" style="font-weight: normal; opacity: 50%">{{ other.username }}</h4>
 
