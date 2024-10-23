@@ -114,7 +114,7 @@ config.name }}{% endblock %} {% block head %}
     <div
         class="flex flex-collapse gap-4 {% if layout == "1" %}flex-rev-row{% endif %}"
     >
-        <div class="flex flex-col gap-4 sm:w-full profile_container" style="width: 20rem; height: max-content">
+        <div class="flex flex-col gap-4 sm:w-full profile_container" style="width: 25rem; height: max-content">
             <style>
                 .profile_avatar {
                     --size: 160px;
@@ -200,6 +200,38 @@ config.name }}{% endblock %} {% block head %}
                         {{ shared::ui::render_markdown(biography)|safe }}
                     {% endif %}
                 </div>
+
+                <!-- social -->
+                {% if !hide_social %}
+                <div class="footernav flex-wrap justify-center" style="font-size: 13px;">
+                    <a
+                        href="/@{{ other.username }}/followers"
+                        class="item"
+                        style="color: var(--color-text)"
+                    >
+                        <b>{{ followers_count }}</b>
+                        <span class="fade">follower{% if followers_count > 1 %}s{% endif %}</span>
+                    </a>
+
+                    <a
+                        href="/@{{ other.username }}/following"
+                        class="item"
+                        style="color: var(--color-text)"
+                    >
+                        <b>{{ following_count }}</b>
+                        <span class="fade">following</span>
+                    </a>
+
+                    <a
+                        href="/@{{ other.username }}/friends"
+                        class="item"
+                        style="color: var(--color-text)"
+                    >
+                        <b>{{ friends_count }}</b>
+                        <span class="fade">friend{% if friends_count > 1 %}s{% endif %}</span>
+                    </a>
+                </div>
+                {% endif %}
 
                 <!-- buttons -->
                 {% if let Some(profile) = profile %} {% if profile.username ==

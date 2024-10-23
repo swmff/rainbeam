@@ -59,9 +59,9 @@
                             }
 
                             return resolve(res);
-                        } else {
-                            return reject(res);
                         }
+
+                        return reject(res);
                     });
             });
         },
@@ -87,9 +87,9 @@
 
                     if (res.success === true) {
                         return resolve(res);
-                    } else {
-                        return reject(res);
                     }
+
+                    return reject(res);
                 });
         });
     });
@@ -114,9 +114,9 @@
 
                     if (res.success === true) {
                         return resolve(res);
-                    } else {
-                        return reject(res);
                     }
+
+                    return reject(res);
                 });
         });
     });

@@ -226,6 +226,72 @@ block head %}
 {% if let Some(profile) = profile %} {% let other = profile.clone() %} {% if
 profile.username == other.username %}
 <div id="is_self"></div>
+<dialog id="edit_dialog">
+    <form class="inner flex flex-col gap-2" onsubmit="edit(event)">
+        <!-- prettier-ignore -->
+        {% let value = comment.0.content.replace("</textarea>", "&lt;textarea&gt;") %}
+
+        <label for="edit_content">New content</label>
+
+        <textarea
+            class="w-full"
+            placeholder="Type your comment!"
+            minlength="1"
+            maxlength="4096"
+            required
+            name="content"
+            id="edit_content"
+            hook="counter"
+        >
+{{ value|safe }}</textarea
+        >
+
+        <div>
+            <span id="edit_content:counter" class="notification item"></span>
+        </div>
+
+        <hr />
+        <div class="flex gap-2">
+            <button class="primary bold">Confirm</button>
+            <button
+                class="bold"
+                onclick="document.getElementById('edit_dialog').close(); window.close()"
+                type="button"
+            >
+                Cancel
+            </button>
+        </div>
+    </form>
+</dialog>
+
+<script>
+    setTimeout(() => {
+        const dialogs = ns("dialogs");
+        dialogs.add("edit_dialog");
+
+        if (window.location.search === "?edit") {
+            dialogs.get("edit_dialog").open();
+        }
+    }, 100);
+
+    function edit(e) {
+        e.preventDefault();
+        trigger("comments:edit", [
+            "{{ comment.0.id }}",
+            e.target.content.value,
+        ]).then((res) => {
+            alert(res.message || "Comment edited!");
+
+            if (res.success === true) {
+                window.close();
+
+                setTimeout(() => {
+                    window.location.href = "?";
+                }, 100);
+            }
+        });
+    }
+</script>
 {% endif %} {% let raw_metadata =
 crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
 "components/theming.html" %} {% endif %} {% call super() %} {% endblock %}

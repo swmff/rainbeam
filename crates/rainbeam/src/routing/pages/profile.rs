@@ -462,24 +462,12 @@ struct FollowersTemplate {
     unread: usize,
     notifs: usize,
     other: Profile,
-    response_count: usize,
-    questions_count: usize,
     followers: Vec<(UserFollow, Profile, Profile)>,
     followers_count: usize,
     following_count: usize,
     friends_count: usize,
-    is_following: bool,
-    is_following_you: bool,
-    metadata: String,
     page: i32,
     // ...
-    relationship: RelationshipStatus,
-    layout: String,
-    lock_profile: bool,
-    disallow_anonymous: bool,
-    require_account: bool,
-    is_powerful: bool,
-    is_helper: bool,
     is_self: bool,
 }
 
@@ -529,41 +517,13 @@ pub async fn followers_request(
         Err(e) => return Html(e.to_string()),
     };
 
-    let is_following = if let Some(ref ua) = auth_user {
-        match database
-            .auth
-            .get_follow(ua.id.to_owned(), other.id.clone())
-            .await
-        {
-            Ok(_) => true,
-            Err(_) => false,
-        }
-    } else {
-        false
-    };
-
-    let is_following_you = if let Some(ref ua) = auth_user {
-        match database
-            .auth
-            .get_follow(other.id.clone(), ua.id.to_owned())
-            .await
-        {
-            Ok(_) => true,
-            Err(_) => false,
-        }
-    } else {
-        false
-    };
-
-    let mut is_helper: bool = false;
-    let is_powerful = if let Some(ref ua) = auth_user {
+    let is_helper = if let Some(ref ua) = auth_user {
         let group = match database.auth.get_group_by_id(ua.group).await {
             Ok(g) => g,
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        is_helper = group.permissions.contains(&Permission::Helper);
-        group.permissions.contains(&Permission::Manager)
+        group.permissions.contains(&Permission::Helper)
     } else {
         false
     };
@@ -615,12 +575,6 @@ pub async fn followers_request(
             unread,
             notifs,
             other: other.clone(),
-            response_count: database
-                .get_response_count_by_author(other.id.clone())
-                .await,
-            questions_count: database
-                .get_global_questions_count_by_author(other.id.clone())
-                .await,
             followers: database
                 .auth
                 .get_followers_paginated(other.id.clone(), query.page)
@@ -632,38 +586,8 @@ pub async fn followers_request(
                 .auth
                 .get_friendship_count_by_user(other.id.clone())
                 .await,
-            is_following,
-            is_following_you,
-            metadata: clean_metadata(&other.metadata),
             page: query.page,
             // ...
-            relationship,
-            layout: other
-                .metadata
-                .kv
-                .get("sparkler:layout")
-                .unwrap_or(&String::new())
-                .to_owned(),
-            lock_profile: other
-                .metadata
-                .kv
-                .get("sparkler:lock_profile")
-                .unwrap_or(&"false".to_string())
-                == "true",
-            disallow_anonymous: other
-                .metadata
-                .kv
-                .get("sparkler:disallow_anonymous")
-                .unwrap_or(&"false".to_string())
-                == "true",
-            require_account: other
-                .metadata
-                .kv
-                .get("sparkler:require_account")
-                .unwrap_or(&"false".to_string())
-                == "true",
-            is_powerful,
-            is_helper,
             is_self,
         }
         .render()
@@ -679,24 +603,12 @@ struct FollowingTemplate {
     unread: usize,
     notifs: usize,
     other: Profile,
-    response_count: usize,
-    questions_count: usize,
     followers_count: usize,
     friends_count: usize,
     following: Vec<(UserFollow, Profile, Profile)>,
     following_count: usize,
-    is_following: bool,
-    is_following_you: bool,
-    metadata: String,
     page: i32,
     // ...
-    relationship: RelationshipStatus,
-    layout: String,
-    lock_profile: bool,
-    disallow_anonymous: bool,
-    require_account: bool,
-    is_powerful: bool,
-    is_helper: bool,
     is_self: bool,
 }
 
@@ -746,41 +658,13 @@ pub async fn following_request(
         Err(e) => return Html(e.to_string()),
     };
 
-    let is_following = if let Some(ref ua) = auth_user {
-        match database
-            .auth
-            .get_follow(ua.id.to_owned(), other.id.clone())
-            .await
-        {
-            Ok(_) => true,
-            Err(_) => false,
-        }
-    } else {
-        false
-    };
-
-    let is_following_you = if let Some(ref ua) = auth_user {
-        match database
-            .auth
-            .get_follow(other.id.clone(), ua.id.to_owned())
-            .await
-        {
-            Ok(_) => true,
-            Err(_) => false,
-        }
-    } else {
-        false
-    };
-
-    let mut is_helper: bool = false;
-    let is_powerful = if let Some(ref ua) = auth_user {
+    let is_helper = if let Some(ref ua) = auth_user {
         let group = match database.auth.get_group_by_id(ua.group).await {
             Ok(g) => g,
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        is_helper = group.permissions.contains(&Permission::Helper);
-        group.permissions.contains(&Permission::Manager)
+        group.permissions.contains(&Permission::Helper)
     } else {
         false
     };
@@ -832,12 +716,6 @@ pub async fn following_request(
             unread,
             notifs,
             other: other.clone(),
-            response_count: database
-                .get_response_count_by_author(other.id.clone())
-                .await,
-            questions_count: database
-                .get_global_questions_count_by_author(other.id.clone())
-                .await,
             followers_count: database.auth.get_followers_count(other.id.clone()).await,
             following_count: database.auth.get_following_count(other.id.clone()).await,
             following: database
@@ -849,38 +727,8 @@ pub async fn following_request(
                 .auth
                 .get_friendship_count_by_user(other.id.clone())
                 .await,
-            is_following,
-            is_following_you,
-            metadata: clean_metadata(&other.metadata),
             page: query.page,
             // ...
-            relationship,
-            layout: other
-                .metadata
-                .kv
-                .get("sparkler:layout")
-                .unwrap_or(&String::new())
-                .to_owned(),
-            lock_profile: other
-                .metadata
-                .kv
-                .get("sparkler:lock_profile")
-                .unwrap_or(&"false".to_string())
-                == "true",
-            disallow_anonymous: other
-                .metadata
-                .kv
-                .get("sparkler:disallow_anonymous")
-                .unwrap_or(&"false".to_string())
-                == "true",
-            require_account: other
-                .metadata
-                .kv
-                .get("sparkler:require_account")
-                .unwrap_or(&"false".to_string())
-                == "true",
-            is_powerful,
-            is_helper,
             is_self,
         }
         .render()
@@ -896,24 +744,12 @@ struct FriendsTemplate {
     unread: usize,
     notifs: usize,
     other: Profile,
-    response_count: usize,
-    questions_count: usize,
     friends: Vec<(Profile, Profile)>,
     followers_count: usize,
     following_count: usize,
     friends_count: usize,
-    is_following: bool,
-    is_following_you: bool,
-    metadata: String,
     page: i32,
     // ...
-    relationship: RelationshipStatus,
-    layout: String,
-    lock_profile: bool,
-    disallow_anonymous: bool,
-    require_account: bool,
-    is_powerful: bool,
-    is_helper: bool,
     is_self: bool,
 }
 
@@ -963,41 +799,13 @@ pub async fn friends_request(
         Err(e) => return Html(e.to_string()),
     };
 
-    let is_following = if let Some(ref ua) = auth_user {
-        match database
-            .auth
-            .get_follow(ua.id.to_owned(), other.id.clone())
-            .await
-        {
-            Ok(_) => true,
-            Err(_) => false,
-        }
-    } else {
-        false
-    };
-
-    let is_following_you = if let Some(ref ua) = auth_user {
-        match database
-            .auth
-            .get_follow(other.id.clone(), ua.id.to_owned())
-            .await
-        {
-            Ok(_) => true,
-            Err(_) => false,
-        }
-    } else {
-        false
-    };
-
-    let mut is_helper: bool = false;
-    let is_powerful = if let Some(ref ua) = auth_user {
+    let is_helper = if let Some(ref ua) = auth_user {
         let group = match database.auth.get_group_by_id(ua.group).await {
             Ok(g) => g,
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        is_helper = group.permissions.contains(&Permission::Helper);
-        group.permissions.contains(&Permission::Manager)
+        group.permissions.contains(&Permission::Helper)
     } else {
         false
     };
@@ -1049,12 +857,6 @@ pub async fn friends_request(
             unread,
             notifs,
             other: other.clone(),
-            response_count: database
-                .get_response_count_by_author(other.id.clone())
-                .await,
-            questions_count: database
-                .get_global_questions_count_by_author(other.id.clone())
-                .await,
             friends: database
                 .auth
                 .get_user_participating_relationships_of_status_paginated(
@@ -1070,38 +872,8 @@ pub async fn friends_request(
                 .auth
                 .get_friendship_count_by_user(other.id.clone())
                 .await,
-            is_following,
-            is_following_you,
-            metadata: clean_metadata(&other.metadata),
             page: query.page,
             // ...
-            relationship,
-            layout: other
-                .metadata
-                .kv
-                .get("sparkler:layout")
-                .unwrap_or(&String::new())
-                .to_owned(),
-            lock_profile: other
-                .metadata
-                .kv
-                .get("sparkler:lock_profile")
-                .unwrap_or(&"false".to_string())
-                == "true",
-            disallow_anonymous: other
-                .metadata
-                .kv
-                .get("sparkler:disallow_anonymous")
-                .unwrap_or(&"false".to_string())
-                == "true",
-            require_account: other
-                .metadata
-                .kv
-                .get("sparkler:require_account")
-                .unwrap_or(&"false".to_string())
-                == "true",
-            is_powerful,
-            is_helper,
             is_self,
         }
         .render()

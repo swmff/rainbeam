@@ -82,7 +82,8 @@ impl Database {
                 content   TEXT,
                 id        TEXT,
                 timestamp TEXT,
-                reply     TEXT
+                reply     TEXT,
+                edited    TEXT
             )",
         )
         .execute(c)
@@ -2574,7 +2575,10 @@ impl Database {
                 if let Err(e) = self
                     .audit(
                         user.id,
-                        format!("Edited a response: [{}]({})", response.id, response.id),
+                        format!(
+                            "Edited a response: [{}](/response/{})",
+                            response.id, response.id
+                        ),
                     )
                     .await
                 {
@@ -2656,7 +2660,7 @@ impl Database {
                 .audit(
                     user.id,
                     format!(
-                        "Edited a response's tags: [{}]({})",
+                        "Edited a response's tags: [{}](/response/{})",
                         response.id, response.id
                     ),
                 )
@@ -2965,6 +2969,7 @@ impl Database {
                     Err(_) => None,
                 }
             },
+            edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
         };
 
         // store in cache
@@ -3043,6 +3048,7 @@ impl Database {
                                     Err(_) => None,
                                 }
                             },
+                            edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
                         },
                         self.get_reply_count_by_comment(id.clone()).await,
                         self.get_reaction_count_by_asset(id).await,
@@ -3111,6 +3117,7 @@ impl Database {
                                     Err(_) => None,
                                 }
                             },
+                            edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
                         },
                         self.get_reply_count_by_comment(id.clone()).await,
                         self.get_reaction_count_by_asset(id).await,
@@ -3205,6 +3212,7 @@ impl Database {
                                     Err(_) => None,
                                 }
                             },
+                            edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
                         },
                         self.get_reply_count_by_comment(id.clone()).await,
                         self.get_reaction_count_by_asset(id).await,
@@ -3272,6 +3280,7 @@ impl Database {
                                     Err(_) => None,
                                 }
                             },
+                            edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
                         },
                         if recurse == true {
                             self.get_reply_count_by_comment(id.clone()).await
@@ -3344,6 +3353,7 @@ impl Database {
                                     Err(_) => None,
                                 }
                             },
+                            edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
                         },
                         self.get_reply_count_by_comment(id.clone()).await,
                         self.get_reaction_count_by_asset(id).await,
@@ -3459,21 +3469,23 @@ impl Database {
         }
 
         // ...
+        let timestamp = utility::unix_epoch_timestamp();
         let comment = ResponseComment {
             author,
             response: response.id.clone(),
             content: props.content.trim().to_string(),
             id: utility::random_id(),
-            timestamp: utility::unix_epoch_timestamp(),
+            timestamp,
             reply: None,
+            edited: timestamp,
         };
 
         // create response
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            "INSERT INTO \"xcomments\" VALUES (?, ?, ?, ?, ?, ?)"
+            "INSERT INTO \"xcomments\" VALUES (?, ?, ?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xcomments\" VALEUS ($1, $2, $3, $4, $5, $6)"
+            "INSERT INTO \"xcomments\" VALEUS ($1, $2, $3, $4, $5, $6, $7)"
         }
         .to_string();
 
@@ -3485,6 +3497,7 @@ impl Database {
             .bind::<&String>(&comment.id)
             .bind::<&String>(&comment.timestamp.to_string())
             .bind::<&String>(&props.reply)
+            .bind::<&String>(&comment.timestamp.to_string())
             .execute(c)
             .await
         {
@@ -3569,6 +3582,100 @@ impl Database {
             }
             Err(_) => return Err(DatabaseError::Other),
         };
+    }
+
+    /// Update an existing comment's content
+    ///
+    /// # Arguments
+    /// * `id`
+    /// * `content`
+    /// * `user` - the user doing this
+    pub async fn update_comment_content(
+        &self,
+        id: String,
+        content: String,
+        user: Profile,
+    ) -> Result<()> {
+        // make sure the response exists
+        let comment = match self.get_comment(id.clone(), false).await {
+            Ok(q) => q.0,
+            Err(e) => return Err(e),
+        };
+
+        // check content length
+        if content.len() > 4096 {
+            return Err(DatabaseError::ContentTooLong);
+        }
+
+        if content.len() < 2 {
+            return Err(DatabaseError::ContentTooShort);
+        }
+
+        // check user permissions
+        if user.group == -1 {
+            // group -1 (even if it exists) is for marking users as banned
+            return Err(DatabaseError::NotAllowed);
+        }
+
+        if user.id != comment.author.id {
+            // check permission
+            let group = match self.auth.get_group_by_id(user.group).await {
+                Ok(g) => g,
+                Err(_) => return Err(DatabaseError::Other),
+            };
+
+            if !group.permissions.contains(&Permission::Manager) {
+                return Err(DatabaseError::NotAllowed);
+            } else {
+                if let Err(e) = self
+                    .audit(
+                        user.id,
+                        format!(
+                            "Edited a comment: [{}](/comment/{})",
+                            comment.id, comment.id
+                        ),
+                    )
+                    .await
+                {
+                    return Err(e);
+                }
+            }
+        }
+
+        // check markdown content
+        let markdown = shared::ui::render_markdown(&content);
+
+        if markdown.trim().len() == 0 {
+            return Err(DatabaseError::ContentTooShort);
+        }
+
+        // update response
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "UPDATE \"xcomments\" SET \"content\" = ?, \"edited\" = ? WHERE \"id\" = ?"
+        } else {
+            "UPDATE \"xcomments\" SET (\"content\", \"edited\") = ($1, $2) WHERE \"id\" = $3"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query)
+            .bind::<&String>(&content)
+            .bind::<&String>(&utility::unix_epoch_timestamp().to_string())
+            .bind::<&String>(&id)
+            .execute(c)
+            .await
+        {
+            Ok(_) => {
+                self.base
+                    .cachedb
+                    .remove(format!("rbeam.app.comment:{id}"))
+                    .await;
+
+                Ok(())
+            }
+            Err(_) => Err(DatabaseError::Other),
+        }
     }
 
     /// Delete an existing comment

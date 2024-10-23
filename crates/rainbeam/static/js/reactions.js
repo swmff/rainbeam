@@ -50,8 +50,8 @@
 
         if (remove) {
             return $.delete(id);
-        } else {
-            return $.create(id, type);
         }
+
+        return $.create(id, type);
     });
 })();

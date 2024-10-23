@@ -74,15 +74,21 @@
 
             let pretty = $.rel_date(then);
 
-            if (screen.width < 900 && pretty) {
+            if (screen.width < 900 && pretty !== undefined) {
                 // shorten dates even more for mobile
                 pretty = pretty
                     .replaceAll(" minutes ago", "m")
+                    .replaceAll(" minute ago", "m")
                     .replaceAll(" hours ago", "h")
+                    .replaceAll(" hour ago", "h")
                     .replaceAll(" days ago", "d")
+                    .replaceAll(" day ago", "d")
                     .replaceAll(" weeks ago", "w")
+                    .replaceAll(" week ago", "w")
                     .replaceAll(" months ago", "m")
-                    .replaceAll(" years ago", "y");
+                    .replaceAll(" month ago", "m")
+                    .replaceAll(" years ago", "y")
+                    .replaceAll(" year ago", "y");
             }
 
             element.innerText =

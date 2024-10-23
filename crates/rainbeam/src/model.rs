@@ -199,6 +199,8 @@ pub struct ResponseComment {
     pub timestamp: u128,
     /// The ID of the comment this comment is replying to
     pub reply: Option<Box<ResponseComment>>,
+    /// The time this comment was last edited
+    pub edited: u128,
 }
 
 /// A reaction structure
