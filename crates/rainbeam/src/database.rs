@@ -1168,6 +1168,7 @@ impl Database {
         // check recipient
         // "@" is the recipient we use for global questions (questions anybody can respond to)
         let tag = Database::anonymous_tag(&author);
+        let mut use_tier = 0;
         if props.recipient != "@" {
             if props.recipient.starts_with("circle:") {
                 // circle
@@ -1194,6 +1195,8 @@ impl Database {
                     Ok(ua) => ua,
                     Err(e) => return Err(e),
                 };
+
+                use_tier = recipient.tier;
 
                 let profile_locked = recipient.metadata.is_true("sparkler:lock_profile");
                 let block_anonymous = recipient.metadata.is_true("sparkler:disallow_anonymous");
@@ -1273,7 +1276,10 @@ impl Database {
                 return Err(DatabaseError::ContentTooShort);
             }
 
-            if author.tier >= self.server_options.tiers.double_limits {
+            // we get upgraded limit if we have the minimum tier OR if the recipient has it
+            if (author.tier >= self.server_options.tiers.double_limits)
+                | (use_tier >= self.server_options.tiers.double_limits)
+            {
                 if props.content.len() > (64 * 64) {
                     return Err(DatabaseError::ContentTooLong);
                 }
@@ -1304,7 +1310,9 @@ impl Database {
                     return Err(DatabaseError::ContentTooShort);
                 }
 
-                if author.tier >= self.server_options.tiers.double_limits {
+                if (author.tier >= self.server_options.tiers.double_limits)
+                    | (use_tier >= self.server_options.tiers.double_limits)
+                {
                     if props.content.len() > (64 * 64) {
                         return Err(DatabaseError::ContentTooLong);
                     }
@@ -1319,8 +1327,14 @@ impl Database {
                     return Err(DatabaseError::ContentTooShort);
                 }
 
-                if props.content.len() > (64 * 32) {
-                    return Err(DatabaseError::ContentTooLong);
+                if use_tier >= self.server_options.tiers.double_limits {
+                    if props.content.len() > (64 * 64) {
+                        return Err(DatabaseError::ContentTooLong);
+                    }
+                } else {
+                    if props.content.len() > (64 * 32) {
+                        return Err(DatabaseError::ContentTooLong);
+                    }
                 }
             }
         }

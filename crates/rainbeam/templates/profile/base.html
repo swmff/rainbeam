@@ -670,7 +670,7 @@ config.name }}{% endblock %} {% block head %}
                             class="w-full"
                             placeholder="Type your question!"
                             minlength="1"
-                            maxlength="{% if profile.tier >= config.tiers.double_limits %}4096{% else %}2048{% endif %}"
+                            maxlength="{% if (profile.tier >= config.tiers.double_limits) | (other.tier >= config.tiers.double_limits) %}4096{% else %}2048{% endif %}"
                             required
                             name="content"
                             id="content"
@@ -681,7 +681,7 @@ config.name }}{% endblock %} {% block head %}
                             class="w-full"
                             placeholder="Type your question!"
                             minlength="1"
-                            maxlength="2048"
+                            maxlength="{% if other.tier >= config.tiers.double_limits %}4096{% else %}2048{% endif %}"
                             required
                             name="content"
                             id="content"
