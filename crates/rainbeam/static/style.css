@@ -1458,10 +1458,10 @@ canvas {
 
 .avatar_crown {
     position: absolute;
-    top: -12px;
-    left: 16px;
+    top: -20px;
+    left: -10px;
     font-size: 25px;
-    transform: rotateZ(-33deg);
+    transform: rotateZ(-25deg);
 }
 
 /* codemirror */
