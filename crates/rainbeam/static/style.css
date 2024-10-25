@@ -1410,7 +1410,7 @@ details[open] summary:before {
     padding: 0.75rem;
     border-radius: calc(var(--radius) * 2);
     border-bottom-left-radius: 0;
-    max-width: 80%;
+    max-width: 70%;
 }
 
 .message.own {
