@@ -100,12 +100,31 @@ pub async fn homepage_request(
             Err(e) => return Html(e.to_html(database)),
         };
 
+        let mut is_helper: bool = false;
+        let is_powerful = if let Some(ref ua) = auth_user {
+            let group = match database.auth.get_group_by_id(ua.group).await {
+                Ok(g) => g,
+                Err(_) => return Html(DatabaseError::Other.to_html(database)),
+            };
+
+            is_helper = group.permissions.contains(&Permission::Helper);
+            group.permissions.contains(&Permission::Manager)
+        } else {
+            false
+        };
+
         // build relationships list
         let mut relationships: HashMap<String, RelationshipStatus> = HashMap::new();
 
         if let Some(ref ua) = auth_user {
             for response in &responses {
                 if relationships.contains_key(&response.1.author.id) {
+                    continue;
+                }
+
+                if is_helper {
+                    // make sure staff can view your responses
+                    relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
                     continue;
                 }
 
@@ -136,19 +155,6 @@ pub async fn homepage_request(
         }
 
         // ...
-        let mut is_helper: bool = false;
-        let is_powerful = if let Some(ref ua) = auth_user {
-            let group = match database.auth.get_group_by_id(ua.group).await {
-                Ok(g) => g,
-                Err(_) => return Html(DatabaseError::Other.to_html(database)),
-            };
-
-            is_helper = group.permissions.contains(&Permission::Helper);
-            group.permissions.contains(&Permission::Manager)
-        } else {
-            false
-        };
-
         return Html(
             TimelineTemplate {
                 config: database.server_options,
@@ -220,11 +226,31 @@ pub async fn partial_timeline_request(
         Err(e) => return Html(e.to_html(database)),
     };
 
+    let mut is_helper: bool = false;
+    let is_powerful = {
+        let group = match database.auth.get_group_by_id(auth_user.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        if group.permissions.contains(&Permission::Helper) {
+            is_helper = true
+        }
+
+        group.permissions.contains(&Permission::Manager)
+    };
+
     // build relationships list
     let mut relationships: HashMap<String, RelationshipStatus> = HashMap::new();
 
     for response in &responses {
         if relationships.contains_key(&response.1.author.id) {
+            continue;
+        }
+
+        if is_helper {
+            // make sure staff can view your responses
+            relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
             continue;
         }
 
@@ -245,20 +271,6 @@ pub async fn partial_timeline_request(
     }
 
     // ...
-    let mut is_helper: bool = false;
-    let is_powerful = {
-        let group = match database.auth.get_group_by_id(auth_user.group).await {
-            Ok(g) => g,
-            Err(_) => return Html(DatabaseError::Other.to_html(database)),
-        };
-
-        if group.permissions.contains(&Permission::Helper) {
-            is_helper = true
-        }
-
-        group.permissions.contains(&Permission::Manager)
-    };
-
     return Html(
         PartialTimelineTemplate {
             config: database.server_options,
@@ -666,12 +678,31 @@ pub async fn public_posts_timeline_request(
         }
     }
 
+    let mut is_helper: bool = false;
+    let is_powerful = if let Some(ref ua) = auth_user {
+        let group = match database.auth.get_group_by_id(ua.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        is_helper = group.permissions.contains(&Permission::Helper);
+        group.permissions.contains(&Permission::Manager)
+    } else {
+        false
+    };
+
     // build relationships list
     let mut relationships: HashMap<String, RelationshipStatus> = HashMap::new();
 
     if let Some(ref ua) = auth_user {
         for response in &responses {
             if relationships.contains_key(&response.1.author.id) {
+                continue;
+            }
+
+            if is_helper {
+                // make sure staff can view your responses
+                relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
                 continue;
             }
 
@@ -702,19 +733,6 @@ pub async fn public_posts_timeline_request(
     }
 
     // ...
-    let mut is_helper: bool = false;
-    let is_powerful = if let Some(ref ua) = auth_user {
-        let group = match database.auth.get_group_by_id(ua.group).await {
-            Ok(g) => g,
-            Err(_) => return Html(DatabaseError::Other.to_html(database)),
-        };
-
-        is_helper = group.permissions.contains(&Permission::Helper);
-        group.permissions.contains(&Permission::Manager)
-    } else {
-        false
-    };
-
     Html(
         PublicPostsTemplate {
             config: database.server_options.clone(),
@@ -787,11 +805,31 @@ pub async fn partial_posts_request(
         }
     }
 
+    let mut is_helper: bool = false;
+    let is_powerful = {
+        let group = match database.auth.get_group_by_id(auth_user.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        if group.permissions.contains(&Permission::Helper) {
+            is_helper = true
+        }
+
+        group.permissions.contains(&Permission::Manager)
+    };
+
     // build relationships list
     let mut relationships: HashMap<String, RelationshipStatus> = HashMap::new();
 
     for response in &responses {
         if relationships.contains_key(&response.1.author.id) {
+            continue;
+        }
+
+        if is_helper {
+            // make sure staff can view your responses
+            relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
             continue;
         }
 
@@ -812,20 +850,6 @@ pub async fn partial_posts_request(
     }
 
     // ...
-    let mut is_helper: bool = false;
-    let is_powerful = {
-        let group = match database.auth.get_group_by_id(auth_user.group).await {
-            Ok(g) => g,
-            Err(_) => return Html(DatabaseError::Other.to_html(database)),
-        };
-
-        if group.permissions.contains(&Permission::Helper) {
-            is_helper = true
-        }
-
-        group.permissions.contains(&Permission::Manager)
-    };
-
     return Html(
         PartialPostsTemplate {
             config: database.server_options,
@@ -1810,6 +1834,10 @@ pub async fn routes(database: Database) -> Router {
         .route(
             "/@:username/_app/card.html",
             get(profile::render_card_request),
+        )
+        .route(
+            "/@:username/_app/feed.html",
+            get(profile::partial_profile_request),
         )
         .route("/@:username", get(profile::profile_request))
         // circles

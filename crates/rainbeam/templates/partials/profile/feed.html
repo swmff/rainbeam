@@ -1,0 +1,11 @@
+<!-- prettier-ignore -->
+{% let anonymous_username = other.metadata.kv.get("sparkler:anonymous_username") %}
+{% let anonymous_avatar = other.metadata.kv.get("sparkler:anonymous_avatar") %}
+
+{% for response in responses %}
+    {% let is_pinned = false %}
+    {% let show_pin_button = true %}
+    {% let do_not_render_question = false %}
+    {% let show_comments = true %}
+    {% include "components/response.html" %}
+{% endfor %}

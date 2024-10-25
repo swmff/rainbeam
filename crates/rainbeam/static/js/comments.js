@@ -3,7 +3,7 @@
 
     self.define(
         "create",
-        async function ({ $, app }, response, content, reply) {
+        async function ({ $, app }, response, content, reply, anonymous) {
             await app.debounce("responses:create");
             return new Promise((resolve, reject) => {
                 fetch("/api/v1/comments", {
@@ -15,6 +15,7 @@
                         response,
                         content,
                         reply,
+                        anonymous,
                     }),
                 })
                     .then((res) => res.json())

@@ -209,8 +209,8 @@ pub async fn profile_request(
         false
     };
 
-    let relationship = if is_self {
-        // we're always friends with ourselves!
+    let relationship = if is_self | is_helper {
+        // we're always friends with ourselves! (and staff)
         // allows user to bypass their own locked profile
         RelationshipStatus::Friends
     } else {
@@ -294,6 +294,141 @@ pub async fn profile_request(
             is_powerful,
             is_helper,
             is_self,
+        }
+        .render()
+        .unwrap(),
+    )
+}
+
+#[derive(Template)]
+#[template(path = "partials/profile/feed.html")]
+struct PartialProfileTemplate {
+    config: Config,
+    profile: Option<Profile>,
+    other: Profile,
+    responses: Vec<FullResponse>,
+    // ...
+    is_powerful: bool, // at least "manager"
+    is_helper: bool,   // at least "helper"
+}
+
+/// GET /@:username/_app/feed.html
+pub async fn partial_profile_request(
+    jar: CookieJar,
+    Path(username): Path<String>,
+    State(database): State<Database>,
+    Query(query): Query<ProfileQuery>,
+) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => Some(ua),
+            Err(_) => None,
+        },
+        None => None,
+    };
+
+    let other = match database
+        .auth
+        .get_profile_by_username(username.clone())
+        .await
+    {
+        Ok(ua) => ua,
+        Err(_) => return Html(DatabaseError::NotFound.to_html(database)),
+    };
+
+    let responses = if let Some(ref tag) = query.tag {
+        // tagged
+        match database
+            .get_responses_by_author_tagged_paginated(
+                other.id.to_owned(),
+                tag.to_owned(),
+                query.page,
+            )
+            .await
+        {
+            Ok(responses) => responses,
+            Err(e) => return Html(e.to_html(database)),
+        }
+    } else {
+        if let Some(ref search) = query.q {
+            // search
+            match database
+                .get_responses_by_author_searched_paginated(
+                    other.id.to_owned(),
+                    search.to_owned(),
+                    query.page,
+                )
+                .await
+            {
+                Ok(responses) => responses,
+                Err(e) => return Html(e.to_html(database)),
+            }
+        } else {
+            // normal
+            match database
+                .get_responses_by_author_paginated(other.id.to_owned(), query.page)
+                .await
+            {
+                Ok(responses) => responses,
+                Err(e) => return Html(e.to_html(database)),
+            }
+        }
+    };
+
+    let mut is_helper: bool = false;
+    let is_powerful = if let Some(ref ua) = auth_user {
+        let group = match database.auth.get_group_by_id(ua.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        is_helper = group.permissions.contains(&Permission::Helper);
+        group.permissions.contains(&Permission::Manager)
+    } else {
+        false
+    };
+
+    let is_self = if let Some(ref profile) = auth_user {
+        profile.id == other.id
+    } else {
+        false
+    };
+
+    let relationship = if is_self | is_helper {
+        // we're always friends with ourselves! (and staff)
+        // allows user to bypass their own locked profile
+        RelationshipStatus::Friends
+    } else {
+        if let Some(ref profile) = auth_user {
+            database
+                .auth
+                .get_user_relationship(other.id.clone(), profile.id.clone())
+                .await
+                .0
+        } else {
+            RelationshipStatus::Unknown
+        }
+    };
+
+    let is_blocked = relationship == RelationshipStatus::Blocked;
+
+    if !is_helper && is_blocked {
+        return Html(DatabaseError::NotFound.to_html(database));
+    }
+
+    Html(
+        PartialProfileTemplate {
+            config: database.server_options.clone(),
+            profile: auth_user.clone(),
+            other: other.clone(),
+            responses,
+            // ...
+            is_powerful,
+            is_helper,
         }
         .render()
         .unwrap(),

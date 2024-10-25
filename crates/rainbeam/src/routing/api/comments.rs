@@ -34,13 +34,18 @@ pub async fn create_request(
     Json(req): Json<CommentCreate>,
 ) -> impl IntoResponse {
     // get user from token
+    let mut was_not_anonymous = false;
+
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
             .get_profile_by_unhashed(c.value_trimmed().to_string())
             .await
         {
-            Ok(ua) => ua,
+            Ok(ua) => {
+                was_not_anonymous = true;
+                ua
+            }
             Err(_) => anonymous_profile(database.create_anonymous().0),
         },
         None => anonymous_profile(database.create_anonymous().0),
@@ -52,10 +57,18 @@ pub async fn create_request(
     };
 
     // get correct username
-    if auth_user.username == "anonymous" {
-        let tag = if !existing_tag.is_empty() {
+    let use_anonymous_anyways = req.anonymous; // this is the "Hide your name" field
+
+    if (auth_user.username == "anonymous") | use_anonymous_anyways {
+        let tag = if was_not_anonymous && use_anonymous_anyways {
+            // use real username as tag
+            format!("anonymous#{}", auth_user.id)
+        } else if !existing_tag.is_empty() {
             // use existing tag
             existing_tag
+        } else if !was_not_anonymous {
+            // use id as tag
+            auth_user.id
         } else {
             // use id as tag
             if auth_user.username == "anonymous" {

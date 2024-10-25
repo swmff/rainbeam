@@ -39,29 +39,19 @@
                     .then((res) => {
                         const is_post = question === "0";
 
-                        app.toast(
-                            res.success ? "success" : "error",
-                            res.success
-                                ? !is_post
-                                    ? "Response posted!"
-                                    : "Post created!"
-                                : res.message,
-                        );
-
-                        if (res.success === true) {
-                            if (!is_post) {
-                                app.smooth_remove(
-                                    document.getElementById(
-                                        `question:${question}`,
-                                    ),
-                                    500,
-                                );
-                            }
-
-                            return resolve(res);
+                        if (res.success === false) {
+                            app.toast("error", res.message);
+                            return reject(res);
                         }
 
-                        return reject(res);
+                        if (!is_post) {
+                            app.smooth_remove(
+                                document.getElementById(`question:${question}`),
+                                500,
+                            );
+                        }
+
+                        return resolve(res);
                     });
             });
         },
@@ -203,7 +193,7 @@
             const sep_size = separator.length;
             const part_1_size = target_length / 2 - sep_size;
 
-            if (part_1 != "") {
+            if (part_1 !== "") {
                 out +=
                     part_1_size > part_1.length
                         ? part_1
@@ -212,7 +202,7 @@
                 out += separator;
             }
 
-            if (part_2 != "") {
+            if (part_2 !== "") {
                 out +=
                     part_2_size > part_2.length
                         ? part_2

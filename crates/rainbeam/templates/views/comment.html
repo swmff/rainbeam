@@ -174,10 +174,35 @@ block head %}
                     {% endif %}
 
                     <div class="flex justify-between w-full gap-1">
-                        <span
-                            id="content:counter"
-                            class="notification item"
-                        ></span>
+                        <div class="flex gap-2 items-center">
+                            <span
+                                id="content:counter"
+                                class="notification item"
+                            ></span>
+
+                            <div class="checkbox_container item">
+                                <input
+                                    type="checkbox"
+                                    name="anonymous"
+                                    id="anonymous"
+                                />
+
+                                <label for="anonymous" class="normal">
+                                    Hide your name
+                                </label>
+                            </div>
+
+                            <script>
+                            function ls_anon_check() {
+                                if (window.localStorage.getItem("always_anon") === "true") {
+                                    document.getElementById("anonymous").checked = true
+                                }
+                            }
+
+                            ls_anon_check();
+                            </script>
+                        </div>
+
                         <button class="primary bold">Submit</button>
                     </div>
                 </form>
@@ -216,6 +241,7 @@ block head %}
             response,
             e.target.content.value,
             "{{ comment.0.id }}",
+            e.target.anonymous.checked
         ]).then((_) => {
             // reset if successful
             e.target.reset();

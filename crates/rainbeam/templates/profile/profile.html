@@ -75,14 +75,7 @@
     {% endif %}
 
     <!-- actual feed -->
-    <!-- prettier-ignore -->
-    {% for response in responses %}
-        {% let is_pinned = false %}
-        {% let show_pin_button = true %}
-        {% let do_not_render_question = false %}
-        {% let show_comments = true %}
-        {% include "../components/response.html" %}
-    {% endfor %}
+    {% include "partials/profile/feed.html" %}
 
     <!-- pagination buttons -->
     {% if response_count != 0 %}

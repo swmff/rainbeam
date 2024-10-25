@@ -433,6 +433,8 @@ pub struct CommentCreate {
     pub content: String,
     #[serde(default)]
     pub reply: String,
+    #[serde(default)]
+    pub anonymous: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug, Hcaptcha)]
