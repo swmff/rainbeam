@@ -10,7 +10,7 @@ use axum::{
 use hcaptcha::Hcaptcha;
 use serde::{Deserialize, Serialize};
 
-use authbeam::model::Profile;
+use authbeam::model::{IpBlock, Profile, UserFollow};
 use databeam::DefaultReturn;
 pub use authbeam::model::RelationshipStatus;
 
@@ -310,13 +310,69 @@ impl CircleMetadata {
 #[derive(Serialize, Deserialize)]
 pub struct DataExport {
     /// The user's profile
+    #[serde(default)]
     pub profile: Profile,
     /// All of the user's [`Question`]s
-    pub questions: Vec<(Question, usize, usize)>,
+    #[serde(default)]
+    pub questions: Option<Vec<(Question, usize, usize)>>,
     /// All of the user's [`QuestionResponse`]s
-    pub responses: Vec<FullResponse>,
+    #[serde(default)]
+    pub responses: Option<Vec<FullResponse>>,
     /// All of the user's [`ResponseComment`]s
-    pub comments: Vec<(ResponseComment, usize, usize)>,
+    #[serde(default)]
+    pub comments: Option<Vec<(ResponseComment, usize, usize)>>,
+    /// All of the user's [`Chat`]s
+    #[serde(default)]
+    pub chats: Option<Vec<(Chat, Vec<Profile>)>>,
+    /// All of the user's [`Message`]s
+    #[serde(default)]
+    pub messages: Option<Vec<(Message, Profile)>>,
+    /// Get all of the user's ipblocks
+    #[serde(default)]
+    pub ipblocks: Option<Vec<IpBlock>>,
+    /// Get all of the user's relationships
+    #[serde(default)]
+    pub relationships: Option<Vec<(Profile, RelationshipStatus)>>,
+    /// Get all of the user's following
+    #[serde(default)]
+    pub following: Option<Vec<(UserFollow, Profile, Profile)>>,
+    /// Get all of the user's followers
+    #[serde(default)]
+    pub followers: Option<Vec<(UserFollow, Profile, Profile)>>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct DataExportOptions {
+    /// Include all
+    #[serde(default)]
+    pub all: bool,
+    /// Include `questions`
+    #[serde(default)]
+    pub questions: bool,
+    /// Include `responses`
+    #[serde(default)]
+    pub responses: bool,
+    /// Include `comments`
+    #[serde(default)]
+    pub comments: bool,
+    /// Include `chats`
+    #[serde(default)]
+    pub chats: bool,
+    /// Include `messages`
+    #[serde(default)]
+    pub messages: bool,
+    /// Include `ipblocks`
+    #[serde(default)]
+    pub ipblocks: bool,
+    /// Include `relationships`
+    #[serde(default)]
+    pub relationships: bool,
+    /// Include `followers`
+    #[serde(default)]
+    pub followers: bool,
+    /// Include `following`
+    #[serde(default)]
+    pub following: bool,
 }
 
 /// Direct message stream

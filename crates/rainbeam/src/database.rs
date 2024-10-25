@@ -4,9 +4,10 @@ use std::collections::HashMap;
 use crate::config::Config;
 use crate::model::{
     anonymous_profile, Chat, ChatAdd, ChatContext, ChatNameEdit, Circle, CircleCreate,
-    CircleMetadata, CommentCreate, DataExport, FullResponse, MembershipStatus, Message,
-    MessageContext, MessageCreate, Page, PageContext, PageCreate, QuestionContext, QuestionCreate,
-    QuestionResponse, Reaction, RefQuestion, ResponseComment, ResponseContext, ResponseCreate,
+    CircleMetadata, CommentCreate, DataExport, DataExportOptions, FullResponse, MembershipStatus,
+    Message, MessageContext, MessageCreate, Page, PageContext, PageCreate, QuestionContext,
+    QuestionCreate, QuestionResponse, Reaction, RefQuestion, ResponseComment, ResponseContext,
+    ResponseCreate,
 };
 use crate::model::{DatabaseError, Question};
 
@@ -243,23 +244,87 @@ impl Database {
     }
 
     /// Export all data of the given `user`
-    pub async fn create_data_export(&self, user: String) -> Result<DataExport> {
+    pub async fn create_data_export(
+        &self,
+        user: String,
+        options: DataExportOptions,
+    ) -> Result<DataExport> {
         Ok(DataExport {
             profile: match self.get_profile(user.clone()).await {
                 Ok(r) => r,
                 Err(e) => return Err(e),
             },
-            questions: match self.get_questions_by_author(user.clone()).await {
-                Ok(r) => r,
-                Err(e) => return Err(e),
+            questions: if options.questions | options.all {
+                match self.get_questions_by_author(user.clone()).await {
+                    Ok(r) => Some(r),
+                    Err(e) => return Err(e),
+                }
+            } else {
+                None
             },
-            responses: match self.get_responses_by_author(user.clone()).await {
-                Ok(r) => r,
-                Err(e) => return Err(e),
+            responses: if options.responses | options.all {
+                match self.get_responses_by_author(user.clone()).await {
+                    Ok(r) => Some(r),
+                    Err(e) => return Err(e),
+                }
+            } else {
+                None
             },
-            comments: match self.get_comments_by_author(user.clone()).await {
-                Ok(r) => r,
-                Err(e) => return Err(e),
+            comments: if options.comments | options.all {
+                match self.get_comments_by_author(user.clone()).await {
+                    Ok(r) => Some(r),
+                    Err(e) => return Err(e),
+                }
+            } else {
+                None
+            },
+            chats: if options.chats | options.all {
+                match self.get_chats_for_user(user.clone()).await {
+                    Ok(r) => Some(r),
+                    Err(e) => return Err(e),
+                }
+            } else {
+                None
+            },
+            messages: if options.messages | options.all {
+                match self.get_messages_by_user(user.clone()).await {
+                    Ok(r) => Some(r),
+                    Err(e) => return Err(e),
+                }
+            } else {
+                None
+            },
+            ipblocks: if options.ipblocks | options.all {
+                match self.auth.get_ipblocks(user.clone()).await {
+                    Ok(r) => Some(r),
+                    Err(_) => return Err(DatabaseError::Other),
+                }
+            } else {
+                None
+            },
+            relationships: if options.relationships | options.all {
+                match self.auth.get_user_relationships(user.clone()).await {
+                    Ok(r) => Some(r),
+                    Err(_) => return Err(DatabaseError::Other),
+                }
+            } else {
+                None
+            },
+            following: if options.following | options.all {
+                match self.auth.get_following(user.clone()).await {
+                    Ok(r) => Some(r),
+                    Err(_) => return Err(DatabaseError::Other),
+                }
+            } else {
+                None
+            },
+            followers: if options.followers | options.all {
+                match self.auth.get_following(user.clone()).await {
+                    Ok(r) => Some(r),
+                    Err(_) => return Err(DatabaseError::Other),
+                }
+            } else {
+                None
             },
         })
     }
@@ -5628,6 +5693,54 @@ impl Database {
         // return
         Ok(res)
     } */
+
+    /// Get all messages by their `author`
+    ///
+    /// # Arguments
+    /// * `id` - user id
+    pub async fn get_messages_by_user(&self, id: String) -> Result<Vec<(Message, Profile)>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "SELECT * FROM \"xmessages\" WHERE \"author\" = ? ORDER BY \"timestamp\" DESC"
+        } else {
+            "SELECT * FROM \"xmessages\" WHERE \"author\" = $1 ORDER BY \"timestamp\" DESC"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query).bind::<&String>(&id).fetch_all(c).await {
+            Ok(p) => {
+                let mut out: Vec<(Message, Profile)> = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let author = res.get("author").unwrap().to_string();
+
+                    out.push((
+                        Message {
+                            id: res.get("id").unwrap().to_string(),
+                            chat: res.get("chat").unwrap().to_string(),
+                            author: res.get("author").unwrap().to_string(),
+                            content: res.get("content").unwrap().to_string(),
+                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
+                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                        },
+                        match self.auth.get_profile(author).await {
+                            Ok(p) => p,
+                            Err(_) => return Err(DatabaseError::Other),
+                        },
+                    ));
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        Ok(res)
+    }
 
     /// Get all messages by their chat, 50 at a time
     ///

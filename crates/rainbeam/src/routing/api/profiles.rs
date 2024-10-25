@@ -1,5 +1,6 @@
 use crate::database::Database;
-use crate::model::{DatabaseError, RelationshipStatus};
+use crate::model::{DataExportOptions, DatabaseError, RelationshipStatus};
+use axum::extract::Query;
 use axum::http::{HeaderMap, HeaderValue};
 use axum_extra::extract::CookieJar;
 use hcaptcha::Hcaptcha;
@@ -454,6 +455,7 @@ pub async fn export_request(
     jar: CookieJar,
     Path(username): Path<String>,
     State(database): State<Database>,
+    Query(props): Query<DataExportOptions>,
 ) -> impl IntoResponse {
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
@@ -516,7 +518,7 @@ pub async fn export_request(
     };
 
     // return
-    match database.create_data_export(other_user.id).await {
+    match database.create_data_export(other_user.id, props).await {
         Ok(export) => {
             return Json(DefaultReturn {
                 success: true,
