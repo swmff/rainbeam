@@ -868,7 +868,7 @@ img.emoji {
 
 .avatar {
     --size: 50px;
-    border-radius: var(--circle);
+    border-radius: var(--radius);
     width: var(--size);
     min-width: var(--size);
     max-width: var(--size);

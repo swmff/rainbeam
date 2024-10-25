@@ -100,22 +100,40 @@ block head %}
             </a>
         </div>
 
+        <!-- pagination buttons -->
+        {% if page != 0 %}
+        <div class="flex justify-center items-center gap-4 w-full">
+            <a class="button primary" href="?page=0"> View full feed </a>
+        </div>
+        {% endif %}
+
+        <!-- feed -->
         <div class="flex flex-col gap-4" id="feed">
             {% include "partials/timelines/posts.html" %}
         </div>
-
-        <!-- pagination buttons -->
-        <div class="flex justify-between gap-2 w-full">
-            {% if page > 0 %}
-            <a class="button secondary" href="?page={{ page - 1 }}">Previous</a>
-            {% else %}
-            <div></div>
-            {% endif %} {% if responses.len() != 0 %}
-            <a class="button secondary" href="?page={{ page + 1 }}">Next</a>
-            {% endif %}
-        </div>
     </main>
 </article>
+
+<script>
+    use("app", (app) => {
+        app["hook.attach_to_partial"](
+            "/_app/posts.html",
+            "/inbox/posts",
+            document.getElementById("feed"),
+            document.body,
+            parseInt("{{ page }}"),
+        ).then(() => {
+            console.log("partial end");
+            document.getElementById("feed").innerHTML +=
+                `<div class="w-full flex flex-col gap-2">
+                <hr />
+                <p class="w-full flex justify-center fade">
+                    You've reached the end
+                </p>
+            </div>`;
+        });
+    });
+</script>
 
 {% if let Some(profile) = profile %} {% let other = profile.clone() %} {% if
 profile.username == other.username %}

@@ -478,6 +478,62 @@
         }
     });
 
+    app.define(
+        "hook.attach_to_partial",
+        function ({ $ }, partial, full, attach, wrapper, page) {
+            return new Promise((resolve, reject) => {
+                async function load_partial() {
+                    const url = `${partial}?page=${page}`;
+                    history.replaceState(
+                        history.state,
+                        "",
+                        url.replace(partial, full),
+                    );
+
+                    fetch(url)
+                        .then(async (res) => {
+                            const text = await res.text();
+
+                            if (text.length < 100) {
+                                // pretty much blank content, no more pages
+                                wrapper.removeEventListener("scroll", event);
+                                return resolve();
+                            }
+
+                            attach.innerHTML += text;
+
+                            $.clean_date_codes();
+                            $.link_filter();
+                            $["hook.alt"]();
+                        })
+                        .catch(() => {
+                            // done scrolling, no more pages (http error)
+                            wrapper.removeEventListener("scroll", event);
+                            resolve();
+                        });
+                }
+
+                const event = async () => {
+                    if (
+                        wrapper.scrollTop + wrapper.offsetHeight + 100 >
+                        attach.offsetHeight
+                    ) {
+                        app.debounce("app:partials")
+                            .then(async () => {
+                                page += 1;
+                                await load_partial();
+                            })
+                            .catch(() => {
+                                console.log("partial stuck");
+                            });
+                    }
+                };
+
+                wrapper.addEventListener("scroll", event);
+            });
+        },
+    );
+
     // adomonition
     app.define("shout", function (_, type, content) {
         if (document.getElementById("admonition")) {
