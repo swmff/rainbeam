@@ -737,6 +737,10 @@ impl Database {
             }
         }
 
+        if !metadata.check() {
+            return Err(AuthError::TooLong);
+        }
+
         // update user
         let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "UPDATE \"xprofiles\" SET \"metadata\" = ? WHERE \"username\" = ?"

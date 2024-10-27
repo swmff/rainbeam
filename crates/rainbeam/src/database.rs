@@ -319,7 +319,7 @@ impl Database {
                 None
             },
             followers: if options.followers | options.all {
-                match self.auth.get_following(user.clone()).await {
+                match self.auth.get_followers(user.clone()).await {
                     Ok(r) => Some(r),
                     Err(_) => return Err(DatabaseError::Other),
                 }
@@ -2322,7 +2322,11 @@ impl Database {
     /// # Arguments
     /// * `props` - [`ResponseCreate`]
     /// * `author` - the ID of the user creating the response
-    pub async fn create_response(&self, props: ResponseCreate, author: String) -> Result<()> {
+    pub async fn create_response(
+        &self,
+        props: ResponseCreate,
+        author: String,
+    ) -> Result<QuestionResponse> {
         // make sure the question exists
         let mut question = if props.question != "0" {
             // get question from database
@@ -2557,7 +2561,7 @@ impl Database {
                         .incr(format!("rbeam.app.response_count:{}", response.author.id))
                         .await;
 
-                    return Ok(());
+                    return Ok(response);
                 } else {
                     // change recipient so it doesn't show up in inbox
                     let query: String =
@@ -2602,7 +2606,7 @@ impl Database {
                 }
 
                 // return
-                Ok(())
+                Ok(response)
             }
             Err(_) => Err(DatabaseError::Other),
         }
@@ -4716,6 +4720,10 @@ impl Database {
             if !allowed_custom_keys.contains(&kv.0.as_str()) {
                 metadata.kv.remove(&kv.0);
             }
+        }
+
+        if !metadata.check() {
+            return Err(DatabaseError::ContentTooLong);
         }
 
         // update circle

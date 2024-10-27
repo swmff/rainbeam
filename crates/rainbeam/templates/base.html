@@ -46,13 +46,14 @@
             globalThis.ns_verbose = false;
             globalThis.ns_config = {
                 root: "/static/js/",
-                version: "1.11.5",
+                version: "1.12.0",
                 verbose: globalThis.ns_verbose,
             };
 
             globalThis._app_base = {
                 name: "rainbeam",
                 ns_store: {},
+                classes: {},
             };
         </script>
 
@@ -119,11 +120,9 @@
                 <div class="flex gap-1 nav_side">
                     {% block nav_right %}{% endblock %} {% if profile.is_some()
                     %}
-                    <a
-                        class="button"
-                        href="/inbox/compose"
-                        title="Compose a question"
-                        data-turbo="false"
+                    <button
+                        title="Create a post"
+                        onclick="document.getElementById('create_post_intent').showModal()"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -137,7 +136,7 @@
                                 d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.081-.286.235-.547.445-.758l8.61-8.61Zm.176 4.823L9.75 4.81l-6.286 6.287a.253.253 0 0 0-.064.108l-.558 1.953 1.953-.558a.253.253 0 0 0 .108-.064Zm1.238-3.763a.25.25 0 0 0-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 0 0 0-.354Z"
                             ></path>
                         </svg>
-                    </a>
+                    </button>
                     {% endif %}
 
                     <div class="dropdown">
@@ -413,6 +412,9 @@
 
             use("reports", () => {});
             use("account_warnings", () => {});
+
+            // load classes
+            require("PartialComponent", () => {});
         </script>
 
         <script>
@@ -447,6 +449,7 @@
                 app["hook.alt"]();
                 app["hook.warning"]();
                 app["hook.ips"]();
+                app["hook.autosize"]();
 
                 window.IS_APP = app.check_app()[0];
 
@@ -485,5 +488,64 @@
                 </div>
             </div>
         </dialog>
+
+        {% if profile.is_some() %}
+        <dialog id="create_post_intent">
+            <div class="inner" style="min-height: 250px; width: 35rem">
+                <div class="w-full flex justify-between items-center gap-2">
+                    <b>Create a post</b>
+                    <div class="flex gap-2">
+                        <button
+                            class="bold red camo"
+                            onclick="document.getElementById('create_post_intent').close()"
+                            type="button"
+                            title="Close"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 16 16"
+                                width="16"
+                                height="16"
+                                aria-label="X symbol"
+                                class="icon"
+                            >
+                                <path
+                                    d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L9.06 8l3.22 3.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L8 9.06l-3.22 3.22a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z"
+                                ></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <hr style="margin-top: 0.75rem" />
+
+                <include-partial
+                    src="/_app/components/compose.html"
+                    uses="app:hook.character_counter.init,app:hook.autosize"
+                ></include-partial>
+
+                <script>
+                    globalThis.create_post = (e) => {
+                        e.preventDefault();
+
+                        trigger("responses:create", [
+                            "0", // posts use "0" as their question ID
+                            e.target.content.value,
+                            e.target.tags.value,
+                            e.target.warning.value,
+                            e.target.reply.value,
+                            e.target.unlisted.checked,
+                        ]).then((res) => {
+                            // reset if successful
+                            e.target.reset();
+
+                            // open post
+                            window.location.href = `/response/${res.payload.id}`;
+                        });
+                    };
+                </script>
+            </div>
+        </dialog>
+        {% endif %}
     </body>
 </html>

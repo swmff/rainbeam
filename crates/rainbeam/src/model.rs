@@ -304,6 +304,30 @@ impl CircleMetadata {
 
         self.kv.get(key).unwrap() == "true"
     }
+
+    /// Check `kv` lengths
+    ///
+    /// # Returns
+    /// * `true`: ok
+    /// * `false`: invalid
+    pub fn check(&self) -> bool {
+        for field in &self.kv {
+            if field.0 == "sparkler:custom_css" {
+                // custom_css gets an extra long value
+                if field.1.len() > 64 * 128 {
+                    return false;
+                }
+
+                continue;
+            }
+
+            if field.1.len() > 64 * 64 {
+                return false;
+            }
+        }
+
+        true
+    }
 }
 
 /// An export of a user's entire history

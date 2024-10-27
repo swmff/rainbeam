@@ -158,6 +158,30 @@ impl ProfileMetadata {
 
         self.kv.get(key).unwrap() == "true"
     }
+
+    /// Check `kv` lengths
+    ///
+    /// # Returns
+    /// * `true`: ok
+    /// * `false`: invalid
+    pub fn check(&self) -> bool {
+        for field in &self.kv {
+            if field.0 == "sparkler:custom_css" {
+                // custom_css gets an extra long value
+                if field.1.len() > 64 * 128 {
+                    return false;
+                }
+
+                continue;
+            }
+
+            if field.1.len() > 64 * 64 {
+                return false;
+            }
+        }
+
+        true
+    }
 }
 
 impl Default for ProfileMetadata {
@@ -387,6 +411,7 @@ pub enum AuthError {
     NotAllowed,
     ValueError,
     NotFound,
+    TooLong,
     Other,
 }
 
@@ -398,6 +423,7 @@ impl AuthError {
             NotAllowed => String::from("You are not allowed to access this resource."),
             ValueError => String::from("One of the field values given is invalid."),
             NotFound => String::from("No asset with this ID could be found."),
+            TooLong => String::from("Given data is too long."),
             _ => String::from("An unspecified error has occured"),
         }
     }

@@ -1,0 +1,21 @@
+<form id="post_form" class="flex flex-col gap-2" onsubmit="create_post(event)">
+    {% if let Some(user) = profile %}
+    <textarea
+        class="w-full"
+        placeholder="Type your post!"
+        minlength="1"
+        maxlength="{% if user.tier >= config.tiers.double_limits %}8192{% else %}4096{% endif %}"
+        required
+        name="content"
+        id="post_content"
+        hook="counter"
+        autosize="true"
+    ></textarea>
+    {% endif %} {% include "components/more_response_options.html" %}
+
+    <hr style="margin-top 0.75rem !important" />
+    <div class="flex justify-between w-full gap-1">
+        <span id="post_content:counter" class="notification item"></span>
+        <button class="primary bold">Post</button>
+    </div>
+</form>

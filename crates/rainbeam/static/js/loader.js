@@ -7,7 +7,7 @@ globalThis.ns_config = globalThis.ns_config || {
     verbose: true,
 };
 
-globalThis._app_base = globalThis._app_base || { ns_store: {} };
+globalThis._app_base = globalThis._app_base || { ns_store: {}, classes: {} };
 
 function regns_log(level, ...args) {
     if (globalThis.ns_config.verbose) {
@@ -147,4 +147,42 @@ globalThis.use = (id, callback) => {
 
         callback(res);
     });
+};
+
+// classes
+
+/// Import a class from path (relative to ns_config.root/classes)
+globalThis.require = (id, callback) => {
+    // check if class already exists
+    const res = globalThis._app_base.classes[id];
+
+    if (res) {
+        return callback(res);
+    }
+
+    // create script to load
+    const script = document.createElement("script");
+    script.src = `${globalThis.ns_config.root}classes/${id}.js?v=${globalThis.ns_config.version}`;
+    script.id = `${globalThis.ns_config.version}-${id}.class.js`;
+    document.head.appendChild(script);
+
+    script.setAttribute("data-turbo-permanent", "true");
+    script.setAttribute("data-registered", new Date().toISOString());
+    script.setAttribute("data-version", globalThis.ns_config.version);
+
+    // run callback once the script loads
+    script.addEventListener("load", () => {
+        const res = globalThis._app_base.classes[id];
+
+        if (!res) {
+            return console.error("imported class failed to register:", id);
+        }
+
+        callback(res);
+    });
+};
+
+globalThis.define = (class_name, class_) => {
+    globalThis._app_base.classes[class_name] = class_;
+    regns_log("log", "registered class:", class_name);
 };

@@ -505,6 +505,10 @@
                             $.clean_date_codes();
                             $.link_filter();
                             $["hook.alt"]();
+
+                            if (globalThis._app_base.ns_store.$questions) {
+                                trigger("questions:carp");
+                            }
                         })
                         .catch(() => {
                             // done scrolling, no more pages (http error)
@@ -533,6 +537,56 @@
             });
         },
     );
+
+    app.define("hook.autosize", function (_) {
+        for (const textarea of Array.from(
+            document.querySelectorAll("textarea[autosize]"),
+        )) {
+            if (textarea.getAttribute("data-link")) {
+                // already linked
+                continue;
+            }
+
+            const id = window.crypto.randomUUID();
+
+            textarea.style.overflow = "hidden";
+            textarea.setAttribute("data-link", id);
+
+            const pseudo = document.createElement("div");
+            pseudo.setAttribute("aria-hidden", "true");
+            pseudo.classList.add("hook_autosize_pseudo");
+            pseudo.id = id;
+
+            pseudo.style.visibility = "hidden";
+            pseudo.style.position = "absolute";
+            pseudo.style.pointerEvents = "none";
+            pseudo.style.top = "0";
+
+            const computed = window.getComputedStyle(textarea); // we need to match styles on pseudo
+            const copy_styles = [
+                "width",
+                "padding-top",
+                "padding-left",
+                "padding-right",
+                "padding-bottom",
+            ];
+
+            for (const style of copy_styles) {
+                pseudo.style[style] = computed.getPropertyValue(style);
+            }
+
+            function resize() {
+                const box = pseudo.getBoundingClientRect();
+
+                pseudo.innerText = textarea.value; // pseudo will auto size naturally
+                textarea.style.height = `${box.height + 10}px`;
+            }
+
+            textarea.addEventListener("input", resize);
+            textarea.addEventListener("keydown", resize);
+            document.body.appendChild(pseudo);
+        }
+    });
 
     // adomonition
     app.define("shout", function (_, type, content) {

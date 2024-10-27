@@ -10,9 +10,7 @@ use axum_extra::extract::CookieJar;
 
 use ammonia::Builder;
 use serde::{Deserialize, Serialize};
-use authbeam::model::{
-    Notification, Permission, Profile, ProfileMetadata, RelationshipStatus, UserFollow,
-};
+use authbeam::model::{Notification, Permission, Profile, ProfileMetadata, RelationshipStatus};
 
 use crate::config::Config;
 use crate::database::Database;
@@ -201,7 +199,7 @@ struct PartialTimelineTemplate {
     is_helper: bool,
 }
 
-/// GET /_app/timeline.html
+/// GET /_app/timelines/timeline.html
 pub async fn partial_timeline_request(
     jar: CookieJar,
     State(database): State<Database>,
@@ -761,7 +759,7 @@ struct PartialPostsTemplate {
     is_helper: bool,
 }
 
-/// GET /_app/posts.html
+/// GET /_app/timelines/posts.html
 pub async fn partial_posts_request(
     jar: CookieJar,
     State(database): State<Database>,
@@ -1471,16 +1469,13 @@ pub async fn public_global_timeline_request(
 }
 
 #[derive(Template)]
-#[template(path = "compose.html")]
+#[template(path = "partials/components/compose.html")]
 struct ComposeTemplate {
     config: Config,
     profile: Option<Profile>,
-    unread: usize,
-    notifs: usize,
-    following: Vec<(UserFollow, Profile, Profile)>,
 }
 
-/// GET /inbox/compose
+/// GET /_app/components/compose.html
 pub async fn compose_request(
     jar: CookieJar,
     State(database): State<Database>,
@@ -1497,30 +1492,10 @@ pub async fn compose_request(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = match database
-        .get_questions_by_recipient(auth_user.id.to_owned())
-        .await
-    {
-        Ok(unread) => unread.len(),
-        Err(_) => 0,
-    };
-
-    let notifs = database
-        .auth
-        .get_notification_count_by_recipient(auth_user.id.to_owned())
-        .await;
-
     Html(
         ComposeTemplate {
             config: database.server_options,
-            following: database
-                .auth
-                .get_following(auth_user.id.clone())
-                .await
-                .unwrap_or(Vec::new()),
             profile: Some(auth_user),
-            unread,
-            notifs,
         }
         .render()
         .unwrap(),
@@ -1810,7 +1785,6 @@ pub async fn routes(database: Database) -> Router {
         )
         .route("/inbox/global", get(public_global_timeline_request))
         .route("/inbox/global/following", get(global_timeline_request))
-        .route("/inbox/compose", get(compose_request))
         .route("/inbox/notifications", get(notifications_request))
         .route("/inbox/reports", get(reports_request)) // staff
         .route("/inbox/audit", get(audit_log_request)) // staff
@@ -1893,8 +1867,12 @@ pub async fn routes(database: Database) -> Router {
         .route("/+i/:ip", get(api::profiles::expand_ip_request))
         .route("/+p/:id", get(api::pages::expand_request))
         // partials
-        .route("/_app/timeline.html", get(partial_timeline_request))
-        .route("/_app/posts.html", get(partial_posts_request))
+        .route("/_app/components/compose.html", get(compose_request))
+        .route(
+            "/_app/timelines/timeline.html",
+            get(partial_timeline_request),
+        )
+        .route("/_app/timelines/posts.html", get(partial_posts_request))
         // ...
         .with_state(database)
 }

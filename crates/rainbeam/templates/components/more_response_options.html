@@ -50,7 +50,14 @@
 
         <div class="checkbox_container">
             <input type="checkbox" name="unlisted" id="unlisted" />
-            <label for="unlisted" class="normal"> Unlisted </label>
+            <label for="unlisted" class="normal">Unlisted</label>
+
+            {% if let Some(user) = profile %} {% if
+            user.metadata.is_true("sparkler:private_profile") %}
+            <script style="display: none">
+                document.getElementById("unlisted").checked = true;
+            </script>
+            {% endif %} {% endif %}
         </div>
 
         <p class="fade">
