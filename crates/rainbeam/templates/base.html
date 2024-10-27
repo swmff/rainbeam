@@ -46,7 +46,7 @@
             globalThis.ns_verbose = false;
             globalThis.ns_config = {
                 root: "/static/js/",
-                version: "1.12.0",
+                version: "1.12.1",
                 verbose: globalThis.ns_verbose,
             };
 
@@ -449,7 +449,6 @@
                 app["hook.alt"]();
                 app["hook.warning"]();
                 app["hook.ips"]();
-                app["hook.autosize"]();
 
                 window.IS_APP = app.check_app()[0];
 
@@ -519,9 +518,17 @@
 
                 <hr style="margin-top: 0.75rem" />
 
+                <script src="https://unpkg.com/codemirror@5.39.2/lib/codemirror.js"></script>
+                <script src="https://unpkg.com/codemirror@5.39.2/addon/display/placeholder.js"></script>
+                <script src="https://unpkg.com/codemirror@5.39.2/mode/markdown/markdown.js"></script>
+
+                <link
+                    rel="stylesheet"
+                    href="https://unpkg.com/codemirror@5.39.2/lib/codemirror.css"
+                />
+
                 <include-partial
                     src="/_app/components/compose.html"
-                    uses="app:hook.character_counter.init,app:hook.autosize"
                 ></include-partial>
 
                 <script>
@@ -530,7 +537,7 @@
 
                         trigger("responses:create", [
                             "0", // posts use "0" as their question ID
-                            e.target.content.value,
+                            globalThis.compose_editor_.getValue(),
                             e.target.tags.value,
                             e.target.warning.value,
                             e.target.reply.value,
@@ -539,10 +546,47 @@
                             // reset if successful
                             e.target.reset();
 
+                            globalThis.compose_editor_.setValue("");
+                            globalThis.compose_editor_.clearHistory();
+
                             // open post
                             window.location.href = `/response/${res.payload.id}`;
                         });
                     };
+
+                    (() => {
+                        let has_been_added = false;
+                        globalThis["lib:/_app/components/compose.html"] =
+                            () => {
+                                if (has_been_added) {
+                                    return;
+                                }
+
+                                has_been_added = true;
+                                use("codemirror", (codemirror) => {
+                                    codemirror.create_editor(
+                                        document.getElementById(
+                                            "compose_editor",
+                                        ),
+                                        "",
+                                        "Tell your friends what's on your mind...",
+                                        "compose_editor_",
+                                    );
+                                });
+                            };
+
+                        setTimeout(() => {
+                            if (
+                                document.querySelector(
+                                    '[src="/_app/components/compose.html"]',
+                                ).loaded
+                            ) {
+                                globalThis[
+                                    "lib:/_app/components/compose.html"
+                                ]();
+                            }
+                        }, 1000);
+                    })();
                 </script>
             </div>
         </dialog>

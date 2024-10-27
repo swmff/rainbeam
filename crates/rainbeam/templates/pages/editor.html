@@ -56,11 +56,14 @@ endblock %} {% block head %}
     {% endif %}
 </a>
 {% endblock %} {% block content %}
+<script src="https://unpkg.com/codemirror@5.39.2/lib/codemirror.js"></script>
+<script src="https://unpkg.com/codemirror@5.39.2/mode/markdown/markdown.js"></script>
+
 <article>
     <main class="flex flex-col gap-2">
         <div class="pillmenu">
             <a href="/pages">List</a>
-            <a href="/pages/editor" class="active">Editor</a>
+            <a href="/pages/editor" class="active" data-turbo="false">Editor</a>
         </div>
 
         <div class="card-nest shadow w-full" id="editor">
@@ -154,14 +157,6 @@ endblock %} {% block head %}
         </div>
 
         <!-- editor -->
-        <script src="https://unpkg.com/codemirror@5.39.2/lib/codemirror.js"></script>
-        <script src="https://unpkg.com/codemirror@5.39.2/mode/markdown/markdown.js"></script>
-
-        <link
-            rel="stylesheet"
-            href="https://unpkg.com/codemirror@5.39.2/lib/codemirror.css"
-        />
-
         {% if let Some(page) = page %}
         <!-- prettier-ignore -->
         <script type="text/markdown" id="content">{{ page.content|safe }}</script>
@@ -172,9 +167,15 @@ endblock %} {% block head %}
                 const existing_content = document.getElementById("content");
 
                 if (existing_content) {
-                    codemirror.create_editor(existing_content.innerText.trim());
+                    codemirror.create_editor(
+                        document.getElementById("text_tab"),
+                        existing_content.innerText.trim(),
+                    );
                 } else {
-                    codemirror.create_editor("");
+                    codemirror.create_editor(
+                        document.getElementById("text_tab"),
+                        "",
+                    );
                 }
 
                 codemirror.init_tabs();

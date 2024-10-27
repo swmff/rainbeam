@@ -1471,7 +1471,6 @@ pub async fn public_global_timeline_request(
 #[derive(Template)]
 #[template(path = "partials/components/compose.html")]
 struct ComposeTemplate {
-    config: Config,
     profile: Option<Profile>,
 }
 
@@ -1494,7 +1493,6 @@ pub async fn compose_request(
 
     Html(
         ComposeTemplate {
-            config: database.server_options,
             profile: Some(auth_user),
         }
         .render()

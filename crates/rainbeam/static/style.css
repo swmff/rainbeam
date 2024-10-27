@@ -1684,8 +1684,10 @@ canvas {
     user-select: none;
 }
 
-.fade {
+.fade,
+.CodeMirror-placeholder {
     opacity: 75%;
+    transition: opacity 0.15s;
 }
 
 .ff-inherit {

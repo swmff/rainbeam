@@ -1,21 +1,27 @@
 class PartialComponent extends HTMLElement {
     static observedAttributes = ["src", "uses"];
-
-    constructor() {
-        const self = super();
-        self.style.display = "contents";
-    }
+    loaded;
 
     attributeChangedCallback(name, _, value) {
         switch (name) {
             case "src":
+                this.loaded = false;
                 fetch(value)
                     .then((res) => res.text())
                     .then((res) => {
                         this.innerHTML = res;
+
+                        if (globalThis[`lib:${value}`]) {
+                            // load finished
+                            globalThis[`lib:${value}`]();
+                        }
+
+                        this.loaded = true;
                     })
                     .catch((err) => {
-                        this.innerHTML = err;
+                        this.innerHTML =
+                            "<span>Could not display component.</span>";
+                        console.error(err);
                     });
 
                 break;

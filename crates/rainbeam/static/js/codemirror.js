@@ -4,37 +4,37 @@
     // create_editor
     self.define(
         "create_editor",
-        function (imports, value) {
-            globalThis.editor = CodeMirror(
-                document.getElementById("text_tab"),
-                {
-                    value: value || "",
-                    mode: "markdown",
-                    lineWrapping: true,
-                    autoCloseBrackets: true,
-                    autofocus: true,
-                    viewportMargin: Number.POSITIVE_INFINITY,
-                    inputStyle: "contenteditable",
-                    highlightFormatting: false,
-                    fencedCodeBlockHighlighting: false,
-                    xml: false,
-                    smartIndent: false,
-                    extraKeys: {
-                        Home: "goLineLeft",
-                        End: "goLineRight",
-                        Enter: (cm) => {
-                            cm.replaceSelection("\n");
-                        },
+        function (_, bind_to, value, placeholder, global = "editor") {
+            globalThis[global] = CodeMirror(bind_to, {
+                value: value || "",
+                mode: "markdown",
+                lineWrapping: true,
+                autoCloseBrackets: true,
+                autofocus: true,
+                viewportMargin: Number.POSITIVE_INFINITY,
+                inputStyle: "contenteditable",
+                highlightFormatting: false,
+                fencedCodeBlockHighlighting: false,
+                xml: false,
+                smartIndent: false,
+                placeholder,
+                extraKeys: {
+                    Home: "goLineLeft",
+                    End: "goLineRight",
+                    Enter: (cm) => {
+                        cm.replaceSelection("\n");
                     },
                 },
-            );
+            });
 
             // ...
-            document
-                .querySelector(".CodeMirror-code")
-                .setAttribute("spellcheck", "true");
+            for (const element of Array.from(
+                document.querySelectorAll(".CodeMirror-code"),
+            )) {
+                element.setAttribute("spellcheck", "true");
+            }
         },
-        ["string"],
+        ["object", "string", "string"],
     );
 
     // tabs
