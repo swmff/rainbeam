@@ -255,6 +255,7 @@ block head %}
                 {% let anonymous_username = Some("anonymous") %}
                 {% let anonymous_avatar = Some("") %}
                 {% let show_comments = true %}
+                {% let do_render_nested = true %}
                 {% include "components/response.html" %}
             {% endfor %}
         </div>

@@ -1048,6 +1048,11 @@ dialog::backdrop {
     white-space: pre-wrap;
 }
 
+.response include-partial .response {
+    margin-top: 1rem;
+    box-shadow: 0 0 4px var(--color-shadow);
+}
+
 .username {
     text-overflow: ellipsis;
     overflow: hidden;

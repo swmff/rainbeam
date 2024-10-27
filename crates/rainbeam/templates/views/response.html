@@ -89,8 +89,9 @@ block head %}
             {% let is_pinned = false %}
             {% let show_pin_button = false %}
             {% let do_not_render_question = false %}
-            {% let response = (question.clone(), response.clone(), 0, reactions.len(), reply.clone()) %}
+            {% let response = (question.clone(), response.clone(), 0, reactions.len()) %}
             {% let show_comments = false %}
+            {% let do_render_nested = true %}
             {% include "components/response.html" %}
         {% endif %}
 

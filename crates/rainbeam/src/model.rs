@@ -155,8 +155,7 @@ pub struct QuestionResponse {
     pub edited: u128,
 }
 
-pub type ResponseReply = Option<Box<(Question, QuestionResponse, usize, usize)>>;
-pub type FullResponse = (Question, QuestionResponse, usize, usize, ResponseReply);
+pub type FullResponse = (Question, QuestionResponse, usize, usize);
 
 /// Basic information which changes the way the response is deserialized
 #[derive(Serialize, Deserialize, Debug, Clone)]

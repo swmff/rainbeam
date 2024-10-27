@@ -256,7 +256,7 @@ pub async fn profile_request(
             let mut out = Vec::new();
 
             for id in pinned.split(",") {
-                match database.get_response(id.to_string(), false).await {
+                match database.get_response(id.to_string()).await {
                     Ok(response) => {
                         // TODO: check author circle membership status
                         // remove from responses

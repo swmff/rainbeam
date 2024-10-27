@@ -1414,7 +1414,7 @@ impl Database {
         // check reply_intent
         if !props.reply_intent.is_empty() {
             if let Err(e) = self
-                .get_response(props.reply_intent.trim().to_string(), false)
+                .get_response(props.reply_intent.trim().to_string())
                 .await
             {
                 return Err(e);
@@ -1596,15 +1596,10 @@ impl Database {
     // responses
 
     /// Get a response from a database result
-    pub async fn gimme_response(
-        &self,
-        res: HashMap<String, String>,
-        recurse: bool,
-    ) -> Result<FullResponse> {
+    pub async fn gimme_response(&self, res: HashMap<String, String>) -> Result<FullResponse> {
         let question = res.get("question").unwrap().to_string();
         let id = res.get("id").unwrap().to_string();
         let author = res.get("author").unwrap().to_string();
-        let reply = res.get("reply").unwrap_or(&String::new()).to_string();
         let ctx: ResponseContext =
             match serde_json::from_str(res.get("context").unwrap_or(&"{}".to_string())) {
                 Ok(t) => t,
@@ -1646,19 +1641,11 @@ impl Database {
                     Err(_) => return Err(DatabaseError::ValueError),
                 },
                 context: ctx,
-                reply: reply.clone(),
+                reply: res.get("reply").unwrap_or(&String::new()).to_string(),
                 edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
             },
             self.get_comment_count_by_response(id.clone()).await,
             self.get_reaction_count_by_asset(id).await,
-            if reply.is_empty() {
-                None
-            } else {
-                match Box::pin(self.get_response(reply, recurse)).await {
-                    Ok(r) => Some(Box::new((r.0, r.1, r.2, r.3))),
-                    Err(_) => None,
-                }
-            },
         ))
     }
 
@@ -1667,8 +1654,7 @@ impl Database {
     /// # Arguments
     /// * `id`
     /// * `recurse`
-    #[async_recursion]
-    pub async fn get_response(&self, id: String, recurse: bool) -> Result<FullResponse> {
+    pub async fn get_response(&self, id: String) -> Result<FullResponse> {
         // check in cache
         match self
             .base
@@ -1679,7 +1665,7 @@ impl Database {
             Some(c) => {
                 match serde_json::from_str::<HashMap<String, String>>(c.as_str()) {
                     Ok(res) => {
-                        return Ok(match self.gimme_response(res, recurse).await {
+                        return Ok(match self.gimme_response(res).await {
                             Ok(r) => r,
                             Err(e) => return Err(e),
                         })
@@ -1716,7 +1702,7 @@ impl Database {
         };
 
         // return
-        let response = match self.gimme_response(res, recurse).await {
+        let response = match self.gimme_response(res).await {
             Ok(r) => r,
             Err(e) => return Err(e),
         };
@@ -1767,7 +1753,7 @@ impl Database {
         };
 
         // return
-        Ok(match self.gimme_response(res, false).await {
+        Ok(match self.gimme_response(res).await {
             Ok(r) => r,
             Err(e) => return Err(e),
         })
@@ -1793,7 +1779,7 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    out.push(match self.gimme_response(res, false).await {
+                    out.push(match self.gimme_response(res).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
                     });
@@ -1859,7 +1845,7 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    out.push(match self.gimme_response(res, false).await {
+                    out.push(match self.gimme_response(res).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
                     });
@@ -1903,7 +1889,7 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    out.push(match self.gimme_response(res, false).await {
+                    out.push(match self.gimme_response(res).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
                     });
@@ -1943,7 +1929,7 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    out.push(match self.gimme_response(res, false).await {
+                    out.push(match self.gimme_response(res).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
                     });
@@ -1986,7 +1972,7 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    out.push(match self.gimme_response(res, false).await {
+                    out.push(match self.gimme_response(res).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
                     });
@@ -2031,7 +2017,7 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    out.push(match self.gimme_response(res, false).await {
+                    out.push(match self.gimme_response(res).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
                     });
@@ -2077,7 +2063,7 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    out.push(match self.gimme_response(res, false).await {
+                    out.push(match self.gimme_response(res).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
                     });
@@ -2121,7 +2107,7 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    out.push(match self.gimme_response(res, false).await {
+                    out.push(match self.gimme_response(res).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
                     });
@@ -2198,7 +2184,7 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    out.push(match self.gimme_response(res, false).await {
+                    out.push(match self.gimme_response(res).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
                     });
@@ -2264,7 +2250,7 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    out.push(match self.gimme_response(res, false).await {
+                    out.push(match self.gimme_response(res).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
                     });
@@ -2300,7 +2286,7 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    out.push(match self.gimme_response(res, false).await {
+                    out.push(match self.gimme_response(res).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
                     });
@@ -2442,10 +2428,7 @@ impl Database {
 
         // check reply
         if !props.reply.is_empty() {
-            if let Err(e) = self
-                .get_response(props.reply.trim().to_string(), false)
-                .await
-            {
+            if let Err(e) = self.get_response(props.reply.trim().to_string()).await {
                 return Err(e);
             }
         }
@@ -2470,7 +2453,7 @@ impl Database {
 
         // make sure reply exists
         if !response.reply.is_empty() {
-            if let Err(e) = self.get_response(response.reply.clone(), false).await {
+            if let Err(e) = self.get_response(response.reply.clone()).await {
                 return Err(e);
             }
         }
@@ -2625,7 +2608,7 @@ impl Database {
         user: Profile,
     ) -> Result<()> {
         // make sure the response exists
-        let response = match self.get_response(id.clone(), false).await {
+        let response = match self.get_response(id.clone()).await {
             Ok(q) => q.1,
             Err(e) => return Err(e),
         };
@@ -2719,7 +2702,7 @@ impl Database {
         user: Profile,
     ) -> Result<()> {
         // make sure the response exists
-        let response = match self.get_response(id.clone(), false).await {
+        let response = match self.get_response(id.clone()).await {
             Ok(q) => q.1,
             Err(e) => return Err(e),
         };
@@ -2799,7 +2782,7 @@ impl Database {
         save_question: bool,
     ) -> Result<()> {
         // make sure response exists
-        let response = match self.get_response(id.clone(), false).await {
+        let response = match self.get_response(id.clone()).await {
             Ok(q) => q,
             Err(e) => return Err(e),
         };
@@ -2898,7 +2881,7 @@ impl Database {
     /// * `user` - the user doing this
     pub async fn unsend_response(&self, id: String, user: Profile) -> Result<()> {
         // make sure the response exists
-        let res = match self.get_response(id.clone(), false).await {
+        let res = match self.get_response(id.clone()).await {
             Ok(q) => q,
             Err(e) => return Err(e),
         };
@@ -3491,7 +3474,7 @@ impl Database {
     /// * `author` - the ID of the user creating the comment
     pub async fn create_comment(&self, props: CommentCreate, author: String) -> Result<()> {
         // make sure the response exists
-        let response = match self.get_response(props.response.clone(), false).await {
+        let response = match self.get_response(props.response.clone()).await {
             Ok(q) => q.1,
             Err(e) => return Err(e),
         };
@@ -3775,7 +3758,7 @@ impl Database {
             Err(e) => return Err(e),
         };
 
-        let res = match self.get_response(comment.response.clone(), false).await {
+        let res = match self.get_response(comment.response.clone()).await {
             Ok(q) => q.1,
             Err(e) => return Err(e),
         };
@@ -4935,7 +4918,7 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    out.push(match self.gimme_response(res, false).await {
+                    out.push(match self.gimme_response(res).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
                     });
@@ -4995,7 +4978,7 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    out.push(match self.gimme_response(res, false).await {
+                    out.push(match self.gimme_response(res).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
                     });

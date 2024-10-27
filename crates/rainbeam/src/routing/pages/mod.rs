@@ -14,10 +14,7 @@ use authbeam::model::{Notification, Permission, Profile, ProfileMetadata, Relati
 
 use crate::config::Config;
 use crate::database::Database;
-use crate::model::{
-    DatabaseError, FullResponse, Question, QuestionResponse, Reaction, ResponseComment,
-    ResponseReply,
-};
+use crate::model::{DatabaseError, FullResponse, Question, QuestionResponse, Reaction, ResponseComment};
 
 use super::api;
 
@@ -982,7 +979,6 @@ struct ResponseTemplate {
     response: QuestionResponse,
     relationship: RelationshipStatus,
     comments: Vec<(ResponseComment, usize, usize)>,
-    reply: ResponseReply,
     reactions: Vec<Reaction>,
     tags: String,
     page: i32,
@@ -1029,7 +1025,7 @@ pub async fn response_request(
         0
     };
 
-    let response = match database.get_response(id.clone(), false).await {
+    let response = match database.get_response(id.clone()).await {
         Ok(r) => r,
         Err(e) => return Html(e.to_html(database)),
     };
@@ -1087,10 +1083,89 @@ pub async fn response_request(
             tags: serde_json::to_string(&response.1.tags).unwrap(),
             response: response.1,
             relationship,
-            reply: response.4,
             comments,
             reactions,
             page: query.page,
+            anonymous_username: Some("anonymous".to_string()), // TODO: fetch recipient setting
+            anonymous_avatar: None,
+            is_powerful,
+            is_helper,
+        }
+        .render()
+        .unwrap(),
+    )
+}
+
+#[derive(Template)]
+#[template(path = "components/response.html")]
+struct PartialResponseTemplate {
+    config: Config,
+    profile: Option<Profile>,
+    response: FullResponse,
+    anonymous_username: Option<String>,
+    anonymous_avatar: Option<String>,
+    is_powerful: bool,
+    is_helper: bool,
+    do_not_render_question: bool,
+    is_pinned: bool,
+    show_comments: bool,
+    show_pin_button: bool,
+    do_render_nested: bool,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct PartialResponseProps {
+    pub id: String,
+    pub do_render_nested: bool,
+}
+
+/// GET /_app/components/response.html
+pub async fn partial_response_request(
+    jar: CookieJar,
+    State(database): State<Database>,
+    Query(props): Query<PartialResponseProps>,
+) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => Some(ua),
+            Err(_) => None,
+        },
+        None => None,
+    };
+
+    let response = match database.get_response(props.id.clone()).await {
+        Ok(r) => r,
+        Err(e) => return Html(e.to_html(database)),
+    };
+
+    let mut is_helper: bool = false;
+    let is_powerful = if let Some(ref ua) = auth_user {
+        let group = match database.auth.get_group_by_id(ua.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        is_helper = group.permissions.contains(&Permission::Helper);
+        group.permissions.contains(&Permission::Manager)
+    } else {
+        false
+    };
+
+    // ...
+    Html(
+        PartialResponseTemplate {
+            config: database.server_options.clone(),
+            profile: auth_user,
+            do_not_render_question: response.1.context.is_post,
+            is_pinned: false,
+            show_comments: true,
+            show_pin_button: false,
+            do_render_nested: props.do_render_nested,
+            response,
             anonymous_username: Some("anonymous".to_string()), // TODO: fetch recipient setting
             anonymous_avatar: None,
             is_powerful,
@@ -1114,7 +1189,6 @@ struct CommentTemplate {
     page: i32,
     question: Question,
     response: QuestionResponse,
-    reply: ResponseReply,
     reaction_count: usize,
     anonymous_username: Option<String>,
     anonymous_avatar: Option<String>,
@@ -1164,10 +1238,7 @@ pub async fn comment_request(
         Err(e) => return Html(e.to_html(database)),
     };
 
-    let response = match database
-        .get_response(comment.0.response.clone(), false)
-        .await
-    {
+    let response = match database.get_response(comment.0.response.clone()).await {
         Ok(r) => r,
         Err(e) => return Html(e.to_html(database)),
     };
@@ -1211,7 +1282,6 @@ pub async fn comment_request(
             question: response.0,
             response: response.1,
             reaction_count: response.3,
-            reply: response.4,
             anonymous_username: Some("anonymous".to_string()), // TODO: fetch recipient setting
             anonymous_avatar: None,
             is_powerful,
@@ -1865,6 +1935,10 @@ pub async fn routes(database: Database) -> Router {
         .route("/+i/:ip", get(api::profiles::expand_ip_request))
         .route("/+p/:id", get(api::pages::expand_request))
         // partials
+        .route(
+            "/_app/components/response.html",
+            get(partial_response_request),
+        )
         .route("/_app/components/compose.html", get(compose_request))
         .route(
             "/_app/timelines/timeline.html",

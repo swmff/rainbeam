@@ -213,4 +213,11 @@
             return out;
         },
     );
+
+    self.define("click", function (_, id, do_render_nested) {
+        if (!do_render_nested) {
+            window.location.href = `/response/${id}`;
+            return;
+        }
+    });
 })();

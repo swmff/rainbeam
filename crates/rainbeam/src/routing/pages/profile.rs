@@ -163,7 +163,7 @@ pub async fn profile_request(
             let mut out = Vec::new();
 
             for id in pinned.split(",") {
-                match database.get_response(id.to_string(), false).await {
+                match database.get_response(id.to_string()).await {
                     Ok(response) => {
                         if response.1.author.id != other.id {
                             // don't allow us to pin responses from other users
@@ -492,7 +492,7 @@ pub async fn profile_embed_request(
             let mut out = Vec::new();
 
             for id in pinned.split(",") {
-                match database.get_response(id.to_string(), false).await {
+                match database.get_response(id.to_string()).await {
                     Ok(response) => {
                         if response.1.author.id != other.id {
                             // don't allow us to pin responses from other users

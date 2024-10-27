@@ -263,6 +263,7 @@
     });
 
     app.define("hook.dropdown", function (_, event) {
+        event.stopImmediatePropagation();
         let target = event.target;
 
         while (!target.matches(".dropdown")) {
