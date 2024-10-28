@@ -22,6 +22,18 @@ class PartialComponent extends HTMLElement {
                         }
 
                         this.loaded = true;
+
+                        setTimeout(() => {
+                            if (!this.getAttribute("uses")) {
+                                return;
+                            }
+
+                            for (const hook of this.getAttribute("uses").split(
+                                ",",
+                            )) {
+                                trigger(hook);
+                            }
+                        }, 15);
                     })
                     .catch((err) => {
                         this.innerHTML =
@@ -32,12 +44,6 @@ class PartialComponent extends HTMLElement {
                 break;
 
             case "uses":
-                setTimeout(() => {
-                    for (const hook of value.split(",")) {
-                        trigger(hook);
-                    }
-                }, 500);
-
                 break;
 
             default:
