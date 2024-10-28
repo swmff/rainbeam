@@ -18,6 +18,14 @@ mod database;
 mod model;
 mod routing;
 
+// mimalloc
+#[cfg(feature = "mimalloc")]
+use mimalloc::MiMalloc;
+
+#[cfg(feature = "mimalloc")]
+#[global_allocator]
+static GLOBAL: MiMalloc = MiMalloc;
+
 /// Main server process
 #[tokio::main]
 pub async fn main() {

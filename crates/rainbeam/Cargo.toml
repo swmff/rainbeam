@@ -14,6 +14,7 @@ postgres = ["databeam/postgres", "authbeam/postgres"]
 mysql = ["databeam/mysql", "authbeam/mysql"]
 sqlite = ["databeam/sqlite", "authbeam/sqlite"]
 default = ["databeam/sqlite", "authbeam/sqlite"]
+mimalloc = []
 
 [dependencies]
 askama = { version = "0.12.1", features = ["with-axum"] }
@@ -39,6 +40,7 @@ tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 shared = { path = "../shared" }
 databeam = { path = "../databeam", default-features = false }
 authbeam = { path = "../authbeam", default-features = false }
+mimalloc = "0.1.43"
 
 [[bin]]
 path = "src/main.rs"
