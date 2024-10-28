@@ -70,6 +70,7 @@
         {% endif %}
     </div>
 
+    {% if do_render_nested == true %}
     <div class="flex justify-between gap-2 sm:w-full actions_bar">
         <!-- reactions -->
         <button
@@ -518,4 +519,5 @@
             </div>
         </div>
     </div>
+    {% endif %}
 </div>

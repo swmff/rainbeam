@@ -160,6 +160,7 @@
             {% endif %}
         </span>
 
+        {% if do_render_nested == true %}
         <span class="response_tags flex gap-2 flex-wrap">
             {% for tag in response.tags %}
             <a
@@ -170,20 +171,11 @@
             </a>
             {% endfor %}
         </span>
+        {% endif %}
 
         <!-- prettier-ignore -->
         {% if (do_not_render_question == false) && (response.context.is_post == false) %}
             {% include "components/response_title.html" %}
         {% endif %}
     </div>
-
-    {% if (do_not_render_question == true) | (response.context.is_post == true)
-    %}
-    <style>
-        #response\:{{ response.id }} .response_body:not(.response_reply *) {
-            border-radius: var(--radius) !important;
-            border-top: solid 1px var(--color-super-lowered) !important;
-        }
-    </style>
-    {% endif %}
 </div>

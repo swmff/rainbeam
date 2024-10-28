@@ -172,10 +172,14 @@
             }
 
             const part_1 = (
-                target.querySelector(".question_content") || { innerText: "" }
+                target.querySelector(".question_content p:nth-child(2)") || {
+                    innerText: "",
+                }
             ).innerText;
 
-            const part_2 = target.querySelector(".response_content").innerText;
+            const part_2 = target.querySelector(
+                ".response_content p",
+            ).innerText;
 
             // ...
             const link =
@@ -215,6 +219,14 @@
     );
 
     self.define("click", function (_, id, do_render_nested) {
+        // close dropdowns
+        for (const dropdown of Array.from(
+            document.querySelectorAll(".inner[open]"),
+        )) {
+            dropdown.removeAttribute("open");
+        }
+
+        // ...
         if (!do_render_nested) {
             window.location.href = `/response/${id}`;
             return;

@@ -253,7 +253,6 @@ a.button {
     text-decoration: none !important;
     /* font-size: 13.3333px; */
     font-size: 0.9rem;
-    box-shadow: 0 0 0 transparent;
 }
 
 button:not(nav *):hover,
@@ -1010,6 +1009,102 @@ dialog::backdrop {
     box-shadow: inset 0 0 2px var(--color-shadow);
 }
 
+@media screen and (max-width: 900px) {
+    /* stuff to make some components feel more mobile-native */
+
+    body:has(.dropdown:not(dialog *):not(nav *) .inner[open]),
+    body:has(dialog[open]) {
+        overflow: hidden;
+    }
+
+    /* dropdown to drawer */
+    .dropdown:not(dialog *):not(nav *) {
+        position: static;
+    }
+
+    .dropdown:not(dialog *):not(nav *)::before {
+        content: "";
+        opacity: 0%;
+        transition: opacity 0.15s;
+        pointer-events: none;
+        z-index: 6378;
+        width: 100dvw;
+        height: 100dvh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        background: #000000;
+    }
+
+    .dropdown:not(dialog *):not(nav *) .inner[open] {
+        top: unset !important;
+        left: 0 !important;
+        bottom: 0 !important;
+        right: unset !important;
+        width: 100% !important;
+        max-height: 75dvh;
+        border-top-left-radius: calc(var(--radius) * 2);
+        border-top-right-radius: calc(var(--radius) * 2);
+        padding-bottom: 2rem;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        border: none !important;
+        overflow: auto;
+        z-index: 6379;
+        animation: from_bottom ease-in-out 1 0.05s running;
+        box-shadow: 0 0 4px var(--color-shadow);
+    }
+
+    .dropdown:not(dialog *):not(nav *):has(.inner[open])::before {
+        opacity: 50%;
+    }
+
+    .dropdown:not(dialog *):not(nav *) .inner a,
+    .dropdown:not(dialog *):not(nav *) .inner button {
+        min-height: 35px !important;
+    }
+
+    /* dialog to panel */
+    dialog {
+        width: 100dvw;
+        height: 100dvh;
+        margin: 0;
+        border: none !important;
+        border-radius: 0;
+        max-height: unset;
+        animation: from_right ease-in-out 1 0.1s forwards running;
+    }
+
+    dialog .inner:not(.dropdown *) {
+        min-height: 100dvh !important;
+    }
+
+    /* toast to snackbar */
+    .toast {
+        width: 100% !important;
+    }
+}
+
+@keyframes from_bottom {
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes from_right {
+    from {
+        transform: translateX(-100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
 .notification {
     text-decoration: none;
     color: black;
@@ -1058,6 +1153,10 @@ dialog::backdrop {
     box-shadow: 0 0 4px var(--color-shadow);
 }
 
+.comment_body {
+    flex-direction: column-reverse;
+}
+
 .username {
     text-overflow: ellipsis;
     overflow: hidden;
@@ -1068,29 +1167,18 @@ dialog::backdrop {
     font-weight: 500;
 }
 
-.response_reply {
-    cursor: pointer;
-    position: relative;
-}
-
-.response_reply .shield {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border-radius: var(--radius);
-    backdrop-filter: blur(2px);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    opacity: 0%;
+.response .nested_response .card-nest {
+    opacity: 85%;
     transition: opacity 0.15s;
 }
 
-.response_reply .shield:hover {
+.response .nested_response .card-nest:hover {
     opacity: 100%;
-    text-decoration: none;
+}
+
+.response .card:first-child[style="display: none"] + .card:nth-child(n-1) {
+    border-radius: var(--radius) !important;
+    border-top: solid 1px var(--color-super-lowered) !important;
 }
 
 .thread_line {
@@ -1215,22 +1303,21 @@ dialog::backdrop {
 #toast_zone {
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
+    align-items: flex-start;
     gap: 0.25rem;
     position: fixed;
-    top: calc(56px + 0.5rem); /* under nav */
+    bottom: 0.5rem;
     right: 0.5rem;
-    z-index: 5;
-    width: max-content;
+    z-index: 6880;
+    width: calc(100% - 1rem);
+    pointer-events: none;
 }
 
 .toast {
     box-shadow: 0 0 8px var(--color-shadow);
-    min-width: 15rem;
-    max-width: 25rem;
     width: max-content;
     border-radius: var(--radius);
-    padding: 0.5rem 1rem;
+    padding: 0.75rem 1rem;
     animation: popin ease-in-out 1 0.15s running;
     display: flex;
     justify-content: space-between;

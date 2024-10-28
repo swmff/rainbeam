@@ -2,7 +2,7 @@
 let reaction_count = response.3 %} {% let response = response.1.clone() %}
 
 <div
-    class="flex flex-col gap-2 w-full"
+    class="flex flex-col gap-2 w-full {% if !do_render_nested %}nested_response{% endif %}"
     id="response:{{ response.id }}"
     onclick="event.stopImmediatePropagation();trigger('responses:click', ['{{ response.id }}', {{ do_render_nested }}])"
     style="cursor: {% if do_render_nested %}auto{% else %}pointer{% endif %}"
