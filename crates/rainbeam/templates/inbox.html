@@ -66,29 +66,6 @@
         {% endif %} {% for question in unread %}
         <div class="card-nest w-full shadow" id="question:{{ question.id }}">
             <div class="card flex flex-col gap-1">
-                {% if !question.context.reply_intent.is_empty() %}
-                <a
-                    class="flex items-center gap-2"
-                    href="/response/{{ question.context.reply_intent }}"
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 16 16"
-                        width="16"
-                        height="16"
-                        aria-label="Reply symbol"
-                        class="icon"
-                    >
-                        <path
-                            d="M6.78 1.97a.75.75 0 0 1 0 1.06L3.81 6h6.44A4.75 4.75 0 0 1 15 10.75v2.5a.75.75 0 0 1-1.5 0v-2.5a3.25 3.25 0 0 0-3.25-3.25H3.81l2.97 2.97a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L1.47 7.28a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z"
-                        ></path>
-                    </svg>
-                    <span>
-                        Follow-up {{ question.context.reply_intent[..10] }}
-                    </span>
-                </a>
-                {% endif %}
-
                 <div
                     class="flex items-center justify-between gap-1 question_title"
                 >
@@ -252,6 +229,13 @@
                 <span class="question_content" hook="long" hook-arg="lowered">
                     <p style="display: none">{{ question.context.media }}</p>
                     {{ shared::ui::render_markdown(question.content)|safe }}
+
+                    {% if !question.context.reply_intent.is_empty() %}
+                    <include-partial
+                        src="/_app/components/response.html?id={{ question.context.reply_intent }}&do_render_nested=false"
+                        uses="app:clean_date_codes,app:link_filter,app:hook.alt"
+                    ></include-partial>
+                    {% endif %}
                 </span>
             </div>
 

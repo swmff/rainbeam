@@ -122,26 +122,69 @@
         {% endif %}
 
         <!-- quote -->
-        {% if profile.is_some() %}
-        <button
-            class="camo"
-            title="Quote"
-            onclick="event.stopImmediatePropagation();compose_intent('Quote post', '{{ response.id }}')"
-        >
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 16 16"
-                width="16"
-                height="16"
-                aria-label="Quote symbol"
-                class="icon"
+        <div class="dropdown">
+            <button
+                class="w-full camo"
+                onclick="trigger('app:hook.dropdown', [event])"
+                exclude="dropdown"
+                title="Quote"
             >
-                <path
-                    d="M1.75 2.5h10.5a.75.75 0 0 1 0 1.5H1.75a.75.75 0 0 1 0-1.5Zm4 5h8.5a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5Zm0 5h8.5a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5ZM2.5 7.75v6a.75.75 0 0 1-1.5 0v-6a.75.75 0 0 1 1.5 0Z"
-                ></path>
-            </svg>
-        </button>
-        {% endif %}
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 16 16"
+                    width="16"
+                    height="16"
+                    aria-label="Quote symbol"
+                    class="icon"
+                >
+                    <path
+                        d="M1.75 2.5h10.5a.75.75 0 0 1 0 1.5H1.75a.75.75 0 0 1 0-1.5Zm4 5h8.5a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5Zm0 5h8.5a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5ZM2.5 7.75v6a.75.75 0 0 1-1.5 0v-6a.75.75 0 0 1 1.5 0Z"
+                    ></path>
+                </svg>
+            </button>
+
+            <div class="inner shadow-md w-content" exclude="dropdown">
+                {% if profile.is_some() %}
+                <button
+                    title="Quote"
+                    onclick="compose_intent('Quote post', '{{ response.id }}')"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 16 16"
+                        width="16"
+                        height="16"
+                        aria-label="Quote symbol"
+                        class="icon"
+                    >
+                        <path
+                            d="M1.75 2.5h10.5a.75.75 0 0 1 0 1.5H1.75a.75.75 0 0 1 0-1.5Zm4 5h8.5a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5Zm0 5h8.5a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5ZM2.5 7.75v6a.75.75 0 0 1-1.5 0v-6a.75.75 0 0 1 1.5 0Z"
+                        ></path>
+                    </svg>
+                    Quote
+                </button>
+                {% endif %}
+
+                <a
+                    href="/@{{ response.author.username }}?reply_intent={{ response.id }}#top"
+                    data-turbo="false"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 16 16"
+                        width="16"
+                        height="16"
+                        aria-label="Reply symbol"
+                        class="icon"
+                    >
+                        <path
+                            d="M6.78 1.97a.75.75 0 0 1 0 1.06L3.81 6h6.44A4.75 4.75 0 0 1 15 10.75v2.5a.75.75 0 0 1-1.5 0v-2.5a3.25 3.25 0 0 0-3.25-3.25H3.81l2.97 2.97a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L1.47 7.28a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z"
+                        ></path>
+                    </svg>
+                    Ask about this
+                </a>
+            </div>
+        </div>
 
         <!-- sharing -->
         <div class="dropdown">
@@ -149,6 +192,7 @@
                 class="w-full camo"
                 onclick="trigger('app:hook.dropdown', [event])"
                 exclude="dropdown"
+                title="Share"
             >
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -169,25 +213,6 @@
 
                 <!-- prettier-ignore -->
                 {% let short_id = response.id[..10] %}
-
-                <a
-                    href="/@{{ response.author.username }}?reply_intent={{ response.id }}#top"
-                    data-turbo="false"
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 16 16"
-                        width="16"
-                        height="16"
-                        aria-label="Reply symbol"
-                        class="icon"
-                    >
-                        <path
-                            d="M6.78 1.97a.75.75 0 0 1 0 1.06L3.81 6h6.44A4.75 4.75 0 0 1 15 10.75v2.5a.75.75 0 0 1-1.5 0v-2.5a3.25 3.25 0 0 0-3.25-3.25H3.81l2.97 2.97a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L1.47 7.28a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z"
-                        ></path>
-                    </svg>
-                    Follow-up
-                </a>
 
                 <button
                     onclick="trigger('app:copy_text', [trigger('responses:gen_share', [event.target, '{{ short_id }}', 280])])"
@@ -257,6 +282,7 @@
                 class="w-full camo"
                 onclick="trigger('app:hook.dropdown', [event])"
                 exclude="dropdown"
+                title="More"
             >
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
