@@ -159,7 +159,7 @@ endblock %} {% block head %}
         <!-- editor -->
         {% if let Some(page) = page %}
         <!-- prettier-ignore -->
-        <script type="text/markdown" id="content">{{ page.content|safe }}</script>
+        <script type="text/markdown" id="content">{{ page.content.replace("</script>","</not-script>")|safe }}</script>
         {% endif %}
 
         <script>

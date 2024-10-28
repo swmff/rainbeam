@@ -46,7 +46,7 @@
             globalThis.ns_verbose = false;
             globalThis.ns_config = {
                 root: "/static/js/",
-                version: "1.12.2",
+                version: "1.12.3",
                 verbose: globalThis.ns_verbose,
             };
 
@@ -120,10 +120,7 @@
                 <div class="flex gap-1 nav_side">
                     {% block nav_right %}{% endblock %} {% if profile.is_some()
                     %}
-                    <button
-                        title="Create a post"
-                        onclick="document.getElementById('create_post_intent').showModal()"
-                    >
+                    <button title="Create a post" onclick="compose_intent()">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 16 16"
@@ -492,7 +489,7 @@
         <dialog id="create_post_intent">
             <div class="inner" style="min-height: 250px; width: 35rem">
                 <div class="w-full flex justify-between items-center gap-2">
-                    <b>Create a post</b>
+                    <b class="title">Create a post</b>
                     <div class="flex gap-2">
                         <button
                             class="bold red camo"
@@ -532,6 +529,37 @@
                 ></include-partial>
 
                 <script>
+                    globalThis.compose_intent = (
+                        title = "Create a post",
+                        reply = null,
+                    ) => {
+                        if (reply !== null) {
+                            document
+                                .querySelector("#create_post_intent details")
+                                .setAttribute("open", "true");
+
+                            document.querySelector(
+                                '#create_post_intent [name="reply"]',
+                            ).value = reply;
+                        } else {
+                            document
+                                .querySelector("#create_post_intent details")
+                                .removeAttribute("open");
+
+                            document.querySelector(
+                                '#create_post_intent [name="reply"]',
+                            ).value = "";
+                        }
+
+                        document.querySelector(
+                            "#create_post_intent b.title",
+                        ).innerText = title;
+
+                        document
+                            .getElementById("create_post_intent")
+                            .showModal();
+                    };
+
                     globalThis.create_post = (e) => {
                         e.preventDefault();
 

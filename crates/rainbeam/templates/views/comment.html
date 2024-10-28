@@ -194,13 +194,19 @@ block head %}
                             </div>
 
                             <script>
-                            function ls_anon_check() {
-                                if (window.localStorage.getItem("always_anon") === "true") {
-                                    document.getElementById("anonymous").checked = true
+                                function ls_anon_check() {
+                                    if (
+                                        window.localStorage.getItem(
+                                            "always_anon",
+                                        ) === "true"
+                                    ) {
+                                        document.getElementById(
+                                            "anonymous",
+                                        ).checked = true;
+                                    }
                                 }
-                            }
 
-                            ls_anon_check();
+                                ls_anon_check();
                             </script>
                         </div>
 
@@ -242,7 +248,7 @@ block head %}
             response,
             e.target.content.value,
             "{{ comment.0.id }}",
-            e.target.anonymous.checked
+            e.target.anonymous.checked,
         ]).then((_) => {
             // reset if successful
             e.target.reset();
@@ -252,30 +258,40 @@ block head %}
 
 {% if let Some(profile) = profile %} {% let other = profile.clone() %} {% if
 profile.username == other.username %}
+<script src="https://unpkg.com/codemirror@5.39.2/lib/codemirror.js"></script>
+<script src="https://unpkg.com/codemirror@5.39.2/addon/display/placeholder.js"></script>
+<script src="https://unpkg.com/codemirror@5.39.2/mode/markdown/markdown.js"></script>
+
+<link
+    rel="stylesheet"
+    href="https://unpkg.com/codemirror@5.39.2/lib/codemirror.css"
+/>
+
 <div id="is_self"></div>
 <dialog id="edit_dialog">
-    <form class="inner flex flex-col gap-2" onsubmit="edit(event)">
+    <form
+        class="inner flex flex-col gap-2"
+        onsubmit="edit(event)"
+        style="width: 35rem"
+    >
         <!-- prettier-ignore -->
-        {% let value = comment.0.content.replace("</textarea>", "&lt;textarea&gt;") %}
+        <script type="text/markdown" id="existing_content">{{ comment.0.content.replace("</script>","</not-script>")|safe }}</script>
 
         <label for="edit_content">New content</label>
+        <div id="comment_editor" class="post_editor"></div>
 
-        <textarea
-            class="w-full"
-            placeholder="Type your comment!"
-            minlength="1"
-            maxlength="4096"
-            required
-            name="content"
-            id="edit_content"
-            hook="counter"
-        >
-{{ value|safe }}</textarea
-        >
-
-        <div>
-            <span id="edit_content:counter" class="notification item"></span>
-        </div>
+        <script>
+            setTimeout(() => {
+                use("codemirror", (codemirror) => {
+                    codemirror.create_editor(
+                        document.getElementById("comment_editor"),
+                        document.getElementById("existing_content").innerText,
+                        "Type your comment...",
+                        "comment_editor_",
+                    );
+                });
+            }, 500);
+        </script>
 
         <hr />
         <div class="flex gap-2">
@@ -305,7 +321,7 @@ profile.username == other.username %}
         e.preventDefault();
         trigger("comments:edit", [
             "{{ comment.0.id }}",
-            e.target.content.value,
+            globalThis.comment_editor_.getValue(),
         ]).then((res) => {
             alert(res.message || "Comment edited!");
 

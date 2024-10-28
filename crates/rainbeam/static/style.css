@@ -62,6 +62,11 @@ body {
     scroll-behavior: smooth;
 }
 
+.turbo-progress-bar {
+    background: var(--color-link) !important;
+    z-index: 6375 !important;
+}
+
 #page {
     background: var(--color-surface);
     padding: 0;
@@ -1559,6 +1564,37 @@ canvas {
 
 .cm-variable-3:is(.dark *) {
     color: rgb(221, 214, 254) !important;
+}
+
+.post_editor .CodeMirror {
+    height: auto !important;
+}
+
+.post_editor .CodeMirror-line {
+    padding-left: 0 !important;
+}
+
+.post_editor .CodeMirror-focused .CodeMirror-placeholder {
+    opacity: 50%;
+}
+
+.spinner {
+    display: block;
+    font-size: 24px;
+    width: max-content;
+    cursor: progress;
+    user-select: none;
+    animation: loading_spin 1s 0.5s running forwards infinite;
+}
+
+@keyframes loading_spin {
+    from {
+        transform: rotate(0);
+    }
+
+    to {
+        transform: rotateZ(360deg);
+    }
 }
 
 /* utility */

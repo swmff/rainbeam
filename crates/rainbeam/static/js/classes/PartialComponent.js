@@ -2,6 +2,11 @@ class PartialComponent extends HTMLElement {
     static observedAttributes = ["src", "uses"];
     loaded;
 
+    constructor() {
+        const self = super();
+        self.innerHTML = '<div class="spinner">🐱</div>';
+    }
+
     attributeChangedCallback(name, _, value) {
         switch (name) {
             case "src":

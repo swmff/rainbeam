@@ -121,6 +121,28 @@
         </a>
         {% endif %}
 
+        <!-- quote -->
+        {% if profile.is_some() %}
+        <button
+            class="camo"
+            title="Quote"
+            onclick="event.stopImmediatePropagation();compose_intent('Quote post', '{{ response.id }}')"
+        >
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 16 16"
+                width="16"
+                height="16"
+                aria-label="Quote symbol"
+                class="icon"
+            >
+                <path
+                    d="M1.75 2.5h10.5a.75.75 0 0 1 0 1.5H1.75a.75.75 0 0 1 0-1.5Zm4 5h8.5a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5Zm0 5h8.5a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5ZM2.5 7.75v6a.75.75 0 0 1-1.5 0v-6a.75.75 0 0 1 1.5 0Z"
+                ></path>
+            </svg>
+        </button>
+        {% endif %}
+
         <!-- sharing -->
         <div class="dropdown">
             <button
