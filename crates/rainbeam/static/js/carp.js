@@ -191,6 +191,7 @@
                 const color_button = document.createElement("button");
                 color_button.classList.add("primary");
                 color_button.title = "Select color";
+                color_button.setAttribute("type", "button");
                 color_button.innerHTML = `<svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 16 16"
