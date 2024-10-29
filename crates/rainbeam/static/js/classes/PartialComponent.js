@@ -4,17 +4,37 @@ class PartialComponent extends HTMLElement {
 
     constructor() {
         const self = super();
-        self.innerHTML = '<div class="spinner">🐱</div>';
+        self.innerHTML = '<div class="spinner">🎣</div>';
     }
 
-    attributeChangedCallback(name, _, value) {
+    error() {
+        this.innerHTML =
+            '<div class="markdown-alert-warning">Could not display component.</div>';
+    }
+
+    attributeChangedCallback(name, old, value) {
         switch (name) {
             case "src":
+                if (
+                    old === value &&
+                    this.getAttribute("loaded", loaded) !== true
+                ) {
+                    console.log("partial already loaded with unchanged src");
+                    return;
+                }
+
                 this.loaded = false;
+                this.setAttribute("loaded", this.loaded);
                 fetch(value)
                     .then((res) => res.text())
                     .then((res) => {
-                        this.innerHTML = res;
+                        if (res.includes("<title>Uh oh!")) {
+                            // neospring error
+                            this.error();
+                            return;
+                        }
+
+                        this.innerHTML = `<div style="animation: grow 1 0.25s forwards running">${res}</div>`;
 
                         if (globalThis[`lib:${value}`]) {
                             // load finished
@@ -22,6 +42,7 @@ class PartialComponent extends HTMLElement {
                         }
 
                         this.loaded = true;
+                        this.setAttribute("loaded", this.loaded);
 
                         setTimeout(() => {
                             if (!this.getAttribute("uses")) {
@@ -36,8 +57,7 @@ class PartialComponent extends HTMLElement {
                         }, 15);
                     })
                     .catch((err) => {
-                        this.innerHTML =
-                            "<span>Could not display component.</span>";
+                        this.error();
                         console.error(err);
                     });
 

@@ -539,6 +539,24 @@
         },
     );
 
+    app.define("hook.partial_embeds", function (_) {
+        for (const paragraph of Array.from(
+            document.querySelectorAll("span[class] p"),
+        )) {
+            const groups = /(\/\+r\/)([\w]+)/.exec(paragraph.innerText);
+
+            if (groups === null) {
+                continue;
+            }
+
+            // add embed
+            paragraph.parentElement.innerHTML += `<include-partial
+                src="/_app/components/response.html?id=${groups[2]}&do_render_nested=false"
+                uses="app:clean_date_codes,app:link_filter,app:hook.alt"
+            ></include-partial>`;
+        }
+    });
+
     // adomonition
     app.define("shout", function (_, type, content) {
         if (document.getElementById("admonition")) {
