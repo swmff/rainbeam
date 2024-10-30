@@ -79,6 +79,7 @@
                                 src="/api/v1/profiles/{{ question.author.username }}/avatar"
                                 alt=""
                                 class="avatar"
+                                loading="lazy"
                                 style="--size: 20px"
                             />
 
@@ -105,6 +106,7 @@
                                 src="/static/images/default-avatar.svg"
                                 alt=""
                                 class="avatar"
+                                loading="lazy"
                                 style="--size: 20px"
                             />
                             {% else %}
@@ -114,6 +116,7 @@
                                 src="/api/util/ext/image?img={{ avatar }}"
                                 alt=""
                                 class="avatar"
+                                loading="lazy"
                                 style="--size: 20px"
                             />
                             {% endif %} {% else %}
@@ -123,6 +126,7 @@
                                 src="/static/images/default-avatar.svg"
                                 alt=""
                                 class="avatar"
+                                loading="lazy"
                                 style="--size: 20px"
                             />
                             {% endif %}

@@ -49,22 +49,6 @@
     --color-super-raised: hsl(0, 0%, 20%);
 }
 
-.dark.ios,
-.dark.ios * {
-    --color-surface: hsl(0, 0%, 0%);
-    --color-lowered: hsl(0, 0%, 0%);
-    --color-raised: hsl(0, 0%, 0%);
-    --color-super-lowered: hsl(0, 0%, 8%);
-    --color-super-raised: hsl(0, 0%, 4%);
-    --color-primary: hsl(209, 93%, 49%);
-    --color-primary-hsl: 209, 93%, 49%;
-    --color-primary-lowered: hsl(209, 93%, 44%);
-    --color-primary-raised: hsl(209, 93%, 54%);
-    font-family: "Inter", ui-sans-serif, system-ui, sans-serif,
-        "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
-        "Noto Color Emoji";
-}
-
 html,
 body {
     line-height: 1.5;
@@ -546,8 +530,8 @@ fieldset:hover {
     border-right: solid 1px var(--color-super-lowered);
 }
 
-.card-nest .card:last-child,
-.card-nest .card:nth-child(2) {
+.card-nest .card:last-child:not(details *),
+.card-nest .card:nth-child(2):not(details *) {
     border-top-left-radius: 0;
     border-top-right-radius: 0;
     border-bottom-left-radius: var(--radius);
@@ -730,87 +714,6 @@ nav a.active::before,
 nav button:not(.inner button):hover::before,
 nav a:not(.inner a):hover::before {
     background: var(--color-primary-lowered);
-}
-
-@media screen and (max-width: 900px) {
-    nav {
-        background: var(--color-raised);
-        border-top: solid 1px var(--color-super-lowered);
-        padding: 0.5rem 0.25rem;
-    }
-
-    nav button,
-    nav a.button {
-        padding: 0 0.75rem;
-        font-size: 12px;
-        flex-direction: column;
-        width: 60px;
-        gap: 5px !important;
-        color: var(--color-text);
-        transform: scale(0.9);
-    }
-
-    nav button.active,
-    nav a.button.active {
-        color: var(--color-primary-raised);
-        border: solid 1px var(--color-super-lowered);
-        animation: grow 1 0.25s 0.1s forwards running;
-    }
-
-    nav button .notification.tr,
-    nav a.button .notification.tr {
-        font-size: 8px;
-    }
-
-    nav button::before,
-    nav a::before {
-        content: unset;
-    }
-
-    nav .nav_side {
-        display: contents;
-    }
-
-    /* bottom nav */
-    nav {
-        position: fixed;
-        top: unset;
-        bottom: 0;
-        margin-bottom: 0 !important;
-    }
-
-    nav .dropdown .inner {
-        top: unset;
-        bottom: calc(100% + 5px);
-    }
-
-    nav .nav_side {
-        display: contents;
-    }
-
-    article {
-        margin-top: 0.75rem;
-        margin-bottom: 5rem;
-    }
-
-    #backtotop {
-        bottom: calc(0.5rem + 65px);
-    }
-
-    /* chat page fixes */
-    body:has(#is_chat_page) article {
-        margin-top: 0 !important;
-    }
-}
-
-@keyframes grow {
-    from {
-        transform: scale(0.9);
-    }
-
-    to {
-        transform: scale(1);
-    }
 }
 
 .markdown-alert-note,
@@ -1798,6 +1701,228 @@ canvas {
 
     to {
         transform: rotateZ(360deg);
+    }
+}
+
+/* app */
+.app,
+.app * {
+    --color-surface: hsl(0, 0%, 95%);
+    --color-lowered: hsl(0, 0%, 96%);
+    --color-raised: hsl(0, 0%, 98%);
+    --color-super-lowered: hsl(0, 0%, 85%);
+    --color-super-raised: hsl(0, 0%, 100%);
+    --color-primary: hsl(209, 93%, 49%);
+    --color-primary-hsl: 209, 93%, 49%;
+    --color-primary-lowered: hsl(209, 93%, 44%);
+    --color-primary-raised: hsl(209, 93%, 54%);
+    --color-shadow: transparent;
+    --frosted-glass: blur(100px) brightness(110%);
+    font-family: "Poppins", "Roboto", "Inter", ui-sans-serif, system-ui,
+        sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+        "Noto Color Emoji";
+}
+
+.dark.app,
+.dark.app * {
+    --color-surface: hsl(0, 0%, 0%);
+    --color-lowered: hsl(0, 0%, 6%);
+    --color-raised: hsl(0, 0%, 2%);
+    --color-super-lowered: hsl(0, 0%, 12%);
+    --color-super-raised: hsl(0, 0%, 4%);
+    --color-primary: hsl(209, 93%, 42%);
+    --color-primary-hsl: 209, 93%, 42%;
+    --color-primary-lowered: hsl(209, 93%, 47%);
+    --color-primary-raised: hsl(209, 93%, 52%);
+    --frosted-glass: blur(100px) brightness(20%);
+}
+
+nav:is(.app *) {
+    /* background: var(--color-raised); */
+    background: transparent;
+    backdrop-filter: var(--frosted-glass);
+    border-bottom: solid 1px var(--color-super-lowered);
+    padding: 0.5rem 0.25rem;
+    transition: backdrop-filter 0.15s;
+}
+
+nav:is(.app *):is([data-scroll="0"] *) {
+    backdrop-filter: none;
+    border: none !important;
+}
+
+nav:is(.app *) button,
+nav:is(.app *) a.button {
+    padding: 0 0.75rem;
+    font-size: 14px;
+    color: var(--color-text);
+}
+
+@media screen and (min-width: 901px) {
+    .dropdown:is(.app *) .inner {
+        background: transparent;
+        backdrop-filter: var(--frosted-glass);
+    }
+
+    nav:is(.app *) button::before,
+    nav:is(.app *) a::before {
+        content: unset;
+    }
+
+    nav:is(.app *) button::after,
+    nav:is(.app *) a::after {
+        background: transparent;
+        border-radius: var(--radius);
+        width: 100%;
+        height: 2px;
+        display: block;
+        content: "";
+        position: absolute;
+        bottom: 0;
+        transition:
+            background 0.15s,
+            opacity 0.15s;
+    }
+
+    nav:is(.app *) button.active::after,
+    nav:is(.app *) a.active::after,
+    nav:is(.app *) button:not(.inner button):hover::after,
+    nav:is(.app *) a:not(.inner a):hover::after {
+        background: var(--color-primary);
+    }
+
+    nav:is(.app *) button:not(.inner button):hover::after,
+    nav:is(.app *) a:not(.inner a):hover::after {
+        opacity: 75%;
+    }
+
+    body:has(#is_chat_page) article:is(.app *) {
+        padding-bottom: 1rem !important;
+    }
+}
+
+@media screen and (max-width: 900px) {
+    nav:is(.app *) {
+        background: var(--color-raised);
+        border-bottom: unset;
+        border-top: solid 1px var(--color-super-lowered);
+        padding: 0.5rem 0.25rem;
+    }
+
+    nav:is(.app *) button,
+    nav:is(.app *) a.button {
+        font-size: 12px;
+        flex-direction: column;
+        width: 60px;
+        height: 48px;
+        gap: 0 !important;
+        transform: scale(0.9);
+    }
+
+    nav:is(.app *) button.active,
+    nav:is(.app *) a.button.active {
+        color: var(--color-primary-raised);
+        border: solid 1px var(--color-super-lowered);
+        animation: grow 1 0.25s 0.1s forwards running;
+    }
+
+    nav:is(.app *) button .notification.tr,
+    nav:is(.app *) a.button .notification.tr {
+        font-size: 8px;
+    }
+
+    nav:is(.app *) button::before,
+    nav:is(.app *) a::before {
+        content: unset;
+    }
+
+    nav:is(.app *) .nav_side {
+        display: contents;
+    }
+
+    /* bottom nav */
+    nav:is(.app *) {
+        position: fixed;
+        top: unset;
+        bottom: 0;
+        margin-bottom: 0 !important;
+    }
+
+    nav:is(.app *) .dropdown .inner {
+        top: unset;
+        bottom: calc(100% + 5px);
+    }
+
+    nav:is(.app *) .nav_side {
+        display: contents;
+    }
+
+    article:is(.app *) {
+        margin-top: 0;
+        margin-bottom: 5rem;
+    }
+
+    #backtotop:is(.app *) {
+        bottom: calc(0.5rem + 65px);
+    }
+
+    /* chat page fixes */
+    body:has(#is_chat_page) article:is(.app *) {
+        margin-top: 0 !important;
+    }
+
+    /* seamless sides */
+    article:is(.app *) {
+        padding: 0;
+    }
+
+    .card:is(.app *):not(.card *):not(include-partial *),
+    .card-nest:is(.app *):not(include-partial *),
+    .sidenav:is(.app *),
+    .pillmenu:is(.app *),
+    .response:is(.app *):not(include-partial *)
+        .card:first-child[style="display: none"]:not(.response .response *)
+        + .card:nth-child(n-1) {
+        border-radius: 0 !important;
+        border-left: none;
+        border-right: none;
+    }
+
+    .sidenav:is(.app *) *,
+    .pillmenu:is(.app *) * {
+        border-radius: 0 !important;
+    }
+}
+
+.pillmenu.convertible:is(.app *) {
+    flex-direction: row;
+    font-size: 14px;
+}
+
+.pillmenu:is(.app *) a.active {
+    color: var(--color-primary);
+    background: var(--color-super-raised);
+    position: relative;
+}
+
+.pillmenu:is(.app *) a.active::after {
+    content: "";
+    position: absolute;
+    left: calc(50% - 50% / 2);
+    bottom: 0px;
+    width: 50%;
+    height: 2.5px;
+    background: var(--color-primary);
+    border-radius: var(--radius);
+}
+
+@keyframes grow {
+    from {
+        transform: scale(0.9);
+    }
+
+    to {
+        transform: scale(1);
     }
 }
 

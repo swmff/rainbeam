@@ -208,6 +208,7 @@ endblock %} {% block nav_left %}
                     src="/api/v1/profiles/{{ member.username }}/avatar"
                     alt="@{{ member.username }}"
                     class="avatar"
+                    loading="lazy"
                     style="--size: 20px"
                 />
             </a>
