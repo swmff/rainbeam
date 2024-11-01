@@ -57,7 +57,7 @@ body {
         "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     color: var(--color-text);
     background: var(--color-surface);
-    overflow: hidden auto;
+    overflow: auto auto;
     height: 100dvh;
     scroll-behavior: smooth;
 }
@@ -1759,7 +1759,7 @@ table ol {
 .app,
 .app * {
     --color-surface: hsl(0, 0%, 95%);
-    --color-lowered: hsl(0, 0%, 96%);
+    --color-lowered: hsl(0, 0%, 93%);
     --color-raised: hsl(0, 0%, 98%);
     --color-super-lowered: hsl(0, 0%, 85%);
     --color-super-raised: hsl(0, 0%, 100%);
@@ -1769,7 +1769,7 @@ table ol {
     --color-primary-raised: hsl(209, 93%, 54%);
     --color-shadow: transparent;
     --frosted-glass: blur(100px) brightness(110%);
-    --radius: 0.2rem;
+    --radius: 4px;
     font-family: "Poppins", "Roboto", "Inter", ui-sans-serif, system-ui,
         sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
         "Noto Color Emoji";
@@ -1942,9 +1942,19 @@ nav:is(.app *) a.button {
         border-right: none;
     }
 
+    .banner:is(.app *) {
+        border-radius: 0 !important;
+    }
+
     .sidenav:is(.app *) *,
     .pillmenu:is(.app *) * {
         border-radius: 0 !important;
+    }
+
+    .pillmenu:is(.app *) {
+        top: 0;
+        position: sticky;
+        z-index: 1;
     }
 
     /* toast to snackbar */
@@ -2003,6 +2013,10 @@ nav:is(.app *) a.button {
 
 .flex-col {
     flex-direction: column;
+}
+
+.flex-rev-col {
+    flex-direction: column-reverse;
 }
 
 .flex-row {
