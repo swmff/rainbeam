@@ -64,33 +64,63 @@ endblock %} {% block head %}
         </div>
 
         <div class="pillmenu convertible">
-            <a href="/inbox/audit" class="active">Mod Actions</a>
-            <a href="/inbox/audit/ipbans">IP Bans</a>
+            <a href="/inbox/audit">Mod Actions</a>
+            <a href="/inbox/audit/ipbans" class="active">IP Bans</a>
         </div>
 
-        {% if logs.len() == 0 %}
+        {% if bans.len() == 0 %}
         <div class="markdown-alert-important">
             <span>No results matching this query yet!</span>
         </div>
         {% endif %}
 
-        <!-- audit logs -->
-        <!-- prettier-ignore -->
-        {% for notif in logs %}
-            {% let show_mark_as_read = false %}
-            {% include "components/notification.html" %}
-        {% endfor %}
+        <table>
+            <thead>
+                <tr>
+                    <th>IP</th>
+                    <th>Moderator</th>
+                    <th>Note</th>
+                </tr>
+            </thead>
 
-        <!-- pagination buttons -->
-        <div class="flex justify-between gap-2 w-full">
-            {% if page > 0 %}
-            <a class="button secondary" href="?page={{ page - 1 }}">Previous</a>
-            {% else %}
-            <div></div>
-            {% endif %} {% if logs.len() != 0 %}
-            <a class="button secondary" href="?page={{ page + 1 }}">Next</a>
-            {% endif %}
-        </div>
+            <tbody>
+                <!-- prettier-ignore -->
+                {% for ban in bans %}
+                <tr>
+                    <td>
+                        <a href="javascript:unban_ip('{{ ban.id }}')"
+                            >{{ ban.ip }}</a
+                        >
+                    </td>
+                    <td>
+                        <a href="/+u/{{ ban.moderator.id }}"
+                            >{{ ban.moderator.username }}</a
+                        >
+                    </td>
+                    <td><p hook="long">{{ ban.reason }}</p></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </main>
 </article>
+
+<script>
+    globalThis.unban_ip = function (id) {
+        if (!confirm("Are you sure you would like to unban this IP?")) {
+            return;
+        }
+
+        fetch(`/api/auth/ipbans/${id}`, {
+            method: "DELETE",
+        })
+            .then((res) => res.json())
+            .then((res) => {
+                trigger("app:toast", [
+                    res.success ? "success" : "error",
+                    res.success ? "IP unbanned!" : res.message,
+                ]);
+            });
+    };
+</script>
 {% call super() %} {% endblock %}

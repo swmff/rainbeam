@@ -1051,16 +1051,6 @@ dialog::backdrop {
     dialog .inner:not(.dropdown *) {
         min-height: 100dvh !important;
     }
-
-    /* toast to snackbar */
-    .toast {
-        width: 100% !important;
-    }
-
-    #toast_zone {
-        top: 0.5rem !important;
-        bottom: unset;
-    }
 }
 
 @keyframes from_bottom {
@@ -1704,6 +1694,67 @@ canvas {
     }
 }
 
+table {
+    border-collapse: collapse;
+    max-width: 100%;
+    min-width: auto;
+    overflow: auto;
+}
+
+table th {
+    min-width: max-content;
+    padding: 6px 8px;
+    text-align: left;
+    background: transparent;
+    border: none;
+}
+
+table td {
+    border-left: var(--color-super-lowered);
+    padding: 10px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    overflow-wrap: normal;
+    word-break: normal;
+    width: max-content;
+}
+
+table td:first-child {
+    border-left: 0;
+}
+
+table tr {
+    background: var(--color-lowered);
+    border-bottom: solid 1px var(--color-super-lowered);
+}
+
+table tr:nth-child(even) {
+    background: var(--color-raised);
+}
+
+table tr:hover {
+    background: var(--color-super-raised);
+}
+
+table thead tr {
+    background: transparent;
+    border-bottom: solid 5px var(--color-super-lowered);
+}
+
+table tbody tr td {
+    padding: 6px 8px;
+}
+
+table td:focus-within {
+    box-shadow: none;
+}
+
+table p,
+table ul,
+table ol {
+    margin-bottom: 0;
+}
+
 /* app */
 .app,
 .app * {
@@ -1718,6 +1769,7 @@ canvas {
     --color-primary-raised: hsl(209, 93%, 54%);
     --color-shadow: transparent;
     --frosted-glass: blur(100px) brightness(110%);
+    --radius: 0.2rem;
     font-family: "Poppins", "Roboto", "Inter", ui-sans-serif, system-ui,
         sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
         "Noto Color Emoji";
@@ -1746,7 +1798,8 @@ nav:is(.app *) {
     transition: backdrop-filter 0.15s;
 }
 
-nav:is(.app *):is([data-scroll="0"] *) {
+nav:is(.app *):is([data-scroll="0"] *),
+nav:is(.app *):is(html:not([data-scroll]) *) {
     backdrop-filter: none;
     border: none !important;
 }
@@ -1892,6 +1945,16 @@ nav:is(.app *) a.button {
     .pillmenu:is(.app *) * {
         border-radius: 0 !important;
     }
+
+    /* toast to snackbar */
+    .toast:is(.app *) {
+        width: 100% !important;
+    }
+
+    #toast_zone:is(.app *) {
+        top: 0.5rem !important;
+        bottom: unset;
+    }
 }
 
 .pillmenu.convertible:is(.app *) {
@@ -1900,7 +1963,7 @@ nav:is(.app *) a.button {
 }
 
 .pillmenu:is(.app *) a.active {
-    color: var(--color-primary);
+    color: var(--color-primary-raised);
     background: var(--color-super-raised);
     position: relative;
 }
@@ -1912,8 +1975,13 @@ nav:is(.app *) a.button {
     bottom: 0px;
     width: 50%;
     height: 2.5px;
-    background: var(--color-primary);
+    background: currentColor;
     border-radius: var(--radius);
+}
+
+.notification:is(.app *) {
+    background: transparent;
+    color: inherit;
 }
 
 @keyframes grow {

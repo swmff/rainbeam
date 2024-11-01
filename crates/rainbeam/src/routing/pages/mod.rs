@@ -10,7 +10,7 @@ use axum_extra::extract::CookieJar;
 
 use ammonia::Builder;
 use serde::{Deserialize, Serialize};
-use authbeam::model::{Notification, Permission, Profile, ProfileMetadata, RelationshipStatus};
+use authbeam::model::{IpBan, Notification, Permission, Profile, ProfileMetadata, RelationshipStatus};
 
 use crate::config::Config;
 use crate::database::Database;
@@ -1785,6 +1785,66 @@ pub async fn audit_log_request(
 }
 
 #[derive(Template)]
+#[template(path = "ipbans.html")]
+struct IpbansTemplate {
+    config: Config,
+    profile: Option<Profile>,
+    unread: usize,
+    bans: Vec<IpBan>,
+}
+
+/// GET /inbox/audit/ipbans
+pub async fn ipbans_request(jar: CookieJar, State(database): State<Database>) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => return Html(DatabaseError::NotAllowed.to_html(database)),
+        },
+        None => return Html(DatabaseError::NotAllowed.to_html(database)),
+    };
+
+    // check permission
+    let group = match database.auth.get_group_by_id(auth_user.group).await {
+        Ok(g) => g,
+        Err(_) => return Html(DatabaseError::NotFound.to_html(database)),
+    };
+
+    if !group.permissions.contains(&Permission::Helper) {
+        // we must be a manager to do this
+        return Html(DatabaseError::NotAllowed.to_html(database));
+    }
+
+    // ...
+    let unread = match database
+        .get_questions_by_recipient(auth_user.id.to_owned())
+        .await
+    {
+        Ok(unread) => unread.len(),
+        Err(_) => 0,
+    };
+
+    let bans = match database.auth.get_ipbans(auth_user.clone()).await {
+        Ok(r) => r,
+        Err(_) => return Html(DatabaseError::Other.to_html(database)),
+    };
+
+    Html(
+        IpbansTemplate {
+            config: database.server_options.clone(),
+            profile: Some(auth_user),
+            unread,
+            bans,
+        }
+        .render()
+        .unwrap(),
+    )
+}
+
+#[derive(Template)]
 #[template(path = "report.html")]
 struct ReportTemplate {
     config: Config,
@@ -1856,6 +1916,7 @@ pub async fn routes(database: Database) -> Router {
         .route("/inbox/notifications", get(notifications_request))
         .route("/inbox/reports", get(reports_request)) // staff
         .route("/inbox/audit", get(audit_log_request)) // staff
+        .route("/inbox/audit/ipbans", get(ipbans_request)) // staff
         // assets
         .route("/question/:id", get(question_request))
         .route("/response/:id", get(response_request))

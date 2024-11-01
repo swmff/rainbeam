@@ -21,9 +21,9 @@
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="{{ config.name }}" />
 
-        <meta name="turbo-prefetch" content="false" />
-        <meta name="turbo-refresh-method" content="morph" />
-        <meta name="turbo-refresh-scroll" content="preserve" />
+        <!-- <meta name="turbo-prefetch" content="false" /> -->
+        <!-- <meta name="turbo-refresh-method" content="morph" /> -->
+        <!-- <meta name="turbo-refresh-scroll" content="preserve" /> -->
 
         <link rel="stylesheet" href="/static/style.css" />
 
@@ -35,18 +35,18 @@
         ></script>
         <script src="https://unpkg.com/@twemoji/api@15.1.0/dist/twemoji.min.js"></script>
         <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
-        <script
+        <!-- <script
             src="https://unpkg.com/@hotwired/turbo@8.0.5/dist/turbo.es2017-esm.js"
             type="module"
             async
             defer
-        ></script>
+        ></script> -->
 
         <script>
             globalThis.ns_verbose = false;
             globalThis.ns_config = {
                 root: "/static/js/",
-                version: "1.12.5",
+                version: "1.13.0",
                 verbose: globalThis.ns_verbose,
             };
 
@@ -528,6 +528,7 @@
 
                 <include-partial
                     src="/_app/components/compose.html"
+                    instant="true"
                 ></include-partial>
 
                 <script>
