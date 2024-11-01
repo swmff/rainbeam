@@ -1777,11 +1777,12 @@ table ol {
 
 .dark.app,
 .dark.app * {
-    --color-surface: hsl(0, 0%, 0%);
-    --color-lowered: hsl(0, 0%, 6%);
-    --color-raised: hsl(0, 0%, 2%);
-    --color-super-lowered: hsl(0, 0%, 12%);
-    --color-super-raised: hsl(0, 0%, 4%);
+    --lit: 8%;
+    --color-surface: hsl(0, 0%, calc(0% + var(--lit)));
+    --color-lowered: hsl(0, 0%, calc(6% + var(--lit)));
+    --color-raised: hsl(0, 0%, calc(2% + var(--lit)));
+    --color-super-lowered: hsl(0, 0%, calc(12% + var(--lit)));
+    --color-super-raised: hsl(0, 0%, calc(4% + var(--lit)));
     --color-primary: hsl(209, 93%, 42%);
     --color-primary-hsl: 209, 93%, 42%;
     --color-primary-lowered: hsl(209, 93%, 47%);
@@ -1881,7 +1882,7 @@ nav:is(.app *) a.button {
 
     nav:is(.app *) button .notification.tr,
     nav:is(.app *) a.button .notification.tr {
-        font-size: 8px;
+        font-size: 12px;
     }
 
     nav:is(.app *) button::before,
@@ -1982,6 +1983,7 @@ nav:is(.app *) a.button {
 .notification:is(.app *) {
     background: transparent;
     color: inherit;
+    font-weight: 600;
 }
 
 @keyframes grow {
