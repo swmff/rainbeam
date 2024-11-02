@@ -2,6 +2,9 @@
 build database="sqlite":
     cargo build -r --no-default-features --features {{database}} --bin rainbeam
 
+mimalloc-build database="sqlite":
+    cargo build -r --no-default-features --features {{database}},mimalloc --bin rainbeam
+
 # build debug
 build-d:
     cargo build --bin rainbeam

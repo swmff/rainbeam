@@ -76,11 +76,14 @@
                     continue;
                 }
 
+                if (question.querySelector("canvas")) {
+                    // remove existing
+                    question.querySelector("canvas").remove();
+                }
+
                 const gerald = carp.new(question, true);
                 gerald.create_canvas();
-
                 gerald.from_string(p.innerText.replace("--CARP", ""));
-                p.remove();
             }
         });
     });
