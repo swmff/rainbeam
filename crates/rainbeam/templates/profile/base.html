@@ -222,6 +222,14 @@ config.name }}{% endblock %} {% block head %}
                             {% endif %}
                         </div>
 
+                        <!-- prettier-ignore -->
+                        {% if let Some(sidebar) = other.metadata.kv.get("sparkler:sidebar") %}
+                        {% if !sidebar.is_empty() %}
+                        <div id="sidebar" class="card secondary shadow w-full">
+                            {{ shared::ui::render_markdown(sidebar)|safe }}
+                        </div>
+                        {% endif %} {% endif %}
+
                         <!-- social -->
                         {% if !hide_social %}
                         <div class="footernav flex-wrap justify-center profile_social" style="font-size: 13px;">
@@ -648,15 +656,6 @@ config.name }}{% endblock %} {% block head %}
                 </div>
             </div>
 
-            <!-- prettier-ignore -->
-            <div class="flex flex-col gap-4 profile_card_section_3">
-                {% if let Some(sidebar) = other.metadata.kv.get("sparkler:sidebar") %}
-                {% if !sidebar.is_empty() %}
-                <div id="sidebar" class="card shadow">
-                    {{ shared::ui::render_markdown(sidebar)|safe }}
-                </div>
-                {% endif %} {% endif %}
-            </div>
             <hr class="mobile small" />
         </div>
 

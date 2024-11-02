@@ -1866,6 +1866,7 @@ article:is(.app *):has(#is_profile_page) {
 
 #profile_box:is(.app *) {
     flex-direction: column;
+    position: relative;
 }
 
 #profile_box:is(.app *) #profile_card {
@@ -1885,7 +1886,7 @@ article:is(.app *):has(#is_profile_page) {
 }
 
 #profile_box:is(.app *) #profile_card .profile_card_section_1 {
-    max-width: 70%;
+    width: 100%;
 }
 
 #profile_box:is(.app *) #profile_card .profile_card_section_1 .profile_social {
@@ -1903,6 +1904,9 @@ article:is(.app *):has(#is_profile_page) {
     flex-direction: row;
     height: max-content;
     width: max-content;
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
 }
 
 #profile_box:is(.app *) #profile_card .profile_card_section_2 div:nth-child(1) {
@@ -2100,6 +2104,10 @@ article:is(.app *):has(#is_profile_page) {
     }
 
     /* profile */
+    #profile_box:is(.app *) {
+        position: unset;
+    }
+
     #profile_box:is(.app *)
         #profile_card
         .profile_card_section_1
@@ -2117,6 +2125,14 @@ article:is(.app *):has(#is_profile_page) {
         min-height: 100%;
         flex-direction: column;
         align-items: flex-end;
+    }
+
+    #profile_box:is(.app *) #profile_card .profile_card_section_1 {
+        width: 70%;
+    }
+
+    #profile_box:is(.app *) #profile_card .profile_card_section_2 {
+        position: unset;
     }
 }
 
