@@ -1860,89 +1860,6 @@ body:is(.app *):has(a.button.title:hover) #cover {
     padding: 0.25rem;
 }
 
-article:is(.app *):has(#is_profile_page) {
-    max-width: 80ch;
-}
-
-#profile_box:is(.app *) {
-    flex-direction: column;
-    position: relative;
-}
-
-#profile_box:is(.app *) #profile_card {
-    padding: 0.75rem !important;
-    flex-direction: row;
-    justify-content: space-between;
-    height: auto !important;
-    min-height: 100% !important;
-    min-width: 50%;
-}
-
-#profile_box:is(.app *)
-    #profile_card
-    .profile_card_section_1
-    .profile_avatar_container {
-    margin: -140px 0 0;
-}
-
-#profile_box:is(.app *) #profile_card .profile_card_section_1 {
-    width: 100%;
-}
-
-#profile_box:is(.app *) #profile_card .profile_card_section_1 .profile_social {
-    justify-content: flex-start;
-}
-
-#profile_box:is(.app *)
-    #profile_card
-    .profile_card_section_1
-    .profile_card_section_1_1 {
-    flex-direction: column-reverse;
-}
-
-#profile_box:is(.app *) #profile_card .profile_card_section_2 {
-    flex-direction: row;
-    height: max-content;
-    width: max-content;
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-}
-
-#profile_box:is(.app *) #profile_card .profile_card_section_2 div:nth-child(1) {
-    display: contents;
-}
-
-#profile_box:is(.app *)
-    #profile_card
-    .profile_card_section_2
-    button:not(.dropdown .inner *),
-#profile_box:is(.app *) #profile_card .profile_card_section_2 a.button {
-    width: max-content !important;
-    border-radius: var(--circle);
-}
-
-#profile_box:is(.app *) #profile_card .profile_card_section_2 .icon {
-    display: block !important;
-}
-
-#profile_box:is(.app *) #profile_card .profile_card_section_2 .possible_text {
-    display: none;
-}
-
-#profile_box:is(.app *) .profile_card_section_3:not(:has(*)) {
-    /* remove empty section */
-    display: none;
-}
-
-#profile_box:is(.app *) .profile_card_section_3 {
-    min-width: 25%;
-}
-
-#profile_box:is(.app *) .profile_card_section_3 #sidebar {
-    height: 100%;
-}
-
 @media screen and (min-width: 901px) {
     .dropdown:is(.app *) .inner {
         background: transparent;
@@ -1983,11 +1900,6 @@ article:is(.app *):has(#is_profile_page) {
 
     body:has(#is_chat_page) article:is(.app *) {
         padding-bottom: 1rem !important;
-    }
-
-    #profile_box:is(.app *) .profile_container {
-        width: 100% !important;
-        flex-direction: row !important;
     }
 }
 
@@ -2104,6 +2016,94 @@ article:is(.app *):has(#is_profile_page) {
     }
 
     /* profile */
+    #profile_box:is(.app *) {
+        flex-direction: column;
+        position: relative;
+    }
+
+    #profile_box:is(.app *) #profile_card {
+        padding: 0.75rem !important;
+        flex-direction: row;
+        justify-content: space-between;
+        height: auto !important;
+        min-height: 100% !important;
+        min-width: 50%;
+    }
+
+    #profile_box:is(.app *)
+        #profile_card
+        .profile_card_section_1
+        .profile_avatar_container {
+        margin: -140px 0 0;
+    }
+
+    #profile_box:is(.app *) #profile_card .profile_card_section_1 {
+        width: 100%;
+    }
+
+    #profile_box:is(.app *)
+        #profile_card
+        .profile_card_section_1
+        .profile_social {
+        justify-content: flex-start;
+    }
+
+    #profile_box:is(.app *)
+        #profile_card
+        .profile_card_section_1
+        .profile_card_section_1_1 {
+        flex-direction: column-reverse;
+    }
+
+    #profile_box:is(.app *) #profile_card .profile_card_section_2 {
+        flex-direction: row;
+        height: max-content;
+        width: max-content;
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+    }
+
+    #profile_box:is(.app *)
+        #profile_card
+        .profile_card_section_2
+        div:nth-child(1) {
+        display: contents;
+    }
+
+    #profile_box:is(.app *)
+        #profile_card
+        .profile_card_section_2
+        button:not(.dropdown .inner *),
+    #profile_box:is(.app *) #profile_card .profile_card_section_2 a.button {
+        width: max-content !important;
+        border-radius: var(--circle);
+    }
+
+    #profile_box:is(.app *) #profile_card .profile_card_section_2 .icon {
+        display: block !important;
+    }
+
+    #profile_box:is(.app *)
+        #profile_card
+        .profile_card_section_2
+        .possible_text {
+        display: none;
+    }
+
+    #profile_box:is(.app *) .profile_card_section_3:not(:has(*)) {
+        /* remove empty section */
+        display: none;
+    }
+
+    #profile_box:is(.app *) .profile_card_section_3 {
+        min-width: 25%;
+    }
+
+    #profile_box:is(.app *) .profile_card_section_3 #sidebar {
+        height: 100%;
+    }
+
     #profile_box:is(.app *) {
         position: unset;
     }
