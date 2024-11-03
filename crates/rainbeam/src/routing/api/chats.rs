@@ -307,12 +307,15 @@ pub async fn report_request(
     // report
     match database
         .auth
-        .create_notification(NotificationCreate {
-            title: format!("**CHAT REPORT**: {id}"),
-            content: format!("{}\n\n***\n\n[{real_ip}](/+i/{real_ip})", req.content),
-            address: format!("/chats/{id}"),
-            recipient: "*".to_string(), // all staff
-        })
+        .create_notification(
+            NotificationCreate {
+                title: format!("**CHAT REPORT**: {id}"),
+                content: format!("{}\n\n***\n\n[{real_ip}](/+i/{real_ip})", req.content),
+                address: format!("/chats/{id}"),
+                recipient: "*".to_string(), // all staff
+            },
+            None,
+        )
         .await
     {
         Ok(_) => {

@@ -60,15 +60,18 @@ pub async fn create_request(
             // create notification
             if let Err(_) = database
                 .auth
-                .create_notification(NotificationCreate {
-                    title: format!(
-                        "[@{}](/+u/{}) has reacted to a question you created!",
-                        auth_user.username, auth_user.id
-                    ),
-                    content: String::new(),
-                    address: format!("/question/{id}"),
-                    recipient: asset.author.id,
-                })
+                .create_notification(
+                    NotificationCreate {
+                        title: format!(
+                            "[@{}](/+u/{}) has reacted to a question you created!",
+                            auth_user.username, auth_user.id
+                        ),
+                        content: String::new(),
+                        address: format!("/question/{id}"),
+                        recipient: asset.author.id,
+                    },
+                    None,
+                )
                 .await
             {
                 return Json(DefaultReturn {
@@ -93,15 +96,18 @@ pub async fn create_request(
             // create notification
             if let Err(_) = database
                 .auth
-                .create_notification(NotificationCreate {
-                    title: format!(
-                        "[@{}](/+u/{}) has reacted to a response you created!",
-                        auth_user.username, auth_user.id
-                    ),
-                    content: String::new(),
-                    address: format!("/response/{id}"),
-                    recipient: asset.author.id,
-                })
+                .create_notification(
+                    NotificationCreate {
+                        title: format!(
+                            "[@{}](/+u/{}) has reacted to a response you created!",
+                            auth_user.username, auth_user.id
+                        ),
+                        content: String::new(),
+                        address: format!("/response/{id}"),
+                        recipient: asset.author.id,
+                    },
+                    None,
+                )
                 .await
             {
                 return Json(DefaultReturn {
@@ -126,15 +132,18 @@ pub async fn create_request(
             // create notification
             if let Err(_) = database
                 .auth
-                .create_notification(NotificationCreate {
-                    title: format!(
-                        "[@{}](/+u/{}) has reacted to a comment you created!",
-                        auth_user.username, auth_user.id
-                    ),
-                    content: String::new(),
-                    address: format!("/comment/{id}"),
-                    recipient: asset.author.id,
-                })
+                .create_notification(
+                    NotificationCreate {
+                        title: format!(
+                            "[@{}](/+u/{}) has reacted to a comment you created!",
+                            auth_user.username, auth_user.id
+                        ),
+                        content: String::new(),
+                        address: format!("/comment/{id}"),
+                        recipient: asset.author.id,
+                    },
+                    None,
+                )
                 .await
             {
                 return Json(DefaultReturn {

@@ -335,12 +335,15 @@ impl Database {
     pub async fn audit(&self, actor_id: String, content: String) -> Result<()> {
         match self
             .auth
-            .create_notification(NotificationCreate {
-                title: format!("[{actor_id}](/+u/{actor_id})"),
-                content,
-                address: format!("/+u/{actor_id}"),
-                recipient: "*(audit)".to_string(), // all staff, audit
-            })
+            .create_notification(
+                NotificationCreate {
+                    title: format!("[{actor_id}](/+u/{actor_id})"),
+                    content,
+                    address: format!("/+u/{actor_id}"),
+                    recipient: "*(audit)".to_string(), // all staff, audit
+                },
+                None,
+            )
             .await
         {
             Ok(_) => Ok(()),
@@ -2500,25 +2503,28 @@ impl Database {
                 if (question.recipient.id != question.author.id) && is_allowed_to_receive_notif {
                     if let Err(_) = self
                         .auth
-                        .create_notification(NotificationCreate {
-                            title: format!(
-                                "[@{}](/+u/{}) responded to a question you asked!",
-                                response.author.username, response.author.id
-                            ),
-                            content: format!(
-                                "{}: \"{}...\"",
-                                response.author.username,
-                                // we're only going to show 50 characters of the response in the notification
-                                response
-                                    .content
-                                    .clone()
-                                    .chars()
-                                    .take(50)
-                                    .collect::<String>()
-                            ),
-                            address: format!("/response/{}", response.id),
-                            recipient: question.author.id,
-                        })
+                        .create_notification(
+                            NotificationCreate {
+                                title: format!(
+                                    "[@{}](/+u/{}) responded to a question you asked!",
+                                    response.author.username, response.author.id
+                                ),
+                                content: format!(
+                                    "{}: \"{}...\"",
+                                    response.author.username,
+                                    // we're only going to show 50 characters of the response in the notification
+                                    response
+                                        .content
+                                        .clone()
+                                        .chars()
+                                        .take(50)
+                                        .collect::<String>()
+                                ),
+                                address: format!("/response/{}", response.id),
+                                recipient: question.author.id,
+                            },
+                            None,
+                        )
                         .await
                     {
                         return Err(DatabaseError::Other);
@@ -3581,24 +3587,32 @@ impl Database {
                     if (reply.author.id != comment.author.id) && !author_tag.0 {
                         if let Err(_) = self
                             .auth
-                            .create_notification(NotificationCreate {
-                                title: if !tag.0 {
-                                    format!(
-                                        "[@{}](/+u/{}) replied to a comment you created!",
-                                        comment.author.username, comment.author.id
-                                    )
-                                } else {
-                                    "Somebody replied to a comment you created!".to_string()
+                            .create_notification(
+                                NotificationCreate {
+                                    title: if !tag.0 {
+                                        format!(
+                                            "[@{}](/+u/{}) replied to a comment you created!",
+                                            comment.author.username, comment.author.id
+                                        )
+                                    } else {
+                                        "Somebody replied to a comment you created!".to_string()
+                                    },
+                                    content: format!(
+                                        "{}: \"{}...\"",
+                                        comment.author.username,
+                                        // we're only going to show 50 characters of the response in the notification
+                                        comment
+                                            .content
+                                            .clone()
+                                            .chars()
+                                            .take(50)
+                                            .collect::<String>()
+                                    ),
+                                    address: format!("/comment/{}", comment.id),
+                                    recipient: reply.author.id,
                                 },
-                                content: format!(
-                                    "{}: \"{}...\"",
-                                    comment.author.username,
-                                    // we're only going to show 50 characters of the response in the notification
-                                    comment.content.clone().chars().take(50).collect::<String>()
-                                ),
-                                address: format!("/comment/{}", comment.id),
-                                recipient: reply.author.id,
-                            })
+                                None,
+                            )
                             .await
                         {
                             return Err(DatabaseError::Other);
@@ -3613,24 +3627,27 @@ impl Database {
                 } else if response.author.id != comment.author.id {
                     if let Err(_) = self
                         .auth
-                        .create_notification(NotificationCreate {
-                            title: if !tag.0 {
-                                format!(
-                                    "[@{}](/@{}) commented on a response you created!",
-                                    comment.author.username, comment.author.username
-                                )
-                            } else {
-                                "Somebody commented on a response you created!".to_string()
+                        .create_notification(
+                            NotificationCreate {
+                                title: if !tag.0 {
+                                    format!(
+                                        "[@{}](/@{}) commented on a response you created!",
+                                        comment.author.username, comment.author.username
+                                    )
+                                } else {
+                                    "Somebody commented on a response you created!".to_string()
+                                },
+                                content: format!(
+                                    "{}: \"{}...\"",
+                                    comment.author.username,
+                                    // we're only going to show 50 characters of the response in the notification
+                                    comment.content.clone().chars().take(50).collect::<String>()
+                                ),
+                                address: format!("/comment/{}", comment.id),
+                                recipient: response.author.id,
                             },
-                            content: format!(
-                                "{}: \"{}...\"",
-                                comment.author.username,
-                                // we're only going to show 50 characters of the response in the notification
-                                comment.content.clone().chars().take(50).collect::<String>()
-                            ),
-                            address: format!("/comment/{}", comment.id),
-                            recipient: response.author.id,
-                        })
+                            None,
+                        )
                         .await
                     {
                         return Err(DatabaseError::Other);
@@ -4465,18 +4482,24 @@ impl Database {
                 if !disable_notifications {
                     if let Err(_) = self
                         .auth
-                        .create_notification(NotificationCreate {
-                            title: format!(
-                                "[@{}](/+u/{}) has invited you to join their circle!",
-                                full_circle.owner.username, full_circle.owner.id
-                            ),
-                            content: format!(
-                                "{} has invited you to join \"{}\"",
-                                full_circle.owner.username, full_circle.name
-                            ),
-                            address: format!("/circles/@{}/memberlist/accept", full_circle.name),
-                            recipient: user,
-                        })
+                        .create_notification(
+                            NotificationCreate {
+                                title: format!(
+                                    "[@{}](/+u/{}) has invited you to join their circle!",
+                                    full_circle.owner.username, full_circle.owner.id
+                                ),
+                                content: format!(
+                                    "{} has invited you to join \"{}\"",
+                                    full_circle.owner.username, full_circle.name
+                                ),
+                                address: format!(
+                                    "/circles/@{}/memberlist/accept",
+                                    full_circle.name
+                                ),
+                                recipient: user,
+                            },
+                            None,
+                        )
                         .await
                     {
                         return Err(DatabaseError::Other);
@@ -5291,15 +5314,18 @@ impl Database {
                 // send notification
                 if let Err(_) = self
                     .auth
-                    .create_notification(NotificationCreate {
-                        title: format!(
-                            "[@{}](/+u/{}) added you to a chat!",
-                            user1_profile.username, user1_profile.id
-                        ),
-                        content: String::new(),
-                        address: format!("/chats/{}", chat.id),
-                        recipient: user2_profile.id,
-                    })
+                    .create_notification(
+                        NotificationCreate {
+                            title: format!(
+                                "[@{}](/+u/{}) added you to a chat!",
+                                user1_profile.username, user1_profile.id
+                            ),
+                            content: String::new(),
+                            address: format!("/chats/{}", chat.id),
+                            recipient: user2_profile.id,
+                        },
+                        None,
+                    )
                     .await
                 {
                     return Err(DatabaseError::Other);
@@ -5527,12 +5553,18 @@ impl Database {
                 // send notification
                 if let Err(_) = self
                     .auth
-                    .create_notification(NotificationCreate {
-                        title: format!("[@{}](/+u/{}) added you to a chat!", us.username, us.id),
-                        content: String::new(),
-                        address: format!("/chats/{}", chat.id),
-                        recipient: props.friend,
-                    })
+                    .create_notification(
+                        NotificationCreate {
+                            title: format!(
+                                "[@{}](/+u/{}) added you to a chat!",
+                                us.username, us.id
+                            ),
+                            content: String::new(),
+                            address: format!("/chats/{}", chat.id),
+                            recipient: props.friend,
+                        },
+                        None,
+                    )
                     .await
                 {
                     return Err(DatabaseError::Other);
@@ -5581,6 +5613,7 @@ impl Database {
             content: res.get("content").unwrap().to_string(),
             context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+            edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
         };
 
         let author = message.author.clone();
@@ -5623,6 +5656,7 @@ impl Database {
             content: res.get("content").unwrap().to_string(),
             context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+            edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
         };
 
         let author = message.author.clone();
@@ -5716,6 +5750,7 @@ impl Database {
                             content: res.get("content").unwrap().to_string(),
                             context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
                         },
                         match self.auth.get_profile(author).await {
                             Ok(p) => p,
@@ -5768,6 +5803,7 @@ impl Database {
                             content: res.get("content").unwrap().to_string(),
                             context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
                             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
                         },
                         match self.auth.get_profile(author).await {
                             Ok(p) => p,
@@ -5832,21 +5868,23 @@ impl Database {
         }
 
         // ...
+        let timestamp = utility::unix_epoch_timestamp();
         let message = Message {
             id: utility::random_id(),
             chat: chat.id.clone(),
             author: author.id.clone(),
             content: props.content.trim().to_string(),
             context: MessageContext {},
-            timestamp: utility::unix_epoch_timestamp(),
+            timestamp,
+            edited: timestamp,
         };
 
         // create response
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            "INSERT INTO \"xmessages\" VALUES (?, ?, ?, ?, ?, ?)"
+            "INSERT INTO \"xmessages\" VALUES (?, ?, ?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xmessages\" VALEUS ($1, $2, $3, $4, $5, $6)"
+            "INSERT INTO \"xmessages\" VALEUS ($1, $2, $3, $4, $5, $6, $7)"
         }
         .to_string();
 
@@ -5858,6 +5896,7 @@ impl Database {
             .bind::<&String>(&message.content)
             .bind::<&String>(&serde_json::to_string(&chat.context).unwrap())
             .bind::<&String>(&message.timestamp.to_string())
+            .bind::<&String>(&message.edited.to_string())
             .execute(c)
             .await
         {
@@ -5870,15 +5909,20 @@ impl Database {
 
                     if let Err(_) = self
                         .auth
-                        .create_notification(NotificationCreate {
-                            title: format!(
-                                "[@{}](/+u/{}) sent you a message in **{}**!",
-                                author.username, author.id, chat.name
-                            ),
-                            content: format!("\"{}\"", message.content),
-                            address: format!("/chats/{}", chat.id),
-                            recipient: user,
-                        })
+                        .create_notification(
+                            NotificationCreate {
+                                title: format!(
+                                    "[@{}](/+u/{}) sent you a message in **{}**!",
+                                    author.username, author.id, chat.name
+                                ),
+                                content: format!("\"{}\"", message.content),
+                                address: format!("/chats/{}", chat.id),
+                                recipient: user,
+                            },
+                            // we're going to use a different format for this notification
+                            // so that we can delete it when seen by the user in the chat ui
+                            Some(format!("msg:{}:{}", author.id, message.id)),
+                        )
                         .await
                     {
                         return Err(DatabaseError::Other);
@@ -5889,6 +5933,95 @@ impl Database {
             }
             Err(_) => return Err(DatabaseError::Other),
         };
+    }
+
+    /// Update an existing message's content
+    ///
+    /// # Arguments
+    /// * `id`
+    /// * `content`
+    /// * `user` - the user doing this
+    pub async fn edit_message(&self, id: String, content: String, user: Profile) -> Result<()> {
+        // make sure the message exists
+        let message = match self.get_message(id.clone()).await {
+            Ok(q) => q.0,
+            Err(e) => return Err(e),
+        };
+
+        // check content length
+        if content.len() > (64 * 8) {
+            return Err(DatabaseError::ContentTooLong);
+        }
+
+        if content.len() < 2 {
+            return Err(DatabaseError::ContentTooShort);
+        }
+
+        // check user permissions
+        if user.group == -1 {
+            // group -1 (even if it exists) is for marking users as banned
+            return Err(DatabaseError::NotAllowed);
+        }
+
+        if user.id != message.author {
+            // check permission
+            let group = match self.auth.get_group_by_id(user.group).await {
+                Ok(g) => g,
+                Err(_) => return Err(DatabaseError::Other),
+            };
+
+            if !group.permissions.contains(&Permission::Manager) {
+                return Err(DatabaseError::NotAllowed);
+            } else {
+                if let Err(e) = self
+                    .audit(
+                        user.id,
+                        format!(
+                            "Edited a message: [{}](/api/v1/messages/{})",
+                            message.id, message.id
+                        ),
+                    )
+                    .await
+                {
+                    return Err(e);
+                }
+            }
+        }
+
+        // check markdown content
+        let markdown = shared::ui::render_markdown(&content);
+
+        if markdown.trim().len() == 0 {
+            return Err(DatabaseError::ContentTooShort);
+        }
+
+        // update response
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "UPDATE \"xmessages\" SET \"content\" = ?, \"edited\" = ? WHERE \"id\" = ?"
+        } else {
+            "UPDATE \"xmessages\" SET (\"content\", \"edited\") = ($1, $2) WHERE \"id\" = $3"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query)
+            .bind::<&String>(&content)
+            .bind::<&String>(&utility::unix_epoch_timestamp().to_string())
+            .bind::<&String>(&id)
+            .execute(c)
+            .await
+        {
+            Ok(_) => {
+                self.base
+                    .cachedb
+                    .remove(format!("rbeam.app.message:{id}"))
+                    .await;
+
+                Ok(())
+            }
+            Err(_) => Err(DatabaseError::Other),
+        }
     }
 
     /// Delete an existing message

@@ -260,6 +260,20 @@ a.button {
     font-size: 0.9rem;
 }
 
+button.icon-only,
+a.button.icon-only {
+    border-radius: var(--circle);
+    font-size: 18px;
+    aspect-ratio: 1 / 1;
+}
+
+button.icon-only .icon,
+a.button.icon-only .icon {
+    width: 1em;
+    height: 1em;
+    position: absolute;
+}
+
 button:not(nav *):hover,
 a.button:not(nav *):hover {
     box-shadow: inset 0 0 2px var(--color-shadow);
@@ -1471,17 +1485,21 @@ details[open] summary:before {
     width: 100%;
     display: flex;
     flex-direction: row;
-    align-items: center;
     justify-content: flex-start;
     gap: 0.25rem;
     font-size: 14px;
+}
+
+.message .author_tag {
+    align-items: flex-end;
 }
 
 .message .message_actions {
     display: none;
 }
 
-.message:hover .message_actions {
+.message:hover .message_actions,
+.message:has(*[open]) .message_actions {
     display: flex;
 }
 
@@ -1863,6 +1881,10 @@ body:is(.app *):has(a.button.title:hover) #cover {
 @media screen and (min-width: 901px) {
     .dropdown:is(.app *) .inner {
         background: transparent;
+        backdrop-filter: var(--frosted-glass) brightness(150%);
+    }
+
+    .dropdown:is(.app *) .inner:is(.dark *) {
         backdrop-filter: var(--frosted-glass);
     }
 
@@ -1900,6 +1922,7 @@ body:is(.app *):has(a.button.title:hover) #cover {
 
     body:has(#is_chat_page) article:is(.app *) {
         padding-bottom: 1rem !important;
+        height: calc(100dvh - 48px - 1rem) !important;
     }
 }
 

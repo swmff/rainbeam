@@ -71,6 +71,10 @@ endblock %} {% block nav_left %}
     }
 </style>
 
+<script>
+    globalThis.message_contents = {};
+</script>
+
 <article style="height: calc(100dvh - 48px - 1.5rem); padding: 0">
     <div id="is_chat_page"></div>
 
@@ -260,46 +264,126 @@ endblock %} {% block nav_left %}
             </div>
         </div>
 
-        <footer class="w-full">
+        <footer class="card shadow w-full flex flex-col gap-2">
+            <script src="https://unpkg.com/codemirror@5.39.2/lib/codemirror.js"></script>
+            <script src="https://unpkg.com/codemirror@5.39.2/addon/display/placeholder.js"></script>
+            <script src="https://unpkg.com/codemirror@5.39.2/mode/markdown/markdown.js"></script>
+
+            <b id="above_form_text" style="display: none"></b>
+
             <form
+                id="message_writer_form"
                 class="flex gap-1"
                 style="flex-direction: row"
                 onsubmit="send_message(event)"
             >
-                <input
-                    id="content"
-                    name="content"
-                    placeholder="Send a message"
-                    maxlength="512"
-                    style="flex: 1 0"
-                />
-
-                <button class="normal primary" title="Send">
+                <div id="message_writer" class="message_editor"></div>
+                <button class="normal primary icon-only" title="Send">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 16 16"
                         width="16"
                         height="16"
-                        aria-label="Paper airplane symbol"
+                        aria-label="Up arrow symbol"
                         class="icon"
                     >
                         <path
-                            d="M.989 8 .064 2.68a1.342 1.342 0 0 1 1.85-1.462l13.402 5.744a1.13 1.13 0 0 1 0 2.076L1.913 14.782a1.343 1.343 0 0 1-1.85-1.463L.99 8Zm.603-5.288L2.38 7.25h4.87a.75.75 0 0 1 0 1.5H2.38l-.788 4.538L13.929 8Z"
+                            d="M3.47 7.78a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0l4.25 4.25a.751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018L9 4.81v7.44a.75.75 0 0 1-1.5 0V4.81L4.53 7.78a.75.75 0 0 1-1.06 0Z"
                         ></path>
                     </svg>
                 </button>
+
+                <script>
+                    setTimeout(() => {
+                        use("codemirror", (codemirror) => {
+                            codemirror.create_editor(
+                                document.getElementById("message_writer"),
+                                "",
+                                "Send a message",
+                                "message_writer_",
+                            );
+                        });
+                    }, 500);
+                </script>
             </form>
+
+            <form
+                id="message_editor_form"
+                class="flex gap-1"
+                style="flex-direction: row; display: none"
+                onsubmit="edit_message(event)"
+            >
+                <div id="message_editor" class="message_editor"></div>
+                <button class="normal primary icon-only" title="Save">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 16 16"
+                        width="16"
+                        height="16"
+                        aria-label="Check mark symbol"
+                        class="icon"
+                    >
+                        <path
+                            d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"
+                        ></path>
+                    </svg>
+                </button>
+
+                <script>
+                    setTimeout(() => {
+                        use("codemirror", (codemirror) => {
+                            codemirror.create_editor(
+                                document.getElementById("message_editor"),
+                                "",
+                                "Edit message",
+                                "message_editor_",
+                            );
+                        });
+                    }, 500);
+                </script>
+            </form>
+
+            <style>
+                .message_editor {
+                    width: 100%;
+                }
+
+                .CodeMirror {
+                    height: max-content !important;
+                }
+            </style>
         </footer>
+
+        {% if let Some(user) = profile %}
+        <script>
+            window.CHAT_USER_ID = "{{ user.id }}";
+            window.CHAT_ID = "{{ chat.id }}";
+        </script>
+        {% endif %}
 
         <script>
             globalThis.send_message = (event) => {
                 event.preventDefault();
                 trigger("chats:msg", [
                     "{{ chat.id }}",
-                    event.target.content.value,
+                    globalThis.message_writer_.getValue(),
                 ]).then((message) => {
                     event.target.reset();
+                    globalThis.message_writer_.setValue("");
+                    globalThis.message_writer_.clearHistory();
                     fetch_last(() => {}); // render new message by fetching it
+                });
+            };
+
+            globalThis.edit_message = (event) => {
+                event.preventDefault();
+                trigger("chats:msg_edit", [
+                    ns("chats").EDIT_MESSAGE_ID,
+                    globalThis.message_editor_.getValue(),
+                ]).then((_) => {
+                    event.target.reset();
+                    globalThis.message_editor_.clearHistory();
+                    trigger("chats:ui.views.writer"); // hide editor
                 });
             };
 
@@ -365,6 +449,7 @@ endblock %} {% block nav_left %}
                                         trigger("chats:msg.html", [
                                             msg,
                                             document.getElementById("messages"),
+                                            msg[1].id === window.CHAT_USER_ID, // check if this message is from us (so we don't send notif request)
                                         ]);
                                     }
                                 });

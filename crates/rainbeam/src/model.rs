@@ -433,6 +433,8 @@ pub struct Message {
     pub context: MessageContext,
     /// The time the message was sent
     pub timestamp: u128,
+    /// The time the message was edited
+    pub edited: u128,
 }
 
 /// Additional information about a [`Message`]

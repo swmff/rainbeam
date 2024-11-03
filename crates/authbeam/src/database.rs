@@ -1792,12 +1792,18 @@ impl Database {
 
                 // create notification
                 if let Err(e) = self
-                    .create_notification(NotificationCreate {
-                        title: format!("[@{}](/+u/{}) followed you!", user_1.username, user_1.id),
-                        content: String::new(),
-                        address: format!("/+u/{}", user_1.id),
-                        recipient: props.following.clone(),
-                    })
+                    .create_notification(
+                        NotificationCreate {
+                            title: format!(
+                                "[@{}](/+u/{}) followed you!",
+                                user_1.username, user_1.id
+                            ),
+                            content: String::new(),
+                            address: format!("/+u/{}", user_1.id),
+                            recipient: props.following.clone(),
+                        },
+                        None,
+                    )
                     .await
                 {
                     return Err(e);
@@ -2053,13 +2059,21 @@ impl Database {
     ///
     /// ## Arguments:
     /// * `props` - [`NotificationCreate`]
-    pub async fn create_notification(&self, props: NotificationCreate) -> Result<()> {
+    pub async fn create_notification(
+        &self,
+        props: NotificationCreate,
+        id: Option<String>,
+    ) -> Result<()> {
         let notification = Notification {
             title: props.title,
             content: props.content,
             address: props.address,
             timestamp: utility::unix_epoch_timestamp(),
-            id: utility::random_id(),
+            id: if let Some(id) = id {
+                id
+            } else {
+                utility::random_id()
+            },
             recipient: props.recipient,
         };
 
@@ -2402,12 +2416,15 @@ impl Database {
             Ok(_) => {
                 // create notification for recipient
                 if let Err(e) = self
-                    .create_notification(NotificationCreate {
-                        title: "You have received an account warning!".to_string(),
-                        content: warning.content,
-                        address: String::new(),
-                        recipient: warning.recipient,
-                    })
+                    .create_notification(
+                        NotificationCreate {
+                            title: "You have received an account warning!".to_string(),
+                            content: warning.content,
+                            address: String::new(),
+                            recipient: warning.recipient,
+                        },
+                        None,
+                    )
                     .await
                 {
                     return Err(e);
@@ -2646,12 +2663,15 @@ impl Database {
         } else {
             let actor_id = user.id.clone();
             if let Err(e) = self
-                .create_notification(NotificationCreate {
-                    title: format!("[{actor_id}](/+u/{actor_id})"),
-                    content: format!("Banned an IP: {}", props.ip),
-                    address: format!("/+u/{actor_id}"),
-                    recipient: "*(audit)".to_string(), // all staff, audit
-                })
+                .create_notification(
+                    NotificationCreate {
+                        title: format!("[{actor_id}](/+u/{actor_id})"),
+                        content: format!("Banned an IP: {}", props.ip),
+                        address: format!("/+u/{actor_id}"),
+                        recipient: "*(audit)".to_string(), // all staff, audit
+                    },
+                    None,
+                )
                 .await
             {
                 return Err(e);
@@ -2721,12 +2741,15 @@ impl Database {
             } else {
                 let actor_id = user.id.clone();
                 if let Err(e) = self
-                    .create_notification(NotificationCreate {
-                        title: format!("[{actor_id}](/+u/{actor_id})"),
-                        content: format!("Unbanned an IP: {}", ipban.ip),
-                        address: format!("/+u/{actor_id}"),
-                        recipient: "*(audit)".to_string(), // all staff, audit
-                    })
+                    .create_notification(
+                        NotificationCreate {
+                            title: format!("[{actor_id}](/+u/{actor_id})"),
+                            content: format!("Unbanned an IP: {}", ipban.ip),
+                            address: format!("/+u/{actor_id}"),
+                            recipient: "*(audit)".to_string(), // all staff, audit
+                        },
+                        None,
+                    )
                     .await
                 {
                     return Err(e);
@@ -2951,15 +2974,18 @@ impl Database {
                 // create notification
                 if !disable_notifications {
                     if let Err(_) = self
-                        .create_notification(NotificationCreate {
-                            title: format!(
-                                "[@{}](/+u/{}) has sent you a friend request!",
-                                uone.username, uone.id
-                            ),
-                            content: format!("{} wants to be your friend.", uone.username),
-                            address: format!("/@{}/relationship/friend_accept", uone.id),
-                            recipient: utwo.id,
-                        })
+                        .create_notification(
+                            NotificationCreate {
+                                title: format!(
+                                    "[@{}](/+u/{}) has sent you a friend request!",
+                                    uone.username, uone.id
+                                ),
+                                content: format!("{} wants to be your friend.", uone.username),
+                                address: format!("/@{}/relationship/friend_accept", uone.id),
+                                recipient: utwo.id,
+                            },
+                            None,
+                        )
                         .await
                     {
                         return Err(AuthError::Other);
@@ -3000,15 +3026,18 @@ impl Database {
                 // create notification
                 if !disable_notifications {
                     if let Err(_) = self
-                        .create_notification(NotificationCreate {
-                            title: "Your friend request has been accepted!".to_string(),
-                            content: format!(
-                                "[@{}](/@{}) has accepted your friend request.",
-                                utwo.username, utwo.username
-                            ),
-                            address: String::new(),
-                            recipient: uone.id,
-                        })
+                        .create_notification(
+                            NotificationCreate {
+                                title: "Your friend request has been accepted!".to_string(),
+                                content: format!(
+                                    "[@{}](/@{}) has accepted your friend request.",
+                                    utwo.username, utwo.username
+                                ),
+                                address: String::new(),
+                                recipient: uone.id,
+                            },
+                            None,
+                        )
                         .await
                     {
                         return Err(AuthError::Other);
@@ -3505,12 +3534,15 @@ impl Database {
             } else {
                 let actor_id = user.id.clone();
                 if let Err(e) = self
-                    .create_notification(NotificationCreate {
-                        title: format!("[{actor_id}](/+u/{actor_id})"),
-                        content: format!("Unblocked an IP: {}", block.ip),
-                        address: format!("/+u/{actor_id}"),
-                        recipient: "*(audit)".to_string(), // all staff, audit
-                    })
+                    .create_notification(
+                        NotificationCreate {
+                            title: format!("[{actor_id}](/+u/{actor_id})"),
+                            content: format!("Unblocked an IP: {}", block.ip),
+                            address: format!("/+u/{actor_id}"),
+                            recipient: "*(audit)".to_string(), // all staff, audit
+                        },
+                        None,
+                    )
                     .await
                 {
                     return Err(e);

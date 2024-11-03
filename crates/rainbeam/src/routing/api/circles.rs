@@ -443,12 +443,15 @@ pub async fn report_request(
     // report
     match database
         .auth
-        .create_notification(NotificationCreate {
-            title: format!("**CIRCLE REPORT**: [/+{}](/+{})", circle.name, circle.name),
-            content: format!("{}\n\n***\n\n[{real_ip}](/+i/{real_ip})", req.content),
-            address: format!("/+{}", circle.name),
-            recipient: "*".to_string(), // all staff
-        })
+        .create_notification(
+            NotificationCreate {
+                title: format!("**CIRCLE REPORT**: [/+{}](/+{})", circle.name, circle.name),
+                content: format!("{}\n\n***\n\n[{real_ip}](/+i/{real_ip})", req.content),
+                address: format!("/+{}", circle.name),
+                recipient: "*".to_string(), // all staff
+            },
+            None,
+        )
         .await
     {
         Ok(_) => {

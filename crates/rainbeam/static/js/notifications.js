@@ -13,12 +13,17 @@
         })
             .then((res) => res.json())
             .then((res) => {
-                trigger("app:toast", [
-                    res.success ? "success" : "error",
-                    res.success ? "Notification deleted!" : res.message,
-                ]);
+                if (document.getElementById(`notif:${id}`)) {
+                    trigger("app:toast", [
+                        res.success ? "success" : "error",
+                        res.success ? "Notification deleted!" : res.message,
+                    ]);
 
-                app.smooth_remove(document.getElementById(`notif:${id}`), 500);
+                    app.smooth_remove(
+                        document.getElementById(`notif:${id}`),
+                        500,
+                    );
+                }
             });
     });
 
@@ -29,7 +34,7 @@
         //     }
         // }
 
-        fetch(`/api/auth/notifications/clear`, {
+        fetch("/api/auth/notifications/clear", {
             method: "DELETE",
         })
             .then((res) => res.json())

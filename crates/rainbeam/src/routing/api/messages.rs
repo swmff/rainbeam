@@ -1,5 +1,5 @@
 use crate::database::Database;
-use crate::model::{DatabaseError, MessageCreate};
+use crate::model::{DatabaseError, MessageCreate, ResponseEdit};
 use axum::http::{HeaderMap, HeaderValue};
 use hcaptcha::Hcaptcha;
 use authbeam::model::NotificationCreate;
@@ -8,7 +8,7 @@ use databeam::DefaultReturn;
 use axum::response::IntoResponse;
 use axum::{
     extract::{Path, State},
-    routing::{delete, get, post},
+    routing::{delete, get, post, put},
     Json, Router,
 };
 
@@ -18,6 +18,7 @@ pub fn routes(database: Database) -> Router {
     Router::new()
         .route("/", post(create_request))
         .route("/:id", get(get_request))
+        .route("/:id", put(edit_request))
         .route("/:id", delete(delete_request))
         .route("/:id/report", post(report_request))
         // ...
@@ -68,6 +69,43 @@ pub async fn get_request(
         },
         Err(e) => e.into(),
     })
+}
+
+/// [`Database::edit_message`]
+pub async fn edit_request(
+    jar: CookieJar,
+    Path(id): Path<String>,
+    State(database): State<Database>,
+    Json(props): Json<ResponseEdit>,
+) -> impl IntoResponse {
+    // get user from token
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => {
+                return Json(DatabaseError::NotAllowed.into());
+            }
+        },
+        None => {
+            return Json(DatabaseError::NotAllowed.into());
+        }
+    };
+
+    // ...
+    Json(
+        match database.edit_message(id, props.content, auth_user).await {
+            Ok(r) => DefaultReturn {
+                success: true,
+                message: String::new(),
+                payload: Some(r),
+            },
+            Err(e) => e.into(),
+        },
+    )
 }
 
 /// [`Database::delete_message`]
@@ -156,12 +194,15 @@ pub async fn report_request(
     // report
     match database
         .auth
-        .create_notification(NotificationCreate {
-            title: format!("**MESSAGE REPORT**: {id}"),
-            content: format!("{}\n\n***\n\n[{real_ip}](/+i/{real_ip})", req.content),
-            address: format!("/message/{id}"),
-            recipient: "*".to_string(), // all staff
-        })
+        .create_notification(
+            NotificationCreate {
+                title: format!("**MESSAGE REPORT**: {id}"),
+                content: format!("{}\n\n***\n\n[{real_ip}](/+i/{real_ip})", req.content),
+                address: format!("/message/{id}"),
+                recipient: "*".to_string(), // all staff
+            },
+            None,
+        )
         .await
     {
         Ok(_) => {

@@ -3,7 +3,7 @@
     class="message {% if is_own %}own{% endif %}"
 >
     <a
-        class="flex items-center gap-2 item"
+        class="flex gap-2 item author_tag"
         href="/@{{ message.1.username }}"
         title="{{ message.1.username }}"
     >
@@ -16,7 +16,11 @@
         />
     </a>
 
-    <span class="message_content" hook="long">
+    <span
+        class="message_content"
+        hook="long"
+        id="msg_content:{{ message.0.id }}"
+    >
         {{ shared::ui::render_markdown(message.0.content)|safe }}
     </span>
 
@@ -44,14 +48,39 @@
             class="inner shadow-md w-content {% if !is_own %}left{% endif %}"
             exclude="dropdown"
         >
-            <span class="date title">{{ message.0.timestamp }}</span>
+            <span class="flex title">
+                {% if (message.0.edited != 0) && (message.0.edited !=
+                message.0.timestamp) %}
+                <span class="date">{{ message.0.edited }}</span>
+                <sup title="Edited">*</sup>
+                {% else %}
+                <span class="date">{{ message.0.timestamp }}</span>
+                {% endif %}
+            </span>
 
             {% if let Some(profile) = profile %} {% if is_own %}
             <!-- actions for the message author only -->
             <b class="title">Manage</b>
 
-            <a
-                href="#"
+            <button
+                onclick="trigger('chats:ui.views.editor', ['{{ message.0.id }}'])"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 16 16"
+                    width="16"
+                    height="16"
+                    aria-label="Pencil symbol"
+                    class="icon"
+                >
+                    <path
+                        d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.081-.286.235-.547.445-.758l8.61-8.61Zm.176 4.823L9.75 4.81l-6.286 6.287a.253.253 0 0 0-.064.108l-.558 1.953 1.953-.558a.253.253 0 0 0 .108-.064Zm1.238-3.763a.25.25 0 0 0-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 0 0 0-.354Z"
+                    ></path>
+                </svg>
+                Edit
+            </button>
+
+            <button
                 onclick="trigger('chats:msg_delete', ['{{ message.0.id }}'])"
                 class="red"
             >
@@ -68,14 +97,11 @@
                     ></path>
                 </svg>
                 Delete
-            </a>
+            </button>
             {% endif %} {% endif %}
             <!-- actions for everybody -->
             <b class="title">Tools</b>
-            <a
-                href="#"
-                onclick="trigger('app:copy_text', ['{{ message.0.id }}'])"
-            >
+            <button onclick="trigger('app:copy_text', ['{{ message.0.id }}'])">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 16 16"
@@ -92,7 +118,7 @@
                     ></path>
                 </svg>
                 Copy ID
-            </a>
+            </button>
 
             <!-- prettier-ignore -->
             {% if let Some(profile) = profile %}
@@ -117,8 +143,7 @@
             </a>
             {% endif %} {% if is_helper %}
             <b class="title">Mod</b>
-            <a
-                href="#"
+            <button
                 onclick="trigger('chats:msg_delete', ['{{ message.0.id }}'])"
                 class="red"
             >
@@ -135,8 +160,12 @@
                     ></path>
                 </svg>
                 Delete
-            </a>
+            </button>
             {% endif %} {% endif %}
         </div>
     </div>
 </div>
+
+<script>
+    globalThis.message_contents["{{ message.0.id }}"] = `{{ message.0.content.replace("`", "\\`") }}`
+</script>

@@ -1325,12 +1325,15 @@ pub async fn delete_other_request(
         } else {
             let actor_id = auth_user.id;
             if let Err(e) = database
-                .create_notification(NotificationCreate {
-                    title: format!("[{actor_id}](/+u/{actor_id})"),
-                    content: format!("Deleted a profile: @{}", other_user.username),
-                    address: format!("/+u/{actor_id}"),
-                    recipient: "*(audit)".to_string(), // all staff, audit
-                })
+                .create_notification(
+                    NotificationCreate {
+                        title: format!("[{actor_id}](/+u/{actor_id})"),
+                        content: format!("Deleted a profile: @{}", other_user.username),
+                        address: format!("/+u/{actor_id}"),
+                        recipient: "*(audit)".to_string(), // all staff, audit
+                    },
+                    None,
+                )
                 .await
             {
                 return Json(DefaultReturn {
