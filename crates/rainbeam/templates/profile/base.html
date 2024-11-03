@@ -180,7 +180,11 @@ config.name }}{% endblock %} {% block head %}
                             <div class="flex gap-2 items-center" style="max-width: 100%">
                                 <h3 class="no-margin username">
                                     {% if let Some(display_name) = other.metadata.kv.get("sparkler:display_name") %}
-                                        {{ display_name }}
+                                        {% if !display_name.trim().is_empty() %}
+                                            {{ display_name }}
+                                        {% else %}
+                                            {{ other.username }}
+                                        {% endif %}
                                     {% else %}
                                         {{ other.username }}
                                     {% endif %}

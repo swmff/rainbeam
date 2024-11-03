@@ -35,7 +35,11 @@ comment = comment.0.clone() %}
                     {% let display_name = comment.author.metadata.kv.get("sparkler:display_name") %}
 
                     {% if let Some(display_name) = display_name %}
-                        {{ display_name }}
+                        {% if !display_name.trim().is_empty() %}
+                            {{ display_name }}
+                        {% else %}
+                            {{ comment.author.username }}
+                        {% endif %}
                     {% else %}
                         {{ comment.author.username }}
                     {% endif %}
