@@ -21,13 +21,11 @@
     <h3>Info</h3>
 
     <div class="card w-full shadow">
+        <!-- prettier-ignore -->
         <ul style="margin-bottom: 0">
-            <!-- prettier-ignore -->
             <li>Joined: <span class="date">{{ other.joined }}</span></li>
-            <li>Group: {{ other.group }}</li>
-            <!-- prettier-ignore -->
+            <li>Group: <a href="javascript:change_group()">{{ other.group }}</a></li>
             <li>Tier: <a href="javascript:change_tier()">{{ other.tier }}</a></li>
-            <!-- prettier-ignore -->
             <li><a href="/inbox/notifications?profile={{ other.id }}">View notifications</a></li>
         </ul>
 
@@ -274,6 +272,35 @@
                 trigger("app:toast", [
                     res.success ? "success" : "error",
                     res.success ? "IP banned!" : res.message,
+                ]);
+            });
+    };
+
+    globalThis.change_group = () => {
+        const group = prompt("Enter group number:");
+
+        if (!group) {
+            return;
+        }
+
+        if (group !== "-1" && group !== "0") {
+            return alert("Cannot grant moderator permissions to other users.");
+        }
+
+        fetch("/api/v1/profiles/{{ other.username }}/group", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                group: parseInt(group),
+            }),
+        })
+            .then((res) => res.json())
+            .then((res) => {
+                trigger("app:toast", [
+                    res.success ? "success" : "error",
+                    res.success ? "Group updated!" : res.message,
                 ]);
             });
     };

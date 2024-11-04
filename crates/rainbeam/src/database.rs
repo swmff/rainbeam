@@ -2221,11 +2221,6 @@ impl Database {
             Err(_) => anonymous_profile(self.create_anonymous().1),
         };
 
-        if user.group == -1 {
-            // group -1 (even if it exists) is for marking users as banned
-            return Err(DatabaseError::NotAllowed);
-        }
-
         // build string
         let mut query_string = String::new();
 

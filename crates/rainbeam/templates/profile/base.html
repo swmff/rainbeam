@@ -214,6 +214,26 @@ config.name }}{% endblock %} {% block head %}
                                     👑 Supporter
                                 </span>
                                 {% endif %}
+
+                                {% if other.group == -1 %}
+                                <span
+                                    class="notification ff-inherit fs-md bold flex items-center justify-center"
+                                    style="background: var(--color-lowered); color: var(--color-text-lowered); gap: 5px"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 16 16"
+                                        aria-label="Banned symbol"
+                                        class="icon"
+                                        style="width: 1em; aspect-ratio: 1 / 1"
+                                    >
+                                        <path
+                                            d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM3.965 13.096a6.5 6.5 0 0 0 9.131-9.131ZM1.5 8a6.474 6.474 0 0 0 1.404 4.035l9.131-9.131A6.499 6.499 0 0 0 1.5 8Z"
+                                        ></path>
+                                    </svg>
+                                    Banned
+                                </span>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -700,7 +720,7 @@ config.name }}{% endblock %} {% block head %}
 
                 <div class="card">
                     <!-- prettier-ignore -->
-                    {% if !lock_profile %}
+                    {% if !lock_profile && (other.group != -1) %}
                     {% if (require_account && profile.is_some()) | (disallow_anonymous && profile.is_some()) | (!require_account && !disallow_anonymous) %}
                     <form
                         id="question_form"

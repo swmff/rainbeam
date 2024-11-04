@@ -46,7 +46,7 @@
             globalThis.ns_verbose = false;
             globalThis.ns_config = {
                 root: "/static/js/",
-                version: "1.13.2",
+                version: "1.13.3",
                 verbose: globalThis.ns_verbose,
             };
 
@@ -92,6 +92,44 @@
     <body>
         <div id="top"></div>
         <div id="cover" aria-hidden="true"></div>
+
+        {% if let Some(user) = profile %} {% if user.group == -1 %}
+        <div
+            class="markdown-alert-caution flex flex-collapse items-center justify-center gap-4"
+            style="border-radius: 0 !important; margin-bottom: 0 !important"
+        >
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 16 16"
+                width="16"
+                height="16"
+                aria-label="Banned symbol"
+                class="icon"
+                style="flex: 0 0 auto"
+            >
+                <path
+                    d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM3.965 13.096a6.5 6.5 0 0 0 9.131-9.131ZM1.5 8a6.474 6.474 0 0 0 1.404 4.035l9.131-9.131A6.499 6.499 0 0 0 1.5 8Z"
+                ></path>
+            </svg>
+            <span>
+                Your account has been banned and is currently unusable. Please
+                do not register another account while banned.
+            </span>
+        </div>
+
+        <style>
+            body {
+                overflow: hidden;
+            }
+
+            #page {
+                opacity: 50%;
+                pointer-events: none;
+                user-select: none;
+            }
+        </style>
+        {% endif %} {% endif %}
+
         <nav>
             <div class="content_container">
                 <div class="flex gap-1 nav_side">

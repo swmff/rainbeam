@@ -6,7 +6,7 @@ use axum_extra::extract::CookieJar;
 use hcaptcha::Hcaptcha;
 use std::{fs::File, io::Read};
 
-use authbeam::model::{NotificationCreate, Permission, UserFollow};
+use authbeam::model::{NotificationCreate, Permission, SetProfileGroup, UserFollow};
 use databeam::DefaultReturn;
 
 use axum::{
@@ -24,6 +24,7 @@ pub fn routes(database: Database) -> Router {
         .route("/:username/report", post(report_request))
         .route("/:username/follow", post(follow_request))
         .route("/:username/export", get(export_request)) // staff
+        .route("/:username/group", post(change_group_request)) // staff
         .route("/:username/relationship/friend", post(friend_request))
         .route("/:username/relationship/block", post(block_request))
         .route("/:username/relationship", delete(breakup_request))
@@ -537,6 +538,131 @@ pub async fn export_request(
             })
         }
     }
+}
+
+/// Change a profile's group
+pub async fn change_group_request(
+    jar: CookieJar,
+    Path(username): Path<String>,
+    State(database): State<Database>,
+    Json(props): Json<SetProfileGroup>,
+) -> impl IntoResponse {
+    // get user from token
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(e) => {
+                return Json(DefaultReturn {
+                    success: false,
+                    message: e.to_string(),
+                    payload: None,
+                });
+            }
+        },
+        None => {
+            return Json(DefaultReturn {
+                success: false,
+                message: DatabaseError::NotAllowed.to_string(),
+                payload: None,
+            });
+        }
+    };
+
+    // check permission
+    let group = match database.auth.get_group_by_id(auth_user.group).await {
+        Ok(g) => g,
+        Err(e) => {
+            return Json(DefaultReturn {
+                success: false,
+                message: e.to_string(),
+                payload: None,
+            })
+        }
+    };
+
+    if !group.permissions.contains(&Permission::Manager) {
+        // we must have the "Manager" permission to edit other users
+        return Json(DefaultReturn {
+            success: false,
+            message: DatabaseError::NotAllowed.to_string(),
+            payload: None,
+        });
+    }
+
+    // get other user
+    let other_user = match database.get_profile(username.clone()).await {
+        Ok(ua) => ua,
+        Err(e) => {
+            return Json(DefaultReturn {
+                success: false,
+                message: e.to_string(),
+                payload: None,
+            });
+        }
+    };
+
+    // check permission
+    let group = match database.auth.get_group_by_id(other_user.group).await {
+        Ok(g) => g,
+        Err(e) => {
+            return Json(DefaultReturn {
+                success: false,
+                message: e.to_string(),
+                payload: None,
+            })
+        }
+    };
+
+    if group.permissions.contains(&Permission::Manager) {
+        // we cannot manager other managers
+        return Json(DefaultReturn {
+            success: false,
+            message: DatabaseError::NotAllowed.to_string(),
+            payload: None,
+        });
+    }
+
+    // push update
+    // TODO: try not to clone
+    if let Err(e) = database
+        .auth
+        .edit_profile_group(username, props.group)
+        .await
+    {
+        return Json(DefaultReturn {
+            success: false,
+            message: e.to_string(),
+            payload: None,
+        });
+    }
+
+    // return
+    if let Err(e) = database
+        .audit(
+            auth_user.id,
+            format!(
+                "Changed user group: [{}](/+u/{})",
+                other_user.id, other_user.id
+            ),
+        )
+        .await
+    {
+        return Json(DefaultReturn {
+            success: false,
+            message: e.to_string(),
+            payload: None,
+        });
+    };
+
+    Json(DefaultReturn {
+        success: true,
+        message: "Acceptable".to_string(),
+        payload: Some(props.group),
+    })
 }
 
 /// Send/accept a friend request to/from another user
