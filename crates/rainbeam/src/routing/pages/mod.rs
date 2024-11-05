@@ -35,7 +35,8 @@ pub fn escape_username(name: &String) -> String {
 
     for char in name.chars() {
         if char.is_alphanumeric() {
-            found_good = true
+            found_good = true;
+            break;
         }
     }
 
