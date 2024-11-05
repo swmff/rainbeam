@@ -13,6 +13,7 @@ endblock %} {% block content %}
 
         <div id="create_post_intent" class="flex flex-col gap-2">
             <b class="title">Create post</b>
+            <div id="partial"></div>
             <div class="card w-full">
                 {% include "partials/components/compose.html" %}
             </div>
@@ -31,6 +32,11 @@ endblock %} {% block content %}
                 document.querySelector(
                     '#create_post_intent [name="reply"]',
                 ).value = reply;
+
+                document.getElementById("partial").innerHTML = `<include-partial
+                    src="/_app/components/response.html?id=${reply}&do_render_nested=false"
+                    uses="app:clean_date_codes,app:link_filter,app:hook.alt"
+                ></include-partial>`;
             }
 
             if (search.get("title")) {
