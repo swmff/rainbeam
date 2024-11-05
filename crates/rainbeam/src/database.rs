@@ -596,14 +596,15 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xquestions\" WHERE \"author\" = ? ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xquestions\" WHERE \"author\" = ? OR \"author\" = ? ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
         } else {
-            format!("SELECT * FROM \"xquestions\" WHERE \"author\" = $1 ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xquestions\" WHERE \"author\" = $1 OR \"author\" = $2 ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
         };
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query)
             .bind::<&String>(&author.to_lowercase())
+            .bind::<&String>(&format!("anonymous#{}", author.to_lowercase()))
             .fetch_all(c)
             .await
         {
@@ -1120,15 +1121,16 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            "SELECT * FROM \"xquestions\" WHERE \"author\" = ? ORDER BY \"timestamp\" DESC"
+            "SELECT * FROM \"xquestions\" WHERE \"author\" = ? OR \"author\" = ? ORDER BY \"timestamp\" DESC"
         } else {
-            "SELECT * FROM \"xquestions\" WHERE \"author\" = $1 ORDER BY \"timestamp\" DESC"
+            "SELECT * FROM \"xquestions\" WHERE \"author\" = $1 OR \"author\" = $2 ORDER BY \"timestamp\" DESC"
         }
         .to_string();
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query)
             .bind::<&String>(&author.to_lowercase())
+            .bind::<&String>(&format!("anonymous#{}", author.to_lowercase()))
             .fetch_all(c)
             .await
         {
