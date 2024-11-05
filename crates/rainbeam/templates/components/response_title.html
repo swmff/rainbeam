@@ -3,20 +3,20 @@
 >
     <div class="footernav flex-wrap">
         <b class="flex items-center gap-2">
-            <img
-                title="{{ response.author.username }}'s avatar"
-                src="/api/v1/profiles/{{ response.author.username }}/avatar"
-                alt=""
-                class="avatar"
-                loading="lazy"
-                style="--size: 20px"
-            />
-
             <a
                 href="/@{{ response.author.username }}"
                 style="color: inherit"
-                class="username"
+                class="username flex gap-2"
             >
+                <img
+                    title="{{ response.author.username }}'s avatar"
+                    src="/api/v1/profiles/{{ response.author.username }}/avatar"
+                    alt=""
+                    class="avatar"
+                    loading="lazy"
+                    style="--size: 20px"
+                />
+
                 <!-- prettier-ignore -->
                 {% let display_name = response.author.metadata.kv.get("sparkler:display_name") %}
 

@@ -11,20 +11,20 @@
                     <!-- prettier-ignore -->
                     {% let author_tag = crate::database::Database::anonymous_tag(question.author.id.as_ref()) %}
                     {% if author_tag.0 == false %}
-                    <img
-                        title="{{ question.author.username }}'s avatar"
-                        src="/api/v1/profiles/{{ question.author.username }}/avatar"
-                        alt=""
-                        class="avatar"
-                        loading="lazy"
-                        style="--size: 20px"
-                    />
-
                     <a
                         href="/@{{ question.author.username }}"
                         style="color: inherit"
-                        class="username"
+                        class="username flex gap-2"
                     >
+                        <img
+                            title="{{ question.author.username }}'s avatar"
+                            src="/api/v1/profiles/{{ question.author.username }}/avatar"
+                            alt=""
+                            class="avatar"
+                            loading="lazy"
+                            style="--size: 20px"
+                        />
+
                         <!-- prettier-ignore -->
                         {% let display_name = question.author.metadata.kv.get("sparkler:display_name") %}
 
