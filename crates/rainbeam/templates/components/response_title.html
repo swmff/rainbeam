@@ -147,9 +147,10 @@
 
             <div class="inner shadow-md w-content" exclude="dropdown">
                 {% if profile.is_some() %}
-                <button
+                <a
                     title="Quote"
-                    onclick="compose_intent('Quote post', '{{ response.id }}')"
+                    href="/intents/post?reply={{ response.id }}&title=Quote%20post"
+                    target="_blank"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -164,12 +165,13 @@
                         ></path>
                     </svg>
                     Quote
-                </button>
+                </a>
                 {% endif %}
 
                 <a
                     href="/@{{ response.author.username }}?reply_intent={{ response.id }}#top"
                     data-turbo="false"
+                    target="_blank"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"

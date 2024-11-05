@@ -156,6 +156,32 @@ pub async fn profile_request(
         }
     };
 
+    // remove responses from users we've blocked
+    if let Some(ref ua) = auth_user {
+        let blocked = match database
+            .auth
+            .get_user_relationships_of_status(ua.id.clone(), RelationshipStatus::Blocked)
+            .await
+        {
+            Ok(l) => l,
+            Err(_) => Vec::new(),
+        };
+
+        for user in blocked {
+            for (i, _) in responses
+                .clone()
+                .iter()
+                .filter(|x| (x.1.author.id == user.0.id) | (x.0.author.id == user.0.id))
+                .enumerate()
+            {
+                if responses.get(i).is_some() {
+                    responses.remove(i);
+                }
+            }
+        }
+    }
+
+    // ...
     let pinned = if let Some(pinned) = other.metadata.kv.get("sparkler:pinned") {
         if pinned.is_empty() {
             None

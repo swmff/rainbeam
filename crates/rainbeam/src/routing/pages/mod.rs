@@ -90,11 +90,35 @@ pub async fn homepage_request(
             .get_notification_count_by_recipient(ua.id.to_owned())
             .await;
 
-        let responses = match database.get_responses_by_following(ua.id.to_owned()).await {
+        let mut responses = match database.get_responses_by_following(ua.id.to_owned()).await {
             Ok(responses) => responses,
             Err(e) => return Html(e.to_html(database)),
         };
 
+        // remove responses from users we've blocked
+        let blocked = match database
+            .auth
+            .get_user_relationships_of_status(ua.id.clone(), RelationshipStatus::Blocked)
+            .await
+        {
+            Ok(l) => l,
+            Err(_) => Vec::new(),
+        };
+
+        for user in blocked {
+            for (i, _) in responses
+                .clone()
+                .iter()
+                .filter(|x| (x.1.author.id == user.0.id) | (x.0.author.id == user.0.id))
+                .enumerate()
+            {
+                if responses.get(i).is_some() {
+                    responses.remove(i);
+                }
+            }
+        }
+
+        // ...
         let mut is_helper: bool = false;
         let is_powerful = if let Some(ref ua) = auth_user {
             let group = match database.auth.get_group_by_id(ua.group).await {
@@ -649,27 +673,27 @@ pub async fn public_posts_timeline_request(
     };
 
     // remove content from blocked users/users that have blocked us
-    let blocked = if let Some(ref ua) = auth_user {
-        match database
+    if let Some(ref ua) = auth_user {
+        let blocked = match database
             .auth
             .get_user_relationships_of_status(ua.id.clone(), RelationshipStatus::Blocked)
             .await
         {
             Ok(l) => l,
             Err(_) => Vec::new(),
-        }
-    } else {
-        Vec::new()
-    };
+        };
 
-    for user in blocked {
-        for (i, _) in responses
-            .clone()
-            .iter()
-            .filter(|x| x.1.author.id == user.0.id)
-            .enumerate()
-        {
-            responses.remove(i);
+        for user in blocked {
+            for (i, _) in responses
+                .clone()
+                .iter()
+                .filter(|x| (x.1.author.id == user.0.id) | (x.0.author.id == user.0.id))
+                .enumerate()
+            {
+                if responses.get(i).is_some() {
+                    responses.remove(i);
+                }
+            }
         }
     }
 
@@ -1539,8 +1563,9 @@ pub async fn public_global_timeline_request(
 }
 
 #[derive(Template)]
-#[template(path = "partials/components/compose.html")]
+#[template(path = "intents/post.html")]
 struct ComposeTemplate {
+    config: Config,
     profile: Option<Profile>,
 }
 
@@ -1563,6 +1588,7 @@ pub async fn compose_request(
 
     Html(
         ComposeTemplate {
+            config: database.server_options,
             profile: Some(auth_user),
         }
         .render()
@@ -1917,6 +1943,7 @@ pub async fn routes(database: Database) -> Router {
         .route("/inbox/reports", get(reports_request)) // staff
         .route("/inbox/audit", get(audit_log_request)) // staff
         .route("/inbox/audit/ipbans", get(ipbans_request)) // staff
+        .route("/intents/post", get(compose_request))
         // assets
         .route("/question/:id", get(question_request))
         .route("/response/:id", get(response_request))
@@ -2000,7 +2027,6 @@ pub async fn routes(database: Database) -> Router {
             "/_app/components/response.html",
             get(partial_response_request),
         )
-        .route("/_app/components/compose.html", get(compose_request))
         .route(
             "/_app/timelines/timeline.html",
             get(partial_timeline_request),
