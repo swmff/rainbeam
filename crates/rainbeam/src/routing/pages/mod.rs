@@ -25,6 +25,28 @@ mod profile;
 mod search;
 mod settings;
 
+/// Escape a username's characters if we are unable to find a "good" character
+///
+/// A "good" character is any alphanumeric character.
+pub fn escape_username(name: &String) -> String {
+    // comb through chars, if we never find anything that is actually a letter,
+    // go ahead and escape
+    let mut found_good: bool = false;
+
+    for char in name.chars() {
+        if char.is_alphanumeric() {
+            found_good = true
+        }
+    }
+
+    if !found_good {
+        return name.escape_default().to_string();
+    }
+
+    // return given data
+    name.to_owned()
+}
+
 #[derive(Template)]
 #[template(path = "error.html")]
 pub struct ErrorTemplate {

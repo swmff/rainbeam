@@ -146,7 +146,7 @@
                     <div id="names">
                         <h3 class="no-margin username" style="max-width: 100%">
                             {% if let Some(display_name) = circle.metadata.kv.get("sparkler:display_name") %}
-                                {{ display_name }}
+                                {{ crate::routing::pages::escape_username(display_name) }}
                             {% else %}
                                 {{ circle.name }}
                             {% endif %}

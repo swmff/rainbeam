@@ -57,7 +57,7 @@
                 <b>
                     <!-- prettier-ignore -->
                     {% if let Some(display_name) = other.metadata.kv.get("sparkler:display_name") %}
-                        {{ display_name }}
+                        {{ crate::routing::pages::escape_username(display_name) }}
                     {% else %}
                         {{ other.username }}
                     {% endif %}

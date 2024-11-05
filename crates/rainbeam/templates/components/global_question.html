@@ -27,7 +27,7 @@ question = question.clone().0 %}
 
                         {% if let Some(display_name) = display_name %}
                             {% if !display_name.trim().is_empty() %}
-                                {{ display_name }}
+                                {{ crate::routing::pages::escape_username(display_name) }}
                             {% else %}
                                 {{ question.author.username }}
                             {% endif %}

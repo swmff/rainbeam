@@ -62,7 +62,7 @@
                             {% let display_name = question.author.metadata.kv.get("sparkler:display_name") %}
 
                             {% if let Some(display_name) = display_name %}
-                                {{ display_name }}
+                                {{ crate::routing::pages::escape_username(display_name) }}
                             {% else %}
                                 {{ question.author.username }}
                             {% endif %}
@@ -165,7 +165,7 @@
                 {% let display_name = question.recipient.metadata.kv.get("sparkler:display_name") %}
 
                 {% if let Some(display_name) = display_name %}
-                    {{ display_name }}
+                    {{ crate::routing::pages::escape_username(display_name) }}
                 {% else %}
                     {{ question.recipient.username }}
                 {% endif %}
