@@ -684,8 +684,8 @@ config.name }}{% endblock %} {% block head %}
         </div>
 
         <!-- locked message -->
-        {% if relationship != crate::model::RelationshipStatus::Friends &&
-        other.metadata.is_true("sparkler:private_profile") %}
+        {% if (relationship != crate::model::RelationshipStatus::Friends &&
+        other.metadata.is_true("sparkler:private_profile")) | (other.group == -1) %}
         <div
             class="card padded shadow flex flex-col w-full gap-4 items-center justify-center"
         >

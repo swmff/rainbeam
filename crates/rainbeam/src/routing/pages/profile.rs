@@ -1337,7 +1337,7 @@ pub async fn mod_request(
         .get_notification_count_by_recipient(auth_user.to_owned().id)
         .await;
 
-    let other = match database
+    let mut other = match database
         .auth
         .get_profile_by_username(username.clone())
         .await
@@ -1380,6 +1380,10 @@ pub async fn mod_request(
 
     if !is_helper {
         return Html(DatabaseError::NotAllowed.to_html(database));
+    }
+
+    if other.group == -1 {
+        other.group = -2;
     }
 
     let warnings = match database
