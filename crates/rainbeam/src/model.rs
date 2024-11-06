@@ -200,6 +200,9 @@ pub struct ResponseComment {
     pub reply: Option<Box<ResponseComment>>,
     /// The time this comment was last edited
     pub edited: u128,
+    /// The IP address of the user creating the comment
+    #[serde(default)]
+    pub ip: String,
 }
 
 /// A reaction structure

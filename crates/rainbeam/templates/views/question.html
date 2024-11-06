@@ -177,12 +177,6 @@ block head %}
                 <span class="question_content">
                     {{ shared::ui::render_markdown(question.content)|safe }}
                 </span>
-
-                {% if is_powerful %}
-                <span class="question_ip card shadow round">
-                    <a href="/+i/{{ question.ip }}">{{ question.ip }}</a>
-                </span>
-                {% endif %}
             </div>
 
             {% if !already_responded %}
@@ -227,7 +221,11 @@ block head %}
             {% endif %}
         </div>
 
-        {% if already_responded %}
+        {% if is_powerful %}
+        <div class="question_ip card shadow round">
+            <a href="/+i/{{ question.ip }}">{{ question.ip }}</a>
+        </div>
+        {% endif %} {% if already_responded %}
         <p class="fade">You've already responded to this question!</p>
         {% endif %}
 

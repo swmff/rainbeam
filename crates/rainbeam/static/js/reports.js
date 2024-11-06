@@ -7,7 +7,7 @@
     });
 
     self.define("bootstrap", function (_, type, target) {
-        window.open(`/site/report?type=${type}&target=${target}`);
+        window.open(`/intents/report?type=${type}&target=${target}`);
     });
 
     self.define("file", function ({ $ }, e) {

@@ -83,4 +83,21 @@
                 );
             });
     });
+
+    self.define("ipblock", function ({ $, app }, id) {
+        if (!confirm("Are you sure you want to do this?")) {
+            return;
+        }
+
+        fetch(`/api/v1/comments/${id}/ipblock`, {
+            method: "POST",
+        })
+            .then((res) => res.json())
+            .then((res) => {
+                app.toast(
+                    res.success ? "success" : "error",
+                    res.success ? "IP blocked!" : res.message,
+                );
+            });
+    });
 })();

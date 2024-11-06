@@ -1,1 +1,2 @@
 ALTER TABLE "xquestions" ADD COLUMN "ip" TEXT DEFAULT '';
+ALTER TABLE "xcomments" ADD COLUMN "ip" TEXT DEFAULT '';

@@ -114,6 +114,12 @@ block head %}
         {% let show_replies = false %} {% include "components/comment.html" %}
         {% endif %}
 
+        {% if is_powerful %}
+        <div class="question_ip card shadow round">
+            <a href="/+i/{{ comment.0.ip }}">{{ comment.0.ip }}</a>
+        </div>
+        {% endif %}
+
         <!-- single comment -->
         <div class="flex gap-4">
             <div class="thread_line"></div>

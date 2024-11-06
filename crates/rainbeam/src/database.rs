@@ -84,7 +84,8 @@ impl Database {
                 id        TEXT,
                 timestamp TEXT,
                 reply     TEXT,
-                edited    TEXT
+                edited    TEXT,
+                ip        TEXT
             )",
         )
         .execute(c)
@@ -1301,6 +1302,15 @@ impl Database {
                     .auth
                     .get_ipblock_by_ip(ip.clone(), recipient.id.clone())
                     .await
+                {
+                    return Err(DatabaseError::Blocked);
+                }
+
+                if self
+                    .auth
+                    .get_ipblock_by_ip(ip.clone(), recipient.id.clone())
+                    .await
+                    .is_ok()
                 {
                     return Err(DatabaseError::Blocked);
                 }
@@ -3039,6 +3049,7 @@ impl Database {
                 }
             },
             edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
+            ip: res.get("ip").unwrap().to_string(),
         };
 
         // store in cache
@@ -3118,6 +3129,7 @@ impl Database {
                                 }
                             },
                             edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
+                            ip: res.get("ip").unwrap().to_string(),
                         },
                         self.get_reply_count_by_comment(id.clone()).await,
                         self.get_reaction_count_by_asset(id).await,
@@ -3187,6 +3199,7 @@ impl Database {
                                 }
                             },
                             edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
+                            ip: res.get("ip").unwrap().to_string(),
                         },
                         self.get_reply_count_by_comment(id.clone()).await,
                         self.get_reaction_count_by_asset(id).await,
@@ -3282,6 +3295,7 @@ impl Database {
                                 }
                             },
                             edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
+                            ip: res.get("ip").unwrap().to_string(),
                         },
                         self.get_reply_count_by_comment(id.clone()).await,
                         self.get_reaction_count_by_asset(id).await,
@@ -3350,6 +3364,7 @@ impl Database {
                                 }
                             },
                             edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
+                            ip: res.get("ip").unwrap().to_string(),
                         },
                         if recurse == true {
                             self.get_reply_count_by_comment(id.clone()).await
@@ -3423,6 +3438,7 @@ impl Database {
                                 }
                             },
                             edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
+                            ip: res.get("ip").unwrap().to_string(),
                         },
                         self.get_reply_count_by_comment(id.clone()).await,
                         self.get_reaction_count_by_asset(id).await,
@@ -3475,7 +3491,13 @@ impl Database {
     /// # Arguments
     /// * `props` - [`CommentCreate`]
     /// * `author` - the ID of the user creating the comment
-    pub async fn create_comment(&self, props: CommentCreate, author: String) -> Result<()> {
+    /// * `ip` - the IP address of the user creating the comment
+    pub async fn create_comment(
+        &self,
+        props: CommentCreate,
+        author: String,
+        ip: String,
+    ) -> Result<()> {
         // make sure the response exists
         let response = match self.get_response(props.response.clone()).await {
             Ok(q) => q.1,
@@ -3493,6 +3515,15 @@ impl Database {
             {
                 return Err(DatabaseError::NotAllowed);
             }
+        }
+
+        if self
+            .auth
+            .get_ipblock_by_ip(ip.clone(), response.author.id.clone())
+            .await
+            .is_ok()
+        {
+            return Err(DatabaseError::Blocked);
         }
 
         // check content length
@@ -3547,14 +3578,15 @@ impl Database {
             timestamp,
             reply: None,
             edited: timestamp,
+            ip,
         };
 
         // create response
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            "INSERT INTO \"xcomments\" VALUES (?, ?, ?, ?, ?, ?, ?)"
+            "INSERT INTO \"xcomments\" VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xcomments\" VALEUS ($1, $2, $3, $4, $5, $6, $7)"
+            "INSERT INTO \"xcomments\" VALEUS ($1, $2, $3, $4, $5, $6, $7, $8)"
         }
         .to_string();
 
@@ -3567,6 +3599,7 @@ impl Database {
             .bind::<&String>(&comment.timestamp.to_string())
             .bind::<&String>(&props.reply)
             .bind::<&String>(&comment.timestamp.to_string())
+            .bind::<&String>(&comment.ip)
             .execute(c)
             .await
         {

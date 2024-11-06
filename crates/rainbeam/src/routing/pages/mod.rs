@@ -1894,7 +1894,7 @@ pub async fn ipbans_request(jar: CookieJar, State(database): State<Database>) ->
 }
 
 #[derive(Template)]
-#[template(path = "report.html")]
+#[template(path = "intents/report.html")]
 struct ReportTemplate {
     config: Config,
     profile: Option<Profile>,
@@ -1902,7 +1902,7 @@ struct ReportTemplate {
     notifs: usize,
 }
 
-/// GET /site/report
+/// GET /intents/report
 pub async fn report_request(jar: CookieJar, State(database): State<Database>) -> impl IntoResponse {
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
@@ -1951,7 +1951,7 @@ pub async fn routes(database: Database) -> Router {
     Router::new()
         .route("/", get(homepage_request))
         .route("/site/about", get(about_request))
-        .route("/site/report", get(report_request))
+        .route("/intents/report", get(report_request))
         .route("/site/fun/carp", get(carp_request))
         // inbox
         .route("/inbox", get(inbox_request))
