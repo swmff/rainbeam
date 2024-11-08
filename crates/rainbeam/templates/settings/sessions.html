@@ -22,6 +22,11 @@
                     {% if let Some(profile) = profile %}
                     {% if let Some(ip) = profile.ips.get(i.to_owned()) %}
                     <code class="item" title="Session IP">{{ ip }}</code>
+                    {% endif %} {% if let Some(ctx) =
+                    profile.token_context.get(i.to_owned()) %}
+                    <code class="item" title="Session App"
+                        >{{ ctx.app_name() }}</code
+                    >
                     {% endif %} {% endif %}
                 </span>
 
@@ -31,7 +36,17 @@
                 {% endif %}
             </div>
 
-            <div class="card">
+            <div class="card flex flex-col gap-2">
+                {% if let Some(profile) = profile %} {% if let Some(ctx) =
+                profile.token_context.get(i.to_owned()) %} {% if let
+                Some(permissions) = ctx.permissions %}
+                <ul class="item" title="Session Permissions">
+                    {% for permission in permissions %}
+                    <li>{{ serde_json::to_string(permission).unwrap() }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %} {% endif %} {% endif %}
+
                 <button onclick="remove_session('{{ session }}')" class="red">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"

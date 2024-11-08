@@ -3,7 +3,7 @@ use crate::database::Database;
 use crate::model::{
     AuthError, IpBanCreate, IpBlockCreate, NotificationCreate, Permission, ProfileCreate,
     ProfileLogin, SetProfileBadges, SetProfileGroup, SetProfileMetadata, SetProfilePassword,
-    SetProfileTier, SetProfileUsername, WarningCreate,
+    SetProfileTier, SetProfileUsername, TokenContext, TokenPermission, WarningCreate,
 };
 use axum::body::Bytes;
 use axum::http::{HeaderMap, HeaderValue};
@@ -232,9 +232,10 @@ pub async fn login_request(
 
     ua.tokens.push(token_hashed);
     ua.ips.push(real_ip);
+    ua.token_context.push(TokenContext::default());
 
     database
-        .edit_profile_tokens_by_name(props.username.clone(), ua.tokens, ua.ips)
+        .edit_profile_tokens_by_id(props.username.clone(), ua.tokens, ua.ips, ua.token_context)
         .await
         .unwrap();
 
@@ -488,7 +489,14 @@ pub async fn update_my_tokens_request(
         }
     };
 
-    // edit ips
+    // for every token that doesn't have a context, insert the default context
+    for (i, _) in auth_user.tokens.clone().iter().enumerate() {
+        if let None = auth_user.token_context.get(i) {
+            auth_user.token_context.insert(i, TokenContext::default())
+        }
+    }
+
+    // get diff
     let mut removed_indexes = Vec::new();
 
     for (i, token) in auth_user.tokens.iter().enumerate() {
@@ -497,7 +505,8 @@ pub async fn update_my_tokens_request(
         }
     }
 
-    for i in removed_indexes {
+    // edit dependent vecs
+    for i in removed_indexes.clone() {
         if (auth_user.ips.len() < i) | (auth_user.ips.len() == 0) {
             break;
         }
@@ -505,9 +514,22 @@ pub async fn update_my_tokens_request(
         auth_user.ips.remove(i);
     }
 
+    for i in removed_indexes.clone() {
+        if (auth_user.token_context.len() < i) | (auth_user.token_context.len() == 0) {
+            break;
+        }
+
+        auth_user.token_context.remove(i);
+    }
+
     // return
     if let Err(e) = database
-        .edit_profile_tokens_by_name(auth_user.username, req.tokens, auth_user.ips)
+        .edit_profile_tokens_by_id(
+            auth_user.id,
+            req.tokens,
+            auth_user.ips,
+            auth_user.token_context,
+        )
         .await
     {
         return Json(DefaultReturn {
@@ -696,19 +718,35 @@ pub async fn set_tier_request(
 ) -> impl IntoResponse {
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
-            Ok(ua) => ua,
-            Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: None,
-                });
+        Some(c) => {
+            let token = c.value_trimmed().to_string();
+
+            match database.get_profile_by_unhashed(token.clone()).await {
+                Ok(ua) => {
+                    // check token permission
+                    if !ua
+                        .token_context_from_token(&token)
+                        .can_do(TokenPermission::Moderator)
+                    {
+                        return Json(DefaultReturn {
+                            success: false,
+                            message: AuthError::NotAllowed.to_string(),
+                            payload: None,
+                        });
+                    }
+
+                    // return
+                    ua
+                }
+                Err(e) => {
+                    return Json(DefaultReturn {
+                        success: false,
+                        message: e.to_string(),
+                        payload: None,
+                    });
+                }
             }
-        },
+        }
         None => {
             return Json(DefaultReturn {
                 success: false,
@@ -799,19 +837,35 @@ pub async fn set_password_request(
 ) -> impl IntoResponse {
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
-            Ok(ua) => ua,
-            Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: None,
-                });
+        Some(c) => {
+            let token = c.value_trimmed().to_string();
+
+            match database.get_profile_by_unhashed(token.clone()).await {
+                Ok(ua) => {
+                    // check token permission
+                    if !ua
+                        .token_context_from_token(&token)
+                        .can_do(TokenPermission::ManageAccount)
+                    {
+                        return Json(DefaultReturn {
+                            success: false,
+                            message: AuthError::NotAllowed.to_string(),
+                            payload: None,
+                        });
+                    }
+
+                    // return
+                    ua
+                }
+                Err(e) => {
+                    return Json(DefaultReturn {
+                        success: false,
+                        message: e.to_string(),
+                        payload: None,
+                    });
+                }
             }
-        },
+        }
         None => {
             return Json(DefaultReturn {
                 success: false,
@@ -927,19 +981,35 @@ pub async fn set_username_request(
 ) -> impl IntoResponse {
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
-            Ok(ua) => ua,
-            Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: None,
-                });
+        Some(c) => {
+            let token = c.value_trimmed().to_string();
+
+            match database.get_profile_by_unhashed(token.clone()).await {
+                Ok(ua) => {
+                    // check token permission
+                    if !ua
+                        .token_context_from_token(&token)
+                        .can_do(TokenPermission::ManageAccount)
+                    {
+                        return Json(DefaultReturn {
+                            success: false,
+                            message: AuthError::NotAllowed.to_string(),
+                            payload: None,
+                        });
+                    }
+
+                    // return
+                    ua
+                }
+                Err(e) => {
+                    return Json(DefaultReturn {
+                        success: false,
+                        message: e.to_string(),
+                        payload: None,
+                    });
+                }
             }
-        },
+        }
         None => {
             return Json(DefaultReturn {
                 success: false,
@@ -1047,19 +1117,35 @@ pub async fn update_metdata_request(
 ) -> impl IntoResponse {
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
-            Ok(ua) => ua,
-            Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: (),
-                });
+        Some(c) => {
+            let token = c.value_trimmed().to_string();
+
+            match database.get_profile_by_unhashed(token.clone()).await {
+                Ok(ua) => {
+                    // check token permission
+                    if !ua
+                        .token_context_from_token(&token)
+                        .can_do(TokenPermission::ManageProfile)
+                    {
+                        return Json(DefaultReturn {
+                            success: false,
+                            message: AuthError::NotAllowed.to_string(),
+                            payload: (),
+                        });
+                    }
+
+                    // return
+                    ua
+                }
+                Err(e) => {
+                    return Json(DefaultReturn {
+                        success: false,
+                        message: e.to_string(),
+                        payload: (),
+                    });
+                }
             }
-        },
+        }
         None => {
             return Json(DefaultReturn {
                 success: false,
@@ -1164,19 +1250,35 @@ pub async fn update_badges_request(
 ) -> impl IntoResponse {
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
-            Ok(ua) => ua,
-            Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: (),
-                });
+        Some(c) => {
+            let token = c.value_trimmed().to_string();
+
+            match database.get_profile_by_unhashed(token.clone()).await {
+                Ok(ua) => {
+                    // check token permission
+                    if !ua
+                        .token_context_from_token(&token)
+                        .can_do(TokenPermission::Moderator)
+                    {
+                        return Json(DefaultReturn {
+                            success: false,
+                            message: AuthError::NotAllowed.to_string(),
+                            payload: (),
+                        });
+                    }
+
+                    // return
+                    ua
+                }
+                Err(e) => {
+                    return Json(DefaultReturn {
+                        success: false,
+                        message: e.to_string(),
+                        payload: (),
+                    });
+                }
             }
-        },
+        }
         None => {
             return Json(DefaultReturn {
                 success: false,

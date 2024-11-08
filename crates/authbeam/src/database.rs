@@ -1,6 +1,6 @@
 use crate::model::{
     AuthError, IpBan, IpBanCreate, IpBlock, IpBlockCreate, Profile, ProfileCreate, ProfileMetadata,
-    RelationshipStatus, Warning, WarningCreate,
+    RelationshipStatus, TokenContext, Warning, WarningCreate,
 };
 use crate::model::{Group, Notification, NotificationCreate, Permission, UserFollow};
 
@@ -101,17 +101,18 @@ impl Database {
 
         let _ = sqlquery(
             "CREATE TABLE IF NOT EXISTS \"xprofiles\" (
-                id       TEXT,
-                username TEXT,
-                password TEXT,
-                tokens   TEXT,
-                metadata TEXT,
-                joined   TEXT,
-                gid      TEXT,
-                salt     TEXT,
-                ips      TEXT,
-                badges   TEXT,
-                tier     TEXT
+                id            TEXT,
+                username      TEXT,
+                password      TEXT,
+                tokens        TEXT,
+                metadata      TEXT,
+                joined        TEXT,
+                gid           TEXT,
+                salt          TEXT,
+                ips           TEXT,
+                badges        TEXT,
+                tier          TEXT,
+                token_context TEXT
             )",
         )
         .execute(c)
@@ -274,6 +275,10 @@ impl Database {
                 Ok(m) => m,
                 Err(_) => return Err(AuthError::ValueError),
             },
+            token_context: match serde_json::from_str(row.get("token_context").unwrap()) {
+                Ok(m) => m,
+                Err(_) => return Err(AuthError::ValueError),
+            },
             metadata: match serde_json::from_str(row.get("metadata").unwrap()) {
                 Ok(m) => m,
                 Err(_) => return Err(AuthError::ValueError),
@@ -333,6 +338,10 @@ impl Database {
                 Ok(m) => m,
                 Err(_) => return Err(AuthError::ValueError),
             },
+            token_context: match serde_json::from_str(row.get("token_context").unwrap()) {
+                Ok(m) => m,
+                Err(_) => return Err(AuthError::ValueError),
+            },
             metadata: match serde_json::from_str(row.get("metadata").unwrap()) {
                 Ok(m) => m,
                 Err(_) => return Err(AuthError::ValueError),
@@ -387,6 +396,10 @@ impl Database {
                 Err(_) => return Err(AuthError::ValueError),
             },
             ips: match serde_json::from_str(row.get("ips").unwrap()) {
+                Ok(m) => m,
+                Err(_) => return Err(AuthError::ValueError),
+            },
+            token_context: match serde_json::from_str(row.get("token_context").unwrap()) {
                 Ok(m) => m,
                 Err(_) => return Err(AuthError::ValueError),
             },
@@ -458,6 +471,10 @@ impl Database {
                 Err(_) => return Err(AuthError::ValueError),
             },
             ips: match serde_json::from_str(row.get("ips").unwrap()) {
+                Ok(m) => m,
+                Err(_) => return Err(AuthError::ValueError),
+            },
+            token_context: match serde_json::from_str(row.get("token_context").unwrap()) {
                 Ok(m) => m,
                 Err(_) => return Err(AuthError::ValueError),
             },
@@ -536,6 +553,10 @@ impl Database {
                 Err(_) => return Err(AuthError::ValueError),
             },
             ips: match serde_json::from_str(row.get("ips").unwrap()) {
+                Ok(m) => m,
+                Err(_) => return Err(AuthError::ValueError),
+            },
+            token_context: match serde_json::from_str(row.get("token_context").unwrap()) {
                 Ok(m) => m,
                 Err(_) => return Err(AuthError::ValueError),
             },
@@ -630,9 +651,9 @@ impl Database {
 
         // ...
         let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
-            "INSERT INTO \"xprofiles\" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            "INSERT INTO \"xprofiles\" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xprofiles\" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)"
+            "INSERT INTO \"xprofiles\" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)"
         };
 
         let user_token_unhashed: String = databeam::utility::uuid();
@@ -658,6 +679,7 @@ impl Database {
             .bind::<&String>(&serde_json::to_string::<Vec<String>>(&vec![user_ip]).unwrap())
             .bind::<&str>("[]")
             .bind::<i32>(0)
+            .bind::<&str>("[]")
             .execute(c)
             .await
         {
@@ -773,42 +795,45 @@ impl Database {
         }
     }
 
-    /// Update a [`Profile`]'s tokens (and IPs) by its `username`
-    pub async fn edit_profile_tokens_by_name(
+    /// Update a [`Profile`]'s tokens (and IPs/token_contexts) by its `id`
+    pub async fn edit_profile_tokens_by_id(
         &self,
-        name: String,
+        id: String,
         tokens: Vec<String>,
         ips: Vec<String>,
+        token_context: Vec<TokenContext>,
     ) -> Result<()> {
         // make sure user exists
-        let ua = match self.get_profile_by_username(name.clone()).await {
+        let ua = match self.get_profile(id.clone()).await {
             Ok(ua) => ua,
             Err(e) => return Err(e),
         };
 
         // update user
         let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
-            "UPDATE \"xprofiles\" SET \"tokens\" = ?, \"ips\" = ? WHERE \"username\" = ?"
+            "UPDATE \"xprofiles\" SET \"tokens\" = ?, \"ips\" = ?, \"token_context\" = ? WHERE \"id\" = ?"
         } else {
-            "UPDATE \"xprofiles\" SET (\"tokens\", \"ips\") = ($1, $2) WHERE \"username\" = $3"
+            "UPDATE \"xprofiles\" SET (\"tokens\", \"ips\") = ($1, $2, $3) WHERE \"id\" = $4"
         };
 
         let c = &self.base.db.client;
 
         let tokens = &serde_json::to_string(&tokens).unwrap();
         let ips = &serde_json::to_string(&ips).unwrap();
+        let token_context = &serde_json::to_string(&token_context).unwrap();
 
         match sqlquery(query)
             .bind::<&String>(tokens)
             .bind::<&String>(ips)
-            .bind::<&String>(&name)
+            .bind::<&String>(token_context)
+            .bind::<&String>(&ua.id)
             .execute(c)
             .await
         {
             Ok(_) => {
                 self.base
                     .cachedb
-                    .remove(format!("rbeam.auth.profile:{}", name))
+                    .remove(format!("rbeam.auth.profile:{}", id))
                     .await;
 
                 self.base

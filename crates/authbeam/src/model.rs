@@ -26,11 +26,13 @@ pub struct Profile {
     pub tokens: Vec<String>,
     /// User IPs (these line up with the tokens in `tokens`)
     pub ips: Vec<String>,
+    /// Extra information about tokens (these line up with the tokens in `tokens`)
+    pub token_context: Vec<TokenContext>,
     /// Extra user information
     pub metadata: ProfileMetadata,
     /// User badges
     ///
-    /// Vec<(Text, Background, Text Color)>
+    /// `Vec<(Text, Background, Text Color)>`
     pub badges: Vec<(String, String, String)>,
     /// User group
     pub group: i32,
@@ -50,6 +52,7 @@ impl Profile {
             salt: String::new(),
             tokens: Vec::new(),
             ips: Vec::new(),
+            token_context: Vec::new(),
             group: 0,
             joined: 0,
             metadata: ProfileMetadata::default(),
@@ -67,6 +70,7 @@ impl Profile {
             salt: String::new(),
             tokens: Vec::new(),
             ips: Vec::new(),
+            token_context: Vec::new(),
             group: 0,
             joined: 0,
             metadata: ProfileMetadata::default(),
@@ -103,6 +107,21 @@ impl Profile {
         self.password = String::new();
         self.metadata = ProfileMetadata::default();
     }
+
+    /// Get context from a token
+    pub fn token_context_from_token(&self, token: &str) -> TokenContext {
+        let token = databeam::utility::hash(token.to_string());
+
+        if let Some(pos) = self.tokens.iter().position(|t| *t == token) {
+            if let Some(ctx) = self.token_context.get(pos) {
+                return ctx.to_owned();
+            }
+
+            return TokenContext::default();
+        }
+
+        return TokenContext::default();
+    }
 }
 
 impl Default for Profile {
@@ -114,11 +133,65 @@ impl Default for Profile {
             salt: String::new(),
             tokens: Vec::new(),
             ips: Vec::new(),
+            token_context: Vec::new(),
             metadata: ProfileMetadata::default(),
             badges: Vec::new(),
             group: 0,
             joined: databeam::utility::unix_epoch_timestamp(),
             tier: 0,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct TokenContext {
+    #[serde(default)]
+    pub app: Option<String>,
+    #[serde(default)]
+    pub permissions: Option<Vec<TokenPermission>>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+pub enum TokenPermission {
+    /// Manage UGC (user-generated-content) uploaded by the user
+    ManageAssets,
+    /// Manage user metadata
+    ManageProfile,
+    /// Manage all user fields
+    ManageAccount,
+    /// Execute moderator actions
+    Moderator,
+}
+
+impl TokenContext {
+    /// Get the value of the token's `app` field
+    ///
+    /// Returns an empty string if the field value is `None`
+    pub fn app_name(&self) -> String {
+        if let Some(ref name) = self.app {
+            return name.to_string();
+        }
+
+        String::new()
+    }
+
+    /// Check if the token has the given [`TokenPermission`]
+    ///
+    /// ### Returns `true` if the field value is `None`
+    pub fn can_do(&self, permission: TokenPermission) -> bool {
+        if let Some(ref permissions) = self.permissions {
+            return permissions.contains(&permission);
+        }
+
+        return true;
+    }
+}
+
+impl Default for TokenContext {
+    fn default() -> Self {
+        Self {
+            app: None,
+            permissions: None,
         }
     }
 }

@@ -2985,7 +2985,12 @@ impl Database {
             .await
         {
             Some(c) => match serde_json::from_str::<ResponseComment>(c.as_str()) {
-                Ok(c) => {
+                Ok(mut c) => {
+                    c.author = match self.get_profile(c.author.id).await {
+                        Ok(ua) => ua,
+                        Err(e) => return Err(e),
+                    };
+
                     return Ok((
                         c,
                         if recurse == true {
@@ -2994,7 +2999,7 @@ impl Database {
                             0
                         },
                         self.get_reaction_count_by_asset(id).await,
-                    ))
+                    ));
                 }
                 Err(_) => {
                     // bad cache entry, remove and continue
