@@ -594,9 +594,18 @@ impl Database {
             "login",
             "sign_up",
             "settings",
+            "api",
+            "intents",
+            "circles",
+            "chats",
+            "responses",
+            "questions",
+            "comments",
+            "pages",
+            "inbox",
         ];
 
-        let regex = regex::RegexBuilder::new(r"[^\w_\-\.!]+$")
+        let regex = regex::RegexBuilder::new(r"[^\w_\-\.!]+")
             .multi_line(true)
             .build()
             .unwrap();
@@ -628,8 +637,8 @@ impl Database {
         }
 
         // ...
-        let username = props.username.clone();
-        let password = props.password.clone();
+        let username = props.username.trim().to_string();
+        let password = props.password.trim().to_string();
 
         // check captcha
         if let Err(_) = props
