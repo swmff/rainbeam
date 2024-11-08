@@ -132,8 +132,9 @@ endblock %} {% block head %}
     const spam = ["sent you a message"];
 
     for (const element of Array.from(
-        document.querySelectorAll("[do=spam_notif_check]"),
+        document.querySelectorAll("[do=notif_title]"),
     )) {
+        // check for spam
         for (const spam_text of spam) {
             if (element.innerText.includes(spam_text)) {
                 fetch(
@@ -143,6 +144,21 @@ endblock %} {% block head %}
                     },
                 );
             }
+        }
+
+        // add user profile picture
+        if (element.innerText.startsWith("@")) {
+            const username = element.innerText.split(" ")[0].replace("@", "");
+            const anchor = element.children[0].children[0];
+
+            anchor.innerHTML = `<img
+                title="${username}'s avatar"
+                src="/api/v1/profiles/${username}/avatar"
+                alt="@${username}"
+                class="avatar"
+                loading="lazy"
+                style="--size: 20px; margin-right: 0.25rem"
+            />${anchor.innerHTML}`;
         }
     }
 </script>
