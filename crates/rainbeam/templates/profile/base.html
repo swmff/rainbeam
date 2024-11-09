@@ -445,7 +445,7 @@ config.name }}{% endblock %} {% block head %}
                     </button>
 
                     <script>
-                        globalThis.cancel_fr = function (username) {
+                        globalThis.cancel_fr = function () {
                             if (!confirm("Are you sure you want to do this?")) {
                                 return;
                             }

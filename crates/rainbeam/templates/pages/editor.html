@@ -69,7 +69,7 @@ endblock %} {% block head %}
         </div>
 
         <div class="card-nest shadow w-full" id="editor">
-            <div class="card flex justify-between gap-2">
+            <div class="card flex justify-between gap-2" style="position: sticky; top: 0; z-index: 3;">
                 <div class="flex gap-2" id="tabs">
                     <button class="button tab primary" id="text_button">
                         Edit
@@ -146,14 +146,8 @@ endblock %} {% block head %}
             </div>
 
             <style>
-                #text_tab {
-                    height: 40rem;
-                }
-
-                @media screen and (max-width: 900px) {
-                    #text_tab {
-                        height: 35rem;
-                    }
+                .CodeMirror {
+                    height: auto !important;
                 }
             </style>
         </div>

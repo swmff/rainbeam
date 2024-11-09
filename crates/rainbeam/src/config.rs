@@ -77,6 +77,9 @@ pub struct Config {
     /// Tiered benefits
     #[serde(default)]
     pub tiers: Tiers,
+    /// A global site announcement shown at the top of the page
+    #[serde(default)]
+    pub alert: String,
 }
 
 impl Default for Config {
@@ -93,6 +96,7 @@ impl Default for Config {
             blocked_hosts: Vec::new(),
             migration: false,
             tiers: Tiers::default(),
+            alert: String::new(),
         }
     }
 }

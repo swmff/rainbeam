@@ -1,4 +1,4 @@
-{% extends "social_base.html" %} {% block pillmenu %}
+{% extends "./social_base.html" %} {% block pillmenu %}
 <a href="/@{{ other.username }}/followers">
     Followers
     <b class="notification">{{ followers_count }}</b>
@@ -13,7 +13,10 @@
     Friends
     <b class="notification">{{ friends_count }}</b>
 </a>
-{% endblock %} {% block panel %}
+
+{% if is_self | is_helper %}
+<a href="/@{{ other.username }}/friends/requests">Requests</a>
+{% endif %} {% endblock %} {% block panel %}
 <!-- friends -->
 <div id="friends" class="flex flex-col items-center gap-4">
     <!-- prettier-ignore -->

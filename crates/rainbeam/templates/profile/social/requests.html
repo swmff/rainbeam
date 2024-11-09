@@ -1,0 +1,102 @@
+{% extends "./social_base.html" %} {% block pillmenu %}
+<a href="/@{{ other.username }}/followers">
+    Followers
+    <b class="notification">{{ followers_count }}</b>
+</a>
+
+<a href="/@{{ other.username }}/following">
+    Following
+    <b class="notification">{{ following_count }}</b>
+</a>
+
+<a href="/@{{ other.username }}/friends">
+    Friends
+    <b class="notification">{{ friends_count }}</b>
+</a>
+
+{% if is_self | is_helper %}
+<a href="/@{{ other.username }}/friends/requests" class="active">Requests</a>
+{% endif %} {% endblock %} {% block panel %}
+<!-- friend requests -->
+<div id="requests">
+    <table class="w-full">
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>User</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        {% if let Some(user) = profile %}
+
+        <tbody>
+            {% for request in requests %} {% let outbound = request.0.id ==
+            user.id %}
+            <tr>
+                <td>{% if outbound %}Outbound{% else %}Inbound{% endif %}</td>
+
+                <td>
+                    {% if outbound %}
+                    <a href="/@{{ request.1.username }}">
+                        {{ request.1.username }}
+                    </a>
+                    {% else %}
+                    <a href="/@{{ request.0.username }}">
+                        {{ request.0.username }}
+                    </a>
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if !outbound %}
+                    <a
+                        href="/@{{ request.0.username }}/relationship/friend_accept"
+                        >Accept</a
+                    >
+                    {% else %}
+                    <a href="javascript:cancel_fr('{{ request.1.username }}')"
+                        >Cancel</a
+                    >
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        {% endif %}
+    </table>
+
+    <script>
+        globalThis.cancel_fr = function (username) {
+            if (!confirm("Are you sure you want to do this?")) {
+                return;
+            }
+
+            fetch(`/api/v1/profiles/${username}/relationship`, {
+                method: "DELETE",
+            })
+                .then((res) => res.json())
+                .then((res) => {
+                    trigger("app:toast", [
+                        res.success ? "success" : "error",
+                        res.success ? "Request cancelled!" : res.message,
+                    ]);
+
+                    window.close();
+                });
+        };
+    </script>
+
+    <!-- pagination buttons -->
+    {% if requests.len() != 0 %}
+    <div class="flex justify-between gap-2 w-full">
+        {% if page > 0 %}
+        <a class="button secondary" href="?page={{ page - 1 }}">Previous</a>
+        {% else %}
+        <div></div>
+        {% endif %}
+        <a class="button secondary" href="?page={{ page + 1 }}">Next</a>
+    </div>
+    {% endif %}
+</div>
+{% call super() %} {% endblock %}

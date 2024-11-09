@@ -1979,6 +1979,10 @@ pub async fn routes(database: Database) -> Router {
         .route("/@:username/following", get(profile::following_request))
         .route("/@:username/followers", get(profile::followers_request))
         .route("/@:username/friends", get(profile::friends_request))
+        .route(
+            "/@:username/friends/requests",
+            get(profile::friend_requests_request),
+        )
         .route("/@:username/embed", get(profile::profile_embed_request))
         .route(
             "/@:username/relationship/friend_accept",

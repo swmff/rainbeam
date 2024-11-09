@@ -616,7 +616,7 @@ pub async fn profile_embed_request(
 }
 
 #[derive(Template)]
-#[template(path = "profile/followers.html")]
+#[template(path = "profile/social/followers.html")]
 struct FollowersTemplate {
     config: Config,
     profile: Option<Profile>,
@@ -630,6 +630,7 @@ struct FollowersTemplate {
     page: i32,
     // ...
     is_self: bool,
+    is_helper: bool,
 }
 
 /// GET /@:username/followers
@@ -750,6 +751,7 @@ pub async fn followers_request(
             page: query.page,
             // ...
             is_self,
+            is_helper,
         }
         .render()
         .unwrap(),
@@ -757,7 +759,7 @@ pub async fn followers_request(
 }
 
 #[derive(Template)]
-#[template(path = "profile/following.html")]
+#[template(path = "profile/social/following.html")]
 struct FollowingTemplate {
     config: Config,
     profile: Option<Profile>,
@@ -771,6 +773,7 @@ struct FollowingTemplate {
     page: i32,
     // ...
     is_self: bool,
+    is_helper: bool,
 }
 
 /// GET /@:username/following
@@ -891,6 +894,7 @@ pub async fn following_request(
             page: query.page,
             // ...
             is_self,
+            is_helper,
         }
         .render()
         .unwrap(),
@@ -898,7 +902,7 @@ pub async fn following_request(
 }
 
 #[derive(Template)]
-#[template(path = "profile/friends.html")]
+#[template(path = "profile/social/friends.html")]
 struct FriendsTemplate {
     config: Config,
     profile: Option<Profile>,
@@ -912,6 +916,7 @@ struct FriendsTemplate {
     page: i32,
     // ...
     is_self: bool,
+    is_helper: bool,
 }
 
 /// GET /@:username/friends
@@ -1036,6 +1041,113 @@ pub async fn friends_request(
             page: query.page,
             // ...
             is_self,
+            is_helper,
+        }
+        .render()
+        .unwrap(),
+    )
+}
+
+#[derive(Template)]
+#[template(path = "profile/social/requests.html")]
+struct FriendRequestsTemplate {
+    config: Config,
+    profile: Option<Profile>,
+    unread: usize,
+    notifs: usize,
+    other: Profile,
+    requests: Vec<(Profile, Profile)>,
+    followers_count: usize,
+    following_count: usize,
+    friends_count: usize,
+    page: i32,
+    // ...
+    is_self: bool,
+    is_helper: bool,
+}
+
+/// GET /@:username/friends/requests
+pub async fn friend_requests_request(
+    jar: CookieJar,
+    Path(username): Path<String>,
+    State(database): State<Database>,
+    Query(query): Query<PaginatedQuery>,
+) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => return Html(DatabaseError::NotAllowed.to_html(database)),
+        },
+        None => return Html(DatabaseError::NotAllowed.to_html(database)),
+    };
+
+    let unread = match database
+        .get_questions_by_recipient(auth_user.id.to_owned())
+        .await
+    {
+        Ok(unread) => unread.len(),
+        Err(_) => 0,
+    };
+
+    let notifs = database
+        .auth
+        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .await;
+
+    let is_helper = {
+        let group = match database.auth.get_group_by_id(auth_user.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        group.permissions.contains(&Permission::Helper)
+    };
+
+    let other = match database
+        .auth
+        .get_profile_by_username(username.clone())
+        .await
+    {
+        Ok(ua) => ua,
+        Err(e) => return Html(e.to_string()),
+    };
+
+    let is_self = auth_user.id == other.id;
+
+    if !is_self && !is_helper {
+        return Html(DatabaseError::NotAllowed.to_html(database));
+    }
+
+    Html(
+        FriendRequestsTemplate {
+            config: database.server_options.clone(),
+            profile: Some(auth_user),
+            unread,
+            notifs,
+            other: other.clone(),
+            requests: database
+                .auth
+                .get_user_participating_relationships_of_status_paginated(
+                    other.id.clone(),
+                    RelationshipStatus::Pending,
+                    query.page,
+                )
+                .await
+                .unwrap(),
+            followers_count: database.auth.get_followers_count(other.id.clone()).await,
+            following_count: database.auth.get_following_count(other.id.clone()).await,
+            friends_count: database
+                .auth
+                .get_friendship_count_by_user(other.id.clone())
+                .await,
+            page: query.page,
+            // ...
+            is_self,
+            is_helper,
         }
         .render()
         .unwrap(),
@@ -1858,7 +1970,7 @@ pub async fn outbox_request(
 }
 
 #[derive(Template)]
-#[template(path = "profile/friend_request.html")]
+#[template(path = "profile/social/friend_request.html")]
 struct FriendRequestTemplate {
     config: Config,
     profile: Option<Profile>,

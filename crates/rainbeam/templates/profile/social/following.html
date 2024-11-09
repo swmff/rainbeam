@@ -1,10 +1,10 @@
-{% extends "social_base.html" %} {% block pillmenu %}
-<a href="/@{{ other.username }}/followers" class="active">
+{% extends "./social_base.html" %} {% block pillmenu %}
+<a href="/@{{ other.username }}/followers">
     Followers
     <b class="notification">{{ followers_count }}</b>
 </a>
 
-<a href="/@{{ other.username }}/following">
+<a href="/@{{ other.username }}/following" class="active">
     Following
     <b class="notification">{{ following_count }}</b>
 </a>
@@ -13,23 +13,26 @@
     Friends
     <b class="notification">{{ friends_count }}</b>
 </a>
-{% endblock %} {% block panel %}
+
+{% if is_self | is_helper %}
+<a href="/@{{ other.username }}/friends/requests">Requests</a>
+{% endif %} {% endblock %} {% block panel %}
 <!-- followers -->
-<div id="followers" class="flex flex-col items-center gap-4">
+<div id="following" class="flex flex-col items-center gap-4">
     <!-- prettier-ignore -->
-    {% for card in followers %}
-        {% let user = card.1.clone() %}
+    {% for card in following %}
+        {% let user = card.2.clone() %}
         {% include "components/fetch_profile_card.html" %}
     {% endfor %}
 
     <!-- pagination buttons -->
-    {% if followers_count != 0 %}
+    {% if following_count != 0 %}
     <div class="flex justify-between gap-2 w-full">
         {% if page > 0 %}
         <a class="button secondary" href="?page={{ page - 1 }}">Previous</a>
         {% else %}
         <div></div>
-        {% endif %} {% if followers.len() != 0 %}
+        {% endif %} {% if following.len() != 0 %}
         <a class="button secondary" href="?page={{ page + 1 }}">Next</a>
         {% endif %}
     </div>
