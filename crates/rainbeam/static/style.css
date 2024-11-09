@@ -47,6 +47,7 @@
 
 .dark.midnight,
 .dark.midnight * {
+    --lit: 6% !important;
     --color-surface: hsl(0, 0%, 12%);
     --color-lowered: hsl(0, 0%, 18%);
     --color-raised: hsl(0, 0%, 15%);
@@ -1820,7 +1821,7 @@ html:not(.legacy) * {
 .dark:not(.legacy) * {
     --hue: 0;
     --sat: 0%;
-    --lit: 8%;
+    --lit: 10%;
     --color-surface: hsl(var(--hue), var(--sat), calc(0% + var(--lit)));
     --color-lowered: hsl(var(--hue), var(--sat), calc(6% + var(--lit)));
     --color-raised: hsl(var(--hue), var(--sat), calc(2% + var(--lit)));
