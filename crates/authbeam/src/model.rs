@@ -161,6 +161,10 @@ pub enum TokenPermission {
     ManageAccount,
     /// Execute moderator actions
     Moderator,
+    /// Generate tokens on behalf of the account
+    ///
+    /// Generated tokens cannot have any permissions the token used to generate it doesn't have
+    GenerateTokens,
 }
 
 impl TokenContext {
@@ -481,6 +485,7 @@ pub struct IpBlockCreate {
 #[derive(Debug)]
 pub enum AuthError {
     MustBeUnique,
+    OutOfScope,
     NotAllowed,
     ValueError,
     NotFound,
@@ -492,11 +497,14 @@ impl AuthError {
     pub fn to_string(&self) -> String {
         use AuthError::*;
         match self {
-            MustBeUnique => String::from("One of the given values must be unique."),
-            NotAllowed => String::from("You are not allowed to access this resource."),
-            ValueError => String::from("One of the field values given is invalid."),
-            NotFound => String::from("No asset with this ID could be found."),
-            TooLong => String::from("Given data is too long."),
+            MustBeUnique => String::from("One of the given values must be unique. (MustBeUnique)"),
+            OutOfScope => String::from(
+                "Cannot generate tokens with permissions the provided token doesn't have. (OutOfScope)",
+            ),
+            NotAllowed => String::from("You are not allowed to access this resource. (NotAllowed)"),
+            ValueError => String::from("One of the field values given is invalid. (ValueError)"),
+            NotFound => String::from("No asset with this ID could be found. (NotFound)"),
+            TooLong => String::from("Given data is too long. (TooLong)"),
             _ => String::from("An unspecified error has occured"),
         }
     }

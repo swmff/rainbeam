@@ -138,7 +138,7 @@ endblock %} {% block head %}
         for (const spam_text of spam) {
             if (element.innerText.includes(spam_text)) {
                 fetch(
-                    `/api/auth/notifications/${element.getAttribute("data-id")}`,
+                    `/api/v0/auth/notifications/${element.getAttribute("data-id")}`,
                     {
                         method: "DELETE",
                     },

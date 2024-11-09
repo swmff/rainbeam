@@ -411,7 +411,7 @@
                     return;
                 }
 
-                fetch(`/api/auth/ipblocks/${id}`, {
+                fetch(`/api/v0/auth/ipblocks/${id}`, {
                     method: "DELETE",
                 })
                     .then((res) => res.json())
@@ -594,7 +594,7 @@
             .getElementById("change_username")
             .addEventListener("submit", (e) => {
                 e.preventDefault();
-                fetch("/api/auth/profile/{{ profile.username }}/username", {
+                fetch("/api/v0/auth/profile/{{ profile.username }}/username", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -621,7 +621,7 @@
             .getElementById("change_password")
             .addEventListener("submit", (e) => {
                 e.preventDefault();
-                fetch("/api/auth/profile/{{ profile.username }}/password", {
+                fetch("/api/v0/auth/profile/{{ profile.username }}/password", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -653,7 +653,7 @@
                     return;
                 }
 
-                fetch("/api/auth/me/delete", {
+                fetch("/api/v0/auth/me/delete", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",

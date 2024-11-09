@@ -85,7 +85,7 @@
                         return;
                     }
 
-                    fetch("/api/auth/profile/{{ other.username }}/badges", {
+                    fetch("/api/v0/auth/profile/{{ other.username }}/badges", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -136,7 +136,7 @@
                         return;
                     }
 
-                    fetch("/api/auth/profile/{{ other.username }}/password", {
+                    fetch("/api/v0/auth/profile/{{ other.username }}/password", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -225,7 +225,7 @@
 <script>
     function warn_user(e, user) {
         e.preventDefault();
-        fetch("/api/auth/warnings", {
+        fetch("/api/v0/auth/warnings", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -257,7 +257,7 @@
             return;
         }
 
-        fetch("/api/auth/ipbans", {
+        fetch("/api/v0/auth/ipbans", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -312,7 +312,7 @@
             return;
         }
 
-        fetch("/api/auth/profile/{{ other.username }}/tier", {
+        fetch("/api/v0/auth/profile/{{ other.username }}/tier", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

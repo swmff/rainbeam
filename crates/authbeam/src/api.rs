@@ -47,6 +47,7 @@ pub fn routes(database: Database) -> Router {
         .route("/ipblocks", post(create_ipblock_request))
         .route("/ipblocks/:id", delete(delete_ipblock_request))
         // me
+        .route("/me/tokens/generate", post(generate_token_request))
         .route("/me/tokens", post(update_my_tokens_request))
         .route("/me/delete", post(delete_me_request))
         .route("/me", get(me_request))
@@ -454,6 +455,130 @@ pub async fn delete_me_request(
     })
 }
 
+/// Generate a new token and session (like logging in while already logged in)
+pub async fn generate_token_request(
+    jar: CookieJar,
+    headers: HeaderMap,
+    State(database): State<Database>,
+    Json(props): Json<TokenContext>,
+) -> impl IntoResponse {
+    // get user from token
+    let mut existing_permissions: Option<Vec<TokenPermission>> = None;
+    let mut auth_user = match jar.get("__Secure-Token") {
+        Some(c) => {
+            let token = c.value_trimmed().to_string();
+
+            match database.get_profile_by_unhashed(token.clone()).await {
+                Ok(ua) => {
+                    // check token permission
+                    let token = ua.token_context_from_token(&token);
+
+                    if let Some(ref permissions) = token.permissions {
+                        existing_permissions = Some(permissions.to_owned())
+                    }
+
+                    if !token.can_do(TokenPermission::GenerateTokens) {
+                        return Json(DefaultReturn {
+                            success: false,
+                            message: AuthError::NotAllowed.to_string(),
+                            payload: None,
+                        });
+                    }
+
+                    // return
+                    ua
+                }
+                Err(e) => {
+                    return Json(DefaultReturn {
+                        success: false,
+                        message: e.to_string(),
+                        payload: None,
+                    });
+                }
+            }
+        }
+        None => {
+            return Json(DefaultReturn {
+                success: false,
+                message: AuthError::NotAllowed.to_string(),
+                payload: None,
+            });
+        }
+    };
+
+    // for every token that doesn't have a context, insert the default context
+    for (i, _) in auth_user.tokens.clone().iter().enumerate() {
+        if let None = auth_user.token_context.get(i) {
+            auth_user.token_context.insert(i, TokenContext::default())
+        }
+    }
+
+    // get real ip
+    let real_ip = if let Some(ref real_ip_header) = database.config.real_ip_header {
+        headers
+            .get(real_ip_header.to_owned())
+            .unwrap_or(&HeaderValue::from_static(""))
+            .to_str()
+            .unwrap_or("")
+            .to_string()
+    } else {
+        String::new()
+    };
+
+    // check ip
+    if database.get_ipban_by_ip(real_ip.clone()).await.is_ok() {
+        return Json(DefaultReturn {
+            success: false,
+            message: AuthError::NotAllowed.to_string(),
+            payload: None,
+        });
+    }
+
+    // check given context
+    if let Some(ref permissions) = props.permissions {
+        // make sure we don't want anything we don't have
+        // if our permissions are "None", allow any permission to be granted
+        for permission in permissions {
+            if let Some(ref existing) = existing_permissions {
+                if !existing.contains(permission) {
+                    return Json(DefaultReturn {
+                        success: false,
+                        message: AuthError::OutOfScope.to_string(),
+                        payload: None,
+                    });
+                }
+            } else {
+                break;
+            }
+        }
+    }
+
+    // ...
+    let token = databeam::utility::uuid();
+    let token_hashed = databeam::utility::hash(token.clone());
+
+    auth_user.tokens.push(token_hashed);
+    auth_user.ips.push(String::new()); // don't actually store ip, this endpoint is used by external apps
+    auth_user.token_context.push(props);
+
+    database
+        .edit_profile_tokens_by_id(
+            auth_user.id,
+            auth_user.tokens,
+            auth_user.ips,
+            auth_user.token_context,
+        )
+        .await
+        .unwrap();
+
+    // return
+    return Json(DefaultReturn {
+        success: true,
+        message: "Generated token!".to_string(),
+        payload: Some(token),
+    });
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct UpdateTokens {
     tokens: Vec<String>,
@@ -467,19 +592,35 @@ pub async fn update_my_tokens_request(
 ) -> impl IntoResponse {
     // get user from token
     let mut auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
-            Ok(ua) => ua,
-            Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: (),
-                });
+        Some(c) => {
+            let token = c.value_trimmed().to_string();
+
+            match database.get_profile_by_unhashed(token.clone()).await {
+                Ok(ua) => {
+                    // check token permission
+                    if !ua
+                        .token_context_from_token(&token)
+                        .can_do(TokenPermission::ManageAccount)
+                    {
+                        return Json(DefaultReturn {
+                            success: false,
+                            message: AuthError::NotAllowed.to_string(),
+                            payload: (),
+                        });
+                    }
+
+                    // return
+                    ua
+                }
+                Err(e) => {
+                    return Json(DefaultReturn {
+                        success: false,
+                        message: e.to_string(),
+                        payload: (),
+                    });
+                }
             }
-        },
+        }
         None => {
             return Json(DefaultReturn {
                 success: false,

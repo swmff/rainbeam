@@ -111,7 +111,7 @@ endblock %} {% block head %}
             return;
         }
 
-        fetch(`/api/auth/ipbans/${id}`, {
+        fetch(`/api/v0/auth/ipbans/${id}`, {
             method: "DELETE",
         })
             .then((res) => res.json())

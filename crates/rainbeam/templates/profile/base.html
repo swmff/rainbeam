@@ -595,7 +595,7 @@ config.name }}{% endblock %} {% block head %}
                                         return;
                                     }
 
-                                    fetch("/api/auth/profile/{{ other.id }}", {
+                                    fetch("/api/v0/auth/profile/{{ other.id }}", {
                                         method: "DELETE",
                                     })
                                         .then((res) => res.json())
@@ -1037,7 +1037,7 @@ config.name }}{% endblock %} {% block head %}
         globalThis.save_metadata = async function () {
             const res = await (
                 await fetch(
-                    "/api/auth/profile/{{ profile.username }}/metadata",
+                    "/api/v0/auth/profile/{{ profile.username }}/metadata",
                     {
                         method: "POST",
                         headers: {

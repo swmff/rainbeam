@@ -202,7 +202,7 @@ crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
             await app.debounce("settings:save_settings");
             const res = await (
                 await fetch(
-                    "/api/auth/profile/{{ profile.username }}/metadata",
+                    "/api/v0/auth/profile/{{ profile.username }}/metadata",
                     {
                         method: "POST",
                         headers: {

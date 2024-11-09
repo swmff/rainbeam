@@ -842,7 +842,7 @@ impl Database {
             Ok(_) => {
                 self.base
                     .cachedb
-                    .remove(format!("rbeam.auth.profile:{}", id))
+                    .remove(format!("rbeam.auth.profile:{}", ua.username))
                     .await;
 
                 self.base

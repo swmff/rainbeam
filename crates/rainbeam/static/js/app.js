@@ -101,8 +101,8 @@
             return;
         }
 
-        fetch("/api/auth/untag", { method: "POST" }).then(() => {
-            fetch("/api/auth/logout", { method: "POST" }).then(() => {
+        fetch("/api/v0/auth/untag", { method: "POST" }).then(() => {
+            fetch("/api/v0/auth/logout", { method: "POST" }).then(() => {
                 window.location.href = "/";
             });
         });
@@ -208,7 +208,7 @@
             return;
         }
 
-        fetch("/api/auth/ipbans", {
+        fetch("/api/v0/auth/ipbans", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

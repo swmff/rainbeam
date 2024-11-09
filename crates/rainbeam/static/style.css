@@ -2185,7 +2185,7 @@ body:not(.legacy *):has(a.button.title:hover) #cover {
     border-radius: var(--radius);
 }
 
-.notification:not(.legacy *) {
+.notification:not(.legacy *):not(.marker) {
     background: transparent;
     color: inherit;
     font-weight: 600;

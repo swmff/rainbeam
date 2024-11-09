@@ -62,7 +62,7 @@ endblock %} {% block content %}
             const error = document.getElementById("error");
             const success = document.getElementById("success");
             const forms = document.getElementById("forms");
-            const callback = "/api/auth/callback";
+            const callback = "/api/v0/auth/callback";
 
             document
                 .getElementById("register_form")
@@ -70,7 +70,7 @@ endblock %} {% block content %}
                     e.preventDefault();
 
                     // sign up
-                    const res = await fetch("/api/auth/register", {
+                    const res = await fetch("/api/v0/auth/register", {
                         method: "POST",
                         body: JSON.stringify({
                             username: e.target.username.value,

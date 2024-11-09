@@ -42,8 +42,8 @@ pub fn clean_metadata_raw(metadata: &CircleMetadata) -> CircleMetadata {
                 .1
                 .replace("<", "&lt;")
                 .replace(">", "&gt;")
-                .replace("url(\"", "url(\"/api/util/ext/image?img=")
-                .replace("url(https://", "url(/api/util/ext/image?img=https://")
+                .replace("url(\"", "url(\"/api/v0/util/ext/image?img=")
+                .replace("url(https://", "url(/api/v0/util/ext/image?img=https://")
                 .replace("<style>", "")
                 .replace("</style>", ""),
         );

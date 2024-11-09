@@ -6,7 +6,7 @@
             return;
         }
 
-        fetch(`/api/auth/warnings/${id}`, {
+        fetch(`/api/v0/auth/warnings/${id}`, {
             method: "DELETE",
         })
             .then((res) => res.json())

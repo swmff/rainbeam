@@ -8,7 +8,7 @@
         //     }
         // }
 
-        fetch(`/api/auth/notifications/${id}`, {
+        fetch(`/api/v0/auth/notifications/${id}`, {
             method: "DELETE",
         })
             .then((res) => res.json())
@@ -34,7 +34,7 @@
         //     }
         // }
 
-        fetch("/api/auth/notifications/clear", {
+        fetch("/api/v0/auth/notifications/clear", {
             method: "DELETE",
         })
             .then((res) => res.json())
