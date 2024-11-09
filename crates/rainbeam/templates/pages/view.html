@@ -2,7 +2,11 @@
 block head %}
 <meta name="description" content="{{ config.description }}" />
 {% endblock %} {% block nav_left %}
-<a class="button" href="/" title="Timeline">
+<a
+    class="button {% if profile.is_none() %}desktop{% endif %}"
+    href="/"
+    title="Timeline"
+>
     <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"

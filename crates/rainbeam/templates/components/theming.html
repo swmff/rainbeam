@@ -95,34 +95,6 @@
         <style id="sparkler_live:custom_css">{{ css|safe }}</style>
     {% endif %}
 {% endif %}
-{% if let Some(layout) = raw_metadata.kv.get("sparkler:nav_layout") %}
-    {% if layout.chars().nth(1).unwrap() == '2' %}
-        <style id="sparkler_live:nav_layout">
-            @media screen and (max-width: 650px) {
-                nav {
-                    position: fixed;
-                    top: unset;
-                    bottom: 0;
-                    margin-bottom: 0 !important;
-                }
-
-                nav .dropdown .inner {
-                    top: unset;
-                    bottom: calc(100% + 5px);
-                }
-
-                nav .nav_side {
-                    display: contents;
-                }
-
-                article {
-                    margin-top: 0.75rem;
-                    margin-bottom: 5rem;
-                }
-            }
-        </style>
-    {% endif %}
-{% endif %}
 </div>
 
 <script type="text/plain" id="theme">

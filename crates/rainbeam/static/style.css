@@ -1793,17 +1793,21 @@ table ol {
 }
 
 /* app */
-.app,
-.app * {
+html:not(.legacy),
+html:not(.legacy) * {
     --color-surface: hsl(0, 0%, 95%);
     --color-lowered: hsl(0, 0%, 93%);
     --color-raised: hsl(0, 0%, 98%);
     --color-super-lowered: hsl(0, 0%, 85%);
     --color-super-raised: hsl(0, 0%, 100%);
-    --color-primary: hsl(209, 93%, 49%);
+    /* --color-primary: hsl(209, 93%, 49%);
     --color-primary-hsl: 209, 93%, 49%;
     --color-primary-lowered: hsl(209, 93%, 44%);
-    --color-primary-raised: hsl(209, 93%, 54%);
+    --color-primary-raised: hsl(209, 93%, 54%); */
+    --color-primary: hsl(341, 59%, 49%);
+    --color-primary-hsl: 341, 59%, 49%;
+    --color-primary-lowered: hsl(341, 59%, 44%);
+    --color-primary-raised: var(--color-primary);
     --color-shadow: transparent;
     --frosted-glass: blur(100px) brightness(110%);
     --radius: 4px;
@@ -1812,22 +1816,21 @@ table ol {
         "Noto Color Emoji";
 }
 
-.dark.app,
-.dark.app * {
+.dark:not(.legacy),
+.dark:not(.legacy) * {
+    --hue: 0;
+    --sat: 0%;
     --lit: 8%;
-    --color-surface: hsl(0, 0%, calc(0% + var(--lit)));
-    --color-lowered: hsl(0, 0%, calc(6% + var(--lit)));
-    --color-raised: hsl(0, 0%, calc(2% + var(--lit)));
-    --color-super-lowered: hsl(0, 0%, calc(12% + var(--lit)));
-    --color-super-raised: hsl(0, 0%, calc(4% + var(--lit)));
-    --color-primary: hsl(209, 93%, 42%);
-    --color-primary-hsl: 209, 93%, 42%;
-    --color-primary-lowered: hsl(209, 93%, 47%);
-    --color-primary-raised: hsl(209, 93%, 52%);
+    --color-surface: hsl(var(--hue), var(--sat), calc(0% + var(--lit)));
+    --color-lowered: hsl(var(--hue), var(--sat), calc(6% + var(--lit)));
+    --color-raised: hsl(var(--hue), var(--sat), calc(2% + var(--lit)));
+    --color-super-lowered: hsl(var(--hue), var(--sat), calc(12% + var(--lit)));
+    --color-super-raised: hsl(var(--hue), var(--sat), calc(4% + var(--lit)));
+    --color-primary-raised: hsl(341, 59%, 64%);
     --frosted-glass: blur(100px) brightness(20%);
 }
 
-nav:is(.app *) {
+nav:not(.legacy *) {
     /* background: var(--color-raised); */
     background: transparent;
     backdrop-filter: var(--frosted-glass);
@@ -1836,65 +1839,65 @@ nav:is(.app *) {
     transition: backdrop-filter 0.15s;
 }
 
-nav:is(.app *):is([data-scroll="0"] *),
-nav:is(.app *):is(html:not([data-scroll]) *) {
+nav:not(.legacy *):is([data-scroll="0"] *),
+nav:not(.legacy *):is(html:not([data-scroll]) *) {
     backdrop-filter: none;
     border: none !important;
 }
 
-nav:is(.app *) button,
-nav:is(.app *) a.button {
+nav:not(.legacy *) button,
+nav:not(.legacy *) a.button {
     padding: 0 0.75rem;
     font-size: 14px;
     color: var(--color-text);
 }
 
-nav:is(.app *) a.button.title {
+nav:not(.legacy *) a.button.title {
     transition:
         color 0.25s,
         box-shadow 0.25s;
 }
 
-nav:is(.app *) a.button.title:hover {
+nav:not(.legacy *) a.button.title:hover {
     color: var(--color-text-primary) !important;
 }
 
-nav:is(.app *) a.button.title::after {
+nav:not(.legacy *) a.button.title::after {
     --h: calc(50% + 5px);
     height: var(--h);
     top: calc(50% - var(--h) / 2);
     z-index: -1;
 }
 
-nav:is(.app *) a.button.title:hover::after {
+nav:not(.legacy *) a.button.title:hover::after {
     box-shadow: 0 0 8px 2px hsla(var(--color-primary-hsl), 25%);
 }
 
-body:is(.app *):has(a.button.title:hover) #cover {
+body:not(.legacy *):has(a.button.title:hover) #cover {
     opacity: 25%;
 }
 
-.dropdown:is(.app *) .inner {
+.dropdown:not(.legacy *) .inner {
     padding: 0.25rem;
 }
 
 @media screen and (min-width: 901px) {
-    .dropdown:is(.app *) .inner {
+    .dropdown:not(.legacy *) .inner {
         background: transparent;
         backdrop-filter: var(--frosted-glass) brightness(150%);
     }
 
-    .dropdown:is(.app *) .inner:is(.dark *) {
+    .dropdown:not(.legacy *) .inner:is(.dark *) {
         backdrop-filter: var(--frosted-glass);
     }
 
-    nav:is(.app *) button::before,
-    nav:is(.app *) a::before {
+    nav:not(.legacy *) button::before,
+    nav:not(.legacy *) a::before {
         content: unset;
     }
 
-    nav:is(.app *) button::after,
-    nav:is(.app *) a::after {
+    nav:not(.legacy *) button::after,
+    nav:not(.legacy *) a::after {
         background: transparent;
         border-radius: var(--radius);
         width: 100%;
@@ -1908,34 +1911,34 @@ body:is(.app *):has(a.button.title:hover) #cover {
             opacity 0.15s;
     }
 
-    nav:is(.app *) button.active::after,
-    nav:is(.app *) a.active::after,
-    nav:is(.app *) button:not(.inner button):hover::after,
-    nav:is(.app *) a:not(.inner a):hover::after {
+    nav:not(.legacy *) button.active::after,
+    nav:not(.legacy *) a.active::after,
+    nav:not(.legacy *) button:not(.inner button):hover::after,
+    nav:not(.legacy *) a:not(.inner a):hover::after {
         background: var(--color-primary);
     }
 
-    nav:is(.app *) button:not(.inner button):hover::after,
-    nav:is(.app *) a:not(.inner a):hover::after {
+    nav:not(.legacy *) button:not(.inner button):hover::after,
+    nav:not(.legacy *) a:not(.inner a):hover::after {
         opacity: 75%;
     }
 
-    body:has(#is_chat_page) article:is(.app *) {
+    body:has(#is_chat_page) article:not(.legacy *) {
         padding-bottom: 1rem !important;
         height: calc(100dvh - 48px - 1rem) !important;
     }
 }
 
 @media screen and (max-width: 900px) {
-    nav:is(.app *) {
+    nav:not(.legacy *) {
         background: var(--color-raised);
         border-bottom: unset;
         border-top: solid 1px var(--color-super-lowered);
         padding: 0.5rem 0.25rem;
     }
 
-    nav:is(.app *) button,
-    nav:is(.app *) a.button {
+    nav:not(.legacy *) button,
+    nav:not(.legacy *) a.button {
         font-size: 12px;
         flex-direction: column;
         width: 60px;
@@ -1944,68 +1947,68 @@ body:is(.app *):has(a.button.title:hover) #cover {
         transform: scale(0.9);
     }
 
-    nav:is(.app *) button.active,
-    nav:is(.app *) a.button.active {
+    nav:not(.legacy *) button.active,
+    nav:not(.legacy *) a.button.active {
         color: var(--color-primary-raised);
         border: solid 1px var(--color-super-lowered);
         animation: grow 1 0.25s 0.1s forwards running;
     }
 
-    nav:is(.app *) button .notification.tr,
-    nav:is(.app *) a.button .notification.tr {
+    nav:not(.legacy *) button .notification.tr,
+    nav:not(.legacy *) a.button .notification.tr {
         font-size: 12px;
     }
 
-    nav:is(.app *) button::before,
-    nav:is(.app *) a::before {
+    nav:not(.legacy *) button::before,
+    nav:not(.legacy *) a::before {
         content: unset;
     }
 
-    nav:is(.app *) .nav_side {
+    nav:not(.legacy *) .nav_side {
         display: contents;
     }
 
     /* bottom nav */
-    nav:is(.app *) {
+    nav:not(.legacy *) {
         position: fixed;
         top: unset;
         bottom: 0;
         margin-bottom: 0 !important;
     }
 
-    nav:is(.app *) .dropdown .inner {
+    nav:not(.legacy *) .dropdown .inner {
         top: unset;
         bottom: calc(100% + 5px);
     }
 
-    nav:is(.app *) .nav_side {
+    nav:not(.legacy *) .nav_side {
         display: contents;
     }
 
-    article:is(.app *) {
+    article:not(.legacy *) {
         margin-top: 0;
         margin-bottom: 5rem;
     }
 
-    #backtotop:is(.app *) {
+    #backtotop:not(.legacy *) {
         bottom: calc(0.5rem + 65px);
     }
 
     /* chat page fixes */
-    body:has(#is_chat_page) article:is(.app *) {
+    body:has(#is_chat_page) article:not(.legacy *) {
         margin-top: 0 !important;
     }
 
     /* seamless sides */
-    article:is(.app *) {
+    article:not(.legacy *) {
         padding: 0;
     }
 
-    .card:is(.app *):not(.card *):not(include-partial *),
-    .card-nest:is(.app *):not(include-partial *),
-    .sidenav:is(.app *),
-    .pillmenu:is(.app *),
-    .response:is(.app *):not(include-partial *)
+    .card:not(.legacy *):not(.card *):not(include-partial *),
+    .card-nest:not(.legacy *):not(include-partial *),
+    .sidenav:not(.legacy *),
+    .pillmenu:not(.legacy *),
+    .response:not(.legacy *):not(include-partial *)
         .card:first-child[style="display: none"]:not(.response .response *)
         + .card:nth-child(n-1) {
         border-radius: 0 !important;
@@ -2013,38 +2016,38 @@ body:is(.app *):has(a.button.title:hover) #cover {
         border-right: none;
     }
 
-    .banner:is(.app *) {
+    .banner:not(.legacy *) {
         border-radius: 0 !important;
     }
 
-    .sidenav:is(.app *) *,
-    .pillmenu:is(.app *) * {
+    .sidenav:not(.legacy *) *,
+    .pillmenu:not(.legacy *) * {
         border-radius: 0 !important;
     }
 
-    .pillmenu:is(.app *) {
+    .pillmenu:not(.legacy *) {
         top: 0;
         position: sticky;
         z-index: 1;
     }
 
     /* toast to snackbar */
-    .toast:is(.app *) {
+    .toast:not(.legacy *) {
         width: 100% !important;
     }
 
-    #toast_zone:is(.app *) {
+    #toast_zone:not(.legacy *) {
         top: 0.5rem !important;
         bottom: unset;
     }
 
     /* profile */
-    #profile_box:is(.app *) {
+    #profile_box:not(.legacy *) {
         flex-direction: column;
         position: relative;
     }
 
-    #profile_box:is(.app *) #profile_card {
+    #profile_box:not(.legacy *) #profile_card {
         padding: 0.75rem !important;
         flex-direction: row;
         justify-content: space-between;
@@ -2053,32 +2056,32 @@ body:is(.app *):has(a.button.title:hover) #cover {
         min-width: 50%;
     }
 
-    #profile_box:is(.app *)
+    #profile_box:not(.legacy *)
         #profile_card
         .profile_card_section_1
         .profile_avatar_container {
         margin: -140px 0 0;
     }
 
-    #profile_box:is(.app *) #profile_card .profile_card_section_1 {
+    #profile_box:not(.legacy *) #profile_card .profile_card_section_1 {
         width: 100%;
     }
 
-    #profile_box:is(.app *)
+    #profile_box:not(.legacy *)
         #profile_card
         .profile_card_section_1
         .profile_social {
         justify-content: flex-start;
     }
 
-    #profile_box:is(.app *)
+    #profile_box:not(.legacy *)
         #profile_card
         .profile_card_section_1
         .profile_card_section_1_1 {
         flex-direction: column-reverse;
     }
 
-    #profile_box:is(.app *) #profile_card .profile_card_section_2 {
+    #profile_box:not(.legacy *) #profile_card .profile_card_section_2 {
         flex-direction: row;
         height: max-content;
         width: max-content;
@@ -2087,58 +2090,58 @@ body:is(.app *):has(a.button.title:hover) #cover {
         right: 0.5rem;
     }
 
-    #profile_box:is(.app *)
+    #profile_box:not(.legacy *)
         #profile_card
         .profile_card_section_2
         div:nth-child(1) {
         display: contents;
     }
 
-    #profile_box:is(.app *)
+    #profile_box:not(.legacy *)
         #profile_card
         .profile_card_section_2
         button:not(.dropdown .inner *),
-    #profile_box:is(.app *) #profile_card .profile_card_section_2 a.button {
+    #profile_box:not(.legacy *) #profile_card .profile_card_section_2 a.button {
         width: max-content !important;
         border-radius: var(--circle);
     }
 
-    #profile_box:is(.app *) #profile_card .profile_card_section_2 .icon {
+    #profile_box:not(.legacy *) #profile_card .profile_card_section_2 .icon {
         display: block !important;
     }
 
-    #profile_box:is(.app *)
+    #profile_box:not(.legacy *)
         #profile_card
         .profile_card_section_2
         .possible_text {
         display: none;
     }
 
-    #profile_box:is(.app *) .profile_card_section_3:not(:has(*)) {
+    #profile_box:not(.legacy *) .profile_card_section_3:not(:has(*)) {
         /* remove empty section */
         display: none;
     }
 
-    #profile_box:is(.app *) .profile_card_section_3 {
+    #profile_box:not(.legacy *) .profile_card_section_3 {
         min-width: 25%;
     }
 
-    #profile_box:is(.app *) .profile_card_section_3 #sidebar {
+    #profile_box:not(.legacy *) .profile_card_section_3 #sidebar {
         height: 100%;
     }
 
-    #profile_box:is(.app *) {
+    #profile_box:not(.legacy *) {
         position: unset;
     }
 
-    #profile_box:is(.app *)
+    #profile_box:not(.legacy *)
         #profile_card
         .profile_card_section_1
         .profile_avatar_container {
         margin: -100px 0 0;
     }
 
-    #profile_box:is(.app *)
+    #profile_box:not(.legacy *)
         #profile_card
         .profile_card_section_2:has(
             button:not(.dropdown .inner *):nth-child(2)
@@ -2150,27 +2153,27 @@ body:is(.app *):has(a.button.title:hover) #cover {
         align-items: flex-end;
     }
 
-    #profile_box:is(.app *) #profile_card .profile_card_section_1 {
+    #profile_box:not(.legacy *) #profile_card .profile_card_section_1 {
         width: 70%;
     }
 
-    #profile_box:is(.app *) #profile_card .profile_card_section_2 {
+    #profile_box:not(.legacy *) #profile_card .profile_card_section_2 {
         position: unset;
     }
 }
 
-.pillmenu.convertible:is(.app *) {
+.pillmenu.convertible:not(.legacy *) {
     flex-direction: row;
     font-size: 14px;
 }
 
-.pillmenu:is(.app *) a.active {
+.pillmenu:not(.legacy *) a.active {
     color: var(--color-primary-raised);
     background: var(--color-super-raised);
     position: relative;
 }
 
-.pillmenu:is(.app *) a.active::after {
+.pillmenu:not(.legacy *) a.active::after {
     content: "";
     position: absolute;
     left: calc(50% - 50% / 2);
@@ -2181,7 +2184,7 @@ body:is(.app *):has(a.button.title:hover) #cover {
     border-radius: var(--radius);
 }
 
-.notification:is(.app *) {
+.notification:not(.legacy *) {
     background: transparent;
     color: inherit;
     font-weight: 600;
