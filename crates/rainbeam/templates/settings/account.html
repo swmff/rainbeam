@@ -32,26 +32,6 @@
     </div>
 
     <div class="flex flex-col gap-1">
-        <label for="sparkler:website_skin">Website skin</label>
-
-        <select
-            type="url"
-            name="sparkler:website_skin"
-            id="sparkler:website_skin"
-            onchange="window.localStorage.setItem('skin', event.target.options[event.target.selectedIndex].value)"
-        >
-            <option value="sparkler" id="sparkler">Sparkler</option>
-            <option value="rocket" id="rocket">Rocket</option>
-            <option value="bluebird" id="bluebird">Blue bird</option>
-        </select>
-
-        <p class="fade">
-            This is just your local preferred website skin! Please refresh after
-            changing to view the skin.
-        </p>
-    </div>
-
-    <div class="flex flex-col gap-1">
         <label for="sparkler:allow_profile_themes">Allow profile themes</label>
 
         <select
@@ -558,15 +538,6 @@
 
         if (document.getElementById(current)) {
             document.getElementById(current).setAttribute("selected", "true");
-        }
-
-        // fill current skin
-        const current_skin = window.localStorage.getItem("skin");
-
-        if (document.getElementById(current_skin)) {
-            document
-                .getElementById(current_skin)
-                .setAttribute("selected", "true");
         }
 
         // fill current theme preference

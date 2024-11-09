@@ -103,12 +103,6 @@
     {% endif %}
 </script>
 
-<script type="text/plain" id="skin">
-    {% if let Some(skin) = raw_metadata.kv.get("sparkler:profile_skin") %}
-        {{ skin }}
-    {% endif %}
-</script>
-
 <script>
     (() => {
         const is_self_theme = document.getElementById("is_self") !== null;
@@ -127,19 +121,6 @@
             document.documentElement.setAttribute("class", profile_theme);
             globalThis.USES_DIFF_THEME = true;
             globalThis.IS_SELF_THEME = true;
-        }
-
-        // profile skin
-        const profile_skin = document.getElementById("skin").innerText.trim();
-
-        if (profile_skin !== "" && (theme_pref !== "no" || is_self_theme)) {
-            trigger("app:skin", [profile_skin]);
-
-            if (document.getElementById(profile_skin)) {
-                document
-                    .getElementById(profile_skin)
-                    .setAttribute("selected", "");
-            }
         }
     })();
 </script>

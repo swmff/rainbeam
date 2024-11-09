@@ -591,11 +591,6 @@
                 app["hook.partial_embeds"]();
 
                 window.IS_APP = app.check_app()[0];
-
-                (async () => {
-                    await app.load_skin();
-                })();
-
                 twemoji.parse(document.body);
             })();
         </script>
