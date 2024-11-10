@@ -353,7 +353,7 @@
                     "sparkler:block_somebody",
                 ).value;
 
-                fetch(`/api/v1/profiles/${username}/relationship/block`, {
+                fetch(`/api/v0/auth/relationships/block/${username}`, {
                     method: "POST",
                 })
                     .then((res) => res.json())
@@ -372,7 +372,7 @@
                     return;
                 }
 
-                fetch(`/api/v1/profiles/${username}/relationship`, {
+                fetch(`/api/v0/auth/relationships/current/${username}`, {
                     method: "DELETE",
                 })
                     .then((res) => res.json())
@@ -565,7 +565,7 @@
             .getElementById("change_username")
             .addEventListener("submit", (e) => {
                 e.preventDefault();
-                fetch("/api/v0/auth/profile/{{ profile.username }}/username", {
+                fetch("/api/v0/auth/profile/{{ profile.id }}/username", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",

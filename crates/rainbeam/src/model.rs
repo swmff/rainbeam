@@ -662,8 +662,8 @@ impl<T: Default> Into<databeam::DefaultReturn<T>> for DatabaseError {
     }
 }
 
-impl From<authbeam::model::AuthError> for DatabaseError {
-    fn from(_: authbeam::model::AuthError) -> Self {
+impl From<authbeam::model::DatabaseError> for DatabaseError {
+    fn from(_: authbeam::model::DatabaseError) -> Self {
         Self::Other
     }
 }

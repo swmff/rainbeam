@@ -64,7 +64,7 @@
         <div class="card" style="padding: 0">
             <img
                 title="{{ card.username }}'s banner"
-                src="/api/v1/profiles/{{card.username }}/banner"
+                src="/api/v0/auth/profile/{{card.username }}/banner"
                 alt=""
                 class="shadow round"
                 style="
@@ -81,7 +81,7 @@
         <div class="card flex gap-2">
             <img
                 title="{{ card.username }}'s avatar"
-                src="/api/v1/profiles/{{ card.username }}/avatar"
+                src="/api/v0/auth/profile/{{ card.id }}/avatar"
                 alt=""
                 class="avatar shadow-md"
                 style="--size: 80px; margin: -50px 0.5rem 0"

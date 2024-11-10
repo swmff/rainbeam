@@ -138,7 +138,7 @@ block head %}
             <a href="/@{{ reaction.user.username }}">
                 <img
                     title="{{ reaction.user.username }}'s avatar"
-                    src="/api/v1/profiles/{{ reaction.user.username }}/avatar"
+                    src="/api/v0/auth/profile/{{ reaction.user.id }}/avatar"
                     alt="@{{ reaction.user.username }}"
                     class="avatar"
                 loading="lazy"

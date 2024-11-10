@@ -72,7 +72,7 @@
                 return;
             }
 
-            fetch(`/api/v1/profiles/${username}/relationship`, {
+            fetch(`/api/v0/auth/relationships/current/${username}`, {
                 method: "DELETE",
             })
                 .then((res) => res.json())

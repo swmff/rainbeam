@@ -1,6 +1,6 @@
 [package]
 name = "authbeam"
-version = "0.7.0"
+version = "1.0.0"
 edition = "2021"
 description = "Authentication manager"
 authors = ["trisuaso", "swmff"]
@@ -27,6 +27,7 @@ axum-extra = { version = "0.9.3", features = ["cookie"] }
 regex = "1.10.5"
 reqwest = "0.12.5"
 hcaptcha = "2.4.6"
+mime_guess = "2.0.5"
 
 [lib]
 doctest = false

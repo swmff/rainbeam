@@ -18,7 +18,7 @@
                     >
                         <img
                             title="{{ question.author.username }}'s avatar"
-                            src="/api/v1/profiles/{{ question.author.username }}/avatar"
+                            src="/api/v0/auth/profile/{{ question.author.id }}/avatar"
                             alt=""
                             class="avatar"
                             loading="lazy"

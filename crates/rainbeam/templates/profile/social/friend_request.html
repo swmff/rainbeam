@@ -76,7 +76,7 @@
 
 <script>
     globalThis.accept = function (username) {
-        fetch("/api/v1/profiles/{{ other.username }}/relationship/friend", {
+        fetch("/api/v0/auth/relationships/friend/{{ other.id }}", {
             method: "POST",
         })
             .then((res) => res.json())
@@ -91,7 +91,7 @@
     };
 
     globalThis.decline = function (username) {
-        fetch("/api/v1/profiles/{{ other.username }}/relationship", {
+        fetch("/api/v0/auth/relationships/current/{{ other.id }}", {
             method: "DELETE",
         })
             .then((res) => res.json())

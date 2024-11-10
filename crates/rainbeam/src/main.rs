@@ -48,6 +48,9 @@ pub async fn main() {
             captcha: config.captcha.clone(),
             registration_enabled: config.registration_enabled,
             real_ip_header: config.real_ip_header.clone(),
+            static_dir: config.static_dir.clone(),
+            host: config.host.clone(),
+            blocked_hosts: config.blocked_hosts.clone(),
         },
     )
     .await;

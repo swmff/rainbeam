@@ -10,7 +10,7 @@
             <span class="item flex items-center gap-2">
                 <img
                     title="{{ user.username }}'s avatar"
-                    src="/api/v1/profiles/{{ user.username }}/avatar"
+                    src="/api/v0/auth/profile/{{ user.id }}/avatar"
                     alt="@{{ user.username }}"
                     class="avatar"
                     loading="lazy"

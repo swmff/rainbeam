@@ -85,7 +85,7 @@
                         return;
                     }
 
-                    fetch("/api/v0/auth/profile/{{ other.username }}/badges", {
+                    fetch("/api/v0/auth/profile/{{ other.id }}/badges", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -451,7 +451,7 @@
             return alert("Cannot grant moderator permissions to other users.");
         }
 
-        fetch("/api/v1/profiles/{{ other.username }}/group", {
+        fetch("/api/v0/auth/profile/{{ other.id }}/group", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

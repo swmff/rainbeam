@@ -23,10 +23,14 @@
         }
 
         // load shadowroot
-        root.innerHTML = await (
+        root.innerHTML = `<div>${await (
             await fetch(`/@${username}/_app/card.html`)
-        ).text();
+        ).text()}</div>`;
         root.innerHTML += `<style>${sheet}</style>`; // adoptedStyleSheets is so stupid, this is much easier
+        root.children[0].setAttribute(
+            "class",
+            document.documentElement.getAttribute("class"),
+        );
 
         // steal dialog and put it in the root document so it works
         const dialog = root.querySelector("dialog");

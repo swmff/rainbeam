@@ -1,6 +1,6 @@
 [package]
 name = "rainbeam"
-version = "1.14.2"
+version = "1.15.0"
 edition = "2021"
 authors = ["trisuaso", "swmff"]
 description = "Ask, share, socialize!"
@@ -28,7 +28,6 @@ toml = "0.8.14"
 tower-http = { version = "0.5.2", features = ["fs", "trace"] }
 serde_json = "1.0.120"
 regex = "1.10.5"
-mime_guess = "2.0.5"
 hcaptcha = "2.4.6"
 ammonia = "4.0.0"
 futures-util = "0.3.30"
@@ -41,6 +40,7 @@ shared = { path = "../shared" }
 databeam = { path = "../databeam", default-features = false }
 authbeam = { path = "../authbeam", default-features = false }
 mimalloc = "0.1.43"
+mime_guess = "2.0.5"
 
 [[bin]]
 path = "src/main.rs"

@@ -96,7 +96,6 @@
 
     <body>
         <div id="top"></div>
-        <div id="cover" aria-hidden="true"></div>
 
         {% if let Some(user) = profile %} {% if user.group == -1 %}
         <div
@@ -240,11 +239,12 @@
                             class="flex-row"
                             onclick="trigger('app:hook.dropdown', [event])"
                             exclude="dropdown"
+                            style="gap: 0.25rem !important"
                         >
                             {% if let Some(profile) = profile %}
                             <img
                                 title="{{ profile.username }}'s avatar"
-                                src="/api/v1/profiles/{{ profile.username }}/avatar"
+                                src="/api/v0/auth/profile/{{ profile.id }}/avatar"
                                 alt=""
                                 class="avatar shadow"
                                 style="--size: 24px"
@@ -517,7 +517,7 @@
         <a
             href="#top"
             id="backtotop"
-            class="button primary"
+            class="button primary floating mobile"
             title="Back to top"
         >
             <svg

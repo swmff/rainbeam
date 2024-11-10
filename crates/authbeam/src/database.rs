@@ -1,6 +1,6 @@
 use crate::model::{
-    AuthError, IpBan, IpBanCreate, IpBlock, IpBlockCreate, Profile, ProfileCreate, ProfileMetadata,
-    RelationshipStatus, TokenContext, Warning, WarningCreate,
+    DatabaseError, IpBan, IpBanCreate, IpBlock, IpBlockCreate, Profile, ProfileCreate,
+    ProfileMetadata, RelationshipStatus, TokenContext, Warning, WarningCreate,
 };
 use crate::model::{Group, Notification, NotificationCreate, Permission, UserFollow};
 
@@ -9,7 +9,7 @@ use reqwest::Client as HttpClient;
 use serde::{Deserialize, Serialize};
 
 use databeam::{query as sqlquery, utility};
-pub type Result<T> = std::result::Result<T, AuthError>;
+pub type Result<T> = std::result::Result<T, DatabaseError>;
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct HCaptchaConfig {
@@ -33,14 +33,28 @@ impl Default for HCaptchaConfig {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ServerOptions {
     /// If new registrations are enabled
+    #[serde(default)]
     pub registration_enabled: bool,
     /// HCaptcha configuration
+    #[serde(default)]
     pub captcha: HCaptchaConfig,
     /// The header to read user IP from
+    #[serde(default)]
     pub real_ip_header: Option<String>,
+    /// The directory to serve static assets from
+    #[serde(default)]
+    pub static_dir: String,
+    /// The origin of the public server (ex: "https://rainbeam.net")
+    ///
+    /// Used in embeds and links.
+    #[serde(default)]
+    pub host: String,
+    /// A list of image hosts that are blocked
+    #[serde(default)]
+    pub blocked_hosts: Vec<String>,
 }
 
 impl Default for ServerOptions {
@@ -49,6 +63,9 @@ impl Default for ServerOptions {
             registration_enabled: true,
             captcha: HCaptchaConfig::default(),
             real_ip_header: Option::None,
+            static_dir: String::new(),
+            host: String::new(),
+            blocked_hosts: Vec::new(),
         }
     }
 }
@@ -198,6 +215,27 @@ impl Database {
         .await;
     }
 
+    // util
+
+    /// Create a moderator audit log entry
+    pub async fn audit(&self, actor_id: String, content: String) -> Result<()> {
+        match self
+            .create_notification(
+                NotificationCreate {
+                    title: format!("[{actor_id}](/+u/{actor_id})"),
+                    content,
+                    address: format!("/+u/{actor_id}"),
+                    recipient: "*(audit)".to_string(), // all staff, audit registry
+                },
+                None,
+            )
+            .await
+        {
+            Ok(_) => Ok(()),
+            Err(_) => Err(DatabaseError::Other),
+        }
+    }
+
     // profiles
 
     // GET
@@ -229,13 +267,13 @@ impl Database {
         if id.len() <= 32 {
             return match self.get_profile_by_username(id).await {
                 Ok(ua) => Ok(ua),
-                Err(_) => Err(AuthError::Other),
+                Err(_) => Err(DatabaseError::Other),
             };
         }
 
         match self.get_profile_by_id(id).await {
             Ok(ua) => Ok(ua),
-            Err(_) => Err(AuthError::Other),
+            Err(_) => Err(DatabaseError::Other),
         }
     }
 
@@ -258,7 +296,7 @@ impl Database {
             .await
         {
             Ok(u) => self.base.textify_row(u, Vec::new()).0,
-            Err(_) => return Err(AuthError::Other),
+            Err(_) => return Err(DatabaseError::Other),
         };
 
         // return
@@ -269,23 +307,23 @@ impl Database {
             salt: row.get("salt").unwrap_or(&"".to_string()).to_string(),
             tokens: match serde_json::from_str(row.get("tokens").unwrap()) {
                 Ok(m) => m,
-                Err(_) => return Err(AuthError::ValueError),
+                Err(_) => return Err(DatabaseError::ValueError),
             },
             ips: match serde_json::from_str(row.get("ips").unwrap()) {
                 Ok(m) => m,
-                Err(_) => return Err(AuthError::ValueError),
+                Err(_) => return Err(DatabaseError::ValueError),
             },
             token_context: match serde_json::from_str(row.get("token_context").unwrap()) {
                 Ok(m) => m,
-                Err(_) => return Err(AuthError::ValueError),
+                Err(_) => return Err(DatabaseError::ValueError),
             },
             metadata: match serde_json::from_str(row.get("metadata").unwrap()) {
                 Ok(m) => m,
-                Err(_) => return Err(AuthError::ValueError),
+                Err(_) => return Err(DatabaseError::ValueError),
             },
             badges: match serde_json::from_str(row.get("badges").unwrap()) {
                 Ok(m) => m,
-                Err(_) => return Err(AuthError::ValueError),
+                Err(_) => return Err(DatabaseError::ValueError),
             },
             group: row.get("gid").unwrap().parse::<i32>().unwrap_or(0),
             joined: row.get("joined").unwrap().parse::<u128>().unwrap(),
@@ -321,7 +359,7 @@ impl Database {
             .await
         {
             Ok(u) => self.base.textify_row(u, Vec::new()).0,
-            Err(_) => return Err(AuthError::Other),
+            Err(_) => return Err(DatabaseError::Other),
         };
 
         // return
@@ -332,23 +370,23 @@ impl Database {
             salt: row.get("salt").unwrap_or(&"".to_string()).to_string(),
             tokens: match serde_json::from_str(row.get("tokens").unwrap()) {
                 Ok(m) => m,
-                Err(_) => return Err(AuthError::ValueError),
+                Err(_) => return Err(DatabaseError::ValueError),
             },
             ips: match serde_json::from_str(row.get("ips").unwrap()) {
                 Ok(m) => m,
-                Err(_) => return Err(AuthError::ValueError),
+                Err(_) => return Err(DatabaseError::ValueError),
             },
             token_context: match serde_json::from_str(row.get("token_context").unwrap()) {
                 Ok(m) => m,
-                Err(_) => return Err(AuthError::ValueError),
+                Err(_) => return Err(DatabaseError::ValueError),
             },
             metadata: match serde_json::from_str(row.get("metadata").unwrap()) {
                 Ok(m) => m,
-                Err(_) => return Err(AuthError::ValueError),
+                Err(_) => return Err(DatabaseError::ValueError),
             },
             badges: match serde_json::from_str(row.get("badges").unwrap()) {
                 Ok(m) => m,
-                Err(_) => return Err(AuthError::ValueError),
+                Err(_) => return Err(DatabaseError::ValueError),
             },
             group: row.get("gid").unwrap().parse::<i32>().unwrap_or(0),
             joined: row.get("joined").unwrap().parse::<u128>().unwrap(),
@@ -382,7 +420,7 @@ impl Database {
             .await
         {
             Ok(r) => self.base.textify_row(r, Vec::new()).0,
-            Err(_) => return Err(AuthError::Other),
+            Err(_) => return Err(DatabaseError::Other),
         };
 
         // return
@@ -393,23 +431,23 @@ impl Database {
             salt: row.get("salt").unwrap_or(&"".to_string()).to_string(),
             tokens: match serde_json::from_str(row.get("tokens").unwrap()) {
                 Ok(m) => m,
-                Err(_) => return Err(AuthError::ValueError),
+                Err(_) => return Err(DatabaseError::ValueError),
             },
             ips: match serde_json::from_str(row.get("ips").unwrap()) {
                 Ok(m) => m,
-                Err(_) => return Err(AuthError::ValueError),
+                Err(_) => return Err(DatabaseError::ValueError),
             },
             token_context: match serde_json::from_str(row.get("token_context").unwrap()) {
                 Ok(m) => m,
-                Err(_) => return Err(AuthError::ValueError),
+                Err(_) => return Err(DatabaseError::ValueError),
             },
             metadata: match serde_json::from_str(row.get("metadata").unwrap()) {
                 Ok(m) => m,
-                Err(_) => return Err(AuthError::ValueError),
+                Err(_) => return Err(DatabaseError::ValueError),
             },
             badges: match serde_json::from_str(row.get("badges").unwrap()) {
                 Ok(m) => m,
-                Err(_) => return Err(AuthError::ValueError),
+                Err(_) => return Err(DatabaseError::ValueError),
             },
             group: row.get("gid").unwrap().parse::<i32>().unwrap_or(0),
             joined: row.get("joined").unwrap().parse::<u128>().unwrap(),
@@ -457,7 +495,7 @@ impl Database {
             .await
         {
             Ok(r) => self.base.textify_row(r, Vec::new()).0,
-            Err(_) => return Err(AuthError::NotFound),
+            Err(_) => return Err(DatabaseError::NotFound),
         };
 
         // store in cache
@@ -468,23 +506,23 @@ impl Database {
             salt: row.get("salt").unwrap_or(&"".to_string()).to_string(),
             tokens: match serde_json::from_str(row.get("tokens").unwrap()) {
                 Ok(m) => m,
-                Err(_) => return Err(AuthError::ValueError),
+                Err(_) => return Err(DatabaseError::ValueError),
             },
             ips: match serde_json::from_str(row.get("ips").unwrap()) {
                 Ok(m) => m,
-                Err(_) => return Err(AuthError::ValueError),
+                Err(_) => return Err(DatabaseError::ValueError),
             },
             token_context: match serde_json::from_str(row.get("token_context").unwrap()) {
                 Ok(m) => m,
-                Err(_) => return Err(AuthError::ValueError),
+                Err(_) => return Err(DatabaseError::ValueError),
             },
             metadata: match serde_json::from_str(row.get("metadata").unwrap()) {
                 Ok(m) => m,
-                Err(_) => return Err(AuthError::ValueError),
+                Err(_) => return Err(DatabaseError::ValueError),
             },
             badges: match serde_json::from_str(row.get("badges").unwrap()) {
                 Ok(m) => m,
-                Err(_) => return Err(AuthError::ValueError),
+                Err(_) => return Err(DatabaseError::ValueError),
             },
             group: row.get("gid").unwrap().parse::<i32>().unwrap_or(0),
             joined: row.get("joined").unwrap().parse::<u128>().unwrap(),
@@ -539,7 +577,7 @@ impl Database {
         let c = &self.base.db.client;
         let row = match sqlquery(query).bind::<&String>(&id).fetch_one(c).await {
             Ok(r) => self.base.textify_row(r, Vec::new()).0,
-            Err(_) => return Err(AuthError::NotFound),
+            Err(_) => return Err(DatabaseError::NotFound),
         };
 
         // store in cache
@@ -550,23 +588,23 @@ impl Database {
             salt: row.get("salt").unwrap_or(&"".to_string()).to_string(),
             tokens: match serde_json::from_str(row.get("tokens").unwrap()) {
                 Ok(m) => m,
-                Err(_) => return Err(AuthError::ValueError),
+                Err(_) => return Err(DatabaseError::ValueError),
             },
             ips: match serde_json::from_str(row.get("ips").unwrap()) {
                 Ok(m) => m,
-                Err(_) => return Err(AuthError::ValueError),
+                Err(_) => return Err(DatabaseError::ValueError),
             },
             token_context: match serde_json::from_str(row.get("token_context").unwrap()) {
                 Ok(m) => m,
-                Err(_) => return Err(AuthError::ValueError),
+                Err(_) => return Err(DatabaseError::ValueError),
             },
             metadata: match serde_json::from_str(row.get("metadata").unwrap()) {
                 Ok(m) => m,
-                Err(_) => return Err(AuthError::ValueError),
+                Err(_) => return Err(DatabaseError::ValueError),
             },
             badges: match serde_json::from_str(row.get("badges").unwrap()) {
                 Ok(m) => m,
-                Err(_) => return Err(AuthError::ValueError),
+                Err(_) => return Err(DatabaseError::ValueError),
             },
             group: row.get("gid").unwrap().parse::<i32>().unwrap_or(0),
             joined: row.get("joined").unwrap().parse::<u128>().unwrap(),
@@ -611,15 +649,15 @@ impl Database {
             .unwrap();
 
         if regex.captures(&username).is_some() {
-            return Err(AuthError::ValueError);
+            return Err(DatabaseError::ValueError);
         }
 
         if (username.len() < 2) | (username.len() > 500) {
-            return Err(AuthError::ValueError);
+            return Err(DatabaseError::ValueError);
         }
 
         if banned_usernames.contains(&username.as_str()) {
-            return Err(AuthError::ValueError);
+            return Err(DatabaseError::ValueError);
         }
 
         Ok(())
@@ -633,7 +671,7 @@ impl Database {
     /// * `user_ip` - the ip address of the user registering
     pub async fn create_profile(&self, props: ProfileCreate, user_ip: String) -> Result<String> {
         if self.config.registration_enabled == false {
-            return Err(AuthError::NotAllowed);
+            return Err(DatabaseError::NotAllowed);
         }
 
         // ...
@@ -645,12 +683,12 @@ impl Database {
             .valid_response(&self.config.captcha.secret, None)
             .await
         {
-            return Err(AuthError::NotAllowed);
+            return Err(DatabaseError::NotAllowed);
         }
 
         // make sure user doesn't already exists
         if let Ok(_) = &self.get_profile_by_username(username.clone()).await {
-            return Err(AuthError::MustBeUnique);
+            return Err(DatabaseError::MustBeUnique);
         };
 
         // check username
@@ -693,7 +731,7 @@ impl Database {
             .await
         {
             Ok(_) => Ok(user_token_unhashed),
-            Err(_) => Err(AuthError::Other),
+            Err(_) => Err(DatabaseError::Other),
         }
     }
 
@@ -745,14 +783,14 @@ impl Database {
         ]
     }
 
-    /// Update a [`Profile`]'s metadata by its `username`
-    pub async fn edit_profile_metadata_by_name(
+    /// Update a [`Profile`]'s metadata by its `id`
+    pub async fn edit_profile_metadata_by_id(
         &self,
-        name: String,
+        id: String,
         mut metadata: ProfileMetadata,
     ) -> Result<()> {
         // make sure user exists
-        let profile = match self.get_profile_by_username(name.clone()).await {
+        let profile = match self.get_profile(id.clone()).await {
             Ok(ua) => ua,
             Err(e) => return Err(e),
         };
@@ -767,28 +805,28 @@ impl Database {
         }
 
         if !metadata.check() {
-            return Err(AuthError::TooLong);
+            return Err(DatabaseError::TooLong);
         }
 
         // update user
         let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
-            "UPDATE \"xprofiles\" SET \"metadata\" = ? WHERE \"username\" = ?"
+            "UPDATE \"xprofiles\" SET \"metadata\" = ? WHERE \"id\" = ?"
         } else {
-            "UPDATE \"xprofiles\" SET (\"metadata\") = ($1) WHERE \"username\" = $2"
+            "UPDATE \"xprofiles\" SET (\"metadata\") = ($1) WHERE \"id\" = $2"
         };
 
         let c = &self.base.db.client;
         let meta = &serde_json::to_string(&metadata).unwrap();
         match sqlquery(query)
             .bind::<&String>(meta)
-            .bind::<&String>(&name)
+            .bind::<&String>(&id)
             .execute(c)
             .await
         {
             Ok(_) => {
                 self.base
                     .cachedb
-                    .remove(format!("rbeam.auth.profile:{}", name))
+                    .remove(format!("rbeam.auth.profile:{}", profile.username))
                     .await;
 
                 self.base
@@ -798,7 +836,7 @@ impl Database {
 
                 Ok(())
             }
-            Err(_) => Err(AuthError::Other),
+            Err(_) => Err(DatabaseError::Other),
         }
     }
 
@@ -850,57 +888,16 @@ impl Database {
 
                 Ok(())
             }
-            Err(_) => Err(AuthError::Other),
+            Err(_) => Err(DatabaseError::Other),
         }
     }
 
-    /// Update a [`Profile`]'s badges by its `username`
-    pub async fn edit_profile_badges_by_name(
+    /// Update a [`Profile`]'s badges by its `id`
+    pub async fn edit_profile_badges_by_id(
         &self,
-        name: String,
+        id: String,
         badges: Vec<(String, String, String)>,
     ) -> Result<()> {
-        // make sure user exists
-        let ua = match self.get_profile_by_username(name.clone()).await {
-            Ok(ua) => ua,
-            Err(e) => return Err(e),
-        };
-
-        // update user
-        let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
-            "UPDATE \"xprofiles\" SET \"badges\" = ? WHERE \"username\" = ?"
-        } else {
-            "UPDATE \"xprofiles\" SET (\"badges\") = ($1) WHERE \"username\" = $2"
-        };
-
-        let c = &self.base.db.client;
-        let badges = &serde_json::to_string(&badges).unwrap();
-
-        match sqlquery(query)
-            .bind::<&String>(badges)
-            .bind::<&String>(&name)
-            .execute(c)
-            .await
-        {
-            Ok(_) => {
-                self.base
-                    .cachedb
-                    .remove(format!("rbeam.auth.profile:{}", name))
-                    .await;
-
-                self.base
-                    .cachedb
-                    .remove(format!("rbeam.auth.profile:{}", ua.id))
-                    .await;
-
-                Ok(())
-            }
-            Err(_) => Err(AuthError::Other),
-        }
-    }
-
-    /// Update a [`Profile`]'s tier by its ID
-    pub async fn edit_profile_tier(&self, id: String, tier: i32) -> Result<()> {
         // make sure user exists
         let ua = match self.get_profile(id.clone()).await {
             Ok(ua) => ua,
@@ -909,14 +906,16 @@ impl Database {
 
         // update user
         let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
-            "UPDATE \"xprofiles\" SET \"tier\" = ? WHERE \"username\" = ?"
+            "UPDATE \"xprofiles\" SET \"badges\" = ? WHERE \"id\" = ?"
         } else {
-            "UPDATE \"xprofiles\" SET (\"tier\") = ($1) WHERE \"username\" = $2"
+            "UPDATE \"xprofiles\" SET (\"badges\") = ($1) WHERE \"id\" = $2"
         };
 
         let c = &self.base.db.client;
+        let badges = &serde_json::to_string(&badges).unwrap();
+
         match sqlquery(query)
-            .bind::<&String>(&tier.to_string())
+            .bind::<&String>(badges)
             .bind::<&String>(&id)
             .execute(c)
             .await
@@ -934,11 +933,50 @@ impl Database {
 
                 Ok(())
             }
-            Err(_) => Err(AuthError::Other),
+            Err(_) => Err(DatabaseError::Other),
         }
     }
 
-    /// Update a [`Profile`]'s `gid` by its `username`
+    /// Update a [`Profile`]'s tier by its ID
+    pub async fn edit_profile_tier(&self, id: String, tier: i32) -> Result<()> {
+        // make sure user exists
+        let ua = match self.get_profile(id.clone()).await {
+            Ok(ua) => ua,
+            Err(e) => return Err(e),
+        };
+
+        // update user
+        let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+            "UPDATE \"xprofiles\" SET \"tier\" = ? WHERE \"id\" = ?"
+        } else {
+            "UPDATE \"xprofiles\" SET (\"tier\") = ($1) WHERE \"id\" = $2"
+        };
+
+        let c = &self.base.db.client;
+        match sqlquery(query)
+            .bind::<&String>(&tier.to_string())
+            .bind::<&String>(&id)
+            .execute(c)
+            .await
+        {
+            Ok(_) => {
+                self.base
+                    .cachedb
+                    .remove(format!("rbeam.auth.profile:{}", ua.username))
+                    .await;
+
+                self.base
+                    .cachedb
+                    .remove(format!("rbeam.auth.profile:{}", ua.id))
+                    .await;
+
+                Ok(())
+            }
+            Err(_) => Err(DatabaseError::Other),
+        }
+    }
+
+    /// Update a [`Profile`]'s `gid` by its `id`
     pub async fn edit_profile_group(&self, id: String, group: i32) -> Result<()> {
         // make sure user exists
         let ua = match self.get_profile(id.clone()).await {
@@ -948,9 +986,9 @@ impl Database {
 
         // update user
         let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
-            "UPDATE \"xprofiles\" SET \"gid\" = ? WHERE \"username\" = ?"
+            "UPDATE \"xprofiles\" SET \"gid\" = ? WHERE \"id\" = ?"
         } else {
-            "UPDATE \"xprofiles\" SET (\"gid\") = ($1) WHERE \"username\" = $2"
+            "UPDATE \"xprofiles\" SET (\"gid\") = ($1) WHERE \"id\" = $2"
         };
 
         let c = &self.base.db.client;
@@ -973,7 +1011,7 @@ impl Database {
 
                 Ok(())
             }
-            Err(_) => Err(AuthError::Other),
+            Err(_) => Err(DatabaseError::Other),
         }
     }
 
@@ -996,7 +1034,7 @@ impl Database {
             let password_hashed = shared::hash::hash_salted(password, ua.salt);
 
             if password_hashed != ua.password {
-                return Err(AuthError::NotAllowed);
+                return Err(DatabaseError::NotAllowed);
             }
         }
 
@@ -1030,28 +1068,28 @@ impl Database {
 
                 Ok(())
             }
-            Err(_) => Err(AuthError::Other),
+            Err(_) => Err(DatabaseError::Other),
         }
     }
 
-    /// Update a [`Profile`]'s `username` by its name and password
-    pub async fn edit_profile_username_by_name(
+    /// Update a [`Profile`]'s `username` by its id and password
+    pub async fn edit_profile_username_by_id(
         &self,
-        name: String,
+        id: String,
         password: String,
         mut new_name: String,
     ) -> Result<()> {
         new_name = new_name.to_lowercase();
 
         // make sure user exists
-        let ua = match self.get_profile_by_username(name.clone()).await {
+        let ua = match self.get_profile(id.clone()).await {
             Ok(ua) => ua,
             Err(e) => return Err(e),
         };
 
         // make sure username isn't in use
         if let Ok(_) = self.get_profile_by_username(new_name.clone()).await {
-            return Err(AuthError::MustBeUnique);
+            return Err(DatabaseError::MustBeUnique);
         }
 
         // check username
@@ -1063,27 +1101,27 @@ impl Database {
         let password_hashed = shared::hash::hash_salted(password, ua.salt);
 
         if password_hashed != ua.password {
-            return Err(AuthError::NotAllowed);
+            return Err(DatabaseError::NotAllowed);
         }
 
         // update user
         let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
-            "UPDATE \"xprofiles\" SET \"username\" = ? WHERE \"username\" = ?"
+            "UPDATE \"xprofiles\" SET \"username\" = ? WHERE \"id\" = ?"
         } else {
-            "UPDATE \"xprofiles\" SET (\"username\") = ($1) WHERE \"username\" = $2"
+            "UPDATE \"xprofiles\" SET (\"username\") = ($1) WHERE \"id\" = $2"
         };
 
         let c = &self.base.db.client;
         match sqlquery(query)
             .bind::<&String>(&new_name)
-            .bind::<&String>(&name)
+            .bind::<&String>(&id)
             .execute(c)
             .await
         {
             Ok(_) => {
                 self.base
                     .cachedb
-                    .remove(format!("rbeam.auth.profile:{}", name))
+                    .remove(format!("rbeam.auth.profile:{}", ua.username))
                     .await;
 
                 self.base
@@ -1093,7 +1131,7 @@ impl Database {
 
                 Ok(())
             }
-            Err(_) => Err(AuthError::Other),
+            Err(_) => Err(DatabaseError::Other),
         }
     }
 
@@ -1121,7 +1159,7 @@ impl Database {
                     };
 
                 if let Err(_) = sqlquery(query).bind::<&String>(&id).execute(c).await {
-                    return Err(AuthError::Other);
+                    return Err(DatabaseError::Other);
                 };
 
                 let query: &str =
@@ -1132,7 +1170,7 @@ impl Database {
                     };
 
                 if let Err(_) = sqlquery(query).bind::<&String>(&id).execute(c).await {
-                    return Err(AuthError::Other);
+                    return Err(DatabaseError::Other);
                 };
 
                 let query: &str =
@@ -1148,7 +1186,7 @@ impl Database {
                     .execute(c)
                     .await
                 {
-                    return Err(AuthError::Other);
+                    return Err(DatabaseError::Other);
                 };
 
                 // rainbeam crate stuff
@@ -1161,7 +1199,7 @@ impl Database {
                     };
 
                 if let Err(_) = sqlquery(query).bind::<&String>(&id).execute(c).await {
-                    return Err(AuthError::Other);
+                    return Err(DatabaseError::Other);
                 };
 
                 // questions by user
@@ -1173,7 +1211,7 @@ impl Database {
                     };
 
                 if let Err(_) = sqlquery(query).bind::<&String>(&id).execute(c).await {
-                    return Err(AuthError::Other);
+                    return Err(DatabaseError::Other);
                 };
 
                 // responses by user
@@ -1185,7 +1223,7 @@ impl Database {
                     };
 
                 if let Err(_) = sqlquery(query).bind::<&String>(&id).execute(c).await {
-                    return Err(AuthError::Other);
+                    return Err(DatabaseError::Other);
                 };
 
                 // responses to questions by user
@@ -1201,7 +1239,7 @@ impl Database {
                     .execute(c)
                     .await
                 {
-                    return Err(AuthError::Other);
+                    return Err(DatabaseError::Other);
                 };
 
                 self.base
@@ -1223,7 +1261,7 @@ impl Database {
                     };
 
                 if let Err(_) = sqlquery(query).bind::<&String>(&id).execute(c).await {
-                    return Err(AuthError::Other);
+                    return Err(DatabaseError::Other);
                 };
 
                 // user circle memberships
@@ -1235,7 +1273,7 @@ impl Database {
                     };
 
                 if let Err(_) = sqlquery(query).bind::<&String>(&id).execute(c).await {
-                    return Err(AuthError::Other);
+                    return Err(DatabaseError::Other);
                 };
 
                 // pages by user
@@ -1247,7 +1285,7 @@ impl Database {
                     };
 
                 if let Err(_) = sqlquery(query).bind::<&String>(&id).execute(c).await {
-                    return Err(AuthError::Other);
+                    return Err(DatabaseError::Other);
                 };
 
                 // relationships involving user
@@ -1264,7 +1302,7 @@ impl Database {
                     .execute(c)
                     .await
                 {
-                    return Err(AuthError::Other);
+                    return Err(DatabaseError::Other);
                 };
 
                 self.base
@@ -1281,7 +1319,7 @@ impl Database {
                     };
 
                 if let Err(_) = sqlquery(query).bind::<&String>(&id).execute(c).await {
-                    return Err(AuthError::Other);
+                    return Err(DatabaseError::Other);
                 };
 
                 // ...
@@ -1312,7 +1350,7 @@ impl Database {
 
                 Ok(())
             }
-            Err(_) => Err(AuthError::Other),
+            Err(_) => Err(DatabaseError::Other),
         }
     }
 
@@ -1326,11 +1364,11 @@ impl Database {
         // make sure they aren't a manager
         let group = match self.get_group_by_id(user.group).await {
             Ok(g) => g,
-            Err(_) => return Err(AuthError::Other),
+            Err(_) => return Err(DatabaseError::Other),
         };
 
         if group.permissions.contains(&Permission::Manager) {
-            return Err(AuthError::NotAllowed);
+            return Err(DatabaseError::NotAllowed);
         }
 
         // delete
@@ -1375,7 +1413,7 @@ impl Database {
             id: row.get("id").unwrap().parse::<i32>().unwrap(),
             permissions: match serde_json::from_str(row.get("permissions").unwrap()) {
                 Ok(m) => m,
-                Err(_) => return Err(AuthError::ValueError),
+                Err(_) => return Err(DatabaseError::ValueError),
             },
         };
 
@@ -1415,7 +1453,7 @@ impl Database {
             .await
         {
             Ok(u) => self.base.textify_row(u, Vec::new()).0,
-            Err(_) => return Err(AuthError::Other),
+            Err(_) => return Err(DatabaseError::Other),
         };
 
         // return
@@ -1466,7 +1504,7 @@ impl Database {
 
                 out
             }
-            Err(_) => return Err(AuthError::Other),
+            Err(_) => return Err(DatabaseError::Other),
         };
 
         // return
@@ -1534,7 +1572,7 @@ impl Database {
 
                 out
             }
-            Err(_) => return Err(AuthError::Other),
+            Err(_) => return Err(DatabaseError::Other),
         };
 
         // return
@@ -1623,7 +1661,7 @@ impl Database {
 
                 out
             }
-            Err(_) => return Err(AuthError::Other),
+            Err(_) => return Err(DatabaseError::Other),
         };
 
         // return
@@ -1691,7 +1729,7 @@ impl Database {
 
                 out
             }
-            Err(_) => return Err(AuthError::Other),
+            Err(_) => return Err(DatabaseError::Other),
         };
 
         // return
@@ -1739,7 +1777,7 @@ impl Database {
     pub async fn toggle_user_follow(&self, props: &mut UserFollow) -> Result<()> {
         // users cannot be the same
         if props.user == props.following {
-            return Err(AuthError::Other);
+            return Err(DatabaseError::Other);
         }
 
         // make sure both users exist
@@ -1790,7 +1828,7 @@ impl Database {
 
                     return Ok(());
                 }
-                Err(_) => return Err(AuthError::Other),
+                Err(_) => return Err(DatabaseError::Other),
             };
         }
 
@@ -1844,7 +1882,7 @@ impl Database {
                 // return
                 Ok(())
             }
-            Err(_) => Err(AuthError::Other),
+            Err(_) => Err(DatabaseError::Other),
         }
     }
 
@@ -1855,7 +1893,7 @@ impl Database {
     pub async fn force_remove_user_follow(&self, props: &mut UserFollow) -> Result<()> {
         // users cannot be the same
         if props.user == props.following {
-            return Err(AuthError::Other);
+            return Err(DatabaseError::Other);
         }
 
         // check if follow exists
@@ -1892,7 +1930,7 @@ impl Database {
 
                     return Ok(());
                 }
-                Err(_) => return Err(AuthError::Other),
+                Err(_) => return Err(DatabaseError::Other),
             };
         }
 
@@ -1932,7 +1970,7 @@ impl Database {
         let c = &self.base.db.client;
         let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
             Ok(p) => self.base.textify_row(p, Vec::new()).0,
-            Err(_) => return Err(AuthError::NotFound),
+            Err(_) => return Err(DatabaseError::NotFound),
         };
 
         // return
@@ -1998,7 +2036,7 @@ impl Database {
 
                 out
             }
-            Err(_) => return Err(AuthError::NotFound),
+            Err(_) => return Err(DatabaseError::NotFound),
         };
 
         // return
@@ -2079,7 +2117,7 @@ impl Database {
 
                 out
             }
-            Err(_) => return Err(AuthError::NotFound),
+            Err(_) => return Err(DatabaseError::NotFound),
         };
 
         // return
@@ -2142,7 +2180,7 @@ impl Database {
                 // ...
                 return Ok(());
             }
-            Err(_) => return Err(AuthError::Other),
+            Err(_) => return Err(DatabaseError::Other),
         };
     }
 
@@ -2165,11 +2203,11 @@ impl Database {
             // check permission
             let group = match self.get_group_by_id(user.group).await {
                 Ok(g) => g,
-                Err(_) => return Err(AuthError::Other),
+                Err(_) => return Err(DatabaseError::Other),
             };
 
             if !group.permissions.contains(&Permission::Helper) {
-                return Err(AuthError::NotAllowed);
+                return Err(DatabaseError::NotAllowed);
             }
         }
 
@@ -2203,7 +2241,7 @@ impl Database {
                 // return
                 return Ok(());
             }
-            Err(_) => return Err(AuthError::Other),
+            Err(_) => return Err(DatabaseError::Other),
         };
     }
 
@@ -2228,11 +2266,11 @@ impl Database {
             // check permission
             let group = match self.get_group_by_id(user.group).await {
                 Ok(g) => g,
-                Err(_) => return Err(AuthError::Other),
+                Err(_) => return Err(DatabaseError::Other),
             };
 
             if !group.permissions.contains(&Permission::Helper) {
-                return Err(AuthError::NotAllowed);
+                return Err(DatabaseError::NotAllowed);
             }
         }
 
@@ -2270,7 +2308,7 @@ impl Database {
                 // return
                 return Ok(());
             }
-            Err(_) => return Err(AuthError::Other),
+            Err(_) => return Err(DatabaseError::Other),
         };
     }
 
@@ -2305,7 +2343,7 @@ impl Database {
         let c = &self.base.db.client;
         let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
             Ok(p) => self.base.textify_row(p, Vec::new()).0,
-            Err(_) => return Err(AuthError::NotFound),
+            Err(_) => return Err(DatabaseError::NotFound),
         };
 
         // return
@@ -2349,11 +2387,11 @@ impl Database {
         // make sure user is a manager
         let group = match self.get_group_by_id(user.group).await {
             Ok(g) => g,
-            Err(_) => return Err(AuthError::Other),
+            Err(_) => return Err(DatabaseError::Other),
         };
 
         if !group.permissions.contains(&Permission::Helper) {
-            return Err(AuthError::NotAllowed);
+            return Err(DatabaseError::NotAllowed);
         }
 
         // pull from database
@@ -2393,7 +2431,7 @@ impl Database {
 
                 out
             }
-            Err(_) => return Err(AuthError::NotFound),
+            Err(_) => return Err(DatabaseError::NotFound),
         };
 
         // return
@@ -2410,11 +2448,11 @@ impl Database {
         // make sure user is a manager
         let group = match self.get_group_by_id(user.group).await {
             Ok(g) => g,
-            Err(_) => return Err(AuthError::Other),
+            Err(_) => return Err(DatabaseError::Other),
         };
 
         if !group.permissions.contains(&Permission::Helper) {
-            return Err(AuthError::NotAllowed);
+            return Err(DatabaseError::NotAllowed);
         }
 
         // ...
@@ -2465,7 +2503,7 @@ impl Database {
                 // ...
                 return Ok(());
             }
-            Err(_) => return Err(AuthError::Other),
+            Err(_) => return Err(DatabaseError::Other),
         };
     }
 
@@ -2488,11 +2526,11 @@ impl Database {
             // check permission
             let group = match self.get_group_by_id(user.group).await {
                 Ok(g) => g,
-                Err(_) => return Err(AuthError::Other),
+                Err(_) => return Err(DatabaseError::Other),
             };
 
             if !group.permissions.contains(&Permission::Manager) {
-                return Err(AuthError::NotAllowed);
+                return Err(DatabaseError::NotAllowed);
             }
         }
 
@@ -2517,7 +2555,7 @@ impl Database {
                 // return
                 return Ok(());
             }
-            Err(_) => return Err(AuthError::Other),
+            Err(_) => return Err(DatabaseError::Other),
         };
     }
 
@@ -2552,7 +2590,7 @@ impl Database {
         let c = &self.base.db.client;
         let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
             Ok(p) => self.base.textify_row(p, Vec::new()).0,
-            Err(_) => return Err(AuthError::NotFound),
+            Err(_) => return Err(DatabaseError::NotFound),
         };
 
         // return
@@ -2600,7 +2638,7 @@ impl Database {
         let c = &self.base.db.client;
         let res = match sqlquery(&query).bind::<&String>(&ip).fetch_one(c).await {
             Ok(p) => self.base.textify_row(p, Vec::new()).0,
-            Err(_) => return Err(AuthError::NotFound),
+            Err(_) => return Err(DatabaseError::NotFound),
         };
 
         // return
@@ -2630,11 +2668,11 @@ impl Database {
         // make sure user is a manager
         let group = match self.get_group_by_id(user.group).await {
             Ok(g) => g,
-            Err(_) => return Err(AuthError::Other),
+            Err(_) => return Err(DatabaseError::Other),
         };
 
         if !group.permissions.contains(&Permission::Helper) {
-            return Err(AuthError::NotAllowed);
+            return Err(DatabaseError::NotAllowed);
         }
 
         // pull from database
@@ -2670,7 +2708,7 @@ impl Database {
 
                 out
             }
-            Err(_) => return Err(AuthError::NotFound),
+            Err(_) => return Err(DatabaseError::NotFound),
         };
 
         // return
@@ -2687,11 +2725,11 @@ impl Database {
         // make sure user is a helper
         let group = match self.get_group_by_id(user.group).await {
             Ok(g) => g,
-            Err(_) => return Err(AuthError::Other),
+            Err(_) => return Err(DatabaseError::Other),
         };
 
         if !group.permissions.contains(&Permission::Helper) {
-            return Err(AuthError::NotAllowed);
+            return Err(DatabaseError::NotAllowed);
         } else {
             let actor_id = user.id.clone();
             if let Err(e) = self
@@ -2712,7 +2750,7 @@ impl Database {
 
         // make sure this ip isn't already banned
         if self.get_ipban_by_ip(props.ip.clone()).await.is_ok() {
-            return Err(AuthError::MustBeUnique);
+            return Err(DatabaseError::MustBeUnique);
         }
 
         // ...
@@ -2744,7 +2782,7 @@ impl Database {
             .await
         {
             Ok(_) => return Ok(()),
-            Err(_) => return Err(AuthError::Other),
+            Err(_) => return Err(DatabaseError::Other),
         };
     }
 
@@ -2765,11 +2803,11 @@ impl Database {
             // check permission
             let group = match self.get_group_by_id(user.group).await {
                 Ok(g) => g,
-                Err(_) => return Err(AuthError::Other),
+                Err(_) => return Err(DatabaseError::Other),
             };
 
             if !group.permissions.contains(&Permission::Manager) {
-                return Err(AuthError::NotAllowed);
+                return Err(DatabaseError::NotAllowed);
             } else {
                 let actor_id = user.id.clone();
                 if let Err(e) = self
@@ -2810,7 +2848,7 @@ impl Database {
                 // return
                 return Ok(());
             }
-            Err(_) => return Err(AuthError::Other),
+            Err(_) => return Err(DatabaseError::Other),
         };
     }
 
@@ -2908,7 +2946,7 @@ impl Database {
                         .execute(c)
                         .await
                     {
-                        return Err(AuthError::Other);
+                        return Err(DatabaseError::Other);
                     };
 
                     relationship.0 = RelationshipStatus::Unknown; // act like it never happened
@@ -2948,7 +2986,7 @@ impl Database {
                         .execute(c)
                         .await
                     {
-                        return Err(AuthError::Other);
+                        return Err(DatabaseError::Other);
                     };
                 } else {
                     // add
@@ -2969,7 +3007,7 @@ impl Database {
                         .execute(c)
                         .await
                     {
-                        return Err(AuthError::Other);
+                        return Err(DatabaseError::Other);
                     };
                 }
             }
@@ -2978,7 +3016,7 @@ impl Database {
                 if utwo.metadata.is_true("sparkler:limited_friend_requests") {
                     // make sure utwo is following uone
                     if let Err(_) = self.get_follow(utwo.id.clone(), uone.id.clone()).await {
-                        return Err(AuthError::NotAllowed);
+                        return Err(DatabaseError::NotAllowed);
                     }
                 }
 
@@ -3000,7 +3038,7 @@ impl Database {
                     .execute(c)
                     .await
                 {
-                    return Err(AuthError::Other);
+                    return Err(DatabaseError::Other);
                 };
 
                 // create notification
@@ -3020,7 +3058,7 @@ impl Database {
                         )
                         .await
                     {
-                        return Err(AuthError::Other);
+                        return Err(DatabaseError::Other);
                     };
                 };
             }
@@ -3042,7 +3080,7 @@ impl Database {
                     .execute(c)
                     .await
                 {
-                    return Err(AuthError::Other);
+                    return Err(DatabaseError::Other);
                 };
 
                 self.base
@@ -3072,7 +3110,7 @@ impl Database {
                         )
                         .await
                     {
-                        return Err(AuthError::Other);
+                        return Err(DatabaseError::Other);
                     };
                 };
             }
@@ -3093,7 +3131,7 @@ impl Database {
                     .execute(c)
                     .await
                 {
-                    return Err(AuthError::Other);
+                    return Err(DatabaseError::Other);
                 };
 
                 if relationship.0 == RelationshipStatus::Friends {
@@ -3156,7 +3194,7 @@ impl Database {
 
                 Ok(out)
             }
-            Err(_) => return Err(AuthError::Other),
+            Err(_) => return Err(DatabaseError::Other),
         }
     }
 
@@ -3208,7 +3246,7 @@ impl Database {
 
                 Ok(out)
             }
-            Err(_) => return Err(AuthError::Other),
+            Err(_) => return Err(DatabaseError::Other),
         }
     }
 
@@ -3263,7 +3301,7 @@ impl Database {
 
                 Ok(out)
             }
-            Err(_) => return Err(AuthError::Other),
+            Err(_) => return Err(DatabaseError::Other),
         }
     }
 
@@ -3320,7 +3358,7 @@ impl Database {
 
                 Ok(out)
             }
-            Err(_) => return Err(AuthError::Other),
+            Err(_) => return Err(DatabaseError::Other),
         }
     }
 
@@ -3385,7 +3423,7 @@ impl Database {
         let c = &self.base.db.client;
         let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
             Ok(p) => self.base.textify_row(p, Vec::new()).0,
-            Err(_) => return Err(AuthError::NotFound),
+            Err(_) => return Err(DatabaseError::NotFound),
         };
 
         // return
@@ -3433,7 +3471,7 @@ impl Database {
             .await
         {
             Ok(p) => self.base.textify_row(p, Vec::new()).0,
-            Err(_) => return Err(AuthError::NotFound),
+            Err(_) => return Err(DatabaseError::NotFound),
         };
 
         // return
@@ -3485,7 +3523,7 @@ impl Database {
 
                 out
             }
-            Err(_) => return Err(AuthError::NotFound),
+            Err(_) => return Err(DatabaseError::NotFound),
         };
 
         // return
@@ -3505,7 +3543,7 @@ impl Database {
             .await
             .is_ok()
         {
-            return Err(AuthError::MustBeUnique);
+            return Err(DatabaseError::MustBeUnique);
         }
 
         // ...
@@ -3537,7 +3575,7 @@ impl Database {
             .await
         {
             Ok(_) => return Ok(()),
-            Err(_) => return Err(AuthError::Other),
+            Err(_) => return Err(DatabaseError::Other),
         };
     }
 
@@ -3558,11 +3596,11 @@ impl Database {
             // check permission
             let group = match self.get_group_by_id(user.group).await {
                 Ok(g) => g,
-                Err(_) => return Err(AuthError::Other),
+                Err(_) => return Err(DatabaseError::Other),
             };
 
             if !group.permissions.contains(&Permission::Manager) {
-                return Err(AuthError::NotAllowed);
+                return Err(DatabaseError::NotAllowed);
             } else {
                 let actor_id = user.id.clone();
                 if let Err(e) = self
@@ -3603,7 +3641,7 @@ impl Database {
                 // return
                 return Ok(());
             }
-            Err(_) => return Err(AuthError::Other),
+            Err(_) => return Err(DatabaseError::Other),
         };
     }
 }

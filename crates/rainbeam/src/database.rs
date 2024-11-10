@@ -334,20 +334,8 @@ impl Database {
 
     /// Create a moderator audit log entry
     pub async fn audit(&self, actor_id: String, content: String) -> Result<()> {
-        match self
-            .auth
-            .create_notification(
-                NotificationCreate {
-                    title: format!("[{actor_id}](/+u/{actor_id})"),
-                    content,
-                    address: format!("/+u/{actor_id}"),
-                    recipient: "*(audit)".to_string(), // all staff, audit
-                },
-                None,
-            )
-            .await
-        {
-            Ok(_) => Ok(()),
+        match self.auth.audit(actor_id, content).await {
+            Ok(r) => Ok(r),
             Err(_) => Err(DatabaseError::Other),
         }
     }

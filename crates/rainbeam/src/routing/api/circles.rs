@@ -13,7 +13,7 @@ use axum::{
     Json, Router,
 };
 
-use super::profiles::read_image;
+use authbeam::api::profile::read_image;
 use axum_extra::extract::cookie::CookieJar;
 
 pub fn routes(database: Database) -> Router {

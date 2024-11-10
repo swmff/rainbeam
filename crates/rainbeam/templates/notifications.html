@@ -153,7 +153,7 @@ endblock %} {% block head %}
 
             anchor.innerHTML = `<img
                 title="${username}'s avatar"
-                src="/api/v1/profiles/${username}/avatar"
+                src="/api/v0/auth/profile/${username}/avatar"
                 alt="@${username}"
                 class="avatar"
                 loading="lazy"

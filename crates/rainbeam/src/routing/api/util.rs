@@ -1,4 +1,4 @@
-use super::profiles::read_image;
+use authbeam::api::profile::read_image;
 use crate::database::Database;
 use askama_axum::IntoResponse;
 use axum::{

@@ -10,12 +10,12 @@ config.name }}{% endblock %} {% block head %}
 
 <meta
     name="og:image"
-    content="{{ config.host }}/api/v1/profiles/{{ other.username }}/avatar"
+    content="{{ config.host }}/api/v0/auth/profile/{{ other.id }}/avatar"
 />
 
 <meta
     name="twitter:image"
-    content="{{ config.host }}/api/v1/profiles/{{ other.username }}/avatar"
+    content="{{ config.host }}/api/v0/auth/profile/{{ other.id }}/avatar"
 />
 
 <meta name="twitter:card" content="summary" />

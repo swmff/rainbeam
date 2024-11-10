@@ -63,7 +63,7 @@ pub struct Config {
     /// If new profile registration is enabled
     #[serde(default)]
     pub registration_enabled: bool,
-    /// The origin of the public server (ex: "<https://rainbeam.net>")
+    /// The origin of the public server (ex: "https://rainbeam.net")
     ///
     /// Used in embeds and links.
     #[serde(default)]

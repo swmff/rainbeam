@@ -483,7 +483,7 @@ pub struct IpBlockCreate {
 
 /// General API errors
 #[derive(Debug)]
-pub enum AuthError {
+pub enum DatabaseError {
     MustBeUnique,
     OutOfScope,
     NotAllowed,
@@ -493,9 +493,9 @@ pub enum AuthError {
     Other,
 }
 
-impl AuthError {
+impl DatabaseError {
     pub fn to_string(&self) -> String {
-        use AuthError::*;
+        use DatabaseError::*;
         match self {
             MustBeUnique => String::from("One of the given values must be unique. (MustBeUnique)"),
             OutOfScope => String::from(
@@ -510,9 +510,9 @@ impl AuthError {
     }
 }
 
-impl IntoResponse for AuthError {
+impl IntoResponse for DatabaseError {
     fn into_response(self) -> Response {
-        use crate::model::AuthError::*;
+        use crate::model::DatabaseError::*;
         match self {
             NotAllowed => (
                 StatusCode::UNAUTHORIZED,

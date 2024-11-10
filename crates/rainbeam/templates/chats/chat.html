@@ -209,7 +209,7 @@ endblock %} {% block nav_left %}
             <a href="/@{{ member.username }}">
                 <img
                     title="{{ member.username }}'s avatar"
-                    src="/api/v1/profiles/{{ member.username }}/avatar"
+                    src="/api/v0/auth/profile/{{ member.id }}/avatar"
                     alt="@{{ member.username }}"
                     class="avatar"
                     loading="lazy"

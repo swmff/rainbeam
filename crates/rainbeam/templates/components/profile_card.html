@@ -3,7 +3,7 @@
         <a href="/@{{ user.username }}">
             <img
                 title="{{ user.username }}'s banner"
-                src="/api/v1/profiles/{{ user.username }}/banner"
+                src="/api/v0/auth/profile/{{ user.username }}/banner"
                 alt=""
                 class="shadow round"
                 style="
@@ -22,7 +22,7 @@
         <a href="/@{{ user.username }}">
             <img
                 title="{{ user.username }}'s avatar"
-                src="/api/v1/profiles/{{ user.username }}/avatar"
+                src="/api/v0/auth/profile/{{ user.id }}/avatar"
                 alt=""
                 class="avatar shadow-md"
                 style="--size: 80px; margin: -50px 0.5rem 0"

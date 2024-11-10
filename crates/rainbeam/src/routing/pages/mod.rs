@@ -1924,8 +1924,6 @@ pub async fn ipbans_request(jar: CookieJar, State(database): State<Database>) ->
 struct ReportTemplate {
     config: Config,
     profile: Option<Profile>,
-    unread: usize,
-    notifs: usize,
 }
 
 /// GET /intents/report
@@ -1942,30 +1940,10 @@ pub async fn report_request(jar: CookieJar, State(database): State<Database>) ->
         None => None,
     };
 
-    let unread = if let Some(ref ua) = auth_user {
-        match database.get_questions_by_recipient(ua.id.to_owned()).await {
-            Ok(unread) => unread.len(),
-            Err(_) => 0,
-        }
-    } else {
-        0
-    };
-
-    let notifs = if let Some(ref ua) = auth_user {
-        database
-            .auth
-            .get_notification_count_by_recipient(ua.id.to_owned())
-            .await
-    } else {
-        0
-    };
-
     Html(
         ReportTemplate {
             config: database.server_options.clone(),
             profile: auth_user,
-            unread,
-            notifs,
         }
         .render()
         .unwrap(),
