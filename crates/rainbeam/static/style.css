@@ -1795,7 +1795,14 @@ table ol {
 
 /* app */
 html:not(.legacy),
-html:not(.legacy) * {
+body:not(.legacy *) {
+    font-family: "Poppins", "Roboto", "Inter", ui-sans-serif, system-ui,
+        sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+        "Noto Color Emoji";
+}
+
+:not(.legacy),
+:not(.legacy *) {
     --color-surface: hsl(0, 0%, 95%);
     --color-lowered: hsl(0, 0%, 93%);
     --color-raised: hsl(0, 0%, 98%);
@@ -1812,9 +1819,6 @@ html:not(.legacy) * {
     --color-shadow: transparent;
     --frosted-glass: blur(100px) brightness(110%);
     --radius: 4px;
-    font-family: "Poppins", "Roboto", "Inter", ui-sans-serif, system-ui,
-        sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
-        "Noto Color Emoji";
 }
 
 .dark:not(.legacy),
