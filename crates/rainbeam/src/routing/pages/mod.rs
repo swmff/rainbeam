@@ -841,10 +841,10 @@ pub async fn partial_posts_request(
             .get_profile_by_unhashed(c.value_trimmed().to_string())
             .await
         {
-            Ok(ua) => ua,
-            Err(_) => return Html(DatabaseError::NotAllowed.to_html(database)),
+            Ok(ua) => Some(ua),
+            Err(_) => None,
         },
-        None => return Html(DatabaseError::NotAllowed.to_html(database)),
+        None => None,
     };
 
     let mut responses = match database.get_posts_paginated(props.page).await {
@@ -853,29 +853,31 @@ pub async fn partial_posts_request(
     };
 
     // remove content from blocked users/users that have blocked us
-    let blocked = match database
-        .auth
-        .get_user_relationships_of_status(auth_user.id.clone(), RelationshipStatus::Blocked)
-        .await
-    {
-        Ok(l) => l,
-        Err(_) => Vec::new(),
-    };
-
-    for user in blocked {
-        for (i, _) in responses
-            .clone()
-            .iter()
-            .filter(|x| x.1.author.id == user.0.id)
-            .enumerate()
+    if let Some(ref ua) = auth_user {
+        let blocked = match database
+            .auth
+            .get_user_relationships_of_status(ua.id.clone(), RelationshipStatus::Blocked)
+            .await
         {
-            responses.remove(i);
+            Ok(l) => l,
+            Err(_) => Vec::new(),
+        };
+
+        for user in blocked {
+            for (i, _) in responses
+                .clone()
+                .iter()
+                .filter(|x| x.1.author.id == user.0.id)
+                .enumerate()
+            {
+                responses.remove(i);
+            }
         }
     }
 
     let mut is_helper: bool = false;
-    let is_powerful = {
-        let group = match database.auth.get_group_by_id(auth_user.group).await {
+    let is_powerful = if let Some(ref ua) = auth_user {
+        let group = match database.auth.get_group_by_id(ua.group).await {
             Ok(g) => g,
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
@@ -885,43 +887,47 @@ pub async fn partial_posts_request(
         }
 
         group.permissions.contains(&Permission::Manager)
+    } else {
+        false
     };
 
     // build relationships list
     let mut relationships: HashMap<String, RelationshipStatus> = HashMap::new();
 
-    for response in &responses {
-        if relationships.contains_key(&response.1.author.id) {
-            continue;
+    if let Some(ref ua) = auth_user {
+        for response in &responses {
+            if relationships.contains_key(&response.1.author.id) {
+                continue;
+            }
+
+            if is_helper {
+                // make sure staff can view your responses
+                relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
+                continue;
+            }
+
+            if response.1.author.id == ua.id {
+                // make sure we can view our own responses
+                relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
+                continue;
+            };
+
+            relationships.insert(
+                response.1.author.id.clone(),
+                database
+                    .auth
+                    .get_user_relationship(response.1.author.id.clone(), ua.id.clone())
+                    .await
+                    .0,
+            );
         }
-
-        if is_helper {
-            // make sure staff can view your responses
-            relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
-            continue;
-        }
-
-        if response.1.author.id == auth_user.id {
-            // make sure we can view our own responses
-            relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
-            continue;
-        };
-
-        relationships.insert(
-            response.1.author.id.clone(),
-            database
-                .auth
-                .get_user_relationship(response.1.author.id.clone(), auth_user.id.clone())
-                .await
-                .0,
-        );
     }
 
     // ...
     return Html(
         PartialPostsTemplate {
             config: database.server_options,
-            profile: Some(auth_user.clone()),
+            profile: auth_user,
             responses,
             relationships,
             is_powerful,

@@ -19,6 +19,7 @@ block head %}
     <span class="mobile">Home</span>
 </a>
 
+{% if profile.is_some() %}
 <a class="button" href="/inbox" title="My inbox">
     <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -39,7 +40,7 @@ block head %}
         {% endif %}
     </span>
 </a>
-{% endblock %} {% block nav_right %}
+{% endif %} {% endblock %} {% block nav_right %} {% if profile.is_some() %}
 <a class="button" href="/inbox/notifications" title="My notifications">
     <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -57,8 +58,9 @@ block head %}
     <span class="notification tr">{{ notifs }}</span>
     {% endif %}
 </a>
-{% endblock %} {% block content %}
+{% endif %} {% endblock %} {% block content %}
 <article>
+    {% if profile.is_some() %}
     <a
         href="/intents/post"
         title="New post"
@@ -77,8 +79,10 @@ block head %}
             ></path>
         </svg>
     </a>
+    {% endif %}
 
     <main class="flex flex-col gap-2">
+        {% if profile.is_some() %}
         <div class="pillmenu convertible">
             <a href="/">Timeline</a>
             <a href="/inbox/posts" class="active">Posts</a>
@@ -89,8 +93,7 @@ block head %}
             <a href="/inbox/posts" class="active">Public</a>
             <a href="/inbox/posts/following">Following</a>
         </div>
-
-        {% if responses.len() == 0 %}
+        {% endif %} {% if responses.len() == 0 %}
         <div class="markdown-alert-important">
             <span>No results matching this query yet!</span>
         </div>
@@ -99,6 +102,7 @@ block head %}
         <div class="flex justify-between">
             <div></div>
             <div class="flex gap-2">
+                {% if profile.is_some() %}
                 <a href="/intents/post" class="button primary bold">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -114,6 +118,7 @@ block head %}
                     </svg>
                     New
                 </a>
+                {% endif %}
 
                 <a href="/search?driver=2" class="button secondary bold">
                     <svg

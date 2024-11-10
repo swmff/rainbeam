@@ -2,62 +2,149 @@
 block head %}
 <meta name="description" content="{{ config.description }}" />
 {% endblock %} {% block content %}
-<main class="flex flex-col gap-4">
-    <div
-        class="card padded flex flex-col gap-2 justify-center items-center"
-        style="
-            background: var(--color-primary);
-            color: var(--color-text-primary) !important;
-        "
-    >
-        <h1 class="no-margin">{{ config.name }}</h1>
+<div id="use_split_page"></div>
+
+<article
+    class="page_section flex flex-col gap-4 justify-center items-center mobile:smaller"
+    style="
+        background-color: var(--color-lowered);
+        color: var(--color-primary-raised);
+        padding: 5rem 2rem;
+    "
+>
+    <div class="flex flex-col gap-2">
+        <h1
+            class="no-margin"
+            style="
+                text-align: left;
+                background: linear-gradient(
+                    to right,
+                    var(--color-primary),
+                    currentColor
+                );
+                background-clip: text;
+                text-fill-color: transparent;
+            "
+        >
+            {{ config.name }}
+        </h1>
+
         <h3 style="font-weight: normal; margin-top: 0">
             {{ config.description }}
         </h3>
+    </div>
+</article>
 
-        <div class="flex items-center gap-2" style="margin-top: 1rem">
-            <a class="button bold" href="/sign_up" data-turbo="false">
+<main
+    class="flex page_section items-center justify-center"
+    style="padding: 1rem 2rem"
+>
+    <div
+        class="flex flex-col gap-4 items-center justify-center"
+        style="width: 25rem; max-width: 100%"
+    >
+        <div class="flex flex-col gap-2 w-full">
+            <a
+                class="primary button bold w-full"
+                href="/sign_up"
+                data-turbo="false"
+                style="gap: 1rem !important"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 16 16"
+                    width="16"
+                    height="16"
+                    aria-label="Person plus symbol"
+                    class="icon"
+                >
+                    <path
+                        d="M7.9 8.548h-.001a5.528 5.528 0 0 1 3.1 4.659.75.75 0 1 1-1.498.086A4.01 4.01 0 0 0 5.5 9.5a4.01 4.01 0 0 0-4.001 3.793.75.75 0 1 1-1.498-.085 5.527 5.527 0 0 1 3.1-4.66 3.5 3.5 0 1 1 4.799 0ZM13.25 0a.75.75 0 0 1 .75.75V2h1.25a.75.75 0 0 1 0 1.5H14v1.25a.75.75 0 0 1-1.5 0V3.5h-1.25a.75.75 0 0 1 0-1.5h1.25V.75a.75.75 0 0 1 .75-.75ZM5.5 4a2 2 0 1 0-.001 3.999A2 2 0 0 0 5.5 4Z"
+                    ></path>
+                </svg>
                 Register
             </a>
-            <em>or</em>
-            <a class="button bold" href="/login" data-turbo="false"> Login </a>
+
+            <a
+                class="button bold w-full"
+                href="/login"
+                data-turbo="false"
+                style="gap: 1rem !important"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 16 16"
+                    width="16"
+                    height="16"
+                    aria-label="Smiley symbol"
+                    class="icon"
+                >
+                    <path
+                        d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm3.82 1.636a.75.75 0 0 1 1.038.175l.007.009c.103.118.22.222.35.31.264.178.683.37 1.285.37.602 0 1.02-.192 1.285-.371.13-.088.247-.192.35-.31l.007-.008a.75.75 0 0 1 1.222.87l-.022-.015c.02.013.021.015.021.015v.001l-.001.002-.002.003-.005.007-.014.019a2.066 2.066 0 0 1-.184.213c-.16.166-.338.316-.53.445-.63.418-1.37.638-2.127.629-.946 0-1.652-.308-2.126-.63a3.331 3.331 0 0 1-.715-.657l-.014-.02-.005-.006-.002-.003v-.002h-.001l.613-.432-.614.43a.75.75 0 0 1 .183-1.044ZM12 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM5 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm5.25 2.25.592.416a97.71 97.71 0 0 0-.592-.416Z"
+                    ></path>
+                </svg>
+                Login
+            </a>
         </div>
-    </div>
 
-    <div class="flex flex-col gap-4">
-        <section class="card flex flex-col gap-2">
-            <h2>
-                <span class="hl-tag">Ask</span>
-                questions
-            </h2>
-            <p>
-                On {{ config.name }}, you can easily ask your friends questions
-                as well as ask global questions which everybody can respond to.
-            </p>
-        </section>
+        <hr class="w-full" />
 
-        <section class="card flex flex-col gap-2">
-            <h2>
-                <span class="hl-tag">Share</span>
-                responses
-            </h2>
-            <p>
-                Quickly respond to questions asked to you in your inbox and
-                allow all of your friends to view your response!
-            </p>
-        </section>
+        <details class="accordion">
+            <summary>
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 16 16"
+                    width="16"
+                    height="16"
+                    aria-label="Chevron down symbol"
+                    class="icon"
+                >
+                    <path
+                        d="M12.78 5.22a.749.749 0 0 1 0 1.06l-4.25 4.25a.749.749 0 0 1-1.06 0L3.22 6.28a.749.749 0 1 1 1.06-1.06L8 8.939l3.72-3.719a.749.749 0 0 1 1.06 0Z"
+                    ></path>
+                </svg>
+                <b>Explore</b>
+            </summary>
 
-        <section class="card flex flex-col gap-2">
-            <h2>
-                <span class="hl-tag">Socialize</span>
-                with friends
-            </h2>
-            <p>
-                Grow your social circle through following users and being
-                followed. Users you're following will be used to generate your
-                unique timelines for exploring {{ config.name }}!
-            </p>
-        </section>
+            <div class="inner">
+                <ul>
+                    <li><a href="/search">Search</a></li>
+                    <li><a href="/inbox/posts">Posts</a></li>
+                </ul>
+            </div>
+        </details>
+
+        <details class="accordion">
+            <summary>
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 16 16"
+                    width="16"
+                    height="16"
+                    aria-label="Chevron down symbol"
+                    class="icon"
+                >
+                    <path
+                        d="M12.78 5.22a.749.749 0 0 1 0 1.06l-4.25 4.25a.749.749 0 0 1-1.06 0L3.22 6.28a.749.749 0 1 1 1.06-1.06L8 8.939l3.72-3.719a.749.749 0 0 1 1.06 0Z"
+                    ></path>
+                </svg>
+                <b>Additional resources</b>
+            </summary>
+
+            <div class="inner">
+                <ul>
+                    <li>
+                        <a href="/site/about">About this site</a>
+                    </li>
+
+                    <li>
+                        <a href="https://github.com/swmff/rainbeam"
+                            >Source code</a
+                        >
+                    </li>
+                </ul>
+            </div>
+        </details>
     </div>
 </main>
 

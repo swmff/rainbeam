@@ -241,11 +241,23 @@
 
                 // open
                 dropdown.toggleAttribute("open");
+
+                if (dropdown.getAttribute("open")) {
+                    dropdown.removeAttribute("aria-hidden");
+                } else {
+                    dropdown.setAttribute("aria-hidden", "true");
+                }
             }
         }, 5);
     });
 
     app.define("hook.dropdown.init", function (_, bind_to) {
+        for (const dropdown of Array.from(
+            document.querySelectorAll(".inner"),
+        )) {
+            dropdown.setAttribute("aria-hidden", "true");
+        }
+
         bind_to.addEventListener("click", (event) => {
             if (
                 event.target.matches(".dropdown") ||
@@ -526,23 +538,21 @@
     }
 
     // toast
-    app.define("toast", function ({ $ }, type, content) {
-        let time_until_remove = 5; // seconds
-
+    app.define("toast", function ({ $ }, type, content, time_until_remove = 5) {
         const element = document.createElement("div");
         element.id = "toast";
         element.classList.add(type);
         element.classList.add("toast");
-        element.innerHTML = content
+        element.innerHTML = `<span>${content
             .replaceAll("<", "&lt")
-            .replaceAll(">", "&gt;");
+            .replaceAll(">", "&gt;")}</span>`;
 
         document.getElementById("toast_zone").prepend(element);
 
         const timer = document.createElement("span");
         element.appendChild(timer);
 
-        timer.innerText = `(${time_until_remove})`;
+        timer.innerText = time_until_remove;
         timer.classList.add("timer");
 
         // start timer
@@ -553,7 +563,7 @@
 
         const count_interval = setInterval(() => {
             time_until_remove -= 1;
-            timer.innerText = `(${time_until_remove})`;
+            timer.innerText = time_until_remove;
         }, 1000);
     });
 
