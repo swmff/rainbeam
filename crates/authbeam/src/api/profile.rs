@@ -366,7 +366,7 @@ pub async fn update_tier_request(
 
     // push update
     // TODO: try not to clone
-    if let Err(e) = database.edit_profile_tier(id, props.tier).await {
+    if let Err(e) = database.update_profile_tier(id, props.tier).await {
         return Json(DefaultReturn {
             success: false,
             message: e.to_string(),
@@ -469,7 +469,7 @@ pub async fn update_group_request(
 
     // push update
     // TODO: try not to clone
-    if let Err(e) = database.edit_profile_group(username, props.group).await {
+    if let Err(e) = database.update_profile_group(username, props.group).await {
         return Json(DefaultReturn {
             success: false,
             message: e.to_string(),
@@ -644,7 +644,7 @@ pub async fn update_tokens_request(
 
     // return
     if let Err(e) = database
-        .edit_profile_tokens_by_id(other.id, req.tokens, other.ips, other.token_context)
+        .update_profile_tokens(other.id, req.tokens, other.ips, other.token_context)
         .await
     {
         return Json(DefaultReturn {
@@ -806,7 +806,7 @@ pub async fn generate_token_request(
     other.token_context.push(props);
 
     database
-        .edit_profile_tokens_by_id(other.id, other.tokens, other.ips, other.token_context)
+        .update_profile_tokens(other.id, other.tokens, other.ips, other.token_context)
         .await
         .unwrap();
 
@@ -939,7 +939,7 @@ pub async fn update_password_request(
     // push update
     // TODO: try not to clone
     if let Err(e) = database
-        .edit_profile_password_by_name(
+        .update_profile_password(
             id,
             props.password,
             props.new_password.clone(),
@@ -1080,7 +1080,7 @@ pub async fn update_username_request(
     // push update
     // TODO: try not to clone
     if let Err(e) = database
-        .edit_profile_username_by_id(id, props.password, props.new_name.clone())
+        .update_profile_username(id, props.password, props.new_name.clone())
         .await
     {
         return Json(DefaultReturn {
@@ -1214,10 +1214,7 @@ pub async fn update_metdata_request(
     }
 
     // return
-    match database
-        .edit_profile_metadata_by_id(id, props.metadata)
-        .await
-    {
+    match database.update_profile_metadata(id, props.metadata).await {
         Ok(_) => Json(DefaultReturn {
             success: true,
             message: "Acceptable".to_string(),
@@ -1335,7 +1332,7 @@ pub async fn update_badges_request(
     }
 
     // return
-    match database.edit_profile_badges_by_id(id, props.badges).await {
+    match database.update_profile_badges(id, props.badges).await {
         Ok(_) => Json(DefaultReturn {
             success: true,
             message: "Acceptable".to_string(),

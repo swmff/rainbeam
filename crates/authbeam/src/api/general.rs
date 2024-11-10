@@ -186,7 +186,7 @@ pub async fn login_request(
     ua.token_context.push(TokenContext::default());
 
     database
-        .edit_profile_tokens_by_id(props.username.clone(), ua.tokens, ua.ips, ua.token_context)
+        .update_profile_tokens(props.username.clone(), ua.tokens, ua.ips, ua.token_context)
         .await
         .unwrap();
 

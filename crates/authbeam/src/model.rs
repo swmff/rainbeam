@@ -9,7 +9,6 @@ use axum::{
 
 use serde::{Deserialize, Serialize};
 use databeam::DefaultReturn;
-use shared::ui::BlockList;
 
 /// Basic user structure
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -202,12 +201,6 @@ impl Default for TokenContext {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ProfileMetadata {
-    /// A URL which dictates where the user's profile avatar is loaded from, `xsu-cliff` proxies this link and returns the user avatar
-    #[serde(default)]
-    pub avatar_url: String,
-    /// The user profile's [`BlockList`]
-    #[serde(default)]
-    pub definition: BlockList,
     /// Extra key-value pairs
     #[serde(default)]
     pub kv: HashMap<String, String>,
@@ -263,11 +256,7 @@ impl ProfileMetadata {
 
 impl Default for ProfileMetadata {
     fn default() -> Self {
-        Self {
-            avatar_url: String::new(),
-            definition: BlockList::default(),
-            kv: HashMap::new(),
-        }
+        Self { kv: HashMap::new() }
     }
 }
 

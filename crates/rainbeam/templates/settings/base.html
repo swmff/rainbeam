@@ -201,18 +201,15 @@ crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
         globalThis.save_settings = async () => {
             await app.debounce("settings:save_settings");
             const res = await (
-                await fetch(
-                    "/api/v0/auth/profile/{{ profile.username }}/metadata",
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({
-                            metadata,
-                        }),
+                await fetch("/api/v0/auth/profile/{{ profile.id }}/metadata", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
                     },
-                )
+                    body: JSON.stringify({
+                        metadata,
+                    }),
+                })
             ).json();
 
             trigger("app:toast", [

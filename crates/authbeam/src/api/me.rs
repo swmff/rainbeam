@@ -211,7 +211,7 @@ pub async fn generate_token_request(
     auth_user.token_context.push(props);
 
     database
-        .edit_profile_tokens_by_id(
+        .update_profile_tokens(
             auth_user.id,
             auth_user.tokens,
             auth_user.ips,
@@ -314,7 +314,7 @@ pub async fn update_tokens_request(
 
     // return
     if let Err(e) = database
-        .edit_profile_tokens_by_id(
+        .update_profile_tokens(
             auth_user.id,
             req.tokens,
             auth_user.ips,

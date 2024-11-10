@@ -784,7 +784,7 @@ impl Database {
     }
 
     /// Update a [`Profile`]'s metadata by its `id`
-    pub async fn edit_profile_metadata_by_id(
+    pub async fn update_profile_metadata(
         &self,
         id: String,
         mut metadata: ProfileMetadata,
@@ -841,7 +841,7 @@ impl Database {
     }
 
     /// Update a [`Profile`]'s tokens (and IPs/token_contexts) by its `id`
-    pub async fn edit_profile_tokens_by_id(
+    pub async fn update_profile_tokens(
         &self,
         id: String,
         tokens: Vec<String>,
@@ -893,7 +893,7 @@ impl Database {
     }
 
     /// Update a [`Profile`]'s badges by its `id`
-    pub async fn edit_profile_badges_by_id(
+    pub async fn update_profile_badges(
         &self,
         id: String,
         badges: Vec<(String, String, String)>,
@@ -938,7 +938,7 @@ impl Database {
     }
 
     /// Update a [`Profile`]'s tier by its ID
-    pub async fn edit_profile_tier(&self, id: String, tier: i32) -> Result<()> {
+    pub async fn update_profile_tier(&self, id: String, tier: i32) -> Result<()> {
         // make sure user exists
         let ua = match self.get_profile(id.clone()).await {
             Ok(ua) => ua,
@@ -977,7 +977,7 @@ impl Database {
     }
 
     /// Update a [`Profile`]'s `gid` by its `id`
-    pub async fn edit_profile_group(&self, id: String, group: i32) -> Result<()> {
+    pub async fn update_profile_group(&self, id: String, group: i32) -> Result<()> {
         // make sure user exists
         let ua = match self.get_profile(id.clone()).await {
             Ok(ua) => ua,
@@ -1016,15 +1016,15 @@ impl Database {
     }
 
     /// Update a [`Profile`]'s `password` by its name and password
-    pub async fn edit_profile_password_by_name(
+    pub async fn update_profile_password(
         &self,
-        name: String,
+        id: String,
         password: String,
         new_password: String,
         do_password_check: bool,
     ) -> Result<()> {
         // make sure user exists
-        let ua = match self.get_profile_by_username(name.clone()).await {
+        let ua = match self.get_profile(id.clone()).await {
             Ok(ua) => ua,
             Err(e) => return Err(e),
         };
@@ -1040,9 +1040,9 @@ impl Database {
 
         // update user
         let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
-            "UPDATE \"xprofiles\" SET \"password\" = ?, \"salt\" = ? WHERE \"username\" = ?"
+            "UPDATE \"xprofiles\" SET \"password\" = ?, \"salt\" = ? WHERE \"id\" = ?"
         } else {
-            "UPDATE \"xprofiles\" SET (\"password\", \"salt\") = ($1, $2) WHERE \"username\" = $3"
+            "UPDATE \"xprofiles\" SET (\"password\", \"salt\") = ($1, $2) WHERE \"id\" = $3"
         };
 
         let new_salt = shared::hash::salt();
@@ -1051,14 +1051,14 @@ impl Database {
         match sqlquery(query)
             .bind::<&String>(&shared::hash::hash_salted(new_password, new_salt.clone()))
             .bind::<&String>(&new_salt)
-            .bind::<&String>(&name)
+            .bind::<&String>(&id)
             .execute(c)
             .await
         {
             Ok(_) => {
                 self.base
                     .cachedb
-                    .remove(format!("rbeam.auth.profile:{}", name))
+                    .remove(format!("rbeam.auth.profile:{}", ua.username))
                     .await;
 
                 self.base
@@ -1073,7 +1073,7 @@ impl Database {
     }
 
     /// Update a [`Profile`]'s `username` by its id and password
-    pub async fn edit_profile_username_by_id(
+    pub async fn update_profile_username(
         &self,
         id: String,
         password: String,
