@@ -9,7 +9,7 @@ use crate::config::Config;
 use crate::database::Database;
 use crate::model::{DatabaseError, RelationshipStatus};
 
-use super::clean_metadata;
+use super::clean_metadata_short;
 
 #[derive(Template)]
 #[template(path = "settings/account.html")]
@@ -70,7 +70,7 @@ pub async fn account_settings(
     Html(
         AccountSettingsTemplate {
             config: database.server_options,
-            metadata: clean_metadata(&auth_user.metadata),
+            metadata: clean_metadata_short(&auth_user.metadata),
             profile: Some(auth_user),
             unread,
             notifs,
@@ -125,7 +125,7 @@ pub async fn profile_settings(
     Html(
         ProfileSettingsTemplate {
             config: database.server_options,
-            metadata: clean_metadata(&auth_user.metadata),
+            metadata: clean_metadata_short(&auth_user.metadata),
             profile: Some(auth_user),
             unread,
             notifs,
@@ -178,7 +178,7 @@ pub async fn privacy_settings(
     Html(
         PrivacySettingsTemplate {
             config: database.server_options,
-            metadata: clean_metadata(&auth_user.metadata),
+            metadata: clean_metadata_short(&auth_user.metadata),
             profile: Some(auth_user),
             unread,
             notifs,
@@ -234,7 +234,7 @@ pub async fn sessions_settings(
     Html(
         SessionsSettingsTemplate {
             config: database.server_options,
-            metadata: clean_metadata(&auth_user.metadata),
+            metadata: clean_metadata_short(&auth_user.metadata),
             tokens: serde_json::to_string(&auth_user.tokens).unwrap(),
             tokens_src: auth_user.tokens.clone(),
             profile: Some(auth_user),
@@ -295,7 +295,7 @@ pub async fn system_settings(
     Html(
         SystemSettingsTemplate {
             config: database.server_options,
-            metadata: clean_metadata(&auth_user.metadata),
+            metadata: clean_metadata_short(&auth_user.metadata),
             profile: Some(auth_user),
             unread,
             notifs,

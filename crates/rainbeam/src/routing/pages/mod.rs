@@ -536,6 +536,32 @@ pub fn clean_metadata_raw(metadata: &ProfileMetadata) -> ProfileMetadata {
     metadata
 }
 
+/// Clean profile metadata short
+pub fn clean_metadata_short(metadata: &ProfileMetadata) -> String {
+    remove_tags(&serde_json::to_string(&clean_metadata_short_raw(metadata)).unwrap())
+}
+
+/// Clean profile metadata short row
+pub fn clean_metadata_short_raw(metadata: &ProfileMetadata) -> ProfileMetadata {
+    // remove stupid characters
+    let mut metadata = metadata.to_owned();
+
+    for field in metadata.kv.clone() {
+        metadata.kv.insert(
+            field.0.to_string(),
+            field
+                .1
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("<style>", "")
+                .replace("</style>", ""),
+        );
+    }
+
+    // ...
+    metadata
+}
+
 #[derive(Template)]
 #[template(path = "views/question.html")]
 struct QuestionTemplate {

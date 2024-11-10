@@ -1406,6 +1406,8 @@ struct ModTemplate {
     metadata: String,
     badges: String,
     chats: Vec<(Chat, Vec<Profile>)>,
+    tokens: String,
+    tokens_src: Vec<String>,
     // ...
     relationship: RelationshipStatus,
     layout: String,
@@ -1540,6 +1542,8 @@ pub async fn mod_request(
             metadata: clean_metadata(&other.metadata),
             badges: serde_json::to_string_pretty(&other.badges).unwrap(),
             chats,
+            tokens: serde_json::to_string(&other.tokens).unwrap(),
+            tokens_src: other.tokens.clone(),
             // ...
             relationship,
             layout: other

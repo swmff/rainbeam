@@ -32,9 +32,18 @@
         <div class="flex items-center gap-2">
             <h3 class="no-margin">
                 <a href="/@{{ user.username }}">
-                    {% if let Some(display_name) =
-                    user.metadata.kv.get("sparkler:display_name") %} {{
-                    display_name }} {% else %} {{ user.username }} {% endif %}
+                    <!-- prettier-ignore -->
+                    {% let display_name = user.metadata.kv.get("sparkler:display_name") %}
+
+                    {% if let Some(display_name) = display_name %}
+                        {% if !display_name.trim().is_empty() %}
+                            {{ crate::routing::pages::escape_username(display_name) }}
+                        {% else %}
+                            {{ user.username }}
+                        {% endif %}
+                    {% else %}
+                        {{ user.username }}
+                    {% endif %}
                 </a>
             </h3>
 

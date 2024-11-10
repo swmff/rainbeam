@@ -136,16 +136,19 @@
                         return;
                     }
 
-                    fetch("/api/v0/auth/profile/{{ other.username }}/password", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
+                    fetch(
+                        "/api/v0/auth/profile/{{ other.username }}/password",
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                password: "",
+                                new_password: e.target.new_password.value,
+                            }),
                         },
-                        body: JSON.stringify({
-                            password: "",
-                            new_password: e.target.new_password.value,
-                        }),
-                    })
+                    )
                         .then((res) => res.json())
                         .then((res) => {
                             trigger("app:shout", [
@@ -162,21 +165,182 @@
 </div>
 {% endif %}
 
-<!-- ips -->
+<!-- sessions -->
 <hr />
-<div id="ips" class="flex flex-col gap-4">
-    <h3>IPs</h3>
+<div id="sessions" class="flex flex-col gap-4">
+    <div class="flex w-full gap-2 justify-between items-center">
+        <h3>Sessions</h3>
 
-    <div class="card w-full shadow">
-        {% for ip in other.ips %}
-        <ul style="margin-bottom: 0">
-            <code>{{ ip }}</code>
-            —
-            <a href="javascript:globalThis.ban_ip('{{ ip }}')">Ban IP</a>
-        </ul>
-        {% endfor %}
+        <a href="javascript:create_token()" class="button primary bold">
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 16 16"
+                width="16"
+                height="16"
+                aria-label="Plus symbol"
+                class="icon"
+            >
+                <path
+                    d="M7.75 2a.75.75 0 0 1 .75.75V7h4.25a.75.75 0 0 1 0 1.5H8.5v4.25a.75.75 0 0 1-1.5 0V8.5H2.75a.75.75 0 0 1 0-1.5H7V2.75A.75.75 0 0 1 7.75 2Z"
+                ></path>
+            </svg>
+            New
+        </a>
+    </div>
+
+    <div class="card w-full shadow" style="overflow: auto">
+        <table class="w-full">
+            <thead>
+                <tr>
+                    <th>IP</th>
+                    <th>App</th>
+                    <th>Permissions</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <!-- prettier-ignore -->
+            <tbody>
+                {% for (i, session) in tokens_src.iter().enumerate() %}
+                <tr id="session:{{ session }}" title="{{ session[..10] }}">
+                    {% if let Some(ip) = other.ips.get(i.to_owned()) %}
+                    <td style="white-space: nowrap">
+                        {% if ip.is_empty() %}
+                        <span class="tag">None</span>
+                        {% else %}
+                        <a href="javascript:globalThis.ban_ip('{{ ip }}')">{{ ip }}</a>
+                        {% endif %}
+                    </td>
+                    {% else %}
+                    <td></td>
+                    {% endif %}
+
+                    {% if let Some(ctx) = other.token_context.get(i.to_owned()) %}
+                    <td style="white-space: nowrap">
+                        {% let name = ctx.app_name() %}
+                        {% if name.is_empty() %}
+                        <span class="tag">None</span>
+                        {% else %}
+                        {{ name }}
+                        {% endif %}
+                    </td>
+                    {% else %}
+                    <td style="white-space: nowrap">
+                        <span class="tag">None</span>
+                    </td>
+                    {% endif %}
+
+                    {% if let Some(ctx) = other.token_context.get(i.to_owned()) %}
+                    {% if let Some(permissions) = ctx.permissions %}
+                    <td style="white-space: nowrap">
+                        {% if permissions.is_empty() %}
+                        <span class="tag">None</span>
+                        {% else %}
+                        <ul>
+                            {% for permission in permissions %}
+                            <li>
+                                {{ serde_json::to_string(permission).unwrap() }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </td>
+                    {% else %}
+                    <td style="white-space: nowrap">
+                        <span class="tag">All</span>
+                    </td>
+                    {% endif %}
+
+                    {% else %}
+                    <td></td>
+                    {% endif %}
+
+                    <td>
+                        <a href="javascript:remove_session('{{ session }}')"
+                            >Delete</a
+                        >
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
+
+<script type="application/json" id="tokens">
+    {{ tokens|safe }}
+</script>
+
+<script>
+    (() => {
+        const tokens = JSON.parse(document.getElementById("tokens").innerText);
+
+        globalThis.remove_session = (id) => {
+            if (!confirm("Are you sure you want to do this?")) {
+                return;
+            }
+
+            tokens.splice(tokens.indexOf(id), 1);
+            document.getElementById(`session:${id}`).remove();
+            globalThis.save_sessions();
+        };
+
+        globalThis.save_sessions = async () => {
+            const res = await (
+                await fetch("/api/v0/auth/profile/{{ other.id }}/tokens", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        tokens,
+                    }),
+                })
+            ).json();
+
+            trigger("app:toast", [
+                res.success ? "success" : "error",
+                res.success ? "Sessions saved!" : res.message,
+            ]);
+        };
+
+        globalThis.create_token = async () => {
+            const app_name = prompt("App identifier:");
+            if (!app_name) {
+                return;
+            }
+
+            const permissions = prompt("Permissions (comma separated):");
+
+            const res = await (
+                await fetch(
+                    "/api/v0/auth/profile/{{ other.id }}/tokens/generate",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            app: app_name,
+                            permissions: permissions
+                                ? permissions.split(",")
+                                : [],
+                        }),
+                    },
+                )
+            ).json();
+
+            trigger("app:toast", [
+                res.success ? "success" : "error",
+                res.success ? "Token generated!" : res.message,
+            ]);
+
+            if (res.success) {
+                alert(res.payload);
+            }
+        };
+    })();
+</script>
 
 <!-- chats -->
 <hr />

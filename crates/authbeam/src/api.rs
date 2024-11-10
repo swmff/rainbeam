@@ -23,6 +23,14 @@ pub fn routes(database: Database) -> Router {
     Router::new()
         // profiles
         // .route("/profile/:username/group", post(set_group_request))
+        .route(
+            "/profile/:username/tokens/generate",
+            post(other_generate_token_request),
+        )
+        .route(
+            "/profile/:username/tokens",
+            post(other_update_tokens_request),
+        )
         .route("/profile/:username/tier", post(set_tier_request))
         .route("/profile/:username/password", post(set_password_request))
         .route("/profile/:username/username", post(set_username_request))
@@ -967,6 +975,322 @@ pub async fn set_tier_request(
         message: "Acceptable".to_string(),
         payload: Some(props.tier),
     })
+}
+
+/// Update the given user's session tokens
+pub async fn other_update_tokens_request(
+    jar: CookieJar,
+    Path(id): Path<String>,
+    State(database): State<Database>,
+    Json(req): Json<UpdateTokens>,
+) -> impl IntoResponse {
+    // get user from token
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => {
+            let token = c.value_trimmed().to_string();
+
+            match database.get_profile_by_unhashed(token.clone()).await {
+                Ok(ua) => {
+                    // check token permission
+                    if !ua
+                        .token_context_from_token(&token)
+                        .can_do(TokenPermission::Moderator)
+                    {
+                        return Json(DefaultReturn {
+                            success: false,
+                            message: AuthError::NotAllowed.to_string(),
+                            payload: (),
+                        });
+                    }
+
+                    // return
+                    ua
+                }
+                Err(e) => {
+                    return Json(DefaultReturn {
+                        success: false,
+                        message: e.to_string(),
+                        payload: (),
+                    });
+                }
+            }
+        }
+        None => {
+            return Json(DefaultReturn {
+                success: false,
+                message: AuthError::NotAllowed.to_string(),
+                payload: (),
+            });
+        }
+    };
+
+    let mut other = match database.get_profile(id).await {
+        Ok(o) => o,
+        Err(e) => {
+            return Json(DefaultReturn {
+                success: false,
+                message: e.to_string(),
+                payload: (),
+            });
+        }
+    };
+
+    if auth_user.id == other.id {
+        return Json(DefaultReturn {
+            success: false,
+            message: AuthError::NotAllowed.to_string(),
+            payload: (),
+        });
+    }
+
+    let group = match database.get_group_by_id(auth_user.group).await {
+        Ok(g) => g,
+        Err(e) => {
+            return Json(DefaultReturn {
+                success: false,
+                message: e.to_string(),
+                payload: (),
+            })
+        }
+    };
+
+    if !group.permissions.contains(&Permission::Manager) {
+        // we must have the "Manager" permission to edit other users
+        return Json(DefaultReturn {
+            success: false,
+            message: AuthError::NotAllowed.to_string(),
+            payload: (),
+        });
+    }
+
+    // check permission
+    let group = match database.get_group_by_id(other.group).await {
+        Ok(g) => g,
+        Err(e) => {
+            return Json(DefaultReturn {
+                success: false,
+                message: e.to_string(),
+                payload: (),
+            })
+        }
+    };
+
+    if group.permissions.contains(&Permission::Manager) {
+        // we cannot manager other managers
+        return Json(DefaultReturn {
+            success: false,
+            message: AuthError::NotAllowed.to_string(),
+            payload: (),
+        });
+    }
+
+    // for every token that doesn't have a context, insert the default context
+    for (i, _) in other.tokens.clone().iter().enumerate() {
+        if let None = other.token_context.get(i) {
+            other.token_context.insert(i, TokenContext::default())
+        }
+    }
+
+    // get diff
+    let mut removed_indexes = Vec::new();
+
+    for (i, token) in other.tokens.iter().enumerate() {
+        if !req.tokens.contains(token) {
+            removed_indexes.push(i);
+        }
+    }
+
+    // edit dependent vecs
+    for i in removed_indexes.clone() {
+        if (other.ips.len() < i) | (other.ips.len() == 0) {
+            break;
+        }
+
+        other.ips.remove(i);
+    }
+
+    for i in removed_indexes.clone() {
+        if (other.token_context.len() < i) | (other.token_context.len() == 0) {
+            break;
+        }
+
+        other.token_context.remove(i);
+    }
+
+    // return
+    if let Err(e) = database
+        .edit_profile_tokens_by_id(other.id, req.tokens, other.ips, other.token_context)
+        .await
+    {
+        return Json(DefaultReturn {
+            success: false,
+            message: e.to_string(),
+            payload: (),
+        });
+    }
+
+    Json(DefaultReturn {
+        success: true,
+        message: "Tokens updated!".to_string(),
+        payload: (),
+    })
+}
+
+/// Generate a new token and session (like logging in while already logged in)
+pub async fn other_generate_token_request(
+    jar: CookieJar,
+    headers: HeaderMap,
+    Path(id): Path<String>,
+    State(database): State<Database>,
+    Json(props): Json<TokenContext>,
+) -> impl IntoResponse {
+    // get user from token
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => {
+            let token = c.value_trimmed().to_string();
+
+            match database.get_profile_by_unhashed(token.clone()).await {
+                Ok(ua) => {
+                    // check token permission
+                    if !ua
+                        .token_context_from_token(&token)
+                        .can_do(TokenPermission::Moderator)
+                    {
+                        return Json(DefaultReturn {
+                            success: false,
+                            message: AuthError::NotAllowed.to_string(),
+                            payload: None,
+                        });
+                    }
+
+                    // return
+                    ua
+                }
+                Err(e) => {
+                    return Json(DefaultReturn {
+                        success: false,
+                        message: e.to_string(),
+                        payload: None,
+                    });
+                }
+            }
+        }
+        None => {
+            return Json(DefaultReturn {
+                success: false,
+                message: AuthError::NotAllowed.to_string(),
+                payload: None,
+            });
+        }
+    };
+
+    let mut other = match database.get_profile(id).await {
+        Ok(o) => o,
+        Err(e) => {
+            return Json(DefaultReturn {
+                success: false,
+                message: e.to_string(),
+                payload: None,
+            });
+        }
+    };
+
+    if auth_user.id == other.id {
+        return Json(DefaultReturn {
+            success: false,
+            message: AuthError::NotAllowed.to_string(),
+            payload: None,
+        });
+    }
+
+    let group = match database.get_group_by_id(auth_user.group).await {
+        Ok(g) => g,
+        Err(e) => {
+            return Json(DefaultReturn {
+                success: false,
+                message: e.to_string(),
+                payload: None,
+            })
+        }
+    };
+
+    if !group.permissions.contains(&Permission::Manager) {
+        // we must have the "Manager" permission to edit other users
+        return Json(DefaultReturn {
+            success: false,
+            message: AuthError::NotAllowed.to_string(),
+            payload: None,
+        });
+    }
+
+    // check permission
+    let group = match database.get_group_by_id(other.group).await {
+        Ok(g) => g,
+        Err(e) => {
+            return Json(DefaultReturn {
+                success: false,
+                message: e.to_string(),
+                payload: None,
+            })
+        }
+    };
+
+    if group.permissions.contains(&Permission::Manager) {
+        // we cannot manager other managers
+        return Json(DefaultReturn {
+            success: false,
+            message: AuthError::NotAllowed.to_string(),
+            payload: None,
+        });
+    }
+
+    // for every token that doesn't have a context, insert the default context
+    for (i, _) in other.tokens.clone().iter().enumerate() {
+        if let None = other.token_context.get(i) {
+            other.token_context.insert(i, TokenContext::default())
+        }
+    }
+
+    // get real ip
+    let real_ip = if let Some(ref real_ip_header) = database.config.real_ip_header {
+        headers
+            .get(real_ip_header.to_owned())
+            .unwrap_or(&HeaderValue::from_static(""))
+            .to_str()
+            .unwrap_or("")
+            .to_string()
+    } else {
+        String::new()
+    };
+
+    // check ip
+    if database.get_ipban_by_ip(real_ip.clone()).await.is_ok() {
+        return Json(DefaultReturn {
+            success: false,
+            message: AuthError::NotAllowed.to_string(),
+            payload: None,
+        });
+    }
+
+    // ...
+    let token = databeam::utility::uuid();
+    let token_hashed = databeam::utility::hash(token.clone());
+
+    other.tokens.push(token_hashed);
+    other.ips.push(String::new()); // don't actually store ip, this endpoint is used by external apps
+    other.token_context.push(props);
+
+    database
+        .edit_profile_tokens_by_id(other.id, other.tokens, other.ips, other.token_context)
+        .await
+        .unwrap();
+
+    // return
+    return Json(DefaultReturn {
+        success: true,
+        message: "Generated token!".to_string(),
+        payload: Some(token),
+    });
 }
 
 /// Change a profile's password
