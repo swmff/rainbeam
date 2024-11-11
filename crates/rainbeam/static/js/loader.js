@@ -2,7 +2,7 @@
 //! https://github.com/hkauso/regns
 
 globalThis.ns_config = globalThis.ns_config || {
-    root: "/static/js/ns/",
+    root: "/static/js/",
     version: 0,
     verbose: true,
 };
