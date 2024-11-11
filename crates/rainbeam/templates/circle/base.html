@@ -10,21 +10,20 @@
 
 <meta
     name="og:image"
-    content="{{ config.host }}/api/v1/circles/{{ circle.name }}/avatar"
+    content="{{ config.host }}/api/v1/circles/{{ circle.id }}/avatar"
 />
 
 <meta
     name="twitter:image"
-    content="{{ config.host }}/api/v1/circles/{{ circle.name }}/avatar"
+    content="{{ config.host }}/api/v1/circles/{{ circle.id }}/avatar"
 />
 
 <meta name="twitter:card" content="summary" />
-<meta name="twitter:title" content="Ask us something!" />
+<meta name="twitter:title" content="{{ circle.name }}" />
 <meta
     name="twitter:description"
-    content="Ask the members of @{{ circle.name }} something on {{ config.name }}!"
+    content="+{{ circle.name }} on {{ config.name }}!"
 />
-
 {% let biography = biography.replace("\"", "\\\\\"") %}
 <meta name="description" content="{{ biography }}" />
 <meta name="og:description" content="{{ biography }}" />
@@ -86,395 +85,406 @@
 </a>
 {% endif %} {% endblock %} {% block content %}
 <article class="flex flex-col gap-4">
-    {% if let Some(fit) = circle.metadata.kv.get("sparkler:banner_fit") %}
-    <img
-        title="{{ circle.name }}'s banner"
-        src="/api/v1/circles/{{ circle.name }}/banner"
-        alt=""
-        class="shadow round {{ fit }}"
-        style="
-            width: 100%;
-            min-height: 150px;
-            max-height: 440px;
-        "
-    />
-    {% else %}
-     <img
-        title="{{ circle.name }}'s banner"
-        src="/api/v1/circles/{{ circle.name }}/banner"
-        alt=""
-        class="shadow round cover"
-        style="
-            width: 100%;
-            min-height: 150px;
-            max-height: 440px;
-            object-fit: cover;
-        "
-    />
-    {% endif %}
+    <main class="flex flex-col gap-4">
+        {% if let Some(fit) = circle.metadata.kv.get("sparkler:banner_fit") %}
+        <img
+            title="{{ circle.name }}'s banner"
+            src="/api/v1/circles/{{ circle.id }}/banner"
+            alt=""
+            class="shadow round {{ fit }}"
+            style="width: 100%; min-height: 150px; max-height: 440px"
+        />
+        {% else %}
+        <img
+            title="{{ circle.name }}'s banner"
+            src="/api/v1/circles/{{ circle.id }}/banner"
+            alt=""
+            class="shadow round cover"
+            style="
+                width: 100%;
+                min-height: 150px;
+                max-height: 440px;
+                object-fit: cover;
+            "
+        />
+        {% endif %}
 
-    <div class="flex flex-collapse gap-4 {% if layout == "1" %}flex-rev-row{% endif %}">
-        <div class="flex flex-col gap-4 sm:w-full profile_container" style="width: 20rem; height: max-content">
-            <style>
-                .profile_avatar {
-                    --size: 160px;
-                    margin: -80px auto 0;
-                }
-
-                @media screen and (max-width: 900px) {
+        <div class="flex flex-col gap-4">
+            <div class="flex flex-col gap-4 w-full profile_container">
+                <style>
                     .profile_avatar {
-                        --size: 120px;
-                        margin: -40px auto 0;
+                        --size: 160px;
+                        margin: -100px 0 0;
                     }
-                }
-            </style>
 
-            <div
-                id="profile_card"
-                class="card padded flex flex-col gap-2 sm:w-full"
-                style="padding-top: 0; height: max-content"
-            >
-                <div class="flex flex-col gap-2 w-full">
-                    <img
-                        title="{{ circle.name }}'s avatar"
-                        src="/api/v1/circles/{{ circle.name }}/avatar"
-                        alt=""
-                        class="avatar shadow-md profile_avatar"
-                    />
+                    @media screen and (max-width: 900px) {
+                        .profile_avatar {
+                            --size: 120px;
+                            margin: -60px 0 0;
+                        }
+                    }
+                </style>
 
-                    <!-- prettier-ignore -->
-                    <div id="names">
-                        <h3 class="no-margin username" style="max-width: 100%">
-                            {% if let Some(display_name) = circle.metadata.kv.get("sparkler:display_name") %}
-                                {{ crate::routing::pages::escape_username(display_name) }}
-                            {% else %}
-                                {{ circle.name }}
-                            {% endif %}
-                        </h3>
+                <div
+                    id="profile_card"
+                    class="card padded flex flex-col gap-2 sm:w-full"
+                    style="height: max-content"
+                >
+                    <div class="flex gap-4">
+                        <img
+                            title="{{ circle.name }}'s avatar"
+                            src="/api/v1/circles/{{ circle.id }}/avatar"
+                            alt=""
+                            class="avatar shadow-md profile_avatar"
+                        />
 
-                        <h4 class="no-margin username" style="font-weight: normal; opacity: 50%">{{ circle.name }}</h4>
+                        <div class="flex flex-col gap-2">
+                            <!-- prettier-ignore -->
+                            <div id="names">
+                                <h3 class="no-margin username" style="max-width: 100%">
+                                    {% if let Some(display_name) = circle.metadata.kv.get("sparkler:display_name") %}
+                                        {{ crate::routing::pages::escape_username(display_name) }}
+                                    {% else %}
+                                        {{ circle.name }}
+                                    {% endif %}
+                                </h3>
+
+                                <h4 class="no-margin username" style="font-weight: normal; opacity: 50%">{{ circle.name }}</h4>
+                            </div>
+
+                            <!-- prettier-ignore -->
+                            <div id="biography">
+                                {% if let Some(biography) = circle.metadata.kv.get("sparkler:biography") %}
+                                    {{ shared::ui::render_markdown(biography)|safe }}
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <!-- prettier-ignore -->
-                <div id="biography">
-                    {% if let Some(biography) = circle.metadata.kv.get("sparkler:biography") %}
-                        {{ shared::ui::render_markdown(biography)|safe }}
-                    {% endif %}
-                </div>
+                    <hr class="w-full" />
 
-                <!-- buttons -->
-                {% if let Some(profile) = profile %} {% if profile.username ==
-                circle.owner.username %}
-                <!-- options for account owner -->
-                <!-- <hr /> -->
-                <a
-                    class="button w-full bold primary"
-                    href="/circles/@{{ circle.name }}/settings"
-                >
-                    Edit Circle
-                </a>
-                {% endif %} {% if is_owner %}
-                <a
-                    href="javascript:delete_circle_as_owner()"
-                    class="button w-full"
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 16 16"
-                        width="16"
-                        height="16"
-                        aria-label="Trash symbol"
-                        class="icon"
-                    >
-                        <path
-                            d="M11 1.75V3h2.25a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75ZM4.496 6.675l.66 6.6a.25.25 0 0 0 .249.225h5.19a.25.25 0 0 0 .249-.225l.66-6.6a.75.75 0 0 1 1.492.149l-.66 6.6A1.748 1.748 0 0 1 10.595 15h-5.19a1.75 1.75 0 0 1-1.741-1.575l-.66-6.6a.75.75 0 1 1 1.492-.15ZM6.5 1.75V3h3V1.75a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25Z"
-                        ></path>
-                    </svg>
-                    Delete
-                </a>
-
-                <script>
-                    function delete_circle_as_owner() {
-                        if (!confirm("Are you sure you want to do this?")) {
-                            return;
-                        }
-
-                        fetch("/api/v1/circles/{{ circle.id }}", {
-                            method: "DELETE",
-                        })
-                            .then((res) => res.json())
-                            .then((res) => {
-                                trigger("app:shout", [
-                                    res.success ? "tip" : "caution",
-                                    res.message || "Circle deleted!",
-                                ]);
-                            });
-                    }
-                </script>
-                {% else if is_member %}
-                <!-- is member, but not owner -->
-                <a href="javascript:leave_circle()" class="button w-full">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 16 16"
-                        width="16"
-                        height="16"
-                        aria-label="X symbol"
-                        class="icon"
-                    >
-                        <path
-                            d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L9.06 8l3.22 3.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L8 9.06l-3.22 3.22a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z"
-                        ></path>
-                    </svg>
-                    Leave
-                </a>
-
-                <script>
-                    function leave_circle() {
-                        if (!confirm("Are you sure you want to do this?")) {
-                            return;
-                        }
-
-                        fetch("/api/v1/circles/{{ circle.id }}/leave", {
-                            method: "POST",
-                        })
-                            .then((res) => res.json())
-                            .then((res) => {
-                                trigger("app:shout", [
-                                    res.success ? "tip" : "caution",
-                                    res.message || "Left circle!",
-                                ]);
-                            });
-                    }
-                </script>
-                {% endif %}
-
-                <!-- actions -->
-                <div class="dropdown">
-                    <button
-                        onclick="trigger('app:hook.dropdown', [event])"
-                        exclude="dropdown"
-                        class="w-full"
-                    >
-                        Actions
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 16 16"
-                            width="16"
-                            height="16"
-                            aria-label="Chevron down symbol"
-                            class="icon"
-                        >
-                            <path
-                                d="M12.78 5.22a.749.749 0 0 1 0 1.06l-4.25 4.25a.749.749 0 0 1-1.06 0L3.22 6.28a.749.749 0 1 1 1.06-1.06L8 8.939l3.72-3.719a.749.749 0 0 1 1.06 0Z"
-                            ></path>
-                        </svg>
-                    </button>
-
-                    <div class="inner shadow-md w-content left" exclude="dropdown">
-                        <b class="title">This circle</b>
+                    <div class="flex gap-2">
+                        <!-- buttons -->
+                        {% if let Some(profile) = profile %} {% if
+                        profile.username == circle.owner.username %}
+                        <!-- options for account owner -->
+                        <!-- <hr /> -->
                         <a
-                            href="#"
-                            onclick="trigger('app:copy_text', ['{{ circle.id }}'])"
+                            class="button bold primary"
+                            href="/circles/@{{ circle.name }}/settings"
+                            style="flex: 1 0 auto"
                         >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 16 16"
-                                width="16"
-                                height="16"
-                                aria-label="Copy symbol"
-                                class="icon"
-                            >
-                                <path
-                                    d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"
-                                ></path>
-                                <path
-                                    d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"
-                                ></path>
-                            </svg>
-                            Copy ID
+                            Edit Circle
                         </a>
+                        {% endif %}
+
+                        <!-- options for members -->
+                        {% if is_member %}
                         <a
-                            href="javascript:trigger('reports:bootstrap', ['circles', '{{ circle.id }}'])"
+                            href="/intents/post?circle={{ circle.id }}"
+                            class="button primary bold"
+                            style="flex: 1 0 auto"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 16 16"
                                 width="16"
                                 height="16"
-                                aria-label="Report symbol"
+                                aria-label="Plus symbol"
                                 class="icon"
                             >
                                 <path
-                                    d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"
+                                    d="M7.75 2a.75.75 0 0 1 .75.75V7h4.25a.75.75 0 0 1 0 1.5H8.5v4.25a.75.75 0 0 1-1.5 0V8.5H2.75a.75.75 0 0 1 0-1.5H7V2.75A.75.75 0 0 1 7.75 2Z"
                                 ></path>
                             </svg>
-                            Report
+                            Post
                         </a>
-                        {% if is_powerful %}
-                        <!-- for managers ONLY -->
-                        <a href="javascript:delete_circle()">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 16 16"
-                                width="16"
-                                height="16"
-                                aria-label="Trash symbol"
-                                class="icon"
+                        {% endif %}
+
+                        <!-- actions -->
+                        <div class="dropdown" style="flex: 1 0 auto">
+                            <button
+                                onclick="trigger('app:hook.dropdown', [event])"
+                                exclude="dropdown"
+                                class="w-full"
                             >
-                                <path
-                                    d="M11 1.75V3h2.25a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75ZM4.496 6.675l.66 6.6a.25.25 0 0 0 .249.225h5.19a.25.25 0 0 0 .249-.225l.66-6.6a.75.75 0 0 1 1.492.149l-.66 6.6A1.748 1.748 0 0 1 10.595 15h-5.19a1.75 1.75 0 0 1-1.741-1.575l-.66-6.6a.75.75 0 1 1 1.492-.15ZM6.5 1.75V3h3V1.75a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25Z"
-                                ></path>
-                            </svg>
-                            Delete
-                        </a>
+                                Actions
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 16 16"
+                                    width="16"
+                                    height="16"
+                                    aria-label="Chevron down symbol"
+                                    class="icon dropdown-arrow"
+                                >
+                                    <path
+                                        d="M12.78 5.22a.749.749 0 0 1 0 1.06l-4.25 4.25a.749.749 0 0 1-1.06 0L3.22 6.28a.749.749 0 1 1 1.06-1.06L8 8.939l3.72-3.719a.749.749 0 0 1 1.06 0Z"
+                                    ></path>
+                                </svg>
+                            </button>
 
-                        <script>
-                            function delete_circle() {
-                                if (!confirm("Are you sure you want to do this?")) {
-                                    return;
-                                }
+                            <div
+                                class="inner shadow-md w-content left"
+                                exclude="dropdown"
+                            >
+                                <b class="title">This circle</b>
+                                <a
+                                    href="#"
+                                    onclick="trigger('app:copy_text', ['{{ circle.id }}'])"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 16 16"
+                                        width="16"
+                                        height="16"
+                                        aria-label="Copy symbol"
+                                        class="icon"
+                                    >
+                                        <path
+                                            d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"
+                                        ></path>
+                                        <path
+                                            d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"
+                                        ></path>
+                                    </svg>
+                                    Copy ID
+                                </a>
+                                <a
+                                    href="javascript:trigger('reports:bootstrap', ['circles', '{{ circle.id }}'])"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 16 16"
+                                        width="16"
+                                        height="16"
+                                        aria-label="Report symbol"
+                                        class="icon"
+                                    >
+                                        <path
+                                            d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"
+                                        ></path>
+                                    </svg>
+                                    Report
+                                </a>
 
-                                fetch("/api/v1/circles/{{ circle.id }}", {
-                                    method: "DELETE",
-                                })
-                                    .then((res) => res.json())
-                                    .then((res) => {
-                                        trigger("app:shout", [
-                                            res.success ? "tip" : "caution",
-                                            res.message ||
-                                                "Circle deleted! Thanks for keeping {{ config.name }} clean!",
-                                        ]);
+                                {% if is_owner %}
+                                <a
+                                    href="javascript:delete_circle_as_owner()"
+                                    class="red"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 16 16"
+                                        width="16"
+                                        height="16"
+                                        aria-label="Trash symbol"
+                                        class="icon"
+                                    >
+                                        <path
+                                            d="M11 1.75V3h2.25a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75ZM4.496 6.675l.66 6.6a.25.25 0 0 0 .249.225h5.19a.25.25 0 0 0 .249-.225l.66-6.6a.75.75 0 0 1 1.492.149l-.66 6.6A1.748 1.748 0 0 1 10.595 15h-5.19a1.75 1.75 0 0 1-1.741-1.575l-.66-6.6a.75.75 0 1 1 1.492-.15ZM6.5 1.75V3h3V1.75a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25Z"
+                                        ></path>
+                                    </svg>
+                                    Delete
+                                </a>
 
-                                        e.target.reset();
-                                    });
-                            }
-                        </script>
+                                <script>
+                                    function delete_circle_as_owner() {
+                                        if (
+                                            !confirm(
+                                                "Are you sure you want to do this?",
+                                            )
+                                        ) {
+                                            return;
+                                        }
+
+                                        fetch(
+                                            "/api/v1/circles/{{ circle.id }}",
+                                            {
+                                                method: "DELETE",
+                                            },
+                                        )
+                                            .then((res) => res.json())
+                                            .then((res) => {
+                                                trigger("app:shout", [
+                                                    res.success
+                                                        ? "tip"
+                                                        : "caution",
+                                                    res.message ||
+                                                        "Circle deleted!",
+                                                ]);
+                                            });
+                                    }
+                                </script>
+                                {% else if is_member %}
+                                <!-- is member, but not owner -->
+                                <a
+                                    href="javascript:leave_circle()"
+                                    class="red w-full"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 12 12"
+                                        width="12"
+                                        height="12"
+                                        aria-label="X Symbol"
+                                        class="icon"
+                                    >
+                                        <path
+                                            d="M1.757 10.243a6.001 6.001 0 1 1 8.488-8.486 6.001 6.001 0 0 1-8.488 8.486ZM6 4.763l-2-2L2.763 4l2 2-2 2L4 9.237l2-2 2 2L9.237 8l-2-2 2-2L8 2.763Z"
+                                        ></path>
+                                    </svg>
+                                    Leave
+                                </a>
+
+                                <script>
+                                    function leave_circle() {
+                                        if (
+                                            !confirm(
+                                                "Are you sure you want to do this?",
+                                            )
+                                        ) {
+                                            return;
+                                        }
+
+                                        fetch(
+                                            "/api/v1/circles/{{ circle.id }}/leave",
+                                            {
+                                                method: "POST",
+                                            },
+                                        )
+                                            .then((res) => res.json())
+                                            .then((res) => {
+                                                trigger("app:shout", [
+                                                    res.success
+                                                        ? "tip"
+                                                        : "caution",
+                                                    res.message ||
+                                                        "Left circle!",
+                                                ]);
+                                            });
+                                    }
+                                </script>
+                                {% endif %} {% if is_powerful %}
+                                <b class="title">Manage</b>
+
+                                <!-- for managers ONLY -->
+                                <a
+                                    href="javascript:delete_circle()"
+                                    class="red"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 16 16"
+                                        width="16"
+                                        height="16"
+                                        aria-label="Trash symbol"
+                                        class="icon"
+                                    >
+                                        <path
+                                            d="M11 1.75V3h2.25a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75ZM4.496 6.675l.66 6.6a.25.25 0 0 0 .249.225h5.19a.25.25 0 0 0 .249-.225l.66-6.6a.75.75 0 0 1 1.492.149l-.66 6.6A1.748 1.748 0 0 1 10.595 15h-5.19a1.75 1.75 0 0 1-1.741-1.575l-.66-6.6a.75.75 0 1 1 1.492-.15ZM6.5 1.75V3h3V1.75a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25Z"
+                                        ></path>
+                                    </svg>
+                                    Delete
+                                </a>
+
+                                <script>
+                                    function delete_circle() {
+                                        if (
+                                            !confirm(
+                                                "Are you sure you want to do this?",
+                                            )
+                                        ) {
+                                            return;
+                                        }
+
+                                        fetch(
+                                            "/api/v1/circles/{{ circle.id }}",
+                                            {
+                                                method: "DELETE",
+                                            },
+                                        )
+                                            .then((res) => res.json())
+                                            .then((res) => {
+                                                trigger("app:shout", [
+                                                    res.success
+                                                        ? "tip"
+                                                        : "caution",
+                                                    res.message ||
+                                                        "Circle deleted! Thanks for keeping {{ config.name }} clean!",
+                                                ]);
+
+                                                e.target.reset();
+                                            });
+                                    }
+                                </script>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% else %}
+                        <!-- anonymous actions -->
+                        <div class="dropdown">
+                            <button
+                                onclick="trigger('app:hook.dropdown', [event])"
+                                exclude="dropdown"
+                                class="w-full"
+                            >
+                                Actions
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 16 16"
+                                    width="16"
+                                    height="16"
+                                    aria-label="Chevron down symbol"
+                                    class="icon"
+                                >
+                                    <path
+                                        d="M12.78 5.22a.749.749 0 0 1 0 1.06l-4.25 4.25a.749.749 0 0 1-1.06 0L3.22 6.28a.749.749 0 1 1 1.06-1.06L8 8.939l3.72-3.719a.749.749 0 0 1 1.06 0Z"
+                                    ></path>
+                                </svg>
+                            </button>
+
+                            <div
+                                class="inner shadow-md w-content left"
+                                exclude="dropdown"
+                            >
+                                <b class="title">This circle</b>
+                                <a
+                                    href="javascript:trigger('reports:bootstrap', ['circles', '{{ circle.id }}'])"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 16 16"
+                                        width="16"
+                                        height="16"
+                                        aria-label="Report symbol"
+                                        class="icon"
+                                    >
+                                        <path
+                                            d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"
+                                        ></path>
+                                    </svg>
+                                    Report
+                                </a>
+                            </div>
+                        </div>
                         {% endif %}
                     </div>
                 </div>
-                {% else %}
-                <!-- anonymous actions -->
-                <div class="dropdown">
-                    <button
-                        onclick="trigger('app:hook.dropdown', [event])"
-                        exclude="dropdown"
-                        class="w-full"
-                    >
-                        Actions
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 16 16"
-                            width="16"
-                            height="16"
-                            aria-label="Chevron down symbol"
-                            class="icon"
-                        >
-                            <path
-                                d="M12.78 5.22a.749.749 0 0 1 0 1.06l-4.25 4.25a.749.749 0 0 1-1.06 0L3.22 6.28a.749.749 0 1 1 1.06-1.06L8 8.939l3.72-3.719a.749.749 0 0 1 1.06 0Z"
-                            ></path>
-                        </svg>
-                    </button>
-
-                    <div class="inner shadow-md w-content left" exclude="dropdown">
-                        <b class="title">This circle</b>
-                        <a
-                            href="javascript:trigger('reports:bootstrap', ['circles', '{{ circle.id }}'])"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 16 16"
-                                width="16"
-                                height="16"
-                                aria-label="Report symbol"
-                                class="icon"
-                            >
-                                <path
-                                    d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"
-                                ></path>
-                            </svg>
-                            Report
-                        </a>
-                    </div>
-                </div>
-                {% endif %}
             </div>
+
+            <section id="feed" class="flex flex-col gap-4 w-full">
+                <!-- menu -->
+                <div class="pillmenu convertible">
+                    {% block pillmenu %}{% endblock %}
+                </div>
+
+                <!-- panel -->
+                <div id="panel" style="display: contents">
+                    {% block panel %}{% endblock %}
+                </div>
+            </section>
         </div>
-
-        <section id="feed" class="flex flex-col gap-4 w-full">
-            <!-- upper -->
-            <!-- new question -->
-            <div class="card-nest w-full shadow">
-                <!-- prettier-ignore -->
-                <div class="card motivational_header">
-                    {% if let Some(header) = circle.metadata.kv.get("sparkler:motivational_header") %}
-                        {{ shared::ui::render_markdown(header)|safe }}
-                    {% else %}
-                        Ask a question
-                    {% endif %}
-                </div>
-
-                <div class="card">
-                    <!-- prettier-ignore -->
-                    {% if !lock_profile && !is_blocked %}
-                    {% if (require_account && profile.is_some()) | (disallow_anonymous && profile.is_some()) | (!require_account && !disallow_anonymous) %}
-                    <form id="question_form" class="flex flex-col gap-2">
-                        <textarea
-                            class="w-full"
-                            placeholder="Type your question!"
-                            minlength="1"
-                            maxlength="2048"
-                            required
-                            name="content"
-                            id="content"
-                            hook="counter"
-                        ></textarea>
-
-                        <!-- prettier-ignore -->
-                        <div class="flex justify-between w-full gap-1">
-                        <div class="footernav items-center gap-2">
-                            <span id="content:counter" class="notification item"></span>
-                            {% if profile.is_some() && (disallow_anonymous == false) %}
-                            <div class="checkbox_container item">
-                                <input
-                                    type="checkbox"
-                                    name="anonymous"
-                                    id="anonymous"
-                                />
-
-                                <label for="anonymous" class="normal">
-                                    Hide your name
-                                </label>
-                            </div>
-                            {% else %}
-                            <div></div>
-                            {% endif %}
-                            </div>
-
-                            <button class="primary bold">Ask</button>
-                        </div>
-                    </form>
-                    {% else %}
-                    <b>This circle does not allow anonymous questions.</b>
-                    {% endif %} {% else %}
-                    <b>This circle is not currently accepting questions.</b>
-                    {% endif %}
-                </div>
-            </div>
-            {% block upper %} {% endblock %}
-
-            <!-- menu -->
-            <div class="pillmenu convertible">
-                {% block pillmenu %}{% endblock %}
-            </div>
-
-            <!-- panel -->
-            <div id="panel" style="display: contents">
-                {% block panel %}{% endblock %}
-            </div>
-        </section>
-    </div>
+    </main>
 </article>
 
 {% if let Some(warning) = circle.metadata.kv.get("sparkler:warning") %} {% if
@@ -484,7 +494,9 @@
         <span class="fade">This circle has published this warning:</span>
 
         <hr />
-         <div class="profile_warning">{{ shared::ui::render_markdown(warning)|safe }}</div>
+        <div class="profile_warning">
+            {{ shared::ui::render_markdown(warning)|safe }}
+        </div>
 
         <hr />
         <span class="fade">
@@ -512,37 +524,7 @@
         warnings.open("{{ circle.id }}", "{{ warning_hash }}");
     }, 100);
 </script>
-{% endif %} {% endif %} {% endif %}
-
-<script>
-    globalThis.search = new URLSearchParams(window.location.search);
-    globalThis.reply_intent = search.get("reply_intent");
-
-    if (reply_intent) {
-        const form = document.getElementById("question_form");
-
-        if (form) {
-            form.innerHTML +=
-                `<p class="fade">Replying to <a href="/response/${reply_intent}" target="_blank">${reply_intent.substring(0, 10)}</a> (<a href="?" class="red">cancel</a>)</p>`;
-        }
-    }
-
-    document.getElementById("question_form").addEventListener("submit", (e) => {
-        e.preventDefault();
-        trigger("questions:create", [
-            "circle:{{ circle.id }}",
-            e.target.content.value,
-            (e.target.anonymous || { checked: false }).checked,
-            reply_intent || "",
-            ""
-        ]).then((_) => {
-            // reset if successful
-            e.target.reset();
-        });
-    });
-</script>
-
-{% if is_member %}
+{% endif %} {% endif %} {% endif %} {% if is_member %}
 <script type="application/json" id="metadata">
     {{ metadata|safe }}
 </script>
@@ -592,10 +574,9 @@
         };
     })();
 </script>
-{% endif %}
-
-<!-- prettier-ignore -->
-{% let other = circle.clone() %}
-{% let raw_metadata = crate::routing::pages::circles::clean_metadata_raw(other.metadata) %}
-{% include "../components/theming.html" %} {% call super()
-%} {% endblock %}
+{% endif %} {% if let Some(profile) = profile %} {% let other = profile.clone()
+%} {% if profile.username == other.username %}
+<div id="is_self"></div>
+{% endif %} {% let raw_metadata =
+crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
+"components/theming.html" %} {% endif %} {% call super() %} {% endblock %}

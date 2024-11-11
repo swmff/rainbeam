@@ -8,6 +8,7 @@ CREATE FULLTEXT INDEX IF NOT EXISTS "idx_recipient_n" ON "xnotifications" ("reci
 CREATE FULLTEXT INDEX IF NOT EXISTS "idx_recipient_q" ON "xquestions" ("recipient");
 CREATE FULLTEXT INDEX IF NOT EXISTS "idx_author_r" ON "xresponses" ("author");
 CREATE FULLTEXT INDEX IF NOT EXISTS "idx_author_q" ON "xquestions" ("author");
+CREATE FULLTEXT INDEX IF NOT EXISTS "idx_author_c" ON "xcomments" ("author");
 CREATE FULLTEXT INDEX IF NOT EXISTS "idx_username" ON "xprofiles" ("username");
 CREATE FULLTEXT INDEX IF NOT EXISTS "idx_follower" ON "xfollows" ("user");
 CREATE FULLTEXT INDEX IF NOT EXISTS "idx_following" ON "xfollows" ("following");

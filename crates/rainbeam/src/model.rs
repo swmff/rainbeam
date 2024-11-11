@@ -171,6 +171,9 @@ pub struct ResponseContext {
     /// Empty means no warning.
     #[serde(default)]
     pub warning: String,
+    /// The ID of the circle this response belongs to
+    #[serde(default)]
+    pub circle: String,
 }
 
 impl Default for ResponseContext {
@@ -179,6 +182,7 @@ impl Default for ResponseContext {
             is_post: false,
             unlisted: false,
             warning: String::new(),
+            circle: String::new(),
         }
     }
 }
@@ -285,28 +289,6 @@ pub struct CircleMetadata {
 }
 
 impl CircleMetadata {
-    /// Check if a value exists in `kv` (and isn't empty)
-    pub fn exists(&self, key: &str) -> bool {
-        if let Some(ref value) = self.kv.get(key) {
-            if value.is_empty() {
-                return false;
-            }
-
-            return true;
-        }
-
-        false
-    }
-
-    /// Check if a value in `kv` is "true"
-    pub fn is_true(&self, key: &str) -> bool {
-        if !self.exists(key) {
-            return false;
-        }
-
-        self.kv.get(key).unwrap() == "true"
-    }
-
     /// Check `kv` lengths
     ///
     /// # Returns
@@ -499,6 +481,8 @@ pub struct ResponseCreate {
     pub reply: String,
     #[serde(default)]
     pub unlisted: bool,
+    #[serde(default)]
+    pub circle: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

@@ -43,6 +43,19 @@ endblock %} {% block nav_left %}
                 ></include-partial>`;
             }
 
+            if (search.get("circle")) {
+                const circle = search.get("circle");
+                search.set("title", "Create post in circle");
+
+                document
+                    .querySelector("#create_post_intent details")
+                    .setAttribute("open", "true");
+
+                document.querySelector(
+                    '#create_post_intent [name="circle"]',
+                ).value = circle;
+            }
+
             if (search.get("title")) {
                 const title = search.get("title");
 
@@ -61,6 +74,7 @@ endblock %} {% block nav_left %}
                     e.target.warning.value,
                     e.target.reply.value,
                     e.target.unlisted.checked,
+                    e.target.circle.value,
                 ]).then((res) => {
                     // reset if successful
                     e.target.reset();

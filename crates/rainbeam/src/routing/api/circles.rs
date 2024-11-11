@@ -5,7 +5,7 @@ use hcaptcha::Hcaptcha;
 use authbeam::model::NotificationCreate;
 use databeam::DefaultReturn;
 
-use axum::response::IntoResponse;
+use axum::response::{IntoResponse, Redirect};
 use axum::{
     body::Body,
     extract::{Path, State},
@@ -32,13 +32,24 @@ pub fn routes(database: Database) -> Router {
         .route("/:id/kick/:username", post(kick_member_request))
         .route("/:id/leave", post(leave_request))
         // as a profile
-        .route("/:name/avatar", get(avatar_request))
-        .route("/:name/banner", get(banner_request))
+        .route("/:id/avatar", get(avatar_request))
+        .route("/:id/banner", get(banner_request))
         // ...
         .with_state(database)
 }
 
 // routes
+
+/// Redirect an ID to a full username
+pub async fn expand_request(
+    Path(id): Path<String>,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    match database.get_circle(id).await {
+        Ok(r) => Redirect::to(&format!("/+{}", r.name)),
+        Err(_) => Redirect::to("/"),
+    }
+}
 
 /// [`Database::create_circle`]
 pub async fn create_request(
@@ -471,11 +482,11 @@ pub async fn report_request(
 
 /// Get a circle's avatar image
 pub async fn avatar_request(
-    Path(name): Path<String>,
+    Path(id): Path<String>,
     State(database): State<Database>,
 ) -> impl IntoResponse {
     // get user
-    let circle = match database.get_circle_by_name(name).await {
+    let circle = match database.get_circle(id).await {
         Ok(ua) => ua,
         Err(_) => {
             return (
@@ -504,7 +515,19 @@ pub async fn avatar_request(
         );
     }
 
-    // get circle image
+    for host in database.server_options.blocked_hosts {
+        if avatar_url.starts_with(&host) {
+            return (
+                [("Content-Type", "image/svg+xml")],
+                Body::from(read_image(
+                    database.server_options.static_dir,
+                    "default-avatar.svg".to_string(),
+                )),
+            );
+        }
+    }
+
+    // get profile image
     if avatar_url.is_empty() {
         return (
             [("Content-Type", "image/svg+xml")],
@@ -520,17 +543,34 @@ pub async fn avatar_request(
         .unwrap_or("application/octet-stream");
 
     match database.auth.http.get(avatar_url).send().await {
-        Ok(stream) => (
-            [(
-                "Content-Type",
-                if guessed_mime == "text/html" {
-                    "text/plain"
-                } else {
-                    guessed_mime
-                },
-            )],
-            Body::from_stream(stream.bytes_stream()),
-        ),
+        Ok(stream) => {
+            if let Some(ct) = stream.headers().get("Content-Type") {
+                if !ct.to_str().unwrap().starts_with("image/") {
+                    // if we failed to load the image, we might get back text/html or something
+                    // we're going to return the default image if we got something that isn't
+                    // an image (or has an incorrect mime)
+                    return (
+                        [("Content-Type", "image/svg+xml")],
+                        Body::from(read_image(
+                            database.server_options.static_dir,
+                            "default-avatar.svg".to_string(),
+                        )),
+                    );
+                }
+            }
+
+            (
+                [(
+                    "Content-Type",
+                    if guessed_mime == "text/html" {
+                        "text/plain"
+                    } else {
+                        guessed_mime
+                    },
+                )],
+                Body::from_stream(stream.bytes_stream()),
+            )
+        }
         Err(_) => (
             [("Content-Type", "image/svg+xml")],
             Body::from(read_image(
@@ -543,11 +583,11 @@ pub async fn avatar_request(
 
 /// Get a circle's banner image
 pub async fn banner_request(
-    Path(name): Path<String>,
+    Path(id): Path<String>,
     State(database): State<Database>,
 ) -> impl IntoResponse {
     // get user
-    let circle = match database.get_circle_by_name(name).await {
+    let circle = match database.get_circle(id).await {
         Ok(ua) => ua,
         Err(_) => {
             return (
@@ -576,7 +616,19 @@ pub async fn banner_request(
         );
     }
 
-    // get circle image
+    for host in database.server_options.blocked_hosts {
+        if banner_url.starts_with(&host) {
+            return (
+                [("Content-Type", "image/svg+xml")],
+                Body::from(read_image(
+                    database.server_options.static_dir,
+                    "default-banner.svg".to_string(),
+                )),
+            );
+        }
+    }
+
+    // get profile image
     if banner_url.is_empty() {
         return (
             [("Content-Type", "image/svg+xml")],
@@ -592,17 +644,34 @@ pub async fn banner_request(
         .unwrap_or("application/octet-stream");
 
     match database.auth.http.get(banner_url).send().await {
-        Ok(stream) => (
-            [(
-                "Content-Type",
-                if guessed_mime == "text/html" {
-                    "text/plain"
-                } else {
-                    guessed_mime
-                },
-            )],
-            Body::from_stream(stream.bytes_stream()),
-        ),
+        Ok(stream) => {
+            if let Some(ct) = stream.headers().get("Content-Type") {
+                if !ct.to_str().unwrap().starts_with("image/") {
+                    // if we failed to load the image, we might get back text/html or something
+                    // we're going to return the default image if we got something that isn't
+                    // an image (or has an incorrect mime)
+                    return (
+                        [("Content-Type", "image/svg+xml")],
+                        Body::from(read_image(
+                            database.server_options.static_dir,
+                            "default-banner.svg".to_string(),
+                        )),
+                    );
+                }
+            }
+
+            (
+                [(
+                    "Content-Type",
+                    if guessed_mime == "text/html" {
+                        "text/plain"
+                    } else {
+                        guessed_mime
+                    },
+                )],
+                Body::from_stream(stream.bytes_stream()),
+            )
+        }
         Err(_) => (
             [("Content-Type", "image/svg+xml")],
             Body::from(read_image(

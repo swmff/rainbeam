@@ -1229,95 +1229,74 @@ impl Database {
         let tag = Database::anonymous_tag(&author);
         let mut use_tier = 0;
         if props.recipient != "@" {
-            if props.recipient.starts_with("circle:") {
-                // circle
-                let circle_id = props.recipient.replacen("circle:", "", 1);
+            // profile
+            let recipient = match self.get_profile(props.recipient.clone()).await {
+                Ok(ua) => ua,
+                Err(e) => return Err(e),
+            };
 
-                let circle = match self.get_circle(circle_id).await {
-                    Ok(c) => c,
-                    Err(e) => return Err(e),
-                };
+            use_tier = recipient.tier;
 
-                let profile_locked = circle.metadata.is_true("sparkler:lock_profile");
-                let block_anonymous = circle.metadata.is_true("sparkler:disallow_anonymous");
+            let profile_locked = recipient.metadata.is_true("sparkler:lock_profile");
+            let block_anonymous = recipient.metadata.is_true("sparkler:disallow_anonymous");
 
-                if profile_locked {
-                    return Err(DatabaseError::ProfileLocked);
-                }
+            if profile_locked {
+                return Err(DatabaseError::ProfileLocked);
+            }
 
-                if (block_anonymous == true) && (tag.0 == true) {
-                    return Err(DatabaseError::AnonymousNotAllowed);
-                }
-            } else {
-                // profile
-                let recipient = match self.get_profile(props.recipient.clone()).await {
+            if (block_anonymous == true) && (tag.0 == true) {
+                return Err(DatabaseError::AnonymousNotAllowed);
+            }
+
+            if !tag.0 {
+                let author = match self.get_profile(author.clone()).await {
                     Ok(ua) => ua,
                     Err(e) => return Err(e),
                 };
 
-                use_tier = recipient.tier;
-
-                let profile_locked = recipient.metadata.is_true("sparkler:lock_profile");
-                let block_anonymous = recipient.metadata.is_true("sparkler:disallow_anonymous");
-
-                if profile_locked {
-                    return Err(DatabaseError::ProfileLocked);
-                }
-
-                if (block_anonymous == true) && (tag.0 == true) {
-                    return Err(DatabaseError::AnonymousNotAllowed);
-                }
-
-                if !tag.0 {
-                    let author = match self.get_profile(author.clone()).await {
-                        Ok(ua) => ua,
-                        Err(e) => return Err(e),
-                    };
-
-                    let relationship = self
-                        .auth
-                        .get_user_relationship(author.id.clone(), recipient.id.clone())
-                        .await
-                        .0;
-
-                    if relationship == RelationshipStatus::Blocked {
-                        return Err(DatabaseError::Blocked);
-                    }
-                }
-
-                // check if we're ip blocked by the recipient
-                if let Ok(_) = self
+                let relationship = self
                     .auth
-                    .get_ipblock_by_ip(ip.clone(), recipient.id.clone())
+                    .get_user_relationship(author.id.clone(), recipient.id.clone())
                     .await
-                {
+                    .0;
+
+                if relationship == RelationshipStatus::Blocked {
                     return Err(DatabaseError::Blocked);
                 }
+            }
 
-                if self
-                    .auth
-                    .get_ipblock_by_ip(ip.clone(), recipient.id.clone())
-                    .await
-                    .is_ok()
-                {
-                    return Err(DatabaseError::Blocked);
+            // check if we're ip blocked by the recipient
+            if let Ok(_) = self
+                .auth
+                .get_ipblock_by_ip(ip.clone(), recipient.id.clone())
+                .await
+            {
+                return Err(DatabaseError::Blocked);
+            }
+
+            if self
+                .auth
+                .get_ipblock_by_ip(ip.clone(), recipient.id.clone())
+                .await
+                .is_ok()
+            {
+                return Err(DatabaseError::Blocked);
+            }
+
+            // check filter
+            for filter_string in recipient
+                .metadata
+                .kv
+                .get("sparkler:filter")
+                .unwrap_or(&"".to_string())
+                .split("\n")
+            {
+                if filter_string.is_empty() | filter_string.starts_with("#") {
+                    continue;
                 }
 
-                // check filter
-                for filter_string in recipient
-                    .metadata
-                    .kv
-                    .get("sparkler:filter")
-                    .unwrap_or(&"".to_string())
-                    .split("\n")
-                {
-                    if filter_string.is_empty() | filter_string.starts_with("#") {
-                        continue;
-                    }
-
-                    if props.content.contains(filter_string) {
-                        return Err(DatabaseError::Filtered);
-                    }
+                if props.content.contains(filter_string) {
+                    return Err(DatabaseError::Filtered);
                 }
             }
         } else {
@@ -1500,33 +1479,14 @@ impl Database {
 
         // check username
         if (user.id != question.recipient.id) && (user.id != question.author.id) {
-            if question.recipient.id.starts_with("circle:") && question.recipient.id != "@" {
-                // circles
-                let circle_id = question.recipient.id.replacen("circle:", "", 1);
+            // check permission
+            let group = match self.auth.get_group_by_id(user.group).await {
+                Ok(g) => g,
+                Err(_) => return Err(DatabaseError::Other),
+            };
 
-                let circle = match self.get_circle(circle_id).await {
-                    Ok(c) => c,
-                    Err(e) => return Err(e),
-                };
-
-                // check circle membership
-                let membership = self
-                    .get_user_circle_membership(user.id.clone(), circle.id.clone())
-                    .await;
-
-                if membership != MembershipStatus::Active {
-                    return Err(DatabaseError::NotAllowed);
-                }
-            } else {
-                // check permission
-                let group = match self.auth.get_group_by_id(user.group).await {
-                    Ok(g) => g,
-                    Err(_) => return Err(DatabaseError::Other),
-                };
-
-                if !group.permissions.contains(&Permission::Helper) {
-                    return Err(DatabaseError::NotAllowed);
-                }
+            if !group.permissions.contains(&Permission::Helper) {
+                return Err(DatabaseError::NotAllowed);
             }
         }
 
@@ -2324,7 +2284,7 @@ impl Database {
         };
 
         // check author permissions
-        let mut author = match self.get_profile(author.clone()).await {
+        let author = match self.get_profile(author.clone()).await {
             Ok(ua) => ua,
             Err(e) => return Err(e),
         };
@@ -2332,6 +2292,23 @@ impl Database {
         if author.group == -1 {
             // group -1 (even if it exists) is for marking users as banned
             return Err(DatabaseError::NotAllowed);
+        }
+
+        if !props.circle.is_empty() {
+            // circles
+            let circle = match self.get_circle(props.circle.clone()).await {
+                Ok(c) => c,
+                Err(e) => return Err(e),
+            };
+
+            // check circle membership
+            let membership = self
+                .get_user_circle_membership(author.id.clone(), circle.id.clone())
+                .await;
+
+            if membership != MembershipStatus::Active {
+                return Err(DatabaseError::NotAllowed);
+            }
         }
 
         // check content length
@@ -2366,26 +2343,6 @@ impl Database {
                     {
                         return Err(DatabaseError::Other);
                     }
-                } else {
-                    // circles
-                    let circle_id = question.recipient.id.replacen("circle:", "", 1);
-
-                    let circle = match self.get_circle(circle_id).await {
-                        Ok(c) => c,
-                        Err(e) => return Err(e),
-                    };
-
-                    // check circle membership
-                    let membership = self
-                        .get_user_circle_membership(author.id.clone(), circle.id.clone())
-                        .await;
-
-                    if membership != MembershipStatus::Active {
-                        return Err(DatabaseError::NotAllowed);
-                    }
-
-                    // update author id
-                    author.id = format!("{}%{}", author.id, circle.id); // tag with circle id
                 }
             }
             // global questions
@@ -2443,6 +2400,7 @@ impl Database {
                 is_post: question.id == "0",
                 unlisted: props.unlisted,
                 warning: props.warning,
+                circle: props.circle,
             },
             question: question.id,
             reply: props.reply.trim().to_string(),
@@ -4922,63 +4880,6 @@ impl Database {
         };
     }
 
-    /// Get all responses by their circle
-    ///
-    /// ## Arguments:
-    /// * `circle`
-    pub async fn get_responses_by_circle(&self, circle: String) -> Result<Vec<FullResponse>> {
-        // get circle
-        let circle = match self.get_circle(circle.clone()).await {
-            Ok(c) => c,
-            Err(e) => return Err(e),
-        };
-
-        // build member list
-        let members = self
-            .get_circle_memberships(circle.id.clone())
-            .await
-            .unwrap();
-        let mut query_string = String::new();
-
-        for member in members {
-            query_string.push_str(&format!(" OR \"author\" = '{}%{}'", member.id, circle.id));
-        }
-
-        // pull from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
-            "SELECT * FROM \"xresponses\" WHERE \"author\" = ?{query_string} ORDER BY \"timestamp\" DESC"
-        } else {
-            "SELECT * FROM \"xresponses\" WHERE \"author\" = $1{query_string} ORDER BY \"timestamp\" DESC"
-        }
-        .to_string();
-
-        let c = &self.base.db.client;
-        let res = match sqlquery(&query)
-            .bind::<&String>(&circle.id.to_lowercase())
-            .fetch_all(c)
-            .await
-        {
-            Ok(p) => {
-                let mut out: Vec<FullResponse> = Vec::new();
-
-                for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
-                    out.push(match self.gimme_response(res).await {
-                        Ok(r) => r,
-                        Err(e) => return Err(e),
-                    });
-                }
-
-                out
-            }
-            Err(_) => return Err(DatabaseError::NotFound),
-        };
-
-        // return
-        Ok(res)
-    }
-
     /// Get all responses by their circle, 25 at a time
     ///
     /// ## Arguments:
@@ -4994,28 +4895,17 @@ impl Database {
             Err(e) => return Err(e),
         };
 
-        // build member list
-        let members = self
-            .get_circle_memberships(circle.id.clone())
-            .await
-            .unwrap();
-        let mut query_string = String::new();
-
-        for member in members {
-            query_string.push_str(&format!(" OR \"author\" = '{}%{}'", member.id, circle.id));
-        }
-
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xresponses\" WHERE \"author\" = ?{query_string} ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xresponses\" WHERE \"context\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
         } else {
-            format!("SELECT * FROM \"xresponses\" WHERE \"author\" = $1{query_string} ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xresponses\" WHERE \"context\" LIKE $1 ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
         };
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query)
-            .bind::<&String>(&circle.id.to_lowercase())
+            .bind::<&String>(&format!("%\"circle\":\"{}\"%", circle.id))
             .fetch_all(c)
             .await
         {
@@ -5037,39 +4927,6 @@ impl Database {
 
         // return
         Ok(res)
-    }
-
-    /// Get the number of responses by their circle ID
-    ///
-    /// ## Arguments:
-    /// * `circle`
-    pub async fn get_response_count_by_circle(&self, circle: String) -> usize {
-        // attempt to fetch from cache
-        if let Some(count) = self
-            .base
-            .cachedb
-            .get(format!("rbeam.app.response_count:{}", circle))
-            .await
-        {
-            return count.parse::<usize>().unwrap_or(0);
-        };
-
-        // fetch from database
-        let count = self
-            .get_responses_by_circle(circle.clone())
-            .await
-            .unwrap_or(Vec::new())
-            .len();
-
-        self.base
-            .cachedb
-            .set(
-                format!("rbeam.app.response_count:{}", circle),
-                count.to_string(),
-            )
-            .await;
-
-        count
     }
 
     // chats

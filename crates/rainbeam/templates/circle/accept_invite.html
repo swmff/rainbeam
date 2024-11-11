@@ -1,8 +1,5 @@
 {% extends "base.html" %} {% block pillmenu %}
-<a href="/+{{ circle.name }}">
-    Answers
-    <b class="notification">{{ response_count }}</b>
-</a>
+<a href="/+{{ circle.name }}"> Feed </a>
 
 <a href="/circles/@{{ circle.name }}/memberlist" class="active">
     Members
@@ -10,11 +7,6 @@
 </a>
 
 {% if is_member %}
-<a href="/circles/@{{ circle.name }}/inbox">
-    Inbox
-    <b class="notification">{{ inbox_count }}</b>
-</a>
-
 <a href="/circles/@{{ circle.name }}/settings">Settings</a>
 {% endif %} {% endblock %} {% block panel %}
 <!-- memberlist -->

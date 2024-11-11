@@ -1,0 +1,134 @@
+{% extends "base.html" %} {% block sidenav %}
+<a href="/+{{ circle.name }}">
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 16 16"
+        width="16"
+        height="16"
+        aria-label="Arrow pointing to the left"
+        class="icon"
+    >
+        <path
+            d="M7.78 12.53a.75.75 0 0 1-1.06 0L2.47 8.28a.75.75 0 0 1 0-1.06l4.25-4.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042L4.81 7h7.44a.75.75 0 0 1 0 1.5H4.81l2.97 2.97a.75.75 0 0 1 0 1.06Z"
+        ></path>
+    </svg>
+    Back
+</a>
+<a href="/circles/@{{ circle.name }}/settings" class="active">General</a>
+<a href="/circles/@{{ circle.name }}/settings/privacy"> Privacy </a>
+{% endblock %} {% block panel %}
+<div class="flex flex-col gap-1">
+    <h4 class="title">About</h4>
+    <div class="flex flex-col gap-1">
+        <label for="sparkler:display_name">Display name</label>
+
+        <input
+            name="sparkler:display_name"
+            id="sparkler:display_name"
+            onchange="update_kv('sparkler:display_name', event.target.value)"
+        />
+
+        <p class="fade">The title shown for the circle.</p>
+    </div>
+
+    <div class="flex flex-col gap-1">
+        <label for="sparkler:biography" class="flex gap-2 items-center"
+            >Biography
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 16 16"
+                width="16"
+                height="16"
+                title="Supports Markdown formatting"
+                aria-label="Markdown logo"
+                class="icon"
+            >
+                <path
+                    d="M14.85 3c.63 0 1.15.52 1.14 1.15v7.7c0 .63-.51 1.15-1.15 1.15H1.15C.52 13 0 12.48 0 11.84V4.15C0 3.52.52 3 1.15 3ZM9 11V5H7L5.5 7 4 5H2v6h2V8l1.5 1.92L7 8v3Zm2.99.5L14.5 8H13V5h-2v3H9.5Z"
+                ></path>
+            </svg>
+        </label>
+
+        <textarea
+            name="sparkler:biography"
+            id="sparkler:biography"
+            onchange="update_kv('sparkler:biography', event.target.value)"
+        ></textarea>
+
+        <p class="fade">
+            A short description about this circle. Supports Markdown.
+        </p>
+    </div>
+
+    <h4 class="title">Images</h4>
+    <div class="flex flex-col gap-1">
+        <label for="sparkler:avatar_url">Avatar URL</label>
+
+        <input
+            type="url"
+            name="sparkler:avatar_url"
+            id="sparkler:avatar_url"
+            onchange="update_kv('sparkler:avatar_url', event.target.value)"
+        />
+
+        <p class="fade">
+            Hosting images is expensive and annoying, so instead you save a link
+            to your desired image and we'll proxy it and show it on your
+            profile!
+        </p>
+    </div>
+
+    <div class="flex flex-col gap-1">
+        <label for="sparkler:banner_url">Banner URL</label>
+
+        <input
+            type="url"
+            name="sparkler:banner_url"
+            id="sparkler:banner_url"
+            onchange="update_kv('sparkler:banner_url', event.target.value)"
+        />
+
+        <p class="fade">
+            Same deal as the avatar! This is the big thing at the top of your
+            profile.
+        </p>
+    </div>
+
+    <div class="flex flex-col gap-1">
+        <label for="sparkler:banner_fit">Banner fit</label>
+
+        <select
+            type="url"
+            name="sparkler:banner_fit"
+            id="sparkler:banner_fit"
+            onchange="update_kv('sparkler:banner_fit', event.target.options[event.target.selectedIndex].value)"
+        >
+            <option value="cover" id="cover">Cover (default)</option>
+            <option value="fill" id="fill">Fill</option>
+            <option value="contain" id="contain">Contain</option>
+        </select>
+
+        <p class="fade">
+            The way your banner image is fit onto the image element.
+        </p>
+    </div>
+
+    <h4 class="title">Feed</h4>
+    <div class="flex flex-col gap-1">
+        <label for="sparkler:pinned">Pinned</label>
+
+        <textarea
+            name="sparkler:pinned"
+            id="sparkler:pinned"
+            onchange="update_kv('sparkler:pinned', event.target.value)"
+        ></textarea>
+
+        <p class="fade">
+            Put the ID of the responses you want to pin there. Note this will
+            also pin the question! You can also do this by clicking "Pin" on any
+            of your responses. (Responses should be separated by a comma, with a
+            trailing comma at the end!)
+        </p>
+    </div>
+</div>
+{% call super() %} {% endblock %}

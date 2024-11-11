@@ -476,9 +476,9 @@ pub struct SearchHomeQuery {
 #[derive(Serialize, Deserialize)]
 pub struct ProfileQuery {
     #[serde(default)]
-    page: i32,
-    tag: Option<String>,
-    q: Option<String>,
+    pub page: i32,
+    pub tag: Option<String>,
+    pub q: Option<String>,
 }
 
 /// Escape profile colors
@@ -2016,9 +2016,8 @@ pub async fn routes(database: Database) -> Router {
         )
         .route(
             "/circles/@:name/settings",
-            get(circles::profile_settings_request),
+            get(circles::general_settings_request),
         )
-        .route("/circles/@:name/inbox", get(circles::inbox_request))
         .route(
             "/circles/@:name/memberlist/accept",
             get(circles::accept_invite_request),
@@ -2028,6 +2027,10 @@ pub async fn routes(database: Database) -> Router {
             get(circles::memberlist_request),
         )
         .route("/circles/@:name", get(circles::profile_redirect_request))
+        .route(
+            "/+:name/_app/feed.html",
+            get(circles::partial_profile_request),
+        )
         .route("/+:name", get(circles::profile_request))
         // settings
         .route("/settings", get(settings::account_settings))
@@ -2059,6 +2062,7 @@ pub async fn routes(database: Database) -> Router {
         .route("/+u/:id", get(api::profiles::expand_request))
         .route("/+i/:ip", get(api::profiles::expand_ip_request))
         .route("/+p/:id", get(api::pages::expand_request))
+        .route("/+g/:id", get(api::circles::expand_request))
         // partials
         .route(
             "/_app/components/response.html",

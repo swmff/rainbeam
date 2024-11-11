@@ -65,11 +65,6 @@ endblock %} {% block head %}
             <a href="/circles/new" data-turbo="false">Create</a>
         </div>
 
-        <p>
-            Circles are a shared inbox that you can invite other users to. Users
-            in a circle can answer all questions sent to the circle inbox!
-        </p>
-
         <!-- prettier-ignore -->
         {% for circle in circles %}
         <div class="card-nest w-full">

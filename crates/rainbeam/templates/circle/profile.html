@@ -1,8 +1,5 @@
 {% extends "base.html" %} {% block pillmenu %}
-<a href="/+{{ circle.name }}" class="active">
-    Answers
-    <b class="notification">{{ response_count }}</b>
-</a>
+<a href="/+{{ circle.name }}" class="active">Feed</a>
 
 <a href="/circles/@{{ circle.name }}/memberlist">
     Members
@@ -10,11 +7,6 @@
 </a>
 
 {% if is_member %}
-<a href="/circles/@{{ circle.name }}/inbox">
-    Inbox
-    <b class="notification">{{ inbox_count }}</b>
-</a>
-
 <a href="/circles/@{{ circle.name }}/settings">Settings</a>
 {% endif %} {% endblock %} {% block panel %}
 <!-- feed -->
@@ -37,28 +29,35 @@
     <hr class="small" />
     {% endif %}
 
-    <!-- actual feed -->
-    <!-- prettier-ignore -->
-    {% for response in responses %}
-        {% let is_pinned = false %}
-        {% let show_pin_button = true %}
-        {% let do_not_render_question = false %}
-        {% let show_comments = true %}
-        {% let do_render_nested = true %}
-        {% include "../components/response.html" %}
-    {% endfor %}
-
     <!-- pagination buttons -->
-    {% if response_count != 0 %}
-    <div class="flex justify-between gap-4 w-full">
-        {% if page > 0 %}
-        <a class="button secondary" href="?page={{ page - 1 }}">Previous</a>
-        {% else %}
-        <div></div>
-        {% endif %} {% if responses.len() != 0 %}
-        <a class="button secondary" href="?page={{ page + 1 }}">Next</a>
-        {% endif %}
+    {% if page != 0 %}
+    <div class="flex justify-center items-center gap-4 w-full">
+        <a class="button primary" href="?page=0">View full feed</a>
     </div>
     {% endif %}
+
+    <!-- actual feed -->
+    {% let other = circle.clone() %} {% include "partials/profile/feed.html" %}
 </div>
+
+<script>
+    use("app", (app) => {
+        app["hook.attach_to_partial"](
+            "/+{{ circle.name }}/_app/feed.html",
+            "/+{{ circle.name }}",
+            document.getElementById("feed"),
+            document.body,
+            parseInt("{{ page }}"),
+        ).then(() => {
+            console.log("partial end");
+            document.getElementById("feed").innerHTML +=
+                `<div class="w-full flex flex-col gap-2">
+                <hr />
+                <p class="w-full flex justify-center fade">
+                    You've reached the end
+                </p>
+            </div>`;
+        });
+    });
+</script>
 {% call super() %} {% endblock %}

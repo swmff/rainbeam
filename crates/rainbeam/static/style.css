@@ -66,6 +66,7 @@ body {
     overflow: auto auto;
     height: 100dvh;
     scroll-behavior: smooth;
+    overflow-x: hidden;
 }
 
 .turbo-progress-bar {
@@ -199,6 +200,7 @@ ol {
     content: "·";
     position: absolute;
     left: -0.75rem;
+    color: var(--color-text) !important;
 }
 
 .footernav .item:first-child:before {
@@ -717,6 +719,7 @@ nav a.button {
     text-decoration: none;
     position: relative;
     height: 48px;
+    transition: transform 0.15s;
 }
 
 nav button:hover,
@@ -1242,9 +1245,11 @@ dialog::backdrop {
 }
 
 .sidenav .title {
-    padding: 0.5rem 1rem 0.25rem;
     color: var(--color-text-raised);
-    background: var(--color-super-raised);
+    background: transparent;
+    border-bottom: solid 1px var(--color-super-lowered);
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
 }
 
 .sidenav a:hover {

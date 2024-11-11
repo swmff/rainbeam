@@ -80,11 +80,6 @@ config.name }}{% endblock %} {% block nav_left %}
         <div id="admonition_zone"></div>
 
         {% block panel %}{% endblock %}
-
-        <hr />
-        <form id="submit_form">
-            <button class="primary bold">Save changes</button>
-        </form>
     </section>
 </article>
 
@@ -93,11 +88,13 @@ config.name }}{% endblock %} {% block nav_left %}
 </script>
 
 <script>
+    const app = ns("app");
     let metadata = JSON.parse(document.getElementById("my_metadata").innerHTML);
 
     // handle update
     globalThis.update_kv = (key, value) => {
         metadata.kv[key] = value;
+        save_settings(); // auto save
 
         // live theme
         if (key.startsWith("sparkler:color_")) {
@@ -152,27 +149,24 @@ config.name }}{% endblock %} {% block nav_left %}
     }, 50);
 
     // handle submit
-    document
-        .getElementById("submit_form")
-        .addEventListener("submit", async (e) => {
-            e.preventDefault();
+    globalThis.save_settings = async () => {
+        await app.debounce("settings:save_settings");
+        const res = await (
+            await fetch("/api/v1/circles/{{ circle.id }}/metadata", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    metadata,
+                }),
+            })
+        ).json();
 
-            const res = await (
-                await fetch("/api/v1/circles/{{ circle.id }}/metadata", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        metadata,
-                    }),
-                })
-            ).json();
-
-            trigger("app:toast", [
-                res.success ? "success" : "error",
-                res.success ? "Settings saved!" : res.message,
-            ]);
-        });
+        trigger("app:toast", [
+            res.success ? "success" : "error",
+            res.success ? "Settings saved!" : res.message,
+        ]);
+    };
 </script>
 {% call super() %} {% endblock %}

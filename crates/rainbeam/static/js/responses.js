@@ -7,10 +7,11 @@
             { $, app },
             question,
             content,
-            tags,
-            warning,
-            reply,
-            unlisted,
+            tags = "",
+            warning = "",
+            reply = "",
+            unlisted = false,
+            circle = "",
         ) {
             await app.debounce("responses:create");
             if (!tags) {
@@ -33,6 +34,7 @@
                         warning: warning || "",
                         reply: reply || "",
                         unlisted: unlisted || false,
+                        circle: circle || "",
                     }),
                 })
                     .then((res) => res.json())

@@ -9,9 +9,9 @@ use authbeam::model::{Permission, Profile};
 
 use crate::config::Config;
 use crate::database::Database;
-use crate::model::{Circle, CircleMetadata, DatabaseError, FullResponse, MembershipStatus, Question};
+use crate::model::{Circle, CircleMetadata, DatabaseError, FullResponse, MembershipStatus};
 
-use super::PaginatedQuery;
+use super::{PaginatedQuery, ProfileQuery};
 
 /// Clean profile metadata
 pub fn remove_tags(input: &str) -> String {
@@ -170,21 +170,14 @@ struct ProfileTemplate {
     config: Config,
     profile: Option<Profile>,
     unread: usize,
-    inbox_count: usize,
     notifs: usize,
     circle: Circle,
     responses: Vec<FullResponse>,
-    response_count: usize,
     member_count: usize,
     metadata: String,
     pinned: Option<Vec<FullResponse>>,
     page: i32,
     // ...
-    layout: String,
-    lock_profile: bool,
-    disallow_anonymous: bool,
-    require_account: bool,
-    is_blocked: bool,
     is_powerful: bool,
     is_helper: bool,
     is_member: bool,
@@ -222,14 +215,6 @@ pub async fn profile_request(
     let circle = match database.get_circle_by_name(name.clone()).await {
         Ok(ua) => ua,
         Err(_) => return Html(DatabaseError::NotFound.to_html(database)),
-    };
-
-    let inbox_count = match database
-        .get_questions_by_recipient(format!("circle:{}", circle.id))
-        .await
-    {
-        Ok(unread) => unread.len(),
-        Err(_) => 0,
     };
 
     let notifs = if let Some(ref ua) = auth_user {
@@ -279,12 +264,6 @@ pub async fn profile_request(
         None
     };
 
-    let posting_as = if let Some(ref ua) = auth_user {
-        ua.username.clone()
-    } else {
-        "anonymous".to_string()
-    };
-
     let mut is_helper: bool = false;
     let is_powerful = if let Some(ref ua) = auth_user {
         let group = match database.auth.get_group_by_id(ua.group).await {
@@ -316,12 +295,8 @@ pub async fn profile_request(
             profile: auth_user.clone(),
             unread,
             notifs,
-            inbox_count,
             circle: circle.clone(),
             responses,
-            response_count: database
-                .get_response_count_by_circle(circle.id.clone())
-                .await,
             member_count: database
                 .get_circle_memberships_count(circle.id.clone())
                 .await,
@@ -329,39 +304,82 @@ pub async fn profile_request(
             pinned,
             page: query.page,
             // ...
-            layout: circle
-                .metadata
-                .kv
-                .get("sparkler:layout")
-                .unwrap_or(&String::new())
-                .to_owned(),
-            lock_profile: circle
-                .metadata
-                .kv
-                .get("sparkler:lock_profile")
-                .unwrap_or(&"false".to_string())
-                == "true",
-            disallow_anonymous: circle
-                .metadata
-                .kv
-                .get("sparkler:disallow_anonymous")
-                .unwrap_or(&"false".to_string())
-                == "true",
-            require_account: circle
-                .metadata
-                .kv
-                .get("sparkler:require_account")
-                .unwrap_or(&"false".to_string())
-                == "true",
-            is_blocked: if let Some(block_list) = circle.metadata.kv.get("sparkler:block_list") {
-                block_list.contains(&format!("<@{posting_as}>"))
-            } else {
-                false
-            },
             is_powerful,
             is_helper,
             is_member,
             is_owner,
+        }
+        .render()
+        .unwrap(),
+    )
+}
+
+#[derive(Template)]
+#[template(path = "partials/profile/feed.html")]
+struct PartialProfileTemplate {
+    config: Config,
+    profile: Option<Profile>,
+    other: Circle,
+    responses: Vec<FullResponse>,
+    // ...
+    is_powerful: bool, // at least "manager"
+    is_helper: bool,   // at least "helper"
+}
+
+/// GET /+:name/_app/feed.html
+pub async fn partial_profile_request(
+    jar: CookieJar,
+    Path(name): Path<String>,
+    State(database): State<Database>,
+    Query(query): Query<ProfileQuery>,
+) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => Some(ua),
+            Err(_) => None,
+        },
+        None => None,
+    };
+
+    let circle = match database.get_circle_by_name(name.clone()).await {
+        Ok(ua) => ua,
+        Err(_) => return Html(DatabaseError::NotFound.to_html(database)),
+    };
+
+    let responses = match database
+        .get_responses_by_circle_paginated(circle.id.to_owned(), query.page)
+        .await
+    {
+        Ok(responses) => responses,
+        Err(e) => return Html(e.to_html(database)),
+    };
+
+    let mut is_helper: bool = false;
+    let is_powerful = if let Some(ref ua) = auth_user {
+        let group = match database.auth.get_group_by_id(ua.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        is_helper = group.permissions.contains(&Permission::Helper);
+        group.permissions.contains(&Permission::Manager)
+    } else {
+        false
+    };
+
+    Html(
+        PartialProfileTemplate {
+            config: database.server_options.clone(),
+            profile: auth_user.clone(),
+            other: circle.clone(),
+            responses,
+            // ...
+            is_powerful,
+            is_helper,
         }
         .render()
         .unwrap(),
@@ -374,19 +392,12 @@ struct MemberlistTemplate {
     config: Config,
     profile: Option<Profile>,
     unread: usize,
-    inbox_count: usize,
     notifs: usize,
     circle: Circle,
     members: Vec<Profile>,
-    response_count: usize,
     member_count: usize,
     metadata: String,
     // ...
-    layout: String,
-    lock_profile: bool,
-    disallow_anonymous: bool,
-    require_account: bool,
-    is_blocked: bool,
     is_powerful: bool,
     is_member: bool,
     is_owner: bool,
@@ -424,14 +435,6 @@ pub async fn memberlist_request(
         Err(_) => return Html(DatabaseError::NotFound.to_html(database)),
     };
 
-    let inbox_count = match database
-        .get_questions_by_recipient(format!("circle:{}", circle.id))
-        .await
-    {
-        Ok(unread) => unread.len(),
-        Err(_) => 0,
-    };
-
     let notifs = if let Some(ref ua) = auth_user {
         database
             .auth
@@ -444,12 +447,6 @@ pub async fn memberlist_request(
     let members = match database.get_circle_memberships(circle.id.to_owned()).await {
         Ok(responses) => responses,
         Err(e) => return Html(e.to_html(database)),
-    };
-
-    let posting_as = if let Some(ref ua) = auth_user {
-        ua.username.clone()
-    } else {
-        "anonymous".to_string()
     };
 
     let is_powerful = if let Some(ref ua) = auth_user {
@@ -481,46 +478,13 @@ pub async fn memberlist_request(
             profile: auth_user.clone(),
             unread,
             notifs,
-            inbox_count,
             circle: circle.clone(),
             members,
-            response_count: database
-                .get_response_count_by_circle(circle.id.clone())
-                .await,
             member_count: database
                 .get_circle_memberships_count(circle.id.clone())
                 .await,
             metadata: clean_metadata(&circle.metadata),
             // ...
-            layout: circle
-                .metadata
-                .kv
-                .get("sparkler:layout")
-                .unwrap_or(&String::new())
-                .to_owned(),
-            lock_profile: circle
-                .metadata
-                .kv
-                .get("sparkler:lock_profile")
-                .unwrap_or(&"false".to_string())
-                == "true",
-            disallow_anonymous: circle
-                .metadata
-                .kv
-                .get("sparkler:disallow_anonymous")
-                .unwrap_or(&"false".to_string())
-                == "true",
-            require_account: circle
-                .metadata
-                .kv
-                .get("sparkler:require_account")
-                .unwrap_or(&"false".to_string())
-                == "true",
-            is_blocked: if let Some(block_list) = circle.metadata.kv.get("sparkler:block_list") {
-                block_list.contains(&format!("<@{posting_as}>"))
-            } else {
-                false
-            },
             is_powerful,
             is_member,
             is_owner,
@@ -536,18 +500,11 @@ struct AcceptInviteTemplate {
     config: Config,
     profile: Option<Profile>,
     unread: usize,
-    inbox_count: usize,
     notifs: usize,
     circle: Circle,
-    response_count: usize,
     member_count: usize,
     metadata: String,
     // ...
-    layout: String,
-    lock_profile: bool,
-    disallow_anonymous: bool,
-    require_account: bool,
-    is_blocked: bool,
     is_powerful: bool,
     is_member: bool,
     is_owner: bool,
@@ -585,14 +542,6 @@ pub async fn accept_invite_request(
         Err(_) => return Html(DatabaseError::NotFound.to_html(database)),
     };
 
-    let inbox_count = match database
-        .get_questions_by_recipient(format!("circle:{}", circle.id))
-        .await
-    {
-        Ok(unread) => unread.len(),
-        Err(_) => 0,
-    };
-
     let notifs = if let Some(ref ua) = auth_user {
         database
             .auth
@@ -600,12 +549,6 @@ pub async fn accept_invite_request(
             .await
     } else {
         0
-    };
-
-    let posting_as = if let Some(ref ua) = auth_user {
-        ua.username.clone()
-    } else {
-        "anonymous".to_string()
     };
 
     let is_powerful = if let Some(ref ua) = auth_user {
@@ -641,45 +584,12 @@ pub async fn accept_invite_request(
             profile: auth_user.clone(),
             unread,
             notifs,
-            inbox_count,
             circle: circle.clone(),
-            response_count: database
-                .get_response_count_by_circle(circle.id.clone())
-                .await,
             member_count: database
                 .get_circle_memberships_count(circle.id.clone())
                 .await,
             metadata: clean_metadata(&circle.metadata),
             // ...
-            layout: circle
-                .metadata
-                .kv
-                .get("sparkler:layout")
-                .unwrap_or(&String::new())
-                .to_owned(),
-            lock_profile: circle
-                .metadata
-                .kv
-                .get("sparkler:lock_profile")
-                .unwrap_or(&"false".to_string())
-                == "true",
-            disallow_anonymous: circle
-                .metadata
-                .kv
-                .get("sparkler:disallow_anonymous")
-                .unwrap_or(&"false".to_string())
-                == "true",
-            require_account: circle
-                .metadata
-                .kv
-                .get("sparkler:require_account")
-                .unwrap_or(&"false".to_string())
-                == "true",
-            is_blocked: if let Some(block_list) = circle.metadata.kv.get("sparkler:block_list") {
-                block_list.contains(&format!("<@{posting_as}>"))
-            } else {
-                false
-            },
             is_powerful,
             is_member,
             is_owner,
@@ -690,185 +600,8 @@ pub async fn accept_invite_request(
 }
 
 #[derive(Template)]
-#[template(path = "circle/inbox.html")]
-struct InboxTemplate {
-    config: Config,
-    profile: Option<Profile>,
-    unread: usize,
-    questions: Vec<Question>,
-    notifs: usize,
-    circle: Circle,
-    response_count: usize,
-    member_count: usize,
-    metadata: String,
-    anonymous_username: Option<String>,
-    anonymous_avatar: Option<String>,
-    // ...
-    layout: String,
-    lock_profile: bool,
-    disallow_anonymous: bool,
-    require_account: bool,
-    is_blocked: bool,
-    is_powerful: bool,
-    is_member: bool,
-    is_owner: bool,
-}
-
-/// GET /circles/@:name/inbox
-pub async fn inbox_request(
-    jar: CookieJar,
-    Path(name): Path<String>,
-    State(database): State<Database>,
-) -> impl IntoResponse {
-    let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
-            Ok(ua) => Some(ua),
-            Err(_) => None,
-        },
-        None => None,
-    };
-
-    let unread = if let Some(ref ua) = auth_user {
-        match database.get_questions_by_recipient(ua.id.to_owned()).await {
-            Ok(unread) => unread.len(),
-            Err(_) => 0,
-        }
-    } else {
-        0
-    };
-
-    let notifs = if let Some(ref ua) = auth_user {
-        database
-            .auth
-            .get_notification_count_by_recipient(ua.id.to_owned())
-            .await
-    } else {
-        0
-    };
-
-    let circle = match database.get_circle_by_name(name.clone()).await {
-        Ok(ua) => ua,
-        Err(_) => return Html(DatabaseError::NotFound.to_html(database)),
-    };
-
-    let posting_as = if let Some(ref ua) = auth_user {
-        ua.username.clone()
-    } else {
-        "anonymous".to_string()
-    };
-
-    let is_powerful = if let Some(ref ua) = auth_user {
-        let group = match database.auth.get_group_by_id(ua.group).await {
-            Ok(g) => g,
-            Err(_) => return Html(DatabaseError::Other.to_html(database)),
-        };
-
-        group.permissions.contains(&Permission::Manager)
-    } else {
-        false
-    };
-
-    let mut is_owner = false;
-    let is_member = if let Some(ref profile) = auth_user {
-        is_owner = profile.id == circle.owner.id;
-
-        database
-            .get_user_circle_membership(profile.id.clone(), circle.id.clone())
-            .await
-            == MembershipStatus::Active
-    } else {
-        false
-    };
-
-    if !is_member {
-        return Html(DatabaseError::NotAllowed.to_html(database));
-    }
-
-    let questions = match database
-        .get_questions_by_recipient(format!("circle:{}", circle.id))
-        .await
-    {
-        Ok(unread) => unread,
-        Err(_) => Vec::new(),
-    };
-
-    Html(
-        InboxTemplate {
-            config: database.server_options.clone(),
-            profile: auth_user.clone(),
-            unread,
-            notifs,
-            circle: circle.clone(),
-            questions,
-            response_count: database
-                .get_response_count_by_circle(circle.id.clone())
-                .await,
-            member_count: database
-                .get_circle_memberships_count(circle.id.clone())
-                .await,
-            metadata: clean_metadata(&circle.metadata),
-            anonymous_username: Some(
-                circle
-                    .metadata
-                    .kv
-                    .get("sparkler:anonymous_username")
-                    .unwrap_or(&"anonymous".to_string())
-                    .to_string(),
-            ),
-            anonymous_avatar: Some(
-                circle
-                    .metadata
-                    .kv
-                    .get("sparkler:anonymous_avatar")
-                    .unwrap_or(&"/static/images/default-avatar.svg".to_string())
-                    .to_string(),
-            ),
-            // ...
-            layout: circle
-                .metadata
-                .kv
-                .get("sparkler:layout")
-                .unwrap_or(&String::new())
-                .to_owned(),
-            lock_profile: circle
-                .metadata
-                .kv
-                .get("sparkler:lock_profile")
-                .unwrap_or(&"false".to_string())
-                == "true",
-            disallow_anonymous: circle
-                .metadata
-                .kv
-                .get("sparkler:disallow_anonymous")
-                .unwrap_or(&"false".to_string())
-                == "true",
-            require_account: circle
-                .metadata
-                .kv
-                .get("sparkler:require_account")
-                .unwrap_or(&"false".to_string())
-                == "true",
-            is_blocked: if let Some(block_list) = circle.metadata.kv.get("sparkler:block_list") {
-                block_list.contains(&format!("<@{posting_as}>"))
-            } else {
-                false
-            },
-            is_powerful,
-            is_member,
-            is_owner,
-        }
-        .render()
-        .unwrap(),
-    )
-}
-
-#[derive(Template)]
-#[template(path = "circle/settings/profile.html")]
-struct ProfileSettingsTemplate {
+#[template(path = "circle/settings/general.html")]
+struct GeneralSettingsTemplate {
     config: Config,
     profile: Option<Profile>,
     unread: usize,
@@ -878,7 +611,7 @@ struct ProfileSettingsTemplate {
 }
 
 /// GET /circles/@:name/settings
-pub async fn profile_settings_request(
+pub async fn general_settings_request(
     jar: CookieJar,
     Path(name): Path<String>,
     State(database): State<Database>,
@@ -935,7 +668,7 @@ pub async fn profile_settings_request(
     }
 
     Html(
-        ProfileSettingsTemplate {
+        GeneralSettingsTemplate {
             config: database.server_options.clone(),
             profile: auth_user.clone(),
             unread,
