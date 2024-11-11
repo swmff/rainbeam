@@ -32,5 +32,8 @@ pub fn render_markdown(input: &str) -> String {
         .generic_attributes(allowed_attributes)
         .clean(&html)
         .to_string()
-        .replace("src=\"", "src=\"/api/v0/util/ext/image?img=")
+        .replace(
+            "src=\"",
+            "loading=\"lazy\" src=\"/api/v0/util/ext/image?img=",
+        )
 }
