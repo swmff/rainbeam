@@ -71,7 +71,7 @@ endblock %} {% block head %}
             <div class="card" style="padding: 0">
                 <img
                     title="{{ circle.name }}'s banner"
-                    src="/api/v1/circles/{{ circle.name }}/banner"
+                    src="/api/v1/circles/{{ circle.id }}/banner"
                     alt=""
                     class="shadow round"
                     style="
@@ -88,7 +88,7 @@ endblock %} {% block head %}
             <div class="card flex gap-2">
                 <img
                     title="{{ circle.name }}'s avatar"
-                    src="/api/v1/circles/{{ circle.name }}/avatar"
+                    src="/api/v1/circles/{{ circle.id }}/avatar"
                     alt=""
                     class="avatar shadow-md"
                     style="--size: 80px; margin: -50px 0.5rem 0"
