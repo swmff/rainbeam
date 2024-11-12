@@ -10,6 +10,7 @@ use authbeam::model::{Permission, Profile};
 use crate::config::Config;
 use crate::database::Database;
 use crate::model::{Circle, CircleMetadata, DatabaseError, FullResponse, MembershipStatus};
+use crate::ToHtml;
 
 use super::{PaginatedQuery, ProfileQuery};
 

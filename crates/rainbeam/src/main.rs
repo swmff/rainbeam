@@ -3,6 +3,7 @@
 #![doc(issue_tracker_base_url = "https://github.com/swmff/rainbeam/issues")]
 #![doc(html_favicon_url = "https://rainbeam.net/static/favicon.svg")]
 #![doc(html_logo_url = "https://rainbeam.net/static/favicon.svg")]
+use askama_axum::Template;
 use axum::routing::{get, get_service};
 use axum::Router;
 
@@ -13,9 +14,9 @@ use authbeam::{api as AuthApi, Database as AuthDatabase};
 use databeam::config::Config as DataConf;
 use shared::fs;
 
-mod config;
-mod database;
-mod model;
+pub use rainbeam::database;
+pub use rainbeam::config;
+pub use rainbeam::model;
 mod routing;
 
 // mimalloc
@@ -25,6 +26,24 @@ use mimalloc::MiMalloc;
 #[cfg(feature = "mimalloc")]
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;
+
+// ...
+/// Trait to convert errors into HTML
+pub(crate) trait ToHtml {
+    fn to_html(&self, database: database::Database) -> String;
+}
+
+impl ToHtml for model::DatabaseError {
+    fn to_html(&self, database: database::Database) -> String {
+        crate::routing::pages::ErrorTemplate {
+            config: database.server_options,
+            profile: None,
+            message: self.to_string(),
+        }
+        .render()
+        .unwrap()
+    }
+}
 
 /// Main server process
 #[tokio::main]

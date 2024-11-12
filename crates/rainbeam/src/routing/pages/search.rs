@@ -12,6 +12,7 @@ use super::{SearchHomeQuery, SearchQuery};
 use crate::config::Config;
 use crate::database::Database;
 use crate::model::{DatabaseError, FullResponse, Question};
+use crate::ToHtml;
 
 #[derive(Template)]
 #[template(path = "search/homepage.html")]

@@ -13,6 +13,7 @@ use crate::config::Config;
 use crate::database::Database;
 use crate::model::{Chat, DatabaseError, Message};
 use super::PaginatedQuery;
+use crate::ToHtml;
 
 #[derive(Template)]
 #[template(path = "chats/homepage.html")]

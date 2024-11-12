@@ -9,6 +9,7 @@ use authbeam::model::{Permission, Profile, UserFollow, Warning};
 use crate::config::Config;
 use crate::database::Database;
 use crate::model::{Chat, DatabaseError, FullResponse, Question, RelationshipStatus};
+use crate::ToHtml;
 
 use super::{clean_metadata, PaginatedQuery, ProfileQuery};
 

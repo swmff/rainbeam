@@ -15,6 +15,7 @@ use authbeam::model::{IpBan, Notification, Permission, Profile, ProfileMetadata,
 use crate::config::Config;
 use crate::database::Database;
 use crate::model::{DatabaseError, FullResponse, Question, QuestionResponse, Reaction, ResponseComment};
+use crate::ToHtml;
 
 use super::api;
 
@@ -2037,7 +2038,6 @@ pub async fn routes(database: Database) -> Router {
         .route("/settings/sessions", get(settings::sessions_settings))
         .route("/settings/profile", get(settings::profile_settings))
         .route("/settings/privacy", get(settings::privacy_settings))
-        .route("/settings/system", get(settings::system_settings))
         // search
         .route("/search", get(search::search_homepage_request))
         .route("/search/responses", get(search::search_responses_request))

@@ -58,7 +58,12 @@ block head %}
     <span class="notification tr">{{ notifs }}</span>
     {% endif %}
 </a>
-{% endif %} {% endblock %} {% block content %}
+{% endif %} {% endblock %} {% block content %} {% if profile.is_none() %}
+<script>
+    document.querySelector("nav").remove();
+</script>
+{% endif %}
+
 <article>
     {% if profile.is_some() %}
     <a

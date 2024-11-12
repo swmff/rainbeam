@@ -14,6 +14,7 @@ use crate::config::Config;
 use crate::database::Database;
 use crate::model::{DatabaseError, Page};
 use super::PaginatedQuery;
+use crate::ToHtml;
 
 #[derive(Template)]
 #[template(path = "pages/homepage.html")]

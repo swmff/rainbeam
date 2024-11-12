@@ -5,7 +5,7 @@ members = [
     "crates/authbeam",
     "crates/databeam",
     "crates/shared",
-    "crates/desktop/src-tauri"
+    "crates/rainbeam-core",
 ]
 
 [profile.release]

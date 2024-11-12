@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use askama_axum::Template;
 use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
@@ -13,8 +12,6 @@ use serde::{Deserialize, Serialize};
 use authbeam::model::{IpBlock, Profile, UserFollow};
 use databeam::DefaultReturn;
 pub use authbeam::model::RelationshipStatus;
-
-use crate::database::Database;
 
 /// A question structure
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -588,16 +585,6 @@ impl DatabaseError {
             Banned => String::from("You're banned for suspected systems abuse or violating TOS."),
             _ => String::from("An unspecified error has occured"),
         }
-    }
-
-    pub fn to_html(&self, database: Database) -> String {
-        crate::routing::pages::ErrorTemplate {
-            config: database.server_options,
-            profile: None,
-            message: self.to_string(),
-        }
-        .render()
-        .unwrap()
     }
 }
 

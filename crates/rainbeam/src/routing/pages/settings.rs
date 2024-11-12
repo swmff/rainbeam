@@ -8,6 +8,7 @@ use authbeam::model::{IpBlock, Profile};
 use crate::config::Config;
 use crate::database::Database;
 use crate::model::{DatabaseError, RelationshipStatus};
+use crate::ToHtml;
 
 use super::clean_metadata_short;
 
@@ -246,59 +247,6 @@ pub async fn sessions_settings(
                     .value_trimmed()
                     .to_string(),
             ),
-        }
-        .render()
-        .unwrap(),
-    )
-}
-
-#[derive(Template)]
-#[template(path = "settings/system.html")]
-struct SystemSettingsTemplate {
-    config: Config,
-    profile: Option<Profile>,
-    unread: usize,
-    notifs: usize,
-    metadata: String,
-}
-
-/// GET /settings/system
-pub async fn system_settings(
-    jar: CookieJar,
-    State(database): State<Database>,
-) -> impl IntoResponse {
-    let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
-            Ok(ua) => ua,
-            Err(_) => return Html(DatabaseError::NotAllowed.to_html(database)),
-        },
-        None => return Html(DatabaseError::NotAllowed.to_html(database)),
-    };
-
-    let unread = match database
-        .get_questions_by_recipient(auth_user.id.to_owned())
-        .await
-    {
-        Ok(unread) => unread.len(),
-        Err(_) => 0,
-    };
-
-    let notifs = database
-        .auth
-        .get_notification_count_by_recipient(auth_user.id.to_owned())
-        .await;
-
-    Html(
-        SystemSettingsTemplate {
-            config: database.server_options,
-            metadata: clean_metadata_short(&auth_user.metadata),
-            profile: Some(auth_user),
-            unread,
-            notifs,
         }
         .render()
         .unwrap(),
