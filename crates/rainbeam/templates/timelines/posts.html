@@ -89,14 +89,14 @@ block head %}
     <main class="flex flex-col gap-2">
         {% if profile.is_some() %}
         <div class="pillmenu convertible">
-            <a href="/">Timeline</a>
-            <a href="/inbox/posts" class="active">Posts</a>
-            <a href="/inbox/global">Global</a>
+            <a href="/"><span>Timeline</span></a>
+            <a href="/inbox/posts" class="active"><span>Posts</span></a>
+            <a href="/inbox/global"><span>Global</span></a>
         </div>
 
         <div class="pillmenu convertible">
-            <a href="/inbox/posts" class="active">Public</a>
-            <a href="/inbox/posts/following">Following</a>
+            <a href="/inbox/posts" class="active"><span>Public</span></a>
+            <a href="/inbox/posts/following"><span>Following</span></a>
         </div>
         {% endif %} {% if responses.len() == 0 %}
         <div class="markdown-alert-important">

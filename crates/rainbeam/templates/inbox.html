@@ -55,9 +55,9 @@
     <main class="flex flex-col gap-2">
         {% if is_helper %}
         <div class="pillmenu convertible">
-            <a href="/inbox" class="active">My Inbox</a>
-            <a href="/inbox/audit">Audit Log</a>
-            <a href="/inbox/reports">Reports</a>
+            <a href="/inbox" class="active"><span>My Inbox</span></a>
+            <a href="/inbox/audit"><span>Audit Log</span></a>
+            <a href="/inbox/reports"><span>Reports</span></a>
         </div>
         {% endif %} {% if unread.len() == 0 %}
         <div class="markdown-alert-important">

@@ -13,6 +13,17 @@ use authbeam::model::{IpBlock, Profile, UserFollow};
 use databeam::DefaultReturn;
 pub use authbeam::model::RelationshipStatus;
 
+/// Trait for simple asset contexts
+pub trait Context {}
+
+/// Trait for generic structs which contain a "content" and "context"
+pub trait CtxAsset {
+    fn ref_context(&self) -> &impl Context;
+    fn ref_content(&self) -> &String;
+
+    fn ref_asset(&self) -> (AssetType, &String);
+}
+
 /// A question structure
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Question {
@@ -32,6 +43,20 @@ pub struct Question {
     /// Additional information about the question
     #[serde(default)]
     pub context: QuestionContext,
+}
+
+impl CtxAsset for Question {
+    fn ref_context(&self) -> &impl Context {
+        &self.context
+    }
+
+    fn ref_content(&self) -> &String {
+        &self.content
+    }
+
+    fn ref_asset(&self) -> (AssetType, &String) {
+        (AssetType::Question, &self.content)
+    }
 }
 
 impl Question {
@@ -85,6 +110,8 @@ pub struct QuestionContext {
     #[serde(default)]
     pub media: String,
 }
+
+impl Context for QuestionContext {}
 
 impl Default for QuestionContext {
     fn default() -> Self {
@@ -152,7 +179,35 @@ pub struct QuestionResponse {
     pub edited: u128,
 }
 
+impl CtxAsset for QuestionResponse {
+    fn ref_context(&self) -> &impl Context {
+        &self.context
+    }
+
+    fn ref_content(&self) -> &String {
+        &self.content
+    }
+
+    fn ref_asset(&self) -> (AssetType, &String) {
+        (AssetType::Response, &self.content)
+    }
+}
+
 pub type FullResponse = (Question, QuestionResponse, usize, usize);
+
+impl CtxAsset for FullResponse {
+    fn ref_context(&self) -> &impl Context {
+        &self.1.context
+    }
+
+    fn ref_content(&self) -> &String {
+        &self.1.content
+    }
+
+    fn ref_asset(&self) -> (AssetType, &String) {
+        (AssetType::Response, &self.1.content)
+    }
+}
 
 /// Basic information which changes the way the response is deserialized
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -172,6 +227,8 @@ pub struct ResponseContext {
     #[serde(default)]
     pub circle: String,
 }
+
+impl Context for ResponseContext {}
 
 impl Default for ResponseContext {
     fn default() -> Self {
@@ -204,6 +261,34 @@ pub struct ResponseComment {
     /// The IP address of the user creating the comment
     #[serde(default)]
     pub ip: String,
+    /// Extra information about the comment
+    #[serde(default)]
+    pub context: CommentContext,
+}
+
+impl CtxAsset for ResponseComment {
+    fn ref_context(&self) -> &impl Context {
+        &self.context
+    }
+
+    fn ref_content(&self) -> &String {
+        &self.content
+    }
+
+    fn ref_asset(&self) -> (AssetType, &String) {
+        (AssetType::Comment, &self.content)
+    }
+}
+
+/// Basic information which changes the way the response is deserialized
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct CommentContext {}
+
+impl Context for CommentContext {}
+impl Default for CommentContext {
+    fn default() -> Self {
+        Self {}
+    }
 }
 
 /// A reaction structure

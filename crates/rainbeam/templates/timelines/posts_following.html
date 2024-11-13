@@ -61,14 +61,16 @@ block head %}
 <article>
     <main class="flex flex-col gap-2">
         <div class="pillmenu convertible">
-            <a href="/">Timeline</a>
-            <a href="/inbox/posts" class="active">Posts</a>
-            <a href="/inbox/global">Global</a>
+            <a href="/"><span>Timeline</span></a>
+            <a href="/inbox/posts" class="active"><span>Posts</span></a>
+            <a href="/inbox/global"><span>Global</span></a>
         </div>
 
         <div class="pillmenu convertible">
-            <a href="/inbox/posts">Public</a>
-            <a href="/inbox/posts/following" class="active">Following</a>
+            <a href="/inbox/posts"><span>Public</span></a>
+            <a href="/inbox/posts/following" class="active"
+                ><span>Following</span></a
+            >
         </div>
 
         {% if responses.len() == 0 %}

@@ -12,6 +12,3 @@ crates/rainbeam/static/favicon.svg
 crates/rainbeam/static/build/
 *.db
 .config/config.toml
-
-# testing only
-crates/rainbeam-web/

@@ -1,18 +1,15 @@
 {% extends "base.html" %} {% block pillmenu %}
 <a href="/@{{ other.username }}">
-    Feed
-    <b class="notification">{{ response_count }}</b>
+    <span>Feed <b class="notification">{{ response_count }}</b></span>
 </a>
 
 <a href="/@{{ other.username }}/questions">
-    Questions
-    <b class="notification">{{ questions_count }}</b>
+    <span>Questions <b class="notification">{{ questions_count }}</b></span>
 </a>
 
 {% if is_helper %}
 <a href="/@{{ other.username }}/mod" class="active">
-    Manage
-    <b class="notification">Mod</b>
+    <span>Manage <b class="notification">Mod</b></span>
 </a>
 {% endif %} {% endblock %} {% block panel %}
 <!-- info -->

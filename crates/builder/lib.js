@@ -88,14 +88,29 @@ export default async function build(options) {
         async (file_name, full_path, build_path) => {
             // minify
             console.log(`min ${file_name}`);
-            const { code } = await swc.minify(
+
+            const compiled = await swc.transform(
                 await fs.readFile(full_path, { encoding: "utf8" }),
                 {
-                    compress: true,
-                    mangle: true,
-                    format: options.js_format_options || {},
+                    filename: file_name,
+                    sourceMaps: true,
+                    isModule: true,
+                    jsc: {
+                        parser: {
+                            syntax: "ecmascript",
+                            jsx: true,
+                            autoAccessors: true,
+                        },
+                        transform: {},
+                    },
                 },
             );
+
+            const { code } = await swc.minify(compiled.code, {
+                compress: true,
+                mangle: true,
+                format: options.js_format_options || {},
+            });
 
             await fs.writeFile(build_path, code);
         },

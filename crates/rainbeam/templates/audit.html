@@ -58,14 +58,14 @@ endblock %} {% block head %}
 <article>
     <main class="flex flex-col gap-2">
         <div class="pillmenu convertible">
-            <a href="/inbox">My Inbox</a>
-            <a href="/inbox/audit" class="active">Audit Log</a>
-            <a href="/inbox/reports">Reports</a>
+            <a href="/inbox"><span>My Inbox</span></a>
+            <a href="/inbox/audit" class="active"><span>Audit Log</span></a>
+            <a href="/inbox/reports"><span>Reports</span></a>
         </div>
 
         <div class="pillmenu convertible">
-            <a href="/inbox/audit" class="active">Mod Actions</a>
-            <a href="/inbox/audit/ipbans">IP Bans</a>
+            <a href="/inbox/audit" class="active"><span>Mod Actions</span></a>
+            <a href="/inbox/audit/ipbans"><span>IP Bans</span></a>
         </div>
 
         {% if logs.len() == 0 %}

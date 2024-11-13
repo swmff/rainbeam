@@ -1,13 +1,12 @@
 {% extends "base.html" %} {% block pillmenu %}
-<a href="/+{{ circle.name }}" class="active">Feed</a>
+<a href="/+{{ circle.name }}" class="active"><span>Feed</span></a>
 
 <a href="/circles/@{{ circle.name }}/memberlist">
-    Members
-    <b class="notification">{{ member_count }}</b>
+    <span>Members <b class="notification">{{ member_count }}</b></span>
 </a>
 
 {% if is_member %}
-<a href="/circles/@{{ circle.name }}/settings">Settings</a>
+<a href="/circles/@{{ circle.name }}/settings"><span>Settings</span></a>
 {% endif %} {% endblock %} {% block panel %}
 <!-- feed -->
 <div id="feed" class="flex flex-col gap-4">

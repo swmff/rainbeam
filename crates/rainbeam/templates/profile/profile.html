@@ -1,12 +1,10 @@
 {% extends "base.html" %} {% block pillmenu %}
 <a href="/@{{ other.username }}" class="active">
-    Feed
-    <b class="notification">{{ response_count }}</b>
+    <span>Feed <b class="notification">{{ response_count }}</b></span>
 </a>
 
 <a href="/@{{ other.username }}/questions">
-    Questions
-    <b class="notification">{{ questions_count }}</b>
+    <span>Questions <b class="notification">{{ questions_count }}</b></span>
 </a>
 
 {% if is_helper %}

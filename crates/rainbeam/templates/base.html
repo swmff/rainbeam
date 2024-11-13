@@ -48,7 +48,7 @@
             globalThis.ns_verbose = false;
             globalThis.ns_config = {
                 root: "/static/build/js/",
-                version: "1.14.2",
+                version: "1.15.5",
                 verbose: globalThis.ns_verbose,
             };
 
@@ -60,7 +60,7 @@
         </script>
 
         <script
-            src="/static/js/app.js"
+            src="/static/build/js/app.js"
             id="app.js"
             data-turbo-permanent
         ></script>
@@ -479,7 +479,11 @@
 
                             {% if profile.is_some() %}
                             <b class="title"></b>
-                            <a href="#" onclick="trigger('app:logout')">
+                            <a
+                                href="#"
+                                onclick="trigger('app:logout')"
+                                class="red"
+                            >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 16 16"
@@ -587,7 +591,6 @@
                 app["hook.ips"]();
                 app["hook.partial_embeds"]();
 
-                window.IS_APP = app.check_app()[0];
                 twemoji.parse(document.body);
             })();
         </script>

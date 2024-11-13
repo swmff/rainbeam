@@ -4,10 +4,10 @@ use std::collections::HashMap;
 use crate::config::Config;
 use crate::model::{
     anonymous_profile, Chat, ChatAdd, ChatContext, ChatNameEdit, Circle, CircleCreate,
-    CircleMetadata, CommentCreate, DataExport, DataExportOptions, FullResponse, MembershipStatus,
-    Message, MessageContext, MessageCreate, Page, PageContext, PageCreate, QuestionContext,
-    QuestionCreate, QuestionResponse, Reaction, RefQuestion, ResponseComment, ResponseContext,
-    ResponseCreate,
+    CircleMetadata, CommentContext, CommentCreate, DataExport, DataExportOptions, FullResponse,
+    MembershipStatus, Message, MessageContext, MessageCreate, Page, PageContext, PageCreate,
+    QuestionContext, QuestionCreate, QuestionResponse, Reaction, RefQuestion, ResponseComment,
+    ResponseContext, ResponseCreate,
 };
 use crate::model::{DatabaseError, Question};
 
@@ -85,7 +85,8 @@ impl Database {
                 timestamp TEXT,
                 reply     TEXT,
                 edited    TEXT,
-                ip        TEXT
+                ip        TEXT,
+                context   TEXT
             )",
         )
         .execute(c)
@@ -3001,6 +3002,7 @@ impl Database {
             },
             edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
             ip: res.get("ip").unwrap().to_string(),
+            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
         };
 
         // store in cache
@@ -3081,6 +3083,7 @@ impl Database {
                             },
                             edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
                             ip: res.get("ip").unwrap().to_string(),
+                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
                         },
                         self.get_reply_count_by_comment(id.clone()).await,
                         self.get_reaction_count_by_asset(id).await,
@@ -3151,6 +3154,7 @@ impl Database {
                             },
                             edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
                             ip: res.get("ip").unwrap().to_string(),
+                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
                         },
                         self.get_reply_count_by_comment(id.clone()).await,
                         self.get_reaction_count_by_asset(id).await,
@@ -3247,6 +3251,7 @@ impl Database {
                             },
                             edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
                             ip: res.get("ip").unwrap().to_string(),
+                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
                         },
                         self.get_reply_count_by_comment(id.clone()).await,
                         self.get_reaction_count_by_asset(id).await,
@@ -3316,6 +3321,7 @@ impl Database {
                             },
                             edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
                             ip: res.get("ip").unwrap().to_string(),
+                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
                         },
                         if recurse == true {
                             self.get_reply_count_by_comment(id.clone()).await
@@ -3390,6 +3396,7 @@ impl Database {
                             },
                             edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
                             ip: res.get("ip").unwrap().to_string(),
+                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
                         },
                         self.get_reply_count_by_comment(id.clone()).await,
                         self.get_reaction_count_by_asset(id).await,
@@ -3530,14 +3537,15 @@ impl Database {
             reply: None,
             edited: timestamp,
             ip,
+            context: CommentContext::default(),
         };
 
         // create response
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            "INSERT INTO \"xcomments\" VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+            "INSERT INTO \"xcomments\" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xcomments\" VALEUS ($1, $2, $3, $4, $5, $6, $7, $8)"
+            "INSERT INTO \"xcomments\" VALEUS ($1, $2, $3, $4, $5, $6, $7, $8, $9)"
         }
         .to_string();
 
@@ -3551,6 +3559,7 @@ impl Database {
             .bind::<&String>(&props.reply)
             .bind::<&String>(&comment.timestamp.to_string())
             .bind::<&String>(&comment.ip)
+            .bind::<&String>(&serde_json::to_string(&comment.context).unwrap())
             .execute(c)
             .await
         {

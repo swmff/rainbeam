@@ -58,9 +58,9 @@ endblock %} {% block head %}
 <article>
     <main class="flex flex-col gap-2">
         <div class="pillmenu convertible">
-            <a href="/inbox">My Inbox</a>
-            <a href="/inbox/audit">Audit Log</a>
-            <a href="/inbox/reports" class="active">Reports</a>
+            <a href="/inbox"><span>My Inbox</span></a>
+            <a href="/inbox/audit"><span>Audit Log</span></a>
+            <a href="/inbox/reports" class="active"><span>Reports</span></a>
         </div>
 
         {% if reports.len() == 0 %}
