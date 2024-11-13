@@ -1294,6 +1294,7 @@ dialog::backdrop {
     gap: 0.5rem;
     flex-wrap: wrap;
     transition: background 0.15s;
+    position: relative;
 }
 
 .pillmenu a span {
@@ -1307,21 +1308,6 @@ dialog::backdrop {
 .pillmenu a.active {
     background: var(--color-primary);
     color: var(--color-text-primary);
-}
-
-.pillmenu a.active::before {
-    --height: 70%;
-    --target: 50%; /* middle */
-    width: 95%;
-    border-radius: var(--radius);
-    content: "";
-    z-index: 0;
-    background: var(--color-super-lowered);
-    height: var(--height);
-    transition: background 0.2s;
-    display: block;
-    position: absolute;
-    top: calc(var(--target) - var(--height) / 2);
 }
 
 .pillmenu a:first-child {
@@ -2250,6 +2236,21 @@ nav:not(.legacy *) a.button.title:hover::after {
     color: var(--color-text-raised);
     background: var(--color-super-raised);
     position: relative;
+}
+
+.pillmenu:not(.legacy *) a.active::before {
+    --height: 70%;
+    --target: 50%; /* middle */
+    width: 95%;
+    border-radius: var(--radius);
+    content: "";
+    z-index: 0;
+    background: var(--color-super-lowered);
+    height: var(--height);
+    transition: background 0.2s;
+    display: block;
+    position: absolute;
+    top: calc(var(--target) - var(--height) / 2);
 }
 
 .notification:not(.legacy *):not(.marker) {
