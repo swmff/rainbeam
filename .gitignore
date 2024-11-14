@@ -12,3 +12,4 @@ crates/rainbeam/static/favicon.svg
 crates/rainbeam/static/build/
 *.db
 .config/config.toml
+.config/.well-known/citrus/citrus.toml

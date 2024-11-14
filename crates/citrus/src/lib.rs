@@ -6,10 +6,24 @@ use std::io::{Result, Error, ErrorKind};
 pub mod model;
 use model::{HttpProtocol, ServerRepresentation};
 
+/// Citrus API body template builder
+pub struct TemplateBuilder(pub String);
+
+impl TemplateBuilder {
+    /// Build template
+    pub fn build(mut self, values: Vec<String>) -> Self {
+        for value in values {
+            self.0 = self.0.replacen("<field>", &value, 1);
+        }
+
+        self
+    }
+}
+
 /// Core Citrus manager
 pub struct CitrusClient {
-    http: HttpClient,
-    protocol: HttpProtocol,
+    pub http: HttpClient,
+    pub protocol: HttpProtocol,
 }
 
 impl CitrusClient {

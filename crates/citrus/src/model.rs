@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use serde::{Serialize, Deserialize};
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum HttpProtocol {
     Http,
     Https,
@@ -13,6 +14,15 @@ impl ToString for HttpProtocol {
             Self::Https => "https:".to_string(),
         }
     }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub enum HttpMethod {
+    GET,
+    HEAD,
+    POST,
+    PUT,
+    OPTIONS,
 }
 
 /// A simple identifier to identify resources from other servers
@@ -107,6 +117,22 @@ pub struct SchemaPointer {
     pub id: String,
     /// Schema location (relative to `/.well-known/citrus`)
     pub location: String,
+    /// The schema's API endpoints
+    #[serde(default)]
+    pub api: HashMap<String, SchemaAPI>,
+}
+
+/// A description of a schema's API
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct SchemaAPI {
+    /// The method to send with the API request
+    pub method: HttpMethod,
+    /// The URL to send the API request to
+    pub url: String,
+    /// The body of the API request
+    ///
+    /// Supports template values as defined in the specification.
+    pub body: String,
 }
 
 /// A schema
