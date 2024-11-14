@@ -68,6 +68,11 @@ pub struct Config {
     /// Used in embeds and links.
     #[serde(default)]
     pub host: String,
+    /// The hostname of the public server (for Citrus)
+    ///
+    /// Same as `host`, just without the protocol.
+    #[serde(default)]
+    pub citrus_id: String,
     /// A list of image hosts that are blocked
     #[serde(default)]
     pub blocked_hosts: Vec<String>,
@@ -93,6 +98,7 @@ impl Default for Config {
             real_ip_header: Option::None,
             registration_enabled: true,
             host: String::new(),
+            citrus_id: String::new(),
             blocked_hosts: Vec::new(),
             migration: false,
             tiers: Tiers::default(),

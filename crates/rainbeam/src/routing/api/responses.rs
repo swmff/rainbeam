@@ -73,7 +73,7 @@ pub async fn get_request(
             success: true,
             message: String::new(),
             payload: {
-                r.1.id = CitrusID::new(&database.server_options.host, &r.1.id).0;
+                r.1.id = CitrusID::new(&database.server_options.citrus_id, &r.1.id).0;
 
                 // hide anonymous author id
                 if r.0.author.id.starts_with("anonymous#") {
