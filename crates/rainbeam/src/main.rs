@@ -52,7 +52,9 @@ pub async fn main() {
 
     let c = fs::canonicalize(".").unwrap();
     let here = c.to_str().unwrap();
+
     let static_dir = format!("{here}/.config/static");
+    let well_known_dir = format!("{here}/.config/.well-known");
     config.static_dir = static_dir.clone();
 
     tracing_subscriber::fmt()
@@ -97,6 +99,10 @@ pub async fn main() {
         // pages
         .nest("/", routing::pages::routes(database.clone()).await)
         // ...
+        .nest_service(
+            "/.well-known",
+            get_service(tower_http::services::ServeDir::new(&well_known_dir)),
+        )
         .nest_service(
             "/static",
             get_service(tower_http::services::ServeDir::new(&static_dir)),

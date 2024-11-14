@@ -1,0 +1,15 @@
+[package]
+name = "citrus"
+version = "0.1.0"
+edition = "2021"
+authors = ["trisuaso", "swmff"]
+description = "Citrus client library"
+homepage = "https://github.com/trisuaso/citrus-protocol"
+repository = "https://github.com/swmff/rainbeam"
+license = "MIT"
+rust-version = "1.81"
+
+[dependencies]
+reqwest = "0.12.9"
+serde = "1.0.215"
+toml = "0.8.19"

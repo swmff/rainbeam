@@ -4,28 +4,9 @@ block head %}
 {% endblock %} {% block content %}
 <div id="use_split_page"></div>
 
-<article
-    class="page_section flex flex-col gap-4 justify-center items-center sm:smaller"
-    style="
-        background-color: var(--color-lowered);
-        color: var(--color-primary-raised);
-        padding: 5rem 2rem;
-    "
->
-    <div class="flex flex-col gap-2">
-        <h1
-            class="no-margin"
-            style="
-                text-align: left;
-                background: linear-gradient(
-                    to right,
-                    var(--color-primary),
-                    currentColor
-                );
-                background-clip: text;
-                text-fill-color: transparent;
-            "
-        >
+<main class="flex flex-col gap-4 page_section items-center justify-center">
+    <div class="flex flex-col items-center gap-2">
+        <h1 class="no-margin" style="color: var(--color-primary)">
             {{ config.name }}
         </h1>
 
@@ -33,19 +14,16 @@ block head %}
             {{ config.description }}
         </h3>
     </div>
-</article>
 
-<main
-    class="flex page_section items-center justify-center"
-    style="padding: 1rem 2rem"
->
     <div
         class="flex flex-col gap-4 items-center justify-center"
-        style="width: 25rem; max-width: 100%"
+        style="width: 20rem; max-width: 100%"
     >
+        <hr class="w-full" />
+
         <div class="flex flex-col gap-2 w-full">
             <a
-                class="primary button bold w-full"
+                class="big primary button bold w-full"
                 href="/sign_up"
                 data-turbo="false"
                 style="gap: 1rem !important"
@@ -62,11 +40,11 @@ block head %}
                         d="M7.9 8.548h-.001a5.528 5.528 0 0 1 3.1 4.659.75.75 0 1 1-1.498.086A4.01 4.01 0 0 0 5.5 9.5a4.01 4.01 0 0 0-4.001 3.793.75.75 0 1 1-1.498-.085 5.527 5.527 0 0 1 3.1-4.66 3.5 3.5 0 1 1 4.799 0ZM13.25 0a.75.75 0 0 1 .75.75V2h1.25a.75.75 0 0 1 0 1.5H14v1.25a.75.75 0 0 1-1.5 0V3.5h-1.25a.75.75 0 0 1 0-1.5h1.25V.75a.75.75 0 0 1 .75-.75ZM5.5 4a2 2 0 1 0-.001 3.999A2 2 0 0 0 5.5 4Z"
                     ></path>
                 </svg>
-                Register
+                Create account
             </a>
 
             <a
-                class="button bold w-full"
+                class="big button secondary bold w-full"
                 href="/login"
                 data-turbo="false"
                 style="gap: 1rem !important"
@@ -86,65 +64,6 @@ block head %}
                 Login
             </a>
         </div>
-
-        <hr class="w-full" />
-
-        <details class="accordion">
-            <summary>
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 16 16"
-                    width="16"
-                    height="16"
-                    aria-label="Chevron down symbol"
-                    class="icon"
-                >
-                    <path
-                        d="M12.78 5.22a.749.749 0 0 1 0 1.06l-4.25 4.25a.749.749 0 0 1-1.06 0L3.22 6.28a.749.749 0 1 1 1.06-1.06L8 8.939l3.72-3.719a.749.749 0 0 1 1.06 0Z"
-                    ></path>
-                </svg>
-                <b>Explore</b>
-            </summary>
-
-            <div class="inner">
-                <ul>
-                    <li><a href="/search">Search</a></li>
-                    <li><a href="/inbox/posts">Posts</a></li>
-                </ul>
-            </div>
-        </details>
-
-        <details class="accordion">
-            <summary>
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 16 16"
-                    width="16"
-                    height="16"
-                    aria-label="Chevron down symbol"
-                    class="icon"
-                >
-                    <path
-                        d="M12.78 5.22a.749.749 0 0 1 0 1.06l-4.25 4.25a.749.749 0 0 1-1.06 0L3.22 6.28a.749.749 0 1 1 1.06-1.06L8 8.939l3.72-3.719a.749.749 0 0 1 1.06 0Z"
-                    ></path>
-                </svg>
-                <b>Additional resources</b>
-            </summary>
-
-            <div class="inner">
-                <ul>
-                    <li>
-                        <a href="/site/about">About this site</a>
-                    </li>
-
-                    <li>
-                        <a href="https://github.com/swmff/rainbeam"
-                            >Source code</a
-                        >
-                    </li>
-                </ul>
-            </div>
-        </details>
     </div>
 </main>
 
@@ -154,11 +73,10 @@ block head %}
 </script>
 
 <style>
-    .hl-tag {
-        color: var(--color-text-primary);
-        background: var(--color-primary);
-        padding: 0.25rem 0.5rem;
-        border-radius: var(--radius);
+    nav {
+        background: transparent !important;
+        border: none !important;
+        color: var(--color-surface) !important;
     }
 </style>
 {% call super() %} {% endblock %}

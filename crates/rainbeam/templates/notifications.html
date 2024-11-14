@@ -129,7 +129,7 @@ endblock %} {% block head %}
     }
 
     // remove notifications that could accumulate quick
-    const spam = ["sent you a message"];
+    const spam = [];
 
     for (const element of Array.from(
         document.querySelectorAll("[do=notif_title]"),

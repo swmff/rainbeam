@@ -1,0 +1,11 @@
+id = "net.rainbeam.structs.Comment"
+
+[struct]
+author = "net.rainbeam.structs.Profle"
+response = "data.CitrusID"
+content = "data.String"
+id = "data.CitrusID"
+reply = "data.Box:net.rainbeam.structs.Comment"
+context = "net.rainbeam.structs.Comment.Context"
+timestamp = "data.u128"
+edited = "data.u128"

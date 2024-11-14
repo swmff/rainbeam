@@ -1,0 +1,11 @@
+id = "net.rainbeam.structs.Profile"
+
+[struct]
+id = "data.CitrusID"
+username = "data.String"
+# do not share password, salt, tokens, ips, token_context
+metadata = "net.rainbeam.structs.Profile.Metadata"
+badges = "data.Vec:(String, String, String)"
+group = "data.i32"
+joined = "data.u128"
+tier = "data.i32"

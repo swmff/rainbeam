@@ -6,6 +6,7 @@ members = [
     "crates/databeam",
     "crates/shared",
     "crates/rainbeam-core",
+    "crates/citrus",
 ]
 
 [profile.release]

@@ -1,0 +1,10 @@
+id = "net.rainbeam.structs.Question"
+
+[struct]
+author = "net.rainbeam.structs.Profle"
+recipient = "net.rainbeam.structs.Profle"
+content = "data.String"
+id = "data.CitrusID"
+ip = "data.String"
+timestamp = "data.u128"
+context = "net.rainbeam.structs.Question.Context"
