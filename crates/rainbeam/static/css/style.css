@@ -1300,6 +1300,14 @@ dialog::backdrop {
 
 .pillmenu a span {
     z-index: 1;
+    display: inherit;
+    gap: inherit;
+    justify-content: inherit;
+    align-items: inherit;
+    flex-wrap: inherit;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    overflow-wrap: break-word;
 }
 
 .pillmenu a:hover {

@@ -10,6 +10,7 @@ use crate::model::{
     ResponseContext, ResponseCreate,
 };
 use crate::model::{DatabaseError, Question};
+use citrus::model::CitrusID;
 
 use authbeam::model::{NotificationCreate, Permission, Profile, RelationshipStatus};
 use databeam::{utility, query as sqlquery};
@@ -1598,7 +1599,8 @@ impl Database {
                 },
                 question,
                 content: res.get("content").unwrap().to_string(),
-                id: id.clone(),
+                // id: CitrusID::new(&self.server_options.host, &id).0,
+                id: id.to_owned(),
                 timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
                 tags: match serde_json::from_str(res.get("tags").unwrap()) {
                     Ok(t) => t,
@@ -1618,7 +1620,9 @@ impl Database {
     /// # Arguments
     /// * `id`
     /// * `recurse`
-    pub async fn get_response(&self, id: String) -> Result<FullResponse> {
+    pub async fn get_response(&self, mut id: String) -> Result<FullResponse> {
+        id = CitrusID(id).hash();
+
         // check in cache
         match self
             .base
@@ -2638,6 +2642,8 @@ impl Database {
             .await
         {
             Ok(_) => {
+                let id = CitrusID(id).hash();
+
                 self.base
                     .cachedb
                     .remove(format!("rbeam.app.response:{id}"))
@@ -2716,6 +2722,8 @@ impl Database {
             .await
         {
             Ok(_) => {
+                let id = CitrusID(id).hash();
+
                 self.base
                     .cachedb
                     .remove(format!("rbeam.app.response:{id}"))
@@ -2737,7 +2745,7 @@ impl Database {
     /// * `save_question` - if we should not delete the question too
     pub async fn delete_response(
         &self,
-        id: String,
+        mut id: String,
         user: Profile,
         save_question: bool,
     ) -> Result<()> {
@@ -2746,6 +2754,8 @@ impl Database {
             Ok(q) => q,
             Err(e) => return Err(e),
         };
+
+        id = CitrusID(id).hash();
 
         // check username
         if user.id != response.1.author.id {

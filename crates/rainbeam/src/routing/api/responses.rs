@@ -5,6 +5,7 @@ use axum::routing::put;
 use hcaptcha::Hcaptcha;
 use authbeam::model::NotificationCreate;
 use databeam::DefaultReturn;
+use citrus::model::CitrusID;
 
 use axum::response::{IntoResponse, Redirect};
 use axum::{
@@ -72,6 +73,8 @@ pub async fn get_request(
             success: true,
             message: String::new(),
             payload: {
+                r.1.id = CitrusID::new(&database.server_options.host, &r.1.id).0;
+
                 // hide anonymous author id
                 if r.0.author.id.starts_with("anonymous#") {
                     r.0.author.id = "anonymous".to_string()

@@ -31,9 +31,14 @@ pub enum HttpMethod {
 /// {server_id}:{uuid/hash}
 /// ```
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct CitrusID(String);
+pub struct CitrusID(pub String);
 
 impl CitrusID {
+    /// Create a new [`CitrusID`] (given a host and id)
+    pub fn new(host: &str, id: &str) -> Self {
+        Self(format!("{host}:{id}"))
+    }
+
     /// Get the number of bytes that make up both parts of a CitrusID
     pub fn bytes_lens(&self) -> (usize, usize) {
         let mut server_id: usize = 0;
@@ -74,7 +79,13 @@ impl CitrusID {
     /// Get the `hash` section of the ID
     pub fn hash(&self) -> String {
         let (server_id, len) = self.bytes_lens();
-        self.0.chars().skip(server_id + 1).take(len).collect()
+
+        if (server_id != 0) | self.0.contains(":") {
+            // server_id + 1 to include the ":" character
+            self.0.chars().skip(server_id + 1).take(len).collect()
+        } else {
+            self.0.chars().take(len).collect()
+        }
     }
 }
 
