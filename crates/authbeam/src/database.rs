@@ -278,7 +278,7 @@ impl Database {
         // check with citrus
         let cid = CitrusID(id.clone()).fields();
 
-        if cid.0 != self.config.citrus_id {
+        if cid.0 != self.config.citrus_id && !cid.0.is_empty() {
             // make sure server supports the correct schema
             let server = match self.citrus.server(cid.0.to_string()).await {
                 Ok(s) => s,
@@ -3345,13 +3345,13 @@ impl Database {
                     let profile = match self.get_profile(res.get("one").unwrap().to_string()).await
                     {
                         Ok(c) => c,
-                        Err(e) => return Err(e),
+                        Err(_) => continue,
                     };
 
                     let profile_2 =
                         match self.get_profile(res.get("two").unwrap().to_string()).await {
                             Ok(c) => c,
-                            Err(e) => return Err(e),
+                            Err(_) => continue,
                         };
 
                     // add to out
