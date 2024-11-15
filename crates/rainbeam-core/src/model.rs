@@ -508,29 +508,6 @@ pub struct Message {
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct MessageContext {}
 
-/// A long blog-like post that can be edited an unlimited number of times
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct Page {
-    /// The ID of the page
-    pub id: String,
-    /// The **unique** slug of the page
-    pub slug: String,
-    /// The owner of the page (also the only one who can edit it)
-    pub owner: String,
-    /// The time in which the page was created
-    pub published: u128,
-    /// The time in which the page was edited
-    pub edited: u128,
-    /// The content of the page
-    pub content: String,
-    /// Additional context for the page
-    pub context: PageContext,
-}
-
-/// Additional information about a [`Page`]
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct PageContext {}
-
 // ...
 
 /// Anonymous user profile
@@ -622,12 +599,6 @@ pub struct ChatAdd {
     #[serde(default)]
     pub chat: String,
     pub friend: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct PageCreate {
-    pub slug: String,
-    pub content: String,
 }
 
 /// General API errors
