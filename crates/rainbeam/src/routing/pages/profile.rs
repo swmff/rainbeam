@@ -83,11 +83,7 @@ pub async fn profile_request(
         0
     };
 
-    let other = match database
-        .auth
-        .get_profile_by_username(username.clone())
-        .await
-    {
+    let other = match database.auth.get_profile(username.clone()).await {
         Ok(ua) => ua,
         Err(_) => return Html(DatabaseError::NotFound.to_html(database)),
     };

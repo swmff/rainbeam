@@ -11,9 +11,9 @@ pub struct TemplateBuilder(pub String);
 
 impl TemplateBuilder {
     /// Build template
-    pub fn build(mut self, values: Vec<String>) -> Self {
+    pub fn build(mut self, values: Vec<&str>) -> Self {
         for value in values {
-            self.0 = self.0.replacen("<field>", &value, 1);
+            self.0 = self.0.replacen("<field>", value, 1);
         }
 
         self
@@ -21,6 +21,7 @@ impl TemplateBuilder {
 }
 
 /// Core Citrus manager
+#[derive(Clone)]
 pub struct CitrusClient {
     pub http: HttpClient,
     pub protocol: HttpProtocol,
@@ -38,12 +39,15 @@ impl CitrusClient {
     /// Get the [`ServerRepresentation`] of a server
     ///
     /// # Arguments
-    /// * `address` - the origin of the server (ex: `https://neospring.org`)
-    pub async fn server(&self, address: String) -> Result<ServerRepresentation> {
+    /// * `hostname` - the hostname of the server (ex: `https://neospring.org`)
+    pub async fn server(&self, hostname: String) -> Result<ServerRepresentation> {
         // send request to address
         let body = match self
             .http
-            .get(format!("{address}/.well-known/citrus/citrus.toml"))
+            .get(format!(
+                "{}//{hostname}/.well-known/citrus/citrus.toml",
+                self.protocol.to_string()
+            ))
             .send()
             .await
         {
@@ -86,6 +90,7 @@ impl CitrusClient {
             Err(_) => return Err(Error::new(ErrorKind::Other, "Failed to request")),
         };
 
-        Ok(toml::from_str::<T>(&body).unwrap())
+        // we're going to assume most things return json
+        Ok(serde_json::from_str::<T>(&body).unwrap())
     }
 }

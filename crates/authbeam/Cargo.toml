@@ -28,6 +28,7 @@ regex = "1.10.5"
 reqwest = "0.12.5"
 hcaptcha = "2.4.6"
 mime_guess = "2.0.5"
+citrus = { path = "../citrus" }
 
 [lib]
 doctest = false

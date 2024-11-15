@@ -385,7 +385,7 @@ pub async fn update_tier_request(
 /// Change a profile's group
 pub async fn update_group_request(
     jar: CookieJar,
-    Path(username): Path<String>,
+    Path(id): Path<String>,
     State(database): State<Database>,
     Json(props): Json<SetProfileGroup>,
 ) -> impl IntoResponse {
@@ -435,7 +435,7 @@ pub async fn update_group_request(
     }
 
     // get other user
-    let other_user = match database.get_profile(username.clone()).await {
+    let other_user = match database.get_profile(id.clone()).await {
         Ok(ua) => ua,
         Err(e) => {
             return Json(DefaultReturn {
@@ -469,7 +469,10 @@ pub async fn update_group_request(
 
     // push update
     // TODO: try not to clone
-    if let Err(e) = database.update_profile_group(username, props.group).await {
+    if let Err(e) = database
+        .update_profile_group(other_user.id.clone(), props.group)
+        .await
+    {
         return Json(DefaultReturn {
             success: false,
             message: e.to_string(),

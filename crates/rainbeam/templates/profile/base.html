@@ -548,7 +548,7 @@ config.name }}{% endblock %} {% block head %}
                             </a>
                             <a
                                 href="#"
-                                onclick="trigger('app:copy_text', ['{{ other.id }}'])"
+                                onclick="trigger('app:copy_text', ['{{ config.citrus_id}}:{{ other.id }}'])"
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"

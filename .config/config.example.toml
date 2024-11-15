@@ -1,5 +1,7 @@
 port = 8080
+secure = true
 host = "https://example.com"
+citrus_id = "example.com"
 blocked_hosted = ["https://example.com", "https://example2.com"]
 
 name = "Rainbeam"

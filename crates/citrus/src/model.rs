@@ -87,6 +87,11 @@ impl CitrusID {
             self.0.chars().take(len).collect()
         }
     }
+
+    /// Get both the `server_id` of the ID and the `hash`
+    pub fn fields(&self) -> (String, String) {
+        (self.server_id(), self.hash())
+    }
 }
 
 /// A representation of a server (`/.well-known/citrus/citrus.toml`)

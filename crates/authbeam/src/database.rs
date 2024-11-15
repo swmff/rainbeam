@@ -4,11 +4,13 @@ use crate::model::{
 };
 use crate::model::{Group, Notification, NotificationCreate, Permission, UserFollow};
 
+use citrus::model::{CitrusID, HttpProtocol};
+use citrus::{CitrusClient, TemplateBuilder};
 use hcaptcha::Hcaptcha;
 use reqwest::Client as HttpClient;
 use serde::{Deserialize, Serialize};
 
-use databeam::{query as sqlquery, utility};
+use databeam::{query as sqlquery, utility, DefaultReturn};
 pub type Result<T> = std::result::Result<T, DatabaseError>;
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
@@ -52,9 +54,21 @@ pub struct ServerOptions {
     /// Used in embeds and links.
     #[serde(default)]
     pub host: String,
+    /// The hostname of the public server (for Citrus)
+    ///
+    /// Same as `host`, just without the protocol.
+    #[serde(default)]
+    pub citrus_id: String,
     /// A list of image hosts that are blocked
     #[serde(default)]
     pub blocked_hosts: Vec<String>,
+    /// If Citrus should use https or http
+    #[serde(default = "secure_default")]
+    pub secure: bool,
+}
+
+pub fn secure_default() -> bool {
+    true
 }
 
 impl Default for ServerOptions {
@@ -65,7 +79,9 @@ impl Default for ServerOptions {
             real_ip_header: Option::None,
             static_dir: String::new(),
             host: String::new(),
+            citrus_id: String::new(),
             blocked_hosts: Vec::new(),
+            secure: true,
         }
     }
 }
@@ -76,6 +92,7 @@ pub struct Database {
     pub base: databeam::StarterDatabase,
     pub config: ServerOptions,
     pub http: HttpClient,
+    pub citrus: CitrusClient,
 }
 
 impl Database {
@@ -88,8 +105,13 @@ impl Database {
 
         Self {
             base: base.clone(),
-            config: server_options,
             http: HttpClient::new(),
+            citrus: if server_options.secure {
+                CitrusClient::new(HttpProtocol::Https)
+            } else {
+                CitrusClient::new(HttpProtocol::Http)
+            },
+            config: server_options,
         }
     }
 
@@ -251,6 +273,43 @@ impl Database {
         } else if id.starts_with("anonymous#") | (id == "anonymous") | (id == "#") {
             let tag = Profile::anonymous_tag(&id);
             return Ok(Profile::anonymous(tag.3));
+        }
+
+        // check with citrus
+        let cid = CitrusID(id.clone()).fields();
+
+        if cid.0 != self.config.citrus_id {
+            // make sure server supports the correct schema
+            let server = match self.citrus.server(cid.0.to_string()).await {
+                Ok(s) => s,
+                Err(_) => return Err(DatabaseError::Other),
+            };
+
+            if server.get_schema("net.rainbeam.structs.Profile").is_none() {
+                return Err(DatabaseError::Other);
+            }
+
+            // get profile
+            match self
+                .citrus
+                .get::<DefaultReturn<Option<Profile>>>(
+                    server,
+                    "net.rainbeam.structs.Profile",
+                    &TemplateBuilder("/api/v0/auth/profile/<field>".to_string())
+                        .build(vec![&cid.1])
+                        .0,
+                )
+                .await
+            {
+                Ok(p) => {
+                    if let Some(p) = p.payload {
+                        return Ok(p);
+                    } else {
+                        return Err(DatabaseError::NotFound);
+                    }
+                }
+                Err(_) => return Err(DatabaseError::Other),
+            }
         }
 
         // remove circle tag
@@ -1001,7 +1060,7 @@ impl Database {
             Ok(_) => {
                 self.base
                     .cachedb
-                    .remove(format!("rbeam.auth.profile:{}", id))
+                    .remove(format!("rbeam.auth.profile:{}", ua.username))
                     .await;
 
                 self.base

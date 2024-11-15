@@ -71,7 +71,9 @@ pub async fn main() {
             real_ip_header: config.real_ip_header.clone(),
             static_dir: config.static_dir.clone(),
             host: config.host.clone(),
+            citrus_id: config.citrus_id.clone(),
             blocked_hosts: config.blocked_hosts.clone(),
+            secure: config.secure.clone(),
         },
     )
     .await;

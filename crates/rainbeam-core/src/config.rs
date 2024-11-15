@@ -85,6 +85,9 @@ pub struct Config {
     /// A global site announcement shown at the top of the page
     #[serde(default)]
     pub alert: String,
+    /// If Citrus should use https or http
+    #[serde(default = "authbeam::database::secure_default")]
+    pub secure: bool,
 }
 
 impl Default for Config {
@@ -103,6 +106,7 @@ impl Default for Config {
             migration: false,
             tiers: Tiers::default(),
             alert: String::new(),
+            secure: true,
         }
     }
 }

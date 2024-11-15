@@ -102,6 +102,7 @@ impl Profile {
     pub fn clean(&mut self) -> () {
         self.ips = Vec::new();
         self.tokens = Vec::new();
+        self.token_context = Vec::new();
         self.salt = String::new();
         self.password = String::new();
         self.metadata = ProfileMetadata::default();
