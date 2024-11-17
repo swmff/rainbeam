@@ -17,6 +17,7 @@ CREATE FULLTEXT INDEX IF NOT EXISTS "idx_tokens" ON "xprofiles" ("tokens");
 CREATE FULLTEXT INDEX IF NOT EXISTS "idx_warnings" ON "xwarnings" ("recipient");
 CREATE FULLTEXT INDEX IF NOT EXISTS "idx_reactions" ON "xreactions" ("user");
 CREATE FULLTEXT INDEX IF NOT EXISTS "idx_reactions_a" ON "xreactions" ("asset");
+CREATE FULLTEXT INDEX IF NOT EXISTS "idx_reactions_b" ON "xreactions" ("user", "asset");
 CREATE FULLTEXT INDEX IF NOT EXISTS "idx_memberships" ON "xcircle_memberships" ("circle");
 CREATE FULLTEXT INDEX IF NOT EXISTS "idx_my_memberships" ON "xcircle_memberships" ("user");
 CREATE FULLTEXT INDEX IF NOT EXISTS "idx_circles" ON "xcircles" ("id");
