@@ -34,8 +34,6 @@
             data-turbo-permanent
         ></script>
 
-        <script src="https://unpkg.com/@twemoji/api@15.1.0/dist/twemoji.min.js"></script>
-
         <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
         <!-- <script
             src="https://unpkg.com/@hotwired/turbo@8.0.5/dist/turbo.es2017-esm.js"
@@ -48,7 +46,7 @@
             globalThis.ns_verbose = false;
             globalThis.ns_config = {
                 root: "/static/build/js/",
-                version: "1.15.5",
+                version: "1.16.0",
                 verbose: globalThis.ns_verbose,
             };
 
@@ -99,19 +97,7 @@
             class="markdown-alert-caution flex flex-collapse items-center justify-center gap-4"
             style="border-radius: 0 !important; margin-bottom: 0 !important"
         >
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 16 16"
-                width="16"
-                height="16"
-                aria-label="Banned symbol"
-                class="icon"
-                style="flex: 0 0 auto"
-            >
-                <path
-                    d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM3.965 13.096a6.5 6.5 0 0 0 9.131-9.131ZM1.5 8a6.474 6.474 0 0 0 1.404 4.035l9.131-9.131A6.499 6.499 0 0 0 1.5 8Z"
-                ></path>
-            </svg>
+            <i class="icon" data-lucide="shield-ban"></i>
             <span>
                 Your account has been banned and is currently unusable. Please
                 do not register another account while banned.
@@ -135,24 +121,7 @@
             style="border-radius: 0 !important; margin-bottom: 0 !important"
             id="annc_banner"
         >
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 16 16"
-                width="16"
-                height="16"
-                aria-label="Megaphone symbol"
-                class="icon"
-            >
-                <path
-                    d="M3.25 9a.75.75 0 0 1 .75.75c0 2.142.456 3.828.733 4.653a.122.122 0 0 0 .05.064.212.212 0 0 0 .117.033h1.31c.085 0 .18-.042.258-.152a.45.45 0 0 0 .075-.366A16.743 16.743 0 0 1 6 9.75a.75.75 0 0 1 1.5 0c0 1.588.25 2.926.494 3.85.293 1.113-.504 2.4-1.783 2.4H4.9c-.686 0-1.35-.41-1.589-1.12A16.4 16.4 0 0 1 2.5 9.75.75.75 0 0 1 3.25 9Z"
-                ></path>
-                <path
-                    d="M0 6a4 4 0 0 1 4-4h2.75a.75.75 0 0 1 .75.75v6.5a.75.75 0 0 1-.75.75H4a4 4 0 0 1-4-4Zm4-2.5a2.5 2.5 0 1 0 0 5h2v-5Z"
-                ></path>
-                <path
-                    d="M15.59.082A.75.75 0 0 1 16 .75v10.5a.75.75 0 0 1-1.189.608l-.002-.001h.001l-.014-.01a5.775 5.775 0 0 0-.422-.25 10.63 10.63 0 0 0-1.469-.64C11.576 10.484 9.536 10 6.75 10a.75.75 0 0 1 0-1.5c2.964 0 5.174.516 6.658 1.043.423.151.787.302 1.092.443V2.014c-.305.14-.669.292-1.092.443C11.924 2.984 9.713 3.5 6.75 3.5a.75.75 0 0 1 0-1.5c2.786 0 4.826-.484 6.155-.957.665-.236 1.154-.47 1.47-.64.144-.077.284-.161.421-.25l.014-.01a.75.75 0 0 1 .78-.061Z"
-                ></path>
-            </svg>
+            <i class="icon" data-lucide="megaphone"></i>
             <span>{{ shared::ui::render_markdown(config.alert)|safe }}</span>
         </div>
 
@@ -186,23 +155,19 @@
             <div class="content_container">
                 <div class="flex gap-1 nav_side">
                     <a class="button desktop title" href="/">
-                        <b>{{ config.name }}</b>
+                        <b>
+                            <img
+                                src="/static/images/ui/logo.svg"
+                                alt="{{ config.name }}"
+                                width="32px"
+                                height="32px"
+                            />
+                        </b>
                     </a>
 
                     {% if profile.is_none() %}
                     <a class="button mobile" href="/">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            width="18"
-                            height="18"
-                            aria-label="Home symbol"
-                            class="icon"
-                        >
-                            <path
-                                d="M12.97 2.59a1.5 1.5 0 0 0-1.94 0l-7.5 6.363A1.5 1.5 0 0 0 3 10.097V19.5A1.5 1.5 0 0 0 4.5 21h4.75a.75.75 0 0 0 .75-.75V14h4v6.25c0 .414.336.75.75.75h4.75a1.5 1.5 0 0 0 1.5-1.5v-9.403a1.5 1.5 0 0 0-.53-1.144l-7.5-6.363Z"
-                            ></path>
-                        </svg>
+                        <i class="icon" data-lucide="house"></i>
                         Home
                     </a>
                     {% endif %} {% block nav_left %}{% endblock %}
@@ -216,18 +181,7 @@
                         title="Create a post"
                         href="/intents/post"
                     >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 16 16"
-                            width="16"
-                            height="16"
-                            aria-label="Pencil symbol"
-                            class="icon"
-                        >
-                            <path
-                                d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.081-.286.235-.547.445-.758l8.61-8.61Zm.176 4.823L9.75 4.81l-6.286 6.287a.253.253 0 0 0-.064.108l-.558 1.953 1.953-.558a.253.253 0 0 0 .108-.064Zm1.238-3.763a.25.25 0 0 0-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 0 0 0-.354Z"
-                            ></path>
-                        </svg>
+                        <i class="icon" data-lucide="square-pen"></i>
                     </a>
                     {% endif %}
 
@@ -248,18 +202,10 @@
                             />
                             {% endif %}
 
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 16 16"
-                                width="16"
-                                height="16"
-                                aria-label="Chevron down symbol"
+                            <i
                                 class="icon dropdown-arrow"
-                            >
-                                <path
-                                    d="M12.78 5.22a.749.749 0 0 1 0 1.06l-4.25 4.25a.749.749 0 0 1-1.06 0L3.22 6.28a.749.749 0 1 1 1.06-1.06L8 8.939l3.72-3.719a.749.749 0 0 1 1.06 0Z"
-                                ></path>
-                            </svg>
+                                data-lucide="chevron-down"
+                            ></i>
                         </button>
 
                         <div class="inner shadow-md" exclude="dropdown">
@@ -267,68 +213,30 @@
                             <b class="title">{{ profile.username }}</b>
 
                             <a href="/@{{ profile.username }}">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 16 16"
-                                    width="16"
-                                    height="16"
-                                    aria-label="Person symbol"
+                                <i
                                     class="icon"
-                                >
-                                    <path
-                                        d="M10.561 8.073a6.005 6.005 0 0 1 3.432 5.142.75.75 0 1 1-1.498.07 4.5 4.5 0 0 0-8.99 0 .75.75 0 0 1-1.498-.07 6.004 6.004 0 0 1 3.431-5.142 3.999 3.999 0 1 1 5.123 0ZM10.5 5a2.5 2.5 0 1 0-5 0 2.5 2.5 0 0 0 5 0Z"
-                                    ></path>
-                                </svg>
+                                    data-lucide="circle-user-round"
+                                ></i>
                                 Show profile
                             </a>
 
                             <a href="/settings">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 16 16"
-                                    width="16"
-                                    height="16"
-                                    aria-label="Settings symbol"
-                                    class="icon"
-                                >
-                                    <path
-                                        d="M8 0a8.2 8.2 0 0 1 .701.031C9.444.095 9.99.645 10.16 1.29l.288 1.107c.018.066.079.158.212.224.231.114.454.243.668.386.123.082.233.09.299.071l1.103-.303c.644-.176 1.392.021 1.82.63.27.385.506.792.704 1.218.315.675.111 1.422-.364 1.891l-.814.806c-.049.048-.098.147-.088.294.016.257.016.515 0 .772-.01.147.038.246.088.294l.814.806c.475.469.679 1.216.364 1.891a7.977 7.977 0 0 1-.704 1.217c-.428.61-1.176.807-1.82.63l-1.102-.302c-.067-.019-.177-.011-.3.071a5.909 5.909 0 0 1-.668.386c-.133.066-.194.158-.211.224l-.29 1.106c-.168.646-.715 1.196-1.458 1.26a8.006 8.006 0 0 1-1.402 0c-.743-.064-1.289-.614-1.458-1.26l-.289-1.106c-.018-.066-.079-.158-.212-.224a5.738 5.738 0 0 1-.668-.386c-.123-.082-.233-.09-.299-.071l-1.103.303c-.644.176-1.392-.021-1.82-.63a8.12 8.12 0 0 1-.704-1.218c-.315-.675-.111-1.422.363-1.891l.815-.806c.05-.048.098-.147.088-.294a6.214 6.214 0 0 1 0-.772c.01-.147-.038-.246-.088-.294l-.815-.806C.635 6.045.431 5.298.746 4.623a7.92 7.92 0 0 1 .704-1.217c.428-.61 1.176-.807 1.82-.63l1.102.302c.067.019.177.011.3-.071.214-.143.437-.272.668-.386.133-.066.194-.158.211-.224l.29-1.106C6.009.645 6.556.095 7.299.03 7.53.01 7.764 0 8 0Zm-.571 1.525c-.036.003-.108.036-.137.146l-.289 1.105c-.147.561-.549.967-.998 1.189-.173.086-.34.183-.5.29-.417.278-.97.423-1.529.27l-1.103-.303c-.109-.03-.175.016-.195.045-.22.312-.412.644-.573.99-.014.031-.021.11.059.19l.815.806c.411.406.562.957.53 1.456a4.709 4.709 0 0 0 0 .582c.032.499-.119 1.05-.53 1.456l-.815.806c-.081.08-.073.159-.059.19.162.346.353.677.573.989.02.03.085.076.195.046l1.102-.303c.56-.153 1.113-.008 1.53.27.161.107.328.204.501.29.447.222.85.629.997 1.189l.289 1.105c.029.109.101.143.137.146a6.6 6.6 0 0 0 1.142 0c.036-.003.108-.036.137-.146l.289-1.105c.147-.561.549-.967.998-1.189.173-.086.34-.183.5-.29.417-.278.97-.423 1.529-.27l1.103.303c.109.029.175-.016.195-.045.22-.313.411-.644.573-.99.014-.031.021-.11-.059-.19l-.815-.806c-.411-.406-.562-.957-.53-1.456a4.709 4.709 0 0 0 0-.582c-.032-.499.119-1.05.53-1.456l.815-.806c.081-.08.073-.159.059-.19a6.464 6.464 0 0 0-.573-.989c-.02-.03-.085-.076-.195-.046l-1.102.303c-.56.153-1.113.008-1.53-.27a4.44 4.44 0 0 0-.501-.29c-.447-.222-.85-.629-.997-1.189l-.289-1.105c-.029-.11-.101-.143-.137-.146a6.6 6.6 0 0 0-1.142 0ZM11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM9.5 8a1.5 1.5 0 1 0-3.001.001A1.5 1.5 0 0 0 9.5 8Z"
-                                    ></path>
-                                </svg>
+                                <i class="icon" data-lucide="settings"></i>
                                 Settings
                             </a>
 
                             <b class="title">Services</b>
 
                             <a href="/chats">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 16 16"
-                                    width="16"
-                                    height="16"
-                                    aria-label="Discussion symbol"
+                                <i
                                     class="icon"
-                                >
-                                    <path
-                                        d="M1.75 1h8.5c.966 0 1.75.784 1.75 1.75v5.5A1.75 1.75 0 0 1 10.25 10H7.061l-2.574 2.573A1.458 1.458 0 0 1 2 11.543V10h-.25A1.75 1.75 0 0 1 0 8.25v-5.5C0 1.784.784 1 1.75 1ZM1.5 2.75v5.5c0 .138.112.25.25.25h1a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h3.5a.25.25 0 0 0 .25-.25v-5.5a.25.25 0 0 0-.25-.25h-8.5a.25.25 0 0 0-.25.25Zm13 2a.25.25 0 0 0-.25-.25h-.5a.75.75 0 0 1 0-1.5h.5c.966 0 1.75.784 1.75 1.75v5.5A1.75 1.75 0 0 1 14.25 12H14v1.543a1.458 1.458 0 0 1-2.487 1.03L9.22 12.28a.749.749 0 0 1 .326-1.275.749.749 0 0 1 .734.215l2.22 2.22v-2.19a.75.75 0 0 1 .75-.75h1a.25.25 0 0 0 .25-.25Z"
-                                    ></path>
-                                </svg>
+                                    data-lucide="message-circle-more"
+                                ></i>
                                 Chats
                             </a>
 
                             <a href="/circles">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 16 16"
-                                    width="16"
-                                    height="16"
-                                    aria-label="Organization symbol"
-                                    class="icon"
-                                >
-                                    <path
-                                        d="M1.75 16A1.75 1.75 0 0 1 0 14.25V1.75C0 .784.784 0 1.75 0h8.5C11.216 0 12 .784 12 1.75v12.5c0 .085-.006.168-.018.25h2.268a.25.25 0 0 0 .25-.25V8.285a.25.25 0 0 0-.111-.208l-1.055-.703a.749.749 0 1 1 .832-1.248l1.055.703c.487.325.779.871.779 1.456v5.965A1.75 1.75 0 0 1 14.25 16h-3.5a.766.766 0 0 1-.197-.026c-.099.017-.2.026-.303.026h-3a.75.75 0 0 1-.75-.75V14h-1v1.25a.75.75 0 0 1-.75.75Zm-.25-1.75c0 .138.112.25.25.25H4v-1.25a.75.75 0 0 1 .75-.75h2.5a.75.75 0 0 1 .75.75v1.25h2.25a.25.25 0 0 0 .25-.25V1.75a.25.25 0 0 0-.25-.25h-8.5a.25.25 0 0 0-.25.25ZM3.75 6h.5a.75.75 0 0 1 0 1.5h-.5a.75.75 0 0 1 0-1.5ZM3 3.75A.75.75 0 0 1 3.75 3h.5a.75.75 0 0 1 0 1.5h-.5A.75.75 0 0 1 3 3.75Zm4 3A.75.75 0 0 1 7.75 6h.5a.75.75 0 0 1 0 1.5h-.5A.75.75 0 0 1 7 6.75ZM7.75 3h.5a.75.75 0 0 1 0 1.5h-.5a.75.75 0 0 1 0-1.5ZM3 9.75A.75.75 0 0 1 3.75 9h.5a.75.75 0 0 1 0 1.5h-.5A.75.75 0 0 1 3 9.75ZM7.75 9h.5a.75.75 0 0 1 0 1.5h-.5a.75.75 0 0 1 0-1.5Z"
-                                    ></path>
-                                </svg>
+                                <i class="icon" data-lucide="users-round"></i>
                                 Circles
                             </a>
 
@@ -338,18 +246,7 @@
                                 href="/@{{ profile.username }}/friends/requests"
                                 title="My friends"
                             >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 16 16"
-                                    width="16"
-                                    height="16"
-                                    aria-label="People symbol"
-                                    class="icon"
-                                >
-                                    <path
-                                        d="M2 5.5a3.5 3.5 0 1 1 5.898 2.549 5.508 5.508 0 0 1 3.034 4.084.75.75 0 1 1-1.482.235 4 4 0 0 0-7.9 0 .75.75 0 0 1-1.482-.236A5.507 5.507 0 0 1 3.102 8.05 3.493 3.493 0 0 1 2 5.5ZM11 4a3.001 3.001 0 0 1 2.22 5.018 5.01 5.01 0 0 1 2.56 3.012.749.749 0 0 1-.885.954.752.752 0 0 1-.549-.514 3.507 3.507 0 0 0-2.522-2.372.75.75 0 0 1-.574-.73v-.352a.75.75 0 0 1 .416-.672A1.5 1.5 0 0 0 11 5.5.75.75 0 0 1 11 4Zm-5.5-.5a2 2 0 1 0-.001 3.999A2 2 0 0 0 5.5 3.5Z"
-                                    ></path>
-                                </svg>
+                                <i class="icon" data-lucide="book-user"></i>
                                 Friends
                             </a>
 
@@ -357,52 +254,25 @@
                                 href="/@{{ profile.username }}/friends/requests"
                                 title="My friend requests"
                             >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 16 16"
-                                    width="16"
-                                    height="16"
-                                    aria-label="Person plus symbol"
+                                <i
                                     class="icon"
-                                >
-                                    <path
-                                        d="M7.9 8.548h-.001a5.528 5.528 0 0 1 3.1 4.659.75.75 0 1 1-1.498.086A4.01 4.01 0 0 0 5.5 9.5a4.01 4.01 0 0 0-4.001 3.793.75.75 0 1 1-1.498-.085 5.527 5.527 0 0 1 3.1-4.66 3.5 3.5 0 1 1 4.799 0ZM13.25 0a.75.75 0 0 1 .75.75V2h1.25a.75.75 0 0 1 0 1.5H14v1.25a.75.75 0 0 1-1.5 0V3.5h-1.25a.75.75 0 0 1 0-1.5h1.25V.75a.75.75 0 0 1 .75-.75ZM5.5 4a2 2 0 1 0-.001 3.999A2 2 0 0 0 5.5 4Z"
-                                    ></path>
-                                </svg>
+                                    data-lucide="user-round-plus"
+                                ></i>
                                 Requests
                             </a>
                             {% else %}
                             <b class="title">Account</b>
 
                             <a href="/login" data-turbo="false">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 16 16"
-                                    width="16"
-                                    height="16"
-                                    aria-label="Login symbol"
-                                    class="icon"
-                                >
-                                    <path
-                                        d="M2 2.75C2 1.784 2.784 1 3.75 1h2.5a.75.75 0 0 1 0 1.5h-2.5a.25.25 0 0 0-.25.25v10.5c0 .138.112.25.25.25h2.5a.75.75 0 0 1 0 1.5h-2.5A1.75 1.75 0 0 1 2 13.25Zm6.56 4.5h5.69a.75.75 0 0 1 0 1.5H8.56l1.97 1.97a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L6.22 8.53a.75.75 0 0 1 0-1.06l3.25-3.25a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734Z"
-                                    ></path>
-                                </svg>
+                                <i class="icon" data-lucide="log-in"></i>
                                 Login
                             </a>
 
                             <a href="/sign_up" data-turbo="false">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 16 16"
-                                    width="16"
-                                    height="16"
-                                    aria-label="Person plus symbol"
+                                <i
                                     class="icon"
-                                >
-                                    <path
-                                        d="M7.9 8.548h-.001a5.528 5.528 0 0 1 3.1 4.659.75.75 0 1 1-1.498.086A4.01 4.01 0 0 0 5.5 9.5a4.01 4.01 0 0 0-4.001 3.793.75.75 0 1 1-1.498-.085 5.527 5.527 0 0 1 3.1-4.66 3.5 3.5 0 1 1 4.799 0ZM13.25 0a.75.75 0 0 1 .75.75V2h1.25a.75.75 0 0 1 0 1.5H14v1.25a.75.75 0 0 1-1.5 0V3.5h-1.25a.75.75 0 0 1 0-1.5h1.25V.75a.75.75 0 0 1 .75-.75ZM5.5 4a2 2 0 1 0-.001 3.999A2 2 0 0 0 5.5 4Z"
-                                    ></path>
-                                </svg>
+                                    data-lucide="user-round-plus"
+                                ></i>
                                 Sign Up
                             </a>
                             {% endif %}
@@ -411,51 +281,18 @@
                             <b class="title">{{ config.name }}</b>
 
                             <a href="/site/about">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 16 16"
-                                    width="16"
-                                    height="16"
-                                    aria-label="Info symbol"
-                                    class="icon"
-                                >
-                                    <path
-                                        d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"
-                                    ></path>
-                                </svg>
+                                <i class="icon" data-lucide="info"></i>
                                 About
                             </a>
 
                             <a href="https://swmff.github.io/rainbeam/">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 16 16"
-                                    width="16"
-                                    height="16"
-                                    aria-label="Book symbol"
-                                    class="icon"
-                                >
-                                    <path
-                                        d="M0 1.75A.75.75 0 0 1 .75 1h4.253c1.227 0 2.317.59 3 1.501A3.743 3.743 0 0 1 11.006 1h4.245a.75.75 0 0 1 .75.75v10.5a.75.75 0 0 1-.75.75h-4.507a2.25 2.25 0 0 0-1.591.659l-.622.621a.75.75 0 0 1-1.06 0l-.622-.621A2.25 2.25 0 0 0 5.258 13H.75a.75.75 0 0 1-.75-.75Zm7.251 10.324.004-5.073-.002-2.253A2.25 2.25 0 0 0 5.003 2.5H1.5v9h3.757a3.75 3.75 0 0 1 1.994.574ZM8.755 4.75l-.004 7.322a3.752 3.752 0 0 1 1.992-.572H14.5v-9h-3.495a2.25 2.25 0 0 0-2.25 2.25Z"
-                                    ></path>
-                                </svg>
+                                <i class="icon" data-lucide="book"></i>
                                 Reference
                             </a>
 
                             <!-- ... -->
                             <a href="/search">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 16 16"
-                                    width="16"
-                                    height="16"
-                                    aria-label="Search symbol"
-                                    class="icon"
-                                >
-                                    <path
-                                        d="M10.68 11.74a6 6 0 0 1-7.922-8.982 6 6 0 0 1 8.982 7.922l3.04 3.04a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215ZM11.5 7a4.499 4.499 0 1 0-8.997 0A4.499 4.499 0 0 0 11.5 7Z"
-                                    ></path>
-                                </svg>
+                                <i class="icon" data-lucide="search"></i>
                                 Search
                             </a>
 
@@ -466,18 +303,7 @@
                                 onclick="trigger('app:logout')"
                                 class="red"
                             >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 16 16"
-                                    width="16"
-                                    height="16"
-                                    aria-label="Logout symbol"
-                                    class="icon"
-                                >
-                                    <path
-                                        d="M2 2.75C2 1.784 2.784 1 3.75 1h2.5a.75.75 0 0 1 0 1.5h-2.5a.25.25 0 0 0-.25.25v10.5c0 .138.112.25.25.25h2.5a.75.75 0 0 1 0 1.5h-2.5A1.75 1.75 0 0 1 2 13.25Zm10.44 4.5-1.97-1.97a.749.749 0 0 1 .326-1.275.749.749 0 0 1 .734.215l3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.749.749 0 0 1-1.275-.326.749.749 0 0 1 .215-.734l1.97-1.97H6.75a.75.75 0 0 1 0-1.5Z"
-                                    ></path>
-                                </svg>
+                                <i class="icon" data-lucide="log-out"></i>
                                 Sign out
                             </a>
                             {% endif %}
@@ -503,18 +329,7 @@
             class="button primary floating mobile"
             title="Back to top"
         >
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                width="24"
-                height="24"
-                aria-label="Upwards chevron"
-                class="icon"
-            >
-                <path
-                    d="M18.78 15.78a.749.749 0 0 1-1.06 0L12 10.061 6.28 15.78a.749.749 0 1 1-1.06-1.06l6.25-6.25a.749.749 0 0 1 1.06 0l6.25 6.25a.749.749 0 0 1 0 1.06Z"
-                ></path>
-            </svg>
+            <i class="icon" data-lucide="chevron-up"></i>
         </a>
 
         <script data-turbo-eval="false">
@@ -538,6 +353,9 @@
             // load classes
             require("PartialComponent", () => {});
         </script>
+
+        <script src="https://unpkg.com/lucide@latest"></script>
+        <script src="https://unpkg.com/@twemoji/api@15.1.0/dist/twemoji.min.js"></script>
 
         <script>
             (() => {
@@ -574,6 +392,7 @@
                 app["hook.partial_embeds"]();
 
                 twemoji.parse(document.body);
+                lucide.createIcons();
             })();
         </script>
 
@@ -603,6 +422,81 @@
                         Cancel
                     </button>
                 </div>
+            </div>
+        </dialog>
+
+        <dialog id="web_api_prompt">
+            <div class="inner flex flex-col gap-2">
+                <form
+                    class="flex gap-2 flex-col"
+                    onsubmit="event.preventDefault()"
+                >
+                    <label for="prompt" id="web_api_prompt:msg"></label>
+                    <input id="prompt" name="prompt" />
+
+                    <div class="flex justify-between">
+                        <div></div>
+
+                        <div class="flex gap-2">
+                            <button
+                                title="Search"
+                                class="primary bold circle"
+                                onclick="globalThis.web_api_prompt_submit(document.getElementById('prompt').value); document.getElementById('prompt').value = ''"
+                                type="buton"
+                            >
+                                <i class="icon" data-lucide="check"></i>
+                                Ok
+                            </button>
+
+                            <button
+                                class="bold red camo circle"
+                                onclick="globalThis.web_api_prompt_submit('')"
+                                type="button"
+                                title="Close"
+                            >
+                                <i class="icon" data-lucide="x"></i>
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </dialog>
+
+        <dialog id="web_api_confirm">
+            <div class="inner flex flex-col gap-2">
+                <form
+                    class="flex gap-2 flex-col"
+                    onsubmit="event.preventDefault()"
+                >
+                    <label id="web_api_confirm:msg"></label>
+
+                    <div class="flex justify-between">
+                        <div></div>
+
+                        <div class="flex gap-2">
+                            <button
+                                title="Search"
+                                class="primary bold circle"
+                                onclick="globalThis.web_api_confirm_submit(true); document.getElementById('prompt').value = ''"
+                                type="buton"
+                            >
+                                <i class="icon" data-lucide="check"></i>
+                                Yes
+                            </button>
+
+                            <button
+                                class="bold red camo circle"
+                                onclick="globalThis.web_api_confirm_submit(false)"
+                                type="button"
+                                title="Close"
+                            >
+                                <i class="icon" data-lucide="x"></i>
+                                No
+                            </button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </dialog>
     </body>

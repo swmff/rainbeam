@@ -1,8 +1,12 @@
 (() => {
     const self = reg_ns("account_warnings");
 
-    self.define("delete", function (_, id) {
-        if (!confirm("Are you sure you want to do this?")) {
+    self.define("delete", async function (_, id) {
+        if (
+            !(await trigger("app:confirm", [
+                "Are you sure you want to do this?",
+            ]))
+        ) {
             return;
         }
 

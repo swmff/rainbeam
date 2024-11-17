@@ -62,8 +62,12 @@
         });
     });
 
-    self.define("delete", function ({ $, app }, id) {
-        if (!confirm("Are you sure you want to do this?")) {
+    self.define("delete", async function ({ $, app }, id) {
+        if (
+            !(await trigger("app:confirm", [
+                "Are you sure you want to do this?",
+            ]))
+        ) {
             return;
         }
 
@@ -84,8 +88,12 @@
             });
     });
 
-    self.define("ipblock", function ({ $, app }, id) {
-        if (!confirm("Are you sure you want to do this?")) {
+    self.define("ipblock", async function ({ $, app }, id) {
+        if (
+            !(await trigger("app:confirm", [
+                "Are you sure you want to do this?",
+            ]))
+        ) {
             return;
         }
 

@@ -189,6 +189,7 @@
                     {% let do_not_render_question = false %}
                     {% let show_comments = true %}
                     {% let do_render_nested = true %}
+                    {% let is_liked = reactions.contains(response.1.id) %}
                     {% include "../components/response.html" %}
                 {% endfor %}
             {% endif %}

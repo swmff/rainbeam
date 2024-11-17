@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use ammonia::Builder;
 use askama_axum::Template;
 use axum::extract::{Path, Query};
@@ -5,7 +7,7 @@ use axum::response::{IntoResponse, Redirect};
 use axum::{extract::State, response::Html};
 use axum_extra::extract::CookieJar;
 
-use authbeam::model::{Permission, Profile};
+use authbeam::model::{Permission, Profile, RelationshipStatus};
 
 use crate::config::Config;
 use crate::database::Database;
@@ -174,6 +176,8 @@ struct ProfileTemplate {
     notifs: usize,
     circle: Circle,
     responses: Vec<FullResponse>,
+    reactions: Vec<String>,
+    relationships: HashMap<String, RelationshipStatus>,
     member_count: usize,
     metadata: String,
     pinned: Option<Vec<FullResponse>>,
@@ -290,6 +294,62 @@ pub async fn profile_request(
         false
     };
 
+    // build relationships list
+    let mut relationships: HashMap<String, RelationshipStatus> = HashMap::new();
+
+    if let Some(ref ua) = auth_user {
+        for response in &responses {
+            if relationships.contains_key(&response.1.author.id) {
+                continue;
+            }
+
+            if is_helper {
+                // make sure staff can view your responses
+                relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
+                continue;
+            }
+
+            if response.1.author.id == ua.id {
+                // make sure we can view our own responses
+                relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
+                continue;
+            };
+
+            relationships.insert(
+                response.1.author.id.clone(),
+                database
+                    .auth
+                    .get_user_relationship(response.1.author.id.clone(), ua.id.clone())
+                    .await
+                    .0,
+            );
+        }
+    } else {
+        for response in &responses {
+            // no user, no relationships
+            if relationships.contains_key(&response.1.author.id) {
+                continue;
+            }
+
+            relationships.insert(response.1.author.id.clone(), RelationshipStatus::Unknown);
+        }
+    }
+
+    // collect all responses we've reacted to
+    let mut reactions: Vec<String> = Vec::new();
+
+    if let Some(ref ua) = auth_user {
+        for response in &responses {
+            if let Ok(_) = database
+                .get_reaction(ua.id.clone(), response.1.id.clone())
+                .await
+            {
+                reactions.push(response.1.id.clone())
+            }
+        }
+    }
+
+    // ...
     Html(
         ProfileTemplate {
             config: database.server_options.clone(),
@@ -298,6 +358,8 @@ pub async fn profile_request(
             notifs,
             circle: circle.clone(),
             responses,
+            reactions,
+            relationships,
             member_count: database
                 .get_circle_memberships_count(circle.id.clone())
                 .await,
@@ -322,6 +384,8 @@ struct PartialProfileTemplate {
     profile: Option<Profile>,
     other: Circle,
     responses: Vec<FullResponse>,
+    reactions: Vec<String>,
+    relationships: HashMap<String, RelationshipStatus>,
     // ...
     is_powerful: bool, // at least "manager"
     is_helper: bool,   // at least "helper"
@@ -372,12 +436,70 @@ pub async fn partial_profile_request(
         false
     };
 
+    // build relationships list
+    let mut relationships: HashMap<String, RelationshipStatus> = HashMap::new();
+
+    if let Some(ref ua) = auth_user {
+        for response in &responses {
+            if relationships.contains_key(&response.1.author.id) {
+                continue;
+            }
+
+            if is_helper {
+                // make sure staff can view your responses
+                relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
+                continue;
+            }
+
+            if response.1.author.id == ua.id {
+                // make sure we can view our own responses
+                relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
+                continue;
+            };
+
+            relationships.insert(
+                response.1.author.id.clone(),
+                database
+                    .auth
+                    .get_user_relationship(response.1.author.id.clone(), ua.id.clone())
+                    .await
+                    .0,
+            );
+        }
+    } else {
+        for response in &responses {
+            // no user, no relationships
+            if relationships.contains_key(&response.1.author.id) {
+                continue;
+            }
+
+            relationships.insert(response.1.author.id.clone(), RelationshipStatus::Unknown);
+        }
+    }
+
+    // collect all responses we've reacted to
+    let mut reactions: Vec<String> = Vec::new();
+
+    if let Some(ref ua) = auth_user {
+        for response in &responses {
+            if let Ok(_) = database
+                .get_reaction(ua.id.clone(), response.1.id.clone())
+                .await
+            {
+                reactions.push(response.1.id.clone())
+            }
+        }
+    }
+
+    // ...
     Html(
         PartialProfileTemplate {
             config: database.server_options.clone(),
             profile: auth_user.clone(),
             other: circle.clone(),
             responses,
+            reactions,
+            relationships,
             // ...
             is_powerful,
             is_helper,

@@ -79,6 +79,7 @@ struct TimelineTemplate {
     notifs: usize,
     responses: Vec<FullResponse>,
     relationships: HashMap<String, RelationshipStatus>,
+    reactions: Vec<String>,
     friends: Vec<(Profile, Profile)>,
     is_powerful: bool,
     is_helper: bool,
@@ -196,6 +197,20 @@ pub async fn homepage_request(
             }
         }
 
+        // collect all responses we've reacted to
+        let mut reactions: Vec<String> = Vec::new();
+
+        if let Some(ref ua) = auth_user {
+            for response in &responses {
+                if let Ok(_) = database
+                    .get_reaction(ua.id.clone(), response.1.id.clone())
+                    .await
+                {
+                    reactions.push(response.1.id.clone())
+                }
+            }
+        }
+
         // ...
         return Html(
             TimelineTemplate {
@@ -205,6 +220,7 @@ pub async fn homepage_request(
                 notifs,
                 responses,
                 relationships,
+                reactions,
                 friends: database
                     .auth
                     .get_user_participating_relationships_of_status(
@@ -239,6 +255,7 @@ struct PartialTimelineTemplate {
     profile: Option<Profile>,
     responses: Vec<FullResponse>,
     relationships: HashMap<String, RelationshipStatus>,
+    reactions: Vec<String>,
     is_powerful: bool,
     is_helper: bool,
 }
@@ -312,6 +329,18 @@ pub async fn partial_timeline_request(
         );
     }
 
+    // collect all responses we've reacted to
+    let mut reactions: Vec<String> = Vec::new();
+
+    for response in &responses {
+        if let Ok(_) = database
+            .get_reaction(auth_user.id.clone(), response.1.id.clone())
+            .await
+        {
+            reactions.push(response.1.id.clone())
+        }
+    }
+
     // ...
     return Html(
         PartialTimelineTemplate {
@@ -319,6 +348,7 @@ pub async fn partial_timeline_request(
             profile: Some(auth_user.clone()),
             responses,
             relationships,
+            reactions,
             is_powerful,
             is_helper,
         }
@@ -572,6 +602,7 @@ struct QuestionTemplate {
     question: Question,
     responses: Vec<FullResponse>,
     reactions: Vec<Reaction>,
+    response_reactions: Vec<String>,
     already_responded: bool,
     is_powerful: bool,
     is_helper: bool,
@@ -641,6 +672,21 @@ pub async fn question_request(
         Err(e) => return Html(e.to_html(database)),
     };
 
+    // collect all responses we've reacted to
+    let mut response_reactions: Vec<String> = Vec::new();
+
+    if let Some(ref ua) = auth_user {
+        for response in &responses {
+            if let Ok(_) = database
+                .get_reaction(ua.id.clone(), response.1.id.clone())
+                .await
+            {
+                response_reactions.push(response.1.id.clone())
+            }
+        }
+    }
+
+    // ...
     Html(
         QuestionTemplate {
             config: database.server_options.clone(),
@@ -660,6 +706,7 @@ pub async fn question_request(
             is_powerful,
             is_helper,
             reactions,
+            response_reactions,
         }
         .render()
         .unwrap(),
@@ -675,6 +722,7 @@ struct PublicPostsTemplate {
     notifs: usize,
     page: i32,
     responses: Vec<FullResponse>,
+    reactions: Vec<String>,
     relationships: HashMap<String, RelationshipStatus>,
     is_powerful: bool,
     is_helper: bool,
@@ -800,6 +848,20 @@ pub async fn public_posts_timeline_request(
         }
     }
 
+    // collect all responses we've reacted to
+    let mut reactions: Vec<String> = Vec::new();
+
+    if let Some(ref ua) = auth_user {
+        for response in &responses {
+            if let Ok(_) = database
+                .get_reaction(ua.id.clone(), response.1.id.clone())
+                .await
+            {
+                reactions.push(response.1.id.clone())
+            }
+        }
+    }
+
     // ...
     Html(
         PublicPostsTemplate {
@@ -809,6 +871,7 @@ pub async fn public_posts_timeline_request(
             notifs,
             page: query.page,
             responses,
+            reactions,
             relationships,
             is_powerful,
             is_helper,
@@ -825,6 +888,7 @@ struct PartialPostsTemplate {
     profile: Option<Profile>,
     responses: Vec<FullResponse>,
     relationships: HashMap<String, RelationshipStatus>,
+    reactions: Vec<String>,
     is_powerful: bool,
     is_helper: bool,
 }
@@ -923,12 +987,27 @@ pub async fn partial_posts_request(
         }
     }
 
+    // collect all responses we've reacted to
+    let mut reactions: Vec<String> = Vec::new();
+
+    if let Some(ref ua) = auth_user {
+        for response in &responses {
+            if let Ok(_) = database
+                .get_reaction(ua.id.clone(), response.1.id.clone())
+                .await
+            {
+                reactions.push(response.1.id.clone())
+            }
+        }
+    }
+
     // ...
     return Html(
         PartialPostsTemplate {
             config: database.server_options,
             profile: auth_user,
             responses,
+            reactions,
             relationships,
             is_powerful,
             is_helper,
@@ -948,6 +1027,7 @@ struct FollowingPostsTemplate {
     page: i32,
     responses: Vec<FullResponse>,
     relationships: HashMap<String, RelationshipStatus>,
+    reactions: Vec<String>,
     is_powerful: bool,
     is_helper: bool,
 }
@@ -1030,6 +1110,19 @@ pub async fn following_posts_timeline_request(
         group.permissions.contains(&Permission::Manager)
     };
 
+    // collect all responses we've reacted to
+    let mut reactions: Vec<String> = Vec::new();
+
+    for response in &responses {
+        if let Ok(_) = database
+            .get_reaction(auth_user.id.clone(), response.1.id.clone())
+            .await
+        {
+            reactions.push(response.1.id.clone())
+        }
+    }
+
+    // ...
     Html(
         FollowingPostsTemplate {
             config: database.server_options.clone(),
@@ -1038,6 +1131,7 @@ pub async fn following_posts_timeline_request(
             notifs,
             page: query.page,
             responses,
+            reactions,
             relationships,
             is_powerful,
             is_helper,
@@ -1065,6 +1159,7 @@ struct ResponseTemplate {
     anonymous_avatar: Option<String>,
     is_powerful: bool,
     is_helper: bool,
+    is_liked: bool,
 }
 
 /// GET /response/:id
@@ -1155,15 +1250,23 @@ pub async fn response_request(
     Html(
         ResponseTemplate {
             config: database.server_options.clone(),
-            profile: auth_user,
+            profile: auth_user.clone(),
             unread,
             notifs,
             question: response.0,
             tags: serde_json::to_string(&response.1.tags).unwrap(),
-            response: response.1,
+            response: response.1.clone(),
             relationship,
             comments,
             reactions,
+            is_liked: if let Some(ref ua) = auth_user {
+                database
+                    .get_reaction(ua.id.clone(), response.1.id.clone())
+                    .await
+                    .is_ok()
+            } else {
+                false
+            },
             page: query.page,
             anonymous_username: Some("anonymous".to_string()), // TODO: fetch recipient setting
             anonymous_avatar: None,
@@ -1190,6 +1293,7 @@ struct PartialResponseTemplate {
     show_comments: bool,
     show_pin_button: bool,
     do_render_nested: bool,
+    is_liked: bool,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -1238,6 +1342,14 @@ pub async fn partial_response_request(
     Html(
         PartialResponseTemplate {
             config: database.server_options.clone(),
+            is_liked: if let Some(ref ua) = auth_user {
+                database
+                    .get_reaction(ua.id.clone(), response.1.id.clone())
+                    .await
+                    .is_ok()
+            } else {
+                false
+            },
             profile: auth_user,
             do_not_render_question: response.1.context.is_post,
             is_pinned: false,
@@ -1273,6 +1385,7 @@ struct CommentTemplate {
     anonymous_avatar: Option<String>,
     is_powerful: bool,
     is_helper: bool,
+    is_liked: bool,
 }
 
 /// GET /comment/:id
@@ -1351,6 +1464,14 @@ pub async fn comment_request(
     Html(
         CommentTemplate {
             config: database.server_options.clone(),
+            is_liked: if let Some(ref ua) = auth_user {
+                database
+                    .get_reaction(ua.id.clone(), response.1.id.clone())
+                    .await
+                    .is_ok()
+            } else {
+                false
+            },
             profile: auth_user,
             unread,
             notifs,

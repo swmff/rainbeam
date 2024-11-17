@@ -142,6 +142,11 @@ article {
 }
 
 svg.icon {
+    stroke: currentColor;
+    width: 18px;
+}
+
+svg.icon.filled {
     fill: currentColor;
 }
 
@@ -246,14 +251,17 @@ a.button {
     cursor: pointer;
     border-radius: var(--radius);
     outline: solid 1px transparent;
-    transition:
+    /* transition:
         background 0.15s,
         outline 0.08s,
         outline-color 0.15s,
         border-radius 0.15s,
         opacity 0.15s,
         box-shadow 0.3s,
-        transform 0.1s;
+        transform 0.1s; */
+    transition:
+        transform 0.1s,
+        opacity 0.15s;
     user-select: none;
     display: flex;
     justify-content: center;
@@ -275,15 +283,34 @@ a.button:active {
     transform: scale(0.95);
 }
 
-button.icon-only,
-a.button.icon-only {
+button.circle,
+a.button.circle {
     border-radius: var(--circle);
-    font-size: 18px;
-    aspect-ratio: 1 / 1;
 }
 
-button.icon-only .icon,
-a.button.icon-only .icon {
+.icon-only,
+button.icon-only,
+a.button.icon-only {
+    position: relative;
+    width: 35px;
+    height: 35px;
+    aspect-ratio: 1 / 1;
+    border-radius: var(--circle);
+    font-size: 18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.icon-only.small {
+    font-size: 14px;
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    min-height: 28px !important;
+}
+
+.icon-only .icon {
     width: 1em;
     height: 1em;
     position: absolute;
@@ -313,7 +340,7 @@ a.button.camo {
 button.camo:hover,
 a.button.camo:hover {
     box-shadow: none;
-    background: transparent;
+    background: var(--color-lowered);
     opacity: 100%;
 }
 
@@ -325,9 +352,7 @@ a.button.primary {
 
 button.primary:hover,
 a.button.primary:hover {
-    /* box-shadow: inset 0 0 10px 5px var(--color-primary-lowered); */
     background: var(--color-primary-lowered);
-    box-shadow: 0 0 8px hsla(var(--color-primary-hsl), 25%);
 }
 
 button.secondary,
@@ -696,10 +721,6 @@ nav {
     transition: opacity 0.15s;
 }
 
-nav:not(html[data-scroll="0"] *) {
-    box-shadow: 0 0 4px var(--color-shadow);
-}
-
 nav .content_container {
     display: flex;
     justify-content: space-between;
@@ -991,9 +1012,9 @@ dialog::backdrop {
 .dropdown .inner button {
     width: 100%;
     padding: 0.25rem 1rem;
-    transition:
+    /* transition:
         background 0.1s,
-        transform 0.15s;
+        transform 0.15s; */
     text-decoration: none;
     display: flex;
     align-items: center;
@@ -1009,8 +1030,8 @@ dialog::backdrop {
     position: relative;
 
     & svg {
-        width: 14px;
-        height: 14px;
+        width: 16px;
+        height: 16px;
         aspect-ratio: 1 / 1;
     }
 }
@@ -1028,8 +1049,7 @@ dialog::backdrop {
 }
 
 .dropdown:not(nav *):has(.inner[open]) button:not(.inner button) {
-    background: var(--color-super-raised) !important;
-    box-shadow: inset 0 0 2px var(--color-shadow);
+    background: var(--color-lowered) !important;
 }
 
 .dropdown button .icon {
@@ -1072,7 +1092,7 @@ dialog::backdrop {
         bottom: 0 !important;
         right: unset !important;
         width: 100% !important;
-        max-height: 75dvh;
+        max-height: 90dvh;
         border-top-left-radius: calc(var(--radius) * 2);
         border-top-right-radius: calc(var(--radius) * 2);
         padding-top: 1rem;
@@ -1692,7 +1712,6 @@ canvas {
 }
 
 .CodeMirror-cursor:is(.dark *) {
-    --tw-border-opacity: 1 !important;
     border-color: rgb(255, 255, 255) !important;
 }
 
@@ -1875,7 +1894,7 @@ table ol {
 /* app */
 html:not(.legacy),
 body:not(.legacy *) {
-    font-family: "Poppins", "Roboto", "Inter", ui-sans-serif, system-ui,
+    font-family: "Inter", "Poppins", "Roboto", ui-sans-serif, system-ui,
         sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
         "Noto Color Emoji";
 }
@@ -1927,34 +1946,23 @@ nav:not(.legacy *) a.button {
     background-color: transparent !important;
 }
 
-nav:not(.legacy *) a.button.title {
+nav:not(.legacy *) a.button.title,
+nav:not(.legacy *) a.button.title img {
     position: relative;
     transition:
         color 0.25s,
-        box-shadow 0.25s;
+        box-shadow 0.15s,
+        transform 0.15s;
 }
 
 nav:not(.legacy *) a.button.title:hover {
-    color: var(--color-text-primary) !important;
+    color: var(--color-primary) !important;
 }
 
-nav:not(.legacy *) a.button.title::after {
-    --h: calc(50% + 5px);
-    content: "";
-    height: var(--h);
-    width: 100%;
-    top: calc(50% - var(--h) / 2);
-    z-index: -1;
-    position: absolute;
-    background: var(--color-primary);
-    opacity: 0%;
-    transition: opacity 0.15s;
-    border-radius: var(--radius);
-}
-
-nav:not(.legacy *) a.button.title:hover::after {
+nav:not(.legacy *) a.button.title:hover:has(img) img {
     opacity: 100%;
     box-shadow: 0 0 8px 2px hsla(var(--color-primary-hsl), 25%);
+    transform: scale(1.05);
 }
 
 .dropdown:not(.legacy *) .inner {
@@ -2284,9 +2292,10 @@ select:not(.legacy *) {
     background: transparent;
     border: solid 1px var(--color-super-lowered);
     padding: 0.25rem 0.75rem;
-    transition:
+    outline: none;
+    /* transition:
         background 0.15s,
-        border-color 0.15s;
+        border-color 0.15s; */
 }
 
 textarea:not(.legacy *) {

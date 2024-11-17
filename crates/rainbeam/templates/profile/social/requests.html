@@ -66,8 +66,12 @@
     </table>
 
     <script>
-        globalThis.cancel_fr = function (username) {
-            if (!confirm("Are you sure you want to do this?")) {
+        globalThis.cancel_fr = async function (username) {
+            if (
+                !(await trigger("app:confirm", [
+                    "Are you sure you want to do this?",
+                ]))
+            ) {
                 return;
             }
 

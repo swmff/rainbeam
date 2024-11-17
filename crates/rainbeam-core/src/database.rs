@@ -1379,16 +1379,6 @@ impl Database {
             return Err(DatabaseError::ContentTooShort);
         }
 
-        // check reply_intent
-        if !props.reply_intent.is_empty() {
-            if let Err(e) = self
-                .get_response(props.reply_intent.trim().to_string())
-                .await
-            {
-                return Err(e);
-            }
-        }
-
         // ...
         let question = Question {
             author: match self.get_profile(author).await {
@@ -1403,10 +1393,7 @@ impl Database {
             id: utility::random_id(),
             timestamp: utility::unix_epoch_timestamp(),
             ip: ip.clone(),
-            context: QuestionContext {
-                reply_intent: props.reply_intent,
-                media: props.media,
-            },
+            context: QuestionContext { media: props.media },
         };
 
         // create question

@@ -97,11 +97,6 @@ impl Question {
 /// Basic information which changes the way the response is deserialized
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct QuestionContext {
-    /// The ID of the response in which this question is replying to
-    ///
-    /// Will fill into the "reply" field of the response that is posted to this question
-    #[serde(default)]
-    pub reply_intent: String,
     /// The media property of the question
     ///
     /// Media is prefixed to decide what its type is:
@@ -116,7 +111,6 @@ impl Context for QuestionContext {}
 impl Default for QuestionContext {
     fn default() -> Self {
         Self {
-            reply_intent: String::new(),
             media: String::new(),
         }
     }
@@ -522,8 +516,6 @@ pub struct QuestionCreate {
     pub recipient: String,
     pub content: String,
     pub anonymous: bool,
-    #[serde(default)]
-    pub reply_intent: String,
     #[serde(default)]
     pub media: String,
 }

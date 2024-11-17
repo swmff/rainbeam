@@ -96,8 +96,12 @@
         }
     });
 
-    app.define("logout", function (_) {
-        if (!confirm("Are you sure you would like to do this?")) {
+    app.define("logout", async function (_) {
+        if (
+            !(await trigger("app:confirm", [
+                "Are you sure you would like to do this?",
+            ]))
+        ) {
             return;
         }
 
@@ -108,6 +112,10 @@
         });
     });
 
+    app.define("lucide", function (_) {
+        lucide.createIcons();
+    });
+
     app.define("copy_text", function ({ $ }, text) {
         navigator.clipboard.writeText(text);
         $.toast("success", "Copied!");
@@ -116,6 +124,15 @@
     app.define("intent_twitter", function ({ $ }, text, link) {
         window.open(
             `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(link)}`,
+        );
+
+        $.toast("success", "Opened intent!");
+    });
+
+    app.define("intent_bluesky", function ({ $ }, text, link) {
+        text += ` ${link}`;
+        window.open(
+            `https://bsky.app/intent/compose?text=${encodeURIComponent(text)}`,
         );
 
         $.toast("success", "Opened intent!");
@@ -478,11 +495,43 @@
             }
 
             // add embed
+            paragraph.innerText = paragraph.innerText.replace(groups[0], "");
             paragraph.parentElement.innerHTML += `<include-partial
                 src="/_app/components/response.html?id=${groups[2]}&do_render_nested=false"
-                uses="app:clean_date_codes,app:link_filter,app:hook.alt"
+                uses="app:clean_date_codes,app:link_filter,app:hook.alt,app:lucide"
             ></include-partial>`;
         }
+    });
+
+    // web api replacements
+    app.define("prompt", function (_, msg) {
+        const dialog = document.getElementById("web_api_prompt");
+        document.getElementById("web_api_prompt:msg").innerText = msg;
+        app.lucide();
+
+        return new Promise((resolve, _) => {
+            globalThis.web_api_prompt_submit = (value) => {
+                dialog.close();
+                return resolve(value);
+            };
+
+            dialog.showModal();
+        });
+    });
+
+    app.define("confirm", function (_, msg) {
+        const dialog = document.getElementById("web_api_confirm");
+        document.getElementById("web_api_confirm:msg").innerText = msg;
+        app.lucide();
+
+        return new Promise((resolve, _) => {
+            globalThis.web_api_confirm_submit = (value) => {
+                dialog.close();
+                return resolve(value);
+            };
+
+            dialog.showModal();
+        });
     });
 
     // adomonition

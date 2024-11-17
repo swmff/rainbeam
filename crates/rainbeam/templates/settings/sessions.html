@@ -118,8 +118,12 @@
     (() => {
         const tokens = JSON.parse(document.getElementById("tokens").innerText);
 
-        globalThis.remove_session = (id) => {
-            if (!confirm("Are you sure you want to do this?")) {
+        globalThis.remove_session = async (id) => {
+            if (
+                !(await trigger("app:confirm", [
+                    "Are you sure you want to do this?",
+                ]))
+            ) {
                 return;
             }
 

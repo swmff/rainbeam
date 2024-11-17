@@ -113,11 +113,11 @@
         });
     });
 
-    self.define("delete", function ({ $, app }, id) {
+    self.define("delete", async function ({ $, app }, id) {
         if (
-            !confirm(
+            !(await trigger("app:confirm", [
                 "Are you sure you want to do this? This will delete the response and its question.",
-            )
+            ]))
         ) {
             return;
         }

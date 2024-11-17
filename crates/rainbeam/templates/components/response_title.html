@@ -1,7 +1,7 @@
 <div
     class="flex justify-between items-center flex-collapse sm:items-start gap-1 response_title"
 >
-    <div class="footernav flex-wrap">
+    <div class="footernav items-center flex-wrap">
         <b class="flex items-center gap-2">
             <a
                 href="/@{{ response.author.username }}"
@@ -43,50 +43,20 @@
         </span>
 
         {% if is_pinned == true %}
-        <span
-            class="item flex items-center justify-center"
+        <a
+            class="item flex items-center justify-center icon-only button primary small"
             title="This question/response is pinned"
-            style="
-                background: var(--color-primary);
-                border-radius: var(--radius);
-                height: 24px;
-                min-height: 24px;
-                padding: 0.25rem;
-            "
+            href="/@{{ response.author.username }}"
         >
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 16 16"
-                width="16"
-                height="16"
-                style="color: var(--color-text-primary)"
-                aria-label="Pin symbol"
-                class="icon"
-            >
-                <path
-                    d="M4.456.734a1.75 1.75 0 0 1 2.826.504l.613 1.327a3.08 3.08 0 0 0 2.084 1.707l2.454.584c1.332.317 1.8 1.972.832 2.94L11.06 10l3.72 3.72a.748.748 0 0 1-.332 1.265.75.75 0 0 1-.729-.205L10 11.06l-2.204 2.205c-.968.968-2.623.5-2.94-.832l-.584-2.454a3.08 3.08 0 0 0-1.707-2.084l-1.327-.613a1.75 1.75 0 0 1-.504-2.826ZM5.92 1.866a.253.253 0 0 0-.183-.142.251.251 0 0 0-.221.07L1.794 5.516a.251.251 0 0 0-.07.221c.015.08.068.149.142.183l1.328.613A4.582 4.582 0 0 1 5.73 9.63l.584 2.454a.251.251 0 0 0 .42.12l5.47-5.47a.25.25 0 0 0-.12-.42L9.63 5.73a4.583 4.583 0 0 1-3.098-2.537Z"
-                ></path>
-            </svg>
-        </span>
+            <i class="icon" data-lucide="pin"></i>
+        </a>
         {% endif %} {% if !response.context.circle.is_empty() %}
         <a
-            class="button item primary"
+            class="button item primary icon-only small"
             href="/+g/{{ response.context.circle }}"
             title="Posted in circle"
-            style="height: 24px; min-height: 24px; padding: 0.25rem"
         >
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 16 16"
-                width="16"
-                height="16"
-                aria-label="Organization symbol"
-                class="icon"
-            >
-                <path
-                    d="M1.75 16A1.75 1.75 0 0 1 0 14.25V1.75C0 .784.784 0 1.75 0h8.5C11.216 0 12 .784 12 1.75v12.5c0 .085-.006.168-.018.25h2.268a.25.25 0 0 0 .25-.25V8.285a.25.25 0 0 0-.111-.208l-1.055-.703a.749.749 0 1 1 .832-1.248l1.055.703c.487.325.779.871.779 1.456v5.965A1.75 1.75 0 0 1 14.25 16h-3.5a.766.766 0 0 1-.197-.026c-.099.017-.2.026-.303.026h-3a.75.75 0 0 1-.75-.75V14h-1v1.25a.75.75 0 0 1-.75.75Zm-.25-1.75c0 .138.112.25.25.25H4v-1.25a.75.75 0 0 1 .75-.75h2.5a.75.75 0 0 1 .75.75v1.25h2.25a.25.25 0 0 0 .25-.25V1.75a.25.25 0 0 0-.25-.25h-8.5a.25.25 0 0 0-.25.25ZM3.75 6h.5a.75.75 0 0 1 0 1.5h-.5a.75.75 0 0 1 0-1.5ZM3 3.75A.75.75 0 0 1 3.75 3h.5a.75.75 0 0 1 0 1.5h-.5A.75.75 0 0 1 3 3.75Zm4 3A.75.75 0 0 1 7.75 6h.5a.75.75 0 0 1 0 1.5h-.5A.75.75 0 0 1 7 6.75ZM7.75 3h.5a.75.75 0 0 1 0 1.5h-.5a.75.75 0 0 1 0-1.5ZM3 9.75A.75.75 0 0 1 3.75 9h.5a.75.75 0 0 1 0 1.5h-.5A.75.75 0 0 1 3 9.75ZM7.75 9h.5a.75.75 0 0 1 0 1.5h-.5a.75.75 0 0 1 0-1.5Z"
-                ></path>
-            </svg>
+            <i class="icon" data-lucide="users-round"></i>
         </a>
         {% endif %}
     </div>
@@ -96,21 +66,13 @@
         <!-- reactions -->
         <button
             title="{{ reaction_count }} reactions"
-            class="camo"
-            onclick="trigger('reactions:toggle', ['{{ response.id }}', 'Response'])"
+            class="camo circle"
+            onclick="trigger('reactions:toggle', ['{{ response.id }}', 'Response', event.target])"
         >
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 16 16"
-                width="16"
-                height="16"
-                aria-label="Heart symbol"
-                class="icon"
-            >
-                <path
-                    d="m8 14.25.345.666a.75.75 0 0 1-.69 0l-.008-.004-.018-.01a7.152 7.152 0 0 1-.31-.17 22.055 22.055 0 0 1-3.434-2.414C2.045 10.731 0 8.35 0 5.5 0 2.836 2.086 1 4.25 1 5.797 1 7.153 1.802 8 3.02 8.847 1.802 10.203 1 11.75 1 13.914 1 16 2.836 16 5.5c0 2.85-2.045 5.231-3.885 6.818a22.066 22.066 0 0 1-3.744 2.584l-.018.01-.006.003h-.002ZM4.25 2.5c-1.336 0-2.75 1.164-2.75 3 0 2.15 1.58 4.144 3.365 5.682A20.58 20.58 0 0 0 8 13.393a20.58 20.58 0 0 0 3.135-2.211C12.92 9.644 14.5 7.65 14.5 5.5c0-1.836-1.414-3-2.75-3-1.373 0-2.609.986-3.029 2.456a.749.749 0 0 1-1.442 0C6.859 3.486 5.623 2.5 4.25 2.5Z"
-                ></path>
-            </svg>
+            <i
+                class="icon {% if is_liked %}filled{% endif %}"
+                data-lucide="heart"
+            ></i>
 
             {% if reaction_count > 0 %}
             <span class="notification camo">{{ reaction_count }}</span>
@@ -122,20 +84,9 @@
         <a
             href="/response/{{ response.id }}"
             title="{{ comment_count }} comments"
-            class="button camo"
+            class="button camo circle"
         >
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 16 16"
-                width="16"
-                height="16"
-                aria-label="Discussion symbol"
-                class="icon"
-            >
-                <path
-                    d="M1.75 1h8.5c.966 0 1.75.784 1.75 1.75v5.5A1.75 1.75 0 0 1 10.25 10H7.061l-2.574 2.573A1.458 1.458 0 0 1 2 11.543V10h-.25A1.75 1.75 0 0 1 0 8.25v-5.5C0 1.784.784 1 1.75 1ZM1.5 2.75v5.5c0 .138.112.25.25.25h1a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h3.5a.25.25 0 0 0 .25-.25v-5.5a.25.25 0 0 0-.25-.25h-8.5a.25.25 0 0 0-.25.25Zm13 2a.25.25 0 0 0-.25-.25h-.5a.75.75 0 0 1 0-1.5h.5c.966 0 1.75.784 1.75 1.75v5.5A1.75 1.75 0 0 1 14.25 12H14v1.543a1.458 1.458 0 0 1-2.487 1.03L9.22 12.28a.749.749 0 0 1 .326-1.275.749.749 0 0 1 .734.215l2.22 2.22v-2.19a.75.75 0 0 1 .75-.75h1a.25.25 0 0 0 .25-.25Z"
-                ></path>
-            </svg>
+            <i class="icon" data-lucide="message-circle"></i>
 
             {% if comment_count > 0 %}
             <span class="notification camo">{{ comment_count }}</span>
@@ -146,43 +97,30 @@
         <!-- quote -->
         <div class="dropdown">
             <button
-                class="w-full camo"
+                class="w-full camo circle"
                 onclick="trigger('app:hook.dropdown', [event])"
                 exclude="dropdown"
                 title="Quote"
             >
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 16 16"
-                    width="16"
-                    height="16"
-                    aria-label="Quote symbol"
-                    class="icon"
-                >
-                    <path
-                        d="M1.75 2.5h10.5a.75.75 0 0 1 0 1.5H1.75a.75.75 0 0 1 0-1.5Zm4 5h8.5a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5Zm0 5h8.5a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5ZM2.5 7.75v6a.75.75 0 0 1-1.5 0v-6a.75.75 0 0 1 1.5 0Z"
-                    ></path>
-                </svg>
+                <i class="icon" data-lucide="repeat-2"></i>
             </button>
 
             <div class="inner shadow-md w-content" exclude="dropdown">
                 {% if profile.is_some() %}
+                <button
+                    onclick="trigger('responses:create', ['0', '✨ Boost\n/+r/{{ response.id }}'])
+                        .then((p) => {
+                            p.success ? window.location.href = `/response/${p.payload.id}` : ''
+                        })"
+                >
+                    <i class="icon" data-lucide="rocket"></i>
+                    Boost
+                </button>
+
                 <a
-                    title="Quote"
                     href="/intents/post?reply={{ response.id }}&title=Quote%20post"
                 >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 16 16"
-                        width="16"
-                        height="16"
-                        aria-label="Quote symbol"
-                        class="icon"
-                    >
-                        <path
-                            d="M1.75 2.5h10.5a.75.75 0 0 1 0 1.5H1.75a.75.75 0 0 1 0-1.5Zm4 5h8.5a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5Zm0 5h8.5a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5ZM2.5 7.75v6a.75.75 0 0 1-1.5 0v-6a.75.75 0 0 1 1.5 0Z"
-                        ></path>
-                    </svg>
+                    <i class="icon" data-lucide="quote"></i>
                     Quote
                 </a>
                 {% endif %}
@@ -192,43 +130,21 @@
                     data-turbo="false"
                     target="_blank"
                 >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 16 16"
-                        width="16"
-                        height="16"
-                        aria-label="Reply symbol"
-                        class="icon"
-                    >
-                        <path
-                            d="M6.78 1.97a.75.75 0 0 1 0 1.06L3.81 6h6.44A4.75 4.75 0 0 1 15 10.75v2.5a.75.75 0 0 1-1.5 0v-2.5a3.25 3.25 0 0 0-3.25-3.25H3.81l2.97 2.97a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L1.47 7.28a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z"
-                        ></path>
-                    </svg>
+                    <i class="icon" data-lucide="reply"></i>
                     Ask about this
                 </a>
             </div>
         </div>
 
-        <!-- sharing -->
+        <!-- options -->
         <div class="dropdown">
             <button
-                class="w-full camo"
+                class="w-full camo circle"
                 onclick="trigger('app:hook.dropdown', [event])"
                 exclude="dropdown"
-                title="Share"
+                title="More"
             >
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 16 16"
-                    width="16"
-                    height="16"
-                    aria-label="Sharing symbol"
-                    class="icon"
-                >
-                    <path
-                        d="M3.75 6.5a.25.25 0 0 0-.25.25v6.5c0 .138.112.25.25.25h8.5a.25.25 0 0 0 .25-.25v-6.5a.25.25 0 0 0-.25-.25h-1a.75.75 0 0 1 0-1.5h1c.966 0 1.75.784 1.75 1.75v6.5A1.75 1.75 0 0 1 12.25 15h-8.5A1.75 1.75 0 0 1 2 13.25v-6.5C2 5.784 2.784 5 3.75 5h1a.75.75 0 0 1 0 1.5ZM7.823.177a.25.25 0 0 1 .354 0l2.896 2.896a.25.25 0 0 1-.177.427H8.75v5.75a.75.75 0 0 1-1.5 0V3.5H5.104a.25.25 0 0 1-.177-.427Z"
-                    ></path>
-                </svg>
+                <i class="icon" data-lucide="ellipsis"></i>
             </button>
 
             <div class="inner shadow-md w-content" exclude="dropdown">
@@ -240,88 +156,31 @@
                 <button
                     onclick="trigger('app:copy_text', [trigger('responses:gen_share', [event.target, '{{ short_id }}', 280])])"
                 >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 16 16"
-                        width="16"
-                        height="16"
-                        aria-label="Copy symbol"
-                        class="icon"
-                    >
-                        <path
-                            d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"
-                        ></path>
-                        <path
-                            d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"
-                        ></path>
-                    </svg>
+                    <i class="icon" data-lucide="copy"></i>
                     Copy to Clipboard
                 </button>
 
                 <button
                     onclick="trigger('app:intent_twitter', [trigger('responses:gen_share', [event.target, '{{ short_id }}', 280, false]), '{{ config.host }}/+r/{{ short_id }}'])"
                 >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 16 16"
-                        width="16"
-                        height="16"
-                        aria-label="External link symbol"
-                        class="icon"
-                    >
-                        <path
-                            d="M3.75 2h3.5a.75.75 0 0 1 0 1.5h-3.5a.25.25 0 0 0-.25.25v8.5c0 .138.112.25.25.25h8.5a.25.25 0 0 0 .25-.25v-3.5a.75.75 0 0 1 1.5 0v3.5A1.75 1.75 0 0 1 12.25 14h-8.5A1.75 1.75 0 0 1 2 12.25v-8.5C2 2.784 2.784 2 3.75 2Zm6.854-1h4.146a.25.25 0 0 1 .25.25v4.146a.25.25 0 0 1-.427.177L13.03 4.03 9.28 7.78a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042l3.75-3.75-1.543-1.543A.25.25 0 0 1 10.604 1Z"
-                        ></path>
-                    </svg>
+                    <i class="icon" data-lucide="twitter"></i>
                     Twitter
+                </button>
+
+                <button
+                    onclick="trigger('app:intent_bluesky', [trigger('responses:gen_share', [event.target, '{{ short_id }}', 280, false]), '{{ config.host }}/+r/{{ short_id }}'])"
+                >
+                    <i class="icon" data-lucide="external-link"></i>
+                    Bluesky
                 </button>
 
                 <button
                     onclick="trigger('app:copy_text', ['{{ config.host }}/+r/{{ short_id }}'])"
                 >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 16 16"
-                        width="16"
-                        height="16"
-                        aria-label="Copy symbol"
-                        class="icon"
-                    >
-                        <path
-                            d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"
-                        ></path>
-                        <path
-                            d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"
-                        ></path>
-                    </svg>
+                    <i class="icon" data-lucide="copy"></i>
                     Copy link
                 </button>
-            </div>
-        </div>
 
-        <!-- options -->
-        <div class="dropdown">
-            <button
-                class="w-full camo"
-                onclick="trigger('app:hook.dropdown', [event])"
-                exclude="dropdown"
-                title="More"
-            >
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 16 16"
-                    width="16"
-                    height="16"
-                    aria-label="Ellipsis symbol"
-                    class="icon"
-                >
-                    <path
-                        d="M8 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM1.5 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm13 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"
-                    ></path>
-                </svg>
-            </button>
-
-            <div class="inner shadow-md w-content" exclude="dropdown">
                 {% if let Some(profile) = profile %} {% if profile.id ==
                 response.author.id %}
                 <!-- actions for the profile owner only -->
@@ -330,68 +189,24 @@
                 <!-- pin -->
                 {% if show_pin_button == true %} {% if is_pinned == false %}
                 <a href="#" onclick="pin_response('{{ response.id }}')">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 16 16"
-                        width="16"
-                        height="16"
-                        aria-label="Pin symbol"
-                        class="icon"
-                    >
-                        <path
-                            d="M4.456.734a1.75 1.75 0 0 1 2.826.504l.613 1.327a3.08 3.08 0 0 0 2.084 1.707l2.454.584c1.332.317 1.8 1.972.832 2.94L11.06 10l3.72 3.72a.748.748 0 0 1-.332 1.265.75.75 0 0 1-.729-.205L10 11.06l-2.204 2.205c-.968.968-2.623.5-2.94-.832l-.584-2.454a3.08 3.08 0 0 0-1.707-2.084l-1.327-.613a1.75 1.75 0 0 1-.504-2.826ZM5.92 1.866a.253.253 0 0 0-.183-.142.251.251 0 0 0-.221.07L1.794 5.516a.251.251 0 0 0-.07.221c.015.08.068.149.142.183l1.328.613A4.582 4.582 0 0 1 5.73 9.63l.584 2.454a.251.251 0 0 0 .42.12l5.47-5.47a.25.25 0 0 0-.12-.42L9.63 5.73a4.583 4.583 0 0 1-3.098-2.537Z"
-                        ></path>
-                    </svg>
+                    <i class="icon" data-lucide="pin"></i>
                     Pin
                 </a>
                 {% else %}
                 <a href="#" onclick="unpin_response('{{ response.id }}')">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 16 16"
-                        width="16"
-                        height="16"
-                        aria-label="Pin symbol"
-                        class="icon"
-                    >
-                        <path
-                            d="M4.456.734a1.75 1.75 0 0 1 2.826.504l.613 1.327a3.08 3.08 0 0 0 2.084 1.707l2.454.584c1.332.317 1.8 1.972.832 2.94L11.06 10l3.72 3.72a.748.748 0 0 1-.332 1.265.75.75 0 0 1-.729-.205L10 11.06l-2.204 2.205c-.968.968-2.623.5-2.94-.832l-.584-2.454a3.08 3.08 0 0 0-1.707-2.084l-1.327-.613a1.75 1.75 0 0 1-.504-2.826ZM5.92 1.866a.253.253 0 0 0-.183-.142.251.251 0 0 0-.221.07L1.794 5.516a.251.251 0 0 0-.07.221c.015.08.068.149.142.183l1.328.613A4.582 4.582 0 0 1 5.73 9.63l.584 2.454a.251.251 0 0 0 .42.12l5.47-5.47a.25.25 0 0 0-.12-.42L9.63 5.73a4.583 4.583 0 0 1-3.098-2.537Z"
-                        ></path>
-                    </svg>
+                    <i class="icon" data-lucide="pin-off"></i>
                     Unpin
                 </a>
                 {% endif %} {% endif %}
 
                 <!-- ... -->
                 <a href="/response/{{ response.id }}?edit" target="_blank">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 16 16"
-                        width="16"
-                        height="16"
-                        aria-label="Pencil symbol"
-                        class="icon"
-                    >
-                        <path
-                            d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.081-.286.235-.547.445-.758l8.61-8.61Zm.176 4.823L9.75 4.81l-6.286 6.287a.253.253 0 0 0-.064.108l-.558 1.953 1.953-.558a.253.253 0 0 0 .108-.064Zm1.238-3.763a.25.25 0 0 0-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 0 0 0-.354Z"
-                        ></path>
-                    </svg>
+                    <i class="icon" data-lucide="pen"></i>
                     Edit
                 </a>
 
                 <a href="/response/{{ response.id }}?edit_tags" target="_blank">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 16 16"
-                        width="16"
-                        height="16"
-                        aria-label="Tag symbol"
-                        class="icon"
-                    >
-                        <path
-                            d="M1 7.775V2.75C1 1.784 1.784 1 2.75 1h5.025c.464 0 .91.184 1.238.513l6.25 6.25a1.75 1.75 0 0 1 0 2.474l-5.026 5.026a1.75 1.75 0 0 1-2.474 0l-6.25-6.25A1.752 1.752 0 0 1 1 7.775Zm1.5 0c0 .066.026.13.073.177l6.25 6.25a.25.25 0 0 0 .354 0l5.025-5.025a.25.25 0 0 0 0-.354l-6.25-6.25a.25.25 0 0 0-.177-.073H2.75a.25.25 0 0 0-.25.25ZM6 5a1 1 0 1 1 0 2 1 1 0 0 1 0-2Z"
-                        ></path>
-                    </svg>
+                    <i class="icon" data-lucide="tag"></i>
                     Edit tags
                 </a>
 
@@ -401,18 +216,7 @@
                     onclick="trigger('responses:unsend', ['{{ response.id }}'])"
                     class="red"
                 >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 16 16"
-                        width="16"
-                        height="16"
-                        aria-label="Trash symbol"
-                        class="icon"
-                    >
-                        <path
-                            d="M11 1.75V3h2.25a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75ZM4.496 6.675l.66 6.6a.25.25 0 0 0 .249.225h5.19a.25.25 0 0 0 .249-.225l.66-6.6a.75.75 0 0 1 1.492.149l-.66 6.6A1.748 1.748 0 0 1 10.595 15h-5.19a1.75 1.75 0 0 1-1.741-1.575l-.66-6.6a.75.75 0 1 1 1.492-.15ZM6.5 1.75V3h3V1.75a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25Z"
-                        ></path>
-                    </svg>
+                    <i class="icon" data-lucide="undo-2"></i>
                     Return to Inbox
                 </a>
                 {% endif %}
@@ -422,18 +226,7 @@
                     onclick="trigger('responses:delete', ['{{ response.id }}'])"
                     class="red"
                 >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 16 16"
-                        width="16"
-                        height="16"
-                        aria-label="Trash symbol"
-                        class="icon"
-                    >
-                        <path
-                            d="M11 1.75V3h2.25a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75ZM4.496 6.675l.66 6.6a.25.25 0 0 0 .249.225h5.19a.25.25 0 0 0 .249-.225l.66-6.6a.75.75 0 0 1 1.492.149l-.66 6.6A1.748 1.748 0 0 1 10.595 15h-5.19a1.75 1.75 0 0 1-1.741-1.575l-.66-6.6a.75.75 0 1 1 1.492-.15ZM6.5 1.75V3h3V1.75a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25Z"
-                        ></path>
-                    </svg>
+                    <i class="icon" data-lucide="trash"></i>
                     Delete all
                 </a>
                 {% endif %} {% endif %}
@@ -443,54 +236,18 @@
                     href="#"
                     onclick="trigger('app:copy_text', ['{{ config.citrus_id}}:{{ response.id }}'])"
                 >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 16 16"
-                        width="16"
-                        height="16"
-                        aria-label="Copy symbol"
-                        class="icon"
-                    >
-                        <path
-                            d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"
-                        ></path>
-                        <path
-                            d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"
-                        ></path>
-                    </svg>
+                    <i class="icon" data-lucide="copy"></i>
                     Copy ID
                 </a>
 
                 <a href="/response/{{ response.id }}">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 16 16"
-                        width="16"
-                        height="16"
-                        aria-label="Link symbol"
-                        class="icon"
-                    >
-                        <path
-                            d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"
-                        ></path>
-                    </svg>
+                    <i class="icon" data-lucide="external-link"></i>
                     Open
                 </a>
 
                 {% if is_helper %}
                 <a href="/question/{{ question.id }}">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 16 16"
-                        width="16"
-                        height="16"
-                        aria-label="Link symbol"
-                        class="icon"
-                    >
-                        <path
-                            d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"
-                        ></path>
-                    </svg>
+                    <i class="icon" data-lucide="external-link"></i>
                     Open question
                 </a>
                 {% endif %}
@@ -502,18 +259,7 @@
                 <a
                     href="javascript:trigger('reports:bootstrap', ['responses', '{{ response.id }}'])"
                 >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 16 16"
-                        width="16"
-                        height="16"
-                        aria-label="Report symbol"
-                        class="icon"
-                    >
-                        <path
-                            d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"
-                        ></path>
-                    </svg>
+                    <i class="icon" data-lucide="flag"></i>
                     Report
                 </a>
                 {% endif %} {% if is_helper %}
@@ -523,18 +269,7 @@
                     onclick="trigger('responses:delete', ['{{ response.id }}'])"
                     class="red"
                 >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 16 16"
-                        width="16"
-                        height="16"
-                        aria-label="Trash symbol"
-                        class="icon"
-                    >
-                        <path
-                            d="M11 1.75V3h2.25a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75ZM4.496 6.675l.66 6.6a.25.25 0 0 0 .249.225h5.19a.25.25 0 0 0 .249-.225l.66-6.6a.75.75 0 0 1 1.492.149l-.66 6.6A1.748 1.748 0 0 1 10.595 15h-5.19a1.75 1.75 0 0 1-1.741-1.575l-.66-6.6a.75.75 0 1 1 1.492-.15ZM6.5 1.75V3h3V1.75a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25Z"
-                        ></path>
-                    </svg>
+                    <i class="icon" data-lucide="trash"></i>
                     Delete
                 </a>
                 {% endif %} {% endif %}

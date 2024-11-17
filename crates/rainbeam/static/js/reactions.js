@@ -45,11 +45,21 @@
         });
     });
 
-    self.define("toggle", async function ({ $ }, id, type) {
-        const remove = (await $["has-reacted"](id)) == true;
+    self.define("toggle", async function ({ $ }, id, type, target) {
+        const remove = (await $["has-reacted"](id)) === true;
 
         if (remove) {
+            if (target) {
+                const icon = target.querySelector(".icon");
+                icon.classList.remove("filled");
+            }
+
             return $.delete(id);
+        }
+
+        if (target) {
+            const icon = target.querySelector(".icon");
+            icon.classList.add("filled");
         }
 
         return $.create(id, type);

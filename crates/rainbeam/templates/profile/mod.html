@@ -75,10 +75,14 @@
         (() => {
             document
                 .getElementById("badges_form")
-                .addEventListener("submit", (e) => {
+                .addEventListener("submit", async (e) => {
                     e.preventDefault();
 
-                    if (!confirm("Are you sure you want to do this?")) {
+                    if (
+                        !(await trigger("app:confirm", [
+                            "Are you sure you want to do this?",
+                        ]))
+                    ) {
                         return;
                     }
 
@@ -126,10 +130,14 @@
         (() => {
             document
                 .getElementById("change_password")
-                .addEventListener("submit", (e) => {
+                .addEventListener("submit", async (e) => {
                     e.preventDefault();
 
-                    if (!confirm("Are you sure you want to do this?")) {
+                    if (
+                        !(await trigger("app:confirm", [
+                            "Are you sure you want to do this?",
+                        ]))
+                    ) {
                         return;
                     }
 
@@ -272,8 +280,12 @@
     (() => {
         const tokens = JSON.parse(document.getElementById("tokens").innerText);
 
-        globalThis.remove_session = (id) => {
-            if (!confirm("Are you sure you want to do this?")) {
+        globalThis.remove_session = async (id) => {
+            if (
+                !(await trigger("app:confirm", [
+                    "Are you sure you want to do this?",
+                ]))
+            ) {
                 return;
             }
 
@@ -302,12 +314,15 @@
         };
 
         globalThis.create_token = async () => {
-            const app_name = prompt("App identifier:");
+            const app_name = await trigger("app:prompt", ["App identifier:"]);
             if (!app_name) {
                 return;
             }
 
-            const permissions = prompt("Permissions (comma separated):");
+            const permissions = await trigger(
+                "app:prompt",
+                "Permissions (comma separated):",
+            );
 
             const res = await (
                 await fetch(
@@ -437,8 +452,8 @@
             });
     };
 
-    globalThis.change_group = () => {
-        const group = prompt("Enter group number:");
+    globalThis.change_group = async () => {
+        const group = await trigger("app:prompt", ["Enter group number:"]);
 
         if (!group) {
             return;
@@ -466,8 +481,8 @@
             });
     };
 
-    globalThis.change_tier = () => {
-        const tier = prompt("Enter tier number:");
+    globalThis.change_tier = async () => {
+        const tier = await trigger("app:prompt", ["Enter tier number:"]);
 
         if (!tier) {
             return;

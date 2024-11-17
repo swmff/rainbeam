@@ -18,8 +18,12 @@
             });
     });
 
-    self.define("leave", function ({ $, app }, id) {
-        if (!confirm("Are you sure you want to do this?")) {
+    self.define("leave", async function ({ $, app }, id) {
+        if (
+            !(await trigger("app:confirm", [
+                "Are you sure you want to do this?",
+            ]))
+        ) {
             return;
         }
 
@@ -154,8 +158,12 @@
         },
     );
 
-    self.define("msg_delete", function ({ $, app }, id) {
-        if (!confirm("Are you sure you want to do this?")) {
+    self.define("msg_delete", async function ({ $, app }, id) {
+        if (
+            !(await trigger("app:confirm", [
+                "Are you sure you want to do this?",
+            ]))
+        ) {
             return;
         }
 
