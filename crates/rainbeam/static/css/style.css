@@ -1947,7 +1947,7 @@ nav:not(.legacy *) a.button {
 }
 
 nav:not(.legacy *) a.button.title,
-nav:not(.legacy *) a.button.title img {
+nav:not(.legacy *) a.button.title .title-content {
     position: relative;
     transition:
         color 0.25s,
@@ -1959,9 +1959,19 @@ nav:not(.legacy *) a.button.title:hover {
     color: var(--color-primary) !important;
 }
 
-nav:not(.legacy *) a.button.title:hover:has(img) img {
+nav:not(.legacy *)
+    a.button.title:hover:has(.title-content)
+    .title-content:is(img) {
     opacity: 100%;
     box-shadow: 0 0 8px 2px hsla(var(--color-primary-hsl), 25%);
+    transform: scale(1.05);
+}
+
+nav:not(.legacy *)
+    a.button.title:hover:has(.title-content)
+    .title-content:not(img) {
+    opacity: 100%;
+    text-shadow: 0 0 8px hsla(var(--color-primary-hsl), 25%);
     transform: scale(1.05);
 }
 
