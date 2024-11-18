@@ -24,7 +24,6 @@ struct ProfileTemplate {
     notifs: usize,
     other: Profile,
     responses: Vec<FullResponse>,
-    reactions: Vec<String>,
     relationships: HashMap<String, RelationshipStatus>,
     response_count: usize,
     questions_count: usize,
@@ -299,20 +298,6 @@ pub async fn profile_request(
         }
     }
 
-    // collect all responses we've reacted to
-    let mut reactions: Vec<String> = Vec::new();
-
-    if let Some(ref ua) = auth_user {
-        for response in &responses {
-            if let Ok(_) = database
-                .get_reaction(ua.id.clone(), response.1.id.clone())
-                .await
-            {
-                reactions.push(response.1.id.clone())
-            }
-        }
-    }
-
     // ...
     Html(
         ProfileTemplate {
@@ -322,7 +307,6 @@ pub async fn profile_request(
             notifs,
             other: other.clone(),
             responses,
-            reactions,
             relationships,
             response_count: database
                 .get_response_count_by_author(other.id.clone())
@@ -392,7 +376,6 @@ struct PartialProfileTemplate {
     profile: Option<Profile>,
     other: Profile,
     responses: Vec<FullResponse>,
-    reactions: Vec<String>,
     relationships: HashMap<String, RelationshipStatus>,
     // ...
     is_powerful: bool, // at least "manager"
@@ -548,20 +531,6 @@ pub async fn partial_profile_request(
         }
     }
 
-    // collect all responses we've reacted to
-    let mut reactions: Vec<String> = Vec::new();
-
-    if let Some(ref ua) = auth_user {
-        for response in &responses {
-            if let Ok(_) = database
-                .get_reaction(ua.id.clone(), response.1.id.clone())
-                .await
-            {
-                reactions.push(response.1.id.clone())
-            }
-        }
-    }
-
     // ...
     Html(
         PartialProfileTemplate {
@@ -569,7 +538,6 @@ pub async fn partial_profile_request(
             profile: auth_user.clone(),
             other: other.clone(),
             responses,
-            reactions,
             relationships,
             // ...
             is_powerful,
@@ -587,7 +555,6 @@ struct ProfileEmbedTemplate {
     profile: Option<Profile>,
     other: Profile,
     responses: Vec<FullResponse>,
-    reactions: Vec<String>,
     relationships: HashMap<String, RelationshipStatus>,
     pinned: Option<Vec<FullResponse>>,
     is_powerful: bool,
@@ -758,20 +725,6 @@ pub async fn profile_embed_request(
         }
     }
 
-    // collect all responses we've reacted to
-    let mut reactions: Vec<String> = Vec::new();
-
-    if let Some(ref ua) = auth_user {
-        for response in &responses {
-            if let Ok(_) = database
-                .get_reaction(ua.id.clone(), response.1.id.clone())
-                .await
-            {
-                reactions.push(response.1.id.clone())
-            }
-        }
-    }
-
     // ...
     Html(
         ProfileEmbedTemplate {
@@ -779,7 +732,6 @@ pub async fn profile_embed_request(
             profile: auth_user.clone(),
             other: other.clone(),
             responses,
-            reactions,
             relationships,
             pinned,
             is_powerful,

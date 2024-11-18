@@ -88,7 +88,6 @@ struct ResponsesTemplate {
     // search-specific
     results: Vec<FullResponse>,
     relationships: HashMap<String, RelationshipStatus>,
-    reactions: Vec<String>,
     is_powerful: bool, // at least "manager"
     is_helper: bool,   // at least "helper"
 }
@@ -197,20 +196,6 @@ pub async fn search_responses_request(
         }
     }
 
-    // collect all responses we've reacted to
-    let mut reactions: Vec<String> = Vec::new();
-
-    if let Some(ref ua) = auth_user {
-        for response in &results {
-            if let Ok(_) = database
-                .get_reaction(ua.id.clone(), response.1.id.clone())
-                .await
-            {
-                reactions.push(response.1.id.clone())
-            }
-        }
-    }
-
     // render
     Html(
         ResponsesTemplate {
@@ -224,7 +209,6 @@ pub async fn search_responses_request(
             // search-specific
             results,
             relationships,
-            reactions,
             is_powerful,
             is_helper,
         }
@@ -246,7 +230,6 @@ struct PostsTemplate {
     // search-specific
     results: Vec<FullResponse>,
     relationships: HashMap<String, RelationshipStatus>,
-    reactions: Vec<String>,
     is_powerful: bool, // at least "manager"
     is_helper: bool,   // at least "helper"
 }
@@ -345,20 +328,6 @@ pub async fn search_posts_request(
         }
     }
 
-    // collect all responses we've reacted to
-    let mut reactions: Vec<String> = Vec::new();
-
-    if let Some(ref ua) = auth_user {
-        for response in &results {
-            if let Ok(_) = database
-                .get_reaction(ua.id.clone(), response.1.id.clone())
-                .await
-            {
-                reactions.push(response.1.id.clone())
-            }
-        }
-    }
-
     // render
     Html(
         PostsTemplate {
@@ -372,7 +341,6 @@ pub async fn search_posts_request(
             // search-specific
             results,
             relationships,
-            reactions,
             is_powerful,
             is_helper,
         }

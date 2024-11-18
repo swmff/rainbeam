@@ -68,11 +68,10 @@
             title="{{ reaction_count }} reactions"
             class="camo circle"
             onclick="trigger('reactions:toggle', ['{{ response.id }}', 'Response', event.target])"
+            hook="check_reaction"
+            hook-arg:id="{{ response.id }}"
         >
-            <i
-                class="icon {% if is_liked %}filled{% endif %}"
-                data-lucide="heart"
-            ></i>
+            <i class="icon" data-lucide="heart"></i>
 
             {% if reaction_count > 0 %}
             <span class="notification camo">{{ reaction_count }}</span>

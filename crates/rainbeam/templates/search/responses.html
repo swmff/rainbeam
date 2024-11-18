@@ -12,7 +12,6 @@
         {% let anonymous_avatar = Some("") %}
         {% let show_comments = true %}
         {% let do_render_nested = true %}
-        {% let is_liked = reactions.contains(response.1.id) %}
         {% include "components/response.html" %}
     {% endif %}
 {% endfor %}

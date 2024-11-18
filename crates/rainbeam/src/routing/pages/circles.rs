@@ -176,7 +176,6 @@ struct ProfileTemplate {
     notifs: usize,
     circle: Circle,
     responses: Vec<FullResponse>,
-    reactions: Vec<String>,
     relationships: HashMap<String, RelationshipStatus>,
     member_count: usize,
     metadata: String,
@@ -335,20 +334,6 @@ pub async fn profile_request(
         }
     }
 
-    // collect all responses we've reacted to
-    let mut reactions: Vec<String> = Vec::new();
-
-    if let Some(ref ua) = auth_user {
-        for response in &responses {
-            if let Ok(_) = database
-                .get_reaction(ua.id.clone(), response.1.id.clone())
-                .await
-            {
-                reactions.push(response.1.id.clone())
-            }
-        }
-    }
-
     // ...
     Html(
         ProfileTemplate {
@@ -358,7 +343,6 @@ pub async fn profile_request(
             notifs,
             circle: circle.clone(),
             responses,
-            reactions,
             relationships,
             member_count: database
                 .get_circle_memberships_count(circle.id.clone())
@@ -384,7 +368,6 @@ struct PartialProfileTemplate {
     profile: Option<Profile>,
     other: Circle,
     responses: Vec<FullResponse>,
-    reactions: Vec<String>,
     relationships: HashMap<String, RelationshipStatus>,
     // ...
     is_powerful: bool, // at least "manager"
@@ -477,20 +460,6 @@ pub async fn partial_profile_request(
         }
     }
 
-    // collect all responses we've reacted to
-    let mut reactions: Vec<String> = Vec::new();
-
-    if let Some(ref ua) = auth_user {
-        for response in &responses {
-            if let Ok(_) = database
-                .get_reaction(ua.id.clone(), response.1.id.clone())
-                .await
-            {
-                reactions.push(response.1.id.clone())
-            }
-        }
-    }
-
     // ...
     Html(
         PartialProfileTemplate {
@@ -498,7 +467,6 @@ pub async fn partial_profile_request(
             profile: auth_user.clone(),
             other: circle.clone(),
             responses,
-            reactions,
             relationships,
             // ...
             is_powerful,

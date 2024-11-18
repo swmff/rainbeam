@@ -176,6 +176,34 @@
             });
     });
 
+    app.define(
+        "offload_work_to_client_when_in_view",
+        function (_, entry_callback) {
+            // instead of spending the time on the server loading everything before
+            // returning the page, we can instead of just create an IntersectionObserver
+            // and send individual requests as we see the element it's needed for
+            const seen = [];
+            return new IntersectionObserver(
+                (entries) => {
+                    for (const entry of entries) {
+                        const element = entry.target;
+                        if (!entry.isIntersecting || seen.includes(element)) {
+                            continue;
+                        }
+
+                        seen.push(element);
+                        entry_callback(element);
+                    }
+                },
+                {
+                    root: document.body,
+                    rootMargin: "0px",
+                    threshold: 1.0,
+                },
+            );
+        },
+    );
+
     // hooks
     app.define("hook.scroll", function (_, scroll_element, track_element) {
         const goals = [150, 250, 500, 1000];
@@ -500,6 +528,28 @@
                 src="/_app/components/response.html?id=${groups[2]}&do_render_nested=false"
                 uses="app:clean_date_codes,app:link_filter,app:hook.alt,app:lucide"
             ></include-partial>`;
+        }
+    });
+
+    app.define("hook.check_reactions", async function ({ $ }) {
+        const observer = $.offload_work_to_client_when_in_view(
+            async (element) => {
+                const reaction = await (
+                    await fetch(
+                        `/api/v1/reactions/${element.getAttribute("hook-arg:id")}`,
+                    )
+                ).json();
+
+                if (reaction.success) {
+                    element.children[0].classList.add("filled");
+                }
+            },
+        );
+
+        for (const element of Array.from(
+            document.querySelectorAll("[hook=check_reaction]") || [],
+        )) {
+            observer.observe(element);
         }
     });
 
