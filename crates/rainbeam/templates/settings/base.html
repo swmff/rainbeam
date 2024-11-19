@@ -29,7 +29,7 @@ other = profile.clone() %} {% if profile.username == other.username %}
 crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
 "components/theming.html" %} {% endif %}
 <style>
-    label:not(.checkbox_container *),
+    label:not(.checkbox_container *):not(dialog *),
     .setting {
         text-transform: uppercase;
         opacity: 75%;

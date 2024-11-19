@@ -2104,11 +2104,21 @@ nav:not(.legacy *)
 
     #profile_box:not(.legacy *) #profile_card {
         padding: 0.75rem !important;
-        flex-direction: row;
+        flex-direction: column;
         justify-content: space-between;
         height: auto !important;
         min-height: 100% !important;
         min-width: 50%;
+    }
+
+    #profile_box:not(.legacy *) .profile_card_section_2 {
+        width: 100% !important;
+
+        & button,
+        & a.button,
+        & .dropdown {
+            width: 100%;
+        }
     }
 
     #profile_box:not(.legacy *)
@@ -2152,24 +2162,8 @@ nav:not(.legacy *)
         display: contents;
     }
 
-    #profile_box:not(.legacy *)
-        #profile_card
-        .profile_card_section_2
-        button:not(.dropdown .inner *),
-    #profile_box:not(.legacy *) #profile_card .profile_card_section_2 a.button {
-        width: max-content !important;
-        border-radius: var(--circle);
-    }
-
     #profile_box:not(.legacy *) #profile_card .profile_card_section_2 .icon {
         display: block !important;
-    }
-
-    #profile_box:not(.legacy *)
-        #profile_card
-        .profile_card_section_2
-        .possible_text {
-        display: none;
     }
 
     #profile_box:not(.legacy *) .profile_card_section_3:not(:has(*)) {

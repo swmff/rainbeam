@@ -1,5 +1,7 @@
 {% if let Some(profile) = profile %} {% if
-user.metadata.exists("sparkler:status_note") | (profile.id == user.id) %}
+user.metadata.exists("sparkler:status_note") | (profile.id == user.id) %} {% if
+let Some(note) = user.metadata.kv.get("sparkler:status_note") %} {% if
+!note.is_empty() | (profile.id == user.id) %}
 <button
     class="status_note primary {% if use_static == true %}static{% endif %}"
     title="View note"
@@ -43,6 +45,17 @@ user.metadata.exists("sparkler:status_note") | (profile.id == user.id) %}
                     </button>
 
                     <div class="inner shadow-md w-content" exclude="dropdown">
+                        {% if profile.id == user.id %}
+                        <a
+                            href="/settings?note_clear"
+                            target="_blank"
+                            class="red"
+                        >
+                            <i class="icon" data-lucide="trash"></i>
+                            Clear
+                        </a>
+                        {% endif %}
+
                         <b class="title">Actions</b>
 
                         <a href="/@{{ user.username }}">
@@ -81,9 +94,7 @@ user.metadata.exists("sparkler:status_note") | (profile.id == user.id) %}
         </div>
 
         <hr class="flipped" />
-        {% if let Some(note) = user.metadata.kv.get("sparkler:status_note") %}
         <span>{{ shared::ui::render_markdown(note)|safe }}</span>
-        {% endif %}
     </div>
 </dialog>
-{% endif %} {% endif %}
+{% endif %} {% endif %} {% endif %} {% endif %}

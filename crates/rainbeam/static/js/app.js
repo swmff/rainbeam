@@ -500,6 +500,7 @@
                             .then(async () => {
                                 page += 1;
                                 await load_partial();
+                                app.lucide();
                             })
                             .catch(() => {
                                 console.log("partial stuck");

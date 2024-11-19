@@ -327,11 +327,27 @@
 
     <script>
         (() => {
-            setTimeout(() => {
+            setTimeout(async () => {
                 if (window.location.search === "?note") {
                     document.getElementById("set_note_dialog").showModal();
+                } else if (window.location.search === "?note_clear") {
+                    if (
+                        !(await trigger("app:confirm", [
+                            "Are you sure you would like to clear your current status?",
+                        ]))
+                    ) {
+                        window.close();
+                        return;
+                    }
+
+                    // clear values
+                    update_kv("sparkler:status_note", "");
+                    update_kv("sparkler:status_emoji", "");
+
+                    // save
+                    globalThis.save_settings().then(() => window.close());
                 }
-            }, 100);
+            }, 250);
 
             globalThis.block_dialog = function () {
                 // show confirmation
