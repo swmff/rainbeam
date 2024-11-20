@@ -95,6 +95,15 @@
         <style id="sparkler_live:custom_css">{{ css|safe }}</style>
     {% endif %}
 {% endif %}
+
+{% if let Some(img_url) = raw_metadata.kv.get("sparkler:desktop_tl_logo") %}
+{% if !img_url.is_empty() %}
+{% let img_url = img_url.replace("`", "") %}
+<script>
+    document.getElementById("title-img").src = `/api/v0/util/ext/image?img={{ img_url }}`
+</script>
+{% endif %}
+{% endif %}
 </div>
 
 <script type="text/plain" id="theme">

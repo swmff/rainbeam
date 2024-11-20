@@ -816,6 +816,7 @@ impl Database {
             "sparkler:anonymous_avatar",
             "sparkler:pinned",
             "sparkler:profile_theme",
+            "sparkler:desktop_tl_logo",
             "sparkler:layout",
             "sparkler:nav_layout",
             "sparkler:custom_css",

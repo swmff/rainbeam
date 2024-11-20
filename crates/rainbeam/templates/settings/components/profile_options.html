@@ -126,6 +126,21 @@
         </p>
     </div>
 
+    <div class="flex flex-col gap-1">
+        <label for="sparkler:desktop_tl_logo">(desktop) Top-left Logo</label>
+
+        <input
+            type="url"
+            name="sparkler:desktop_tl_logo"
+            id="sparkler:desktop_tl_logo"
+            onchange="update_kv('sparkler:desktop_tl_logo', event.target.value)"
+        />
+
+        <p class="fade">
+            The image located at the top left of Neospring on desktop.
+        </p>
+    </div>
+
     <h4 class="title">Greetings</h4>
     <div class="flex flex-col gap-1">
         <label
