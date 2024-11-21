@@ -1458,6 +1458,7 @@ struct GlobalTimelineTemplate {
     unread: usize,
     notifs: usize,
     questions: Vec<(Question, usize, usize)>,
+    relationships: HashMap<String, RelationshipStatus>,
     is_helper: bool,
     page: i32,
 }
@@ -1510,6 +1511,31 @@ pub async fn global_timeline_request(
         group.permissions.contains(&Permission::Helper)
     };
 
+    // build relationships list
+    let mut relationships: HashMap<String, RelationshipStatus> = HashMap::new();
+
+    for question in &questions {
+        if relationships.contains_key(&question.0.author.id) {
+            continue;
+        }
+
+        if question.0.author.id == auth_user.id {
+            // make sure we can view our own responses
+            relationships.insert(question.0.author.id.clone(), RelationshipStatus::Friends);
+            continue;
+        };
+
+        relationships.insert(
+            question.0.author.id.clone(),
+            database
+                .auth
+                .get_user_relationship(question.0.author.id.clone(), auth_user.id.clone())
+                .await
+                .0,
+        );
+    }
+
+    // ...
     Html(
         GlobalTimelineTemplate {
             config: database.server_options,
@@ -1517,6 +1543,7 @@ pub async fn global_timeline_request(
             unread,
             notifs,
             questions,
+            relationships,
             is_helper,
             page: query.page,
         }
@@ -1533,6 +1560,7 @@ struct PublicGlobalTimelineTemplate {
     unread: usize,
     notifs: usize,
     questions: Vec<(Question, usize, usize)>,
+    relationships: HashMap<String, RelationshipStatus>,
     is_helper: bool,
     page: i32,
 }
@@ -1594,6 +1622,30 @@ pub async fn public_global_timeline_request(
         }
     }
 
+    // build relationships list
+    let mut relationships: HashMap<String, RelationshipStatus> = HashMap::new();
+
+    for question in &questions {
+        if relationships.contains_key(&question.0.author.id) {
+            continue;
+        }
+
+        if question.0.author.id == auth_user.id {
+            // make sure we can view our own responses
+            relationships.insert(question.0.author.id.clone(), RelationshipStatus::Friends);
+            continue;
+        };
+
+        relationships.insert(
+            question.0.author.id.clone(),
+            database
+                .auth
+                .get_user_relationship(question.0.author.id.clone(), auth_user.id.clone())
+                .await
+                .0,
+        );
+    }
+
     // ...
     let is_helper = {
         let group = match database.auth.get_group_by_id(auth_user.group).await {
@@ -1611,6 +1663,7 @@ pub async fn public_global_timeline_request(
             unread,
             notifs,
             questions,
+            relationships,
             is_helper,
             page: query.page,
         }
