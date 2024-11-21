@@ -79,7 +79,7 @@ block head %}
                     src="/api/v0/auth/profile/{{ reaction.user.id }}/avatar"
                     alt="@{{ reaction.user.username }}"
                     class="avatar"
-                loading="lazy"
+                    loading="lazy"
                     style="--size: 20px"
                 />
             </a>
@@ -337,7 +337,7 @@ crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
         e.preventDefault();
         trigger("responses:edit_tags", [
             "{{ response.id }}",
-            e.target.tags.value.split(",").map((t) => t.trim()),
+            e.target.tags.value.toLowerCase().split(",").map((t) => t.trim()),
         ]).then((res) => {
             alert(res.message || "Response edited!");
 

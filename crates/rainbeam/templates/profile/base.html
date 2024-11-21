@@ -159,15 +159,22 @@ config.name }}{% endblock %} {% block head %}
 
                             <div class="flex flex-wrap w-full gap-2">
                                 {% for badge in other.badges %}
-                                <span class="notification ff-inherit fs-md bold" style="background: {{ badge.1 }}; color: {{ badge.2 }}">{{ badge.0 }}</span>
+                                <span
+                                    class="notification ff-inherit fs-md bold flex items-center justify-center"
+                                    style="background: {{ badge.1 }}; color: {{ badge.2 }}; gap: 5px"
+                                >
+                                    <i class="icon" data-lucide="award"></i>
+                                    {{ badge.0 }}
+                                </span>
                                 {% endfor %}
 
                                 {% if other.tier >= config.tiers.profile_badge %}
                                 <span
-                                    class="notification ff-inherit fs-md bold"
-                                    style="background: var(--color-primary); color: var(--color-text-primary)"
+                                    class="notification ff-inherit fs-md bold flex items-center justify-center"
+                                    style="background: var(--color-primary); color: var(--color-text-primary); gap: 5px"
                                 >
-                                    👑 Supporter
+                                    <i class="icon" data-lucide="crown"></i>
+                                    Supporter
                                 </span>
                                 {% endif %}
 
@@ -488,7 +495,7 @@ config.name }}{% endblock %} {% block head %}
         <div
             class="card padded shadow flex flex-col w-full gap-4 items-center justify-center"
         >
-            <i class="icon" data-lucide="lock-keyhole"></i>
+            <i class="icon" data-lucide="lock-keyhole" style="width: 48px !important;"></i>
             <h4>This profile only allows friends to view their feeds.</h4>
         </div>
         {% else %}
@@ -701,8 +708,6 @@ config.name }}{% endblock %} {% block head %}
         const form = document.getElementById("question_form");
 
         if (form) {
-            form.querySelector("textarea").innerHTML = `/+r/${reply_intent.substring(0, 10)}\n`;
-
             form.innerHTML +=
                 `<p class="fade">Replying to <a href="/response/${reply_intent}" target="_blank">${reply_intent.substring(0, 10)}</a> (<a href="?" class="red">cancel</a>)</p>`;
         }
@@ -722,7 +727,9 @@ config.name }}{% endblock %} {% block head %}
         e.preventDefault();
         trigger("questions:create", [
             "{{ other.id }}",
-            e.target.content.value,
+            reply_intent
+                ? `${e.target.content.value}\n\n/+r/${reply_intent.substring(0, 10)}`
+                : e.target.content.value,
             (e.target.anonymous || { checked: false }).checked,
             e.target.carp_content.value.length != 0
                 ? e.target.carp_content.value

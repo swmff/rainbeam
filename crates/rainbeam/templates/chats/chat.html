@@ -335,6 +335,8 @@ endblock %} {% block nav_left %}
                                             msg[1].id === window.CHAT_USER_ID, // check if this message is from us (so we don't send notif request)
                                         ]);
                                     }
+
+                                    trigger("app:lucide", []);
                                 });
                         }
 

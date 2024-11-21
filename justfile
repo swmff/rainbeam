@@ -18,16 +18,6 @@ build-d:
     just build-assets
     cargo build --bin rainbeam
 
-# web
-web-dev:
-    cd crates/rainbeam-web && bun --bun run dev
-
-web-build:
-    cd crates/rainbeam-web && bun --bun run build
-
-web:
-    cd crates/rainbeam-web && bun ./build/index.js
-
 # test
 test:
     just build-assets

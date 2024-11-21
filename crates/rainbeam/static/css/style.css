@@ -376,7 +376,9 @@ button.floating,
     opacity: 0%;
     transform: scale(0);
     padding: 0 !important;
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 1 / 1 !important;
+    width: 48px !important;
+    height: 48px !important;
     z-index: 3;
 }
 
@@ -405,6 +407,19 @@ button.floating:is(html[data-scroll-500="true"] *),
 .card button.secondary:hover,
 .card a.button.secondary:hover {
     background: var(--color-super-raised);
+}
+
+button.border,
+.button.border {
+    background: inherit;
+    border: solid 1px var(--color-super-lowered);
+}
+
+button.border:hover,
+.button.border:hover {
+    background: var(--color-lowered);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
 }
 
 button.reaction.active {
@@ -2128,10 +2143,6 @@ nav:not(.legacy *)
         margin: -140px 0 0;
     }
 
-    #profile_box:not(.legacy *) #profile_card .profile_card_section_1 {
-        width: 100%;
-    }
-
     #profile_box:not(.legacy *)
         #profile_card
         .profile_card_section_1
@@ -2200,10 +2211,6 @@ nav:not(.legacy *)
         min-height: 100%;
         flex-direction: column;
         align-items: flex-end;
-    }
-
-    #profile_box:not(.legacy *) #profile_card .profile_card_section_1 {
-        width: 70%;
     }
 
     #profile_box:not(.legacy *) #profile_card .profile_card_section_2 {

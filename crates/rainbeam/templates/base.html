@@ -46,7 +46,7 @@
             globalThis.ns_verbose = false;
             globalThis.ns_config = {
                 root: "/static/build/js/",
-                version: "1.16.0",
+                version: "1.16.1",
                 verbose: globalThis.ns_verbose,
             };
 
@@ -364,7 +364,7 @@
         <a
             href="#top"
             id="backtotop"
-            class="button primary floating mobile"
+            class="button border floating"
             title="Back to top"
         >
             <i class="icon" data-lucide="chevron-up"></i>
@@ -517,7 +517,7 @@
                             <button
                                 title="Search"
                                 class="primary bold circle"
-                                onclick="globalThis.web_api_confirm_submit(true); document.getElementById('prompt').value = ''"
+                                onclick="globalThis.web_api_confirm_submit(true)"
                                 type="buton"
                             >
                                 <i class="icon" data-lucide="check"></i>

@@ -1336,18 +1336,6 @@ impl Database {
                     return Err(DatabaseError::Other);
                 };
 
-                // pages by user
-                let query: &str =
-                    if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
-                        "DELETE FROM \"xpages\" WHERE \"owner\" = ?"
-                    } else {
-                        "DELETE FROM \"xpages\" WHERE \"owner\" = $1"
-                    };
-
-                if let Err(_) = sqlquery(query).bind::<&String>(&id).execute(c).await {
-                    return Err(DatabaseError::Other);
-                };
-
                 // relationships involving user
                 let query: &str =
                     if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
