@@ -1,6 +1,7 @@
 use crate::model::{
-    DatabaseError, IpBan, IpBanCreate, IpBlock, IpBlockCreate, Profile, ProfileCreate,
-    ProfileMetadata, RelationshipStatus, TokenContext, Warning, WarningCreate,
+    DatabaseError, IpBan, IpBanCreate, IpBlock, IpBlockCreate, Mail, MailCreate, MailState,
+    Profile, ProfileCreate, ProfileMetadata, RelationshipStatus, TokenContext, Warning,
+    WarningCreate,
 };
 use crate::model::{Group, Notification, NotificationCreate, Permission, UserFollow};
 
@@ -231,6 +232,20 @@ impl Database {
                 user      TEXT,
                 context   TEXT,
                 timestamp TEXT
+            )",
+        )
+        .execute(c)
+        .await;
+
+        let _ = sqlquery(
+            "CREATE TABLE IF NOT EXISTS \"xmail\" (
+                title     TEXT,
+                content   TEXT,
+                timestamp TEXT,
+                id        TEXT,
+                state     TEXT,
+                author    TEXT,
+                recipient TEXT
             )",
         )
         .execute(c)
@@ -839,6 +854,7 @@ impl Database {
             "sparkler:disallow_anonymous_comments",
             "sparkler:require_account",
             "sparkler:private_social",
+            "sparkler:disable_mailbox",
             "sparkler:filter",
         ]
     }
@@ -1394,6 +1410,11 @@ impl Database {
                 self.base
                     .cachedb
                     .remove(format!("rbeam.auth.notification_count:{}", id))
+                    .await;
+
+                self.base
+                    .cachedb
+                    .remove(format!("rbeam.auth.rbeam.auth.mail_count:{}", id))
                     .await;
 
                 Ok(())
@@ -3684,6 +3705,315 @@ impl Database {
                 self.base
                     .cachedb
                     .remove(format!("rbeam.auth.ipblock:{}", id))
+                    .await;
+
+                // return
+                return Ok(());
+            }
+            Err(_) => return Err(DatabaseError::Other),
+        };
+    }
+
+    // mail
+
+    // GET
+    /// Get an existing mail
+    ///
+    /// ## Arguments:
+    /// * `id`
+    pub async fn get_mail(&self, id: String) -> Result<Mail> {
+        // check in cache
+        match self
+            .base
+            .cachedb
+            .get(format!("rbeam.auth.mail:{}", id))
+            .await
+        {
+            Some(c) => return Ok(serde_json::from_str::<Mail>(c.as_str()).unwrap()),
+            None => (),
+        };
+
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "SELECT * FROM \"xmail\" WHERE \"id\" = ?"
+        } else {
+            "SELECT * FROM \"xmail\" WHERE \"id\" = $1"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
+            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        let mail = Mail {
+            title: res.get("title").unwrap().to_string(),
+            content: res.get("content").unwrap().to_string(),
+            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+            id: res.get("id").unwrap().to_string(),
+            state: serde_json::from_str(res.get("address").unwrap()).unwrap(),
+            author: res.get("author").unwrap().to_string(),
+            recipient: res.get("recipient").unwrap().to_string(),
+        };
+
+        // store in cache
+        self.base
+            .cachedb
+            .set(
+                format!("rbeam.auth.mail:{}", id),
+                serde_json::to_string::<Mail>(&mail).unwrap(),
+            )
+            .await;
+
+        // return
+        Ok(mail)
+    }
+
+    /// Get all mail by their recipient
+    ///
+    /// ## Arguments:
+    /// * `recipient`
+    pub async fn get_mail_by_recipient(&self, recipient: String) -> Result<Vec<Mail>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "SELECT * FROM \"xmail\" WHERE \"recipient\" = ? ORDER BY \"timestamp\" DESC"
+        } else {
+            "SELECT * FROM \"xmail\" WHERE \"recipient\" = $1 ORDER BY \"timestamp\" DESC"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query)
+            .bind::<&String>(&recipient.to_lowercase())
+            .fetch_all(c)
+            .await
+        {
+            Ok(p) => {
+                let mut out: Vec<Mail> = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+                    out.push(Mail {
+                        title: res.get("title").unwrap().to_string(),
+                        content: res.get("content").unwrap().to_string(),
+                        timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                        id: res.get("id").unwrap().to_string(),
+                        state: serde_json::from_str(res.get("address").unwrap()).unwrap(),
+                        author: res.get("author").unwrap().to_string(),
+                        recipient: res.get("recipient").unwrap().to_string(),
+                    });
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        Ok(res)
+    }
+
+    /// Get the number of mail by their recipient
+    ///
+    /// ## Arguments:
+    /// * `recipient`
+    pub async fn get_mail_count_by_recipient(&self, recipient: String) -> usize {
+        // attempt to fetch from cache
+        if let Some(count) = self
+            .base
+            .cachedb
+            .get(format!("rbeam.auth.mail_count:{}", recipient))
+            .await
+        {
+            return count.parse::<usize>().unwrap_or(0);
+        };
+
+        // fetch from database
+        let count = self
+            .get_mail_by_recipient(recipient.clone())
+            .await
+            .unwrap_or(Vec::new())
+            .len();
+
+        self.base
+            .cachedb
+            .set(
+                format!("rbeam.auth.mail_count:{}", recipient),
+                count.to_string(),
+            )
+            .await;
+
+        count
+    }
+
+    /// Get all mail by their recipient, 50 at a time
+    ///
+    /// ## Arguments:
+    /// * `recipient`
+    /// * `page`
+    pub async fn get_mail_by_recipient_paginated(
+        &self,
+        recipient: String,
+        page: i32,
+    ) -> Result<Vec<Mail>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            format!("SELECT * FROM \"xmail\" WHERE \"recipient\" = ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        } else {
+            format!("SELECT * FROM \"xmail\" WHERE \"recipient\" = $1 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        };
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query)
+            .bind::<&String>(&recipient.to_lowercase())
+            .fetch_all(c)
+            .await
+        {
+            Ok(p) => {
+                let mut out: Vec<Mail> = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+                    out.push(Mail {
+                        title: res.get("title").unwrap().to_string(),
+                        content: res.get("content").unwrap().to_string(),
+                        timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                        id: res.get("id").unwrap().to_string(),
+                        state: serde_json::from_str(res.get("address").unwrap()).unwrap(),
+                        author: res.get("author").unwrap().to_string(),
+                        recipient: res.get("recipient").unwrap().to_string(),
+                    });
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        Ok(res)
+    }
+
+    // SET
+    /// Create a new notification
+    ///
+    /// ## Arguments:
+    /// * `props` - [`MailCreate`]
+    pub async fn create_mail(&self, props: MailCreate, author: String) -> Result<()> {
+        // make sure author and recipient exist
+        if let Err(e) = self.get_profile(author.clone()).await {
+            return Err(e);
+        }
+
+        match self.get_profile(props.recipient.clone()).await {
+            Ok(ua) => {
+                if ua.metadata.is_true("sparkler:disable_mailbox") {
+                    return Err(DatabaseError::NotAllowed);
+                }
+            }
+            Err(e) => return Err(e),
+        }
+
+        // ...
+        let mail = Mail {
+            title: props.title,
+            content: props.content,
+            timestamp: utility::unix_epoch_timestamp(),
+            id: utility::random_id(),
+            state: MailState::Unread,
+            author,
+            recipient: props.recipient,
+        };
+
+        // create notification
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "INSERT INTO \"xmail\" VALUES (?, ?, ?, ?, ?, ?, ?)"
+        } else {
+            "INSERT INTO \"xmail\" VALEUS ($1, $2, $3, $4, $5, $6, $7)"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query)
+            .bind::<&String>(&mail.title)
+            .bind::<&String>(&mail.content)
+            .bind::<&String>(&mail.timestamp.to_string())
+            .bind::<&String>(&mail.id)
+            .bind::<&String>(&serde_json::to_string(&mail.state).unwrap())
+            .bind::<&String>(&mail.author)
+            .bind::<&String>(&mail.recipient)
+            .execute(c)
+            .await
+        {
+            Ok(_) => {
+                // incr notifications count
+                self.base
+                    .cachedb
+                    .incr(format!("rbeam.auth.mail_count:{}", mail.recipient))
+                    .await;
+
+                // ...
+                return Ok(());
+            }
+            Err(_) => return Err(DatabaseError::Other),
+        };
+    }
+
+    /// Delete an existing mail
+    ///
+    /// Mail can only be deleted by their recipient.
+    ///
+    /// ## Arguments:
+    /// * `id` - the ID of the mail
+    /// * `user` - the user doing this
+    pub async fn delete_mail(&self, id: String, user: Profile) -> Result<()> {
+        // make sure notification exists
+        let mail = match self.get_mail(id.clone()).await {
+            Ok(n) => n,
+            Err(e) => return Err(e),
+        };
+
+        // check username
+        if user.id != mail.recipient {
+            // check permission
+            let group = match self.get_group_by_id(user.group).await {
+                Ok(g) => g,
+                Err(_) => return Err(DatabaseError::Other),
+            };
+
+            if !group.permissions.contains(&Permission::Helper) {
+                return Err(DatabaseError::NotAllowed);
+            }
+        }
+
+        // delete notification
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "DELETE FROM \"xmail\" WHERE \"id\" = ?"
+        } else {
+            "DELETE FROM \"xmail\" WHERE \"id\" = $1"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query).bind::<&String>(&id).execute(c).await {
+            Ok(_) => {
+                // decr notifications count
+                self.base
+                    .cachedb
+                    .decr(format!("rbeam.auth.mail_count:{}", mail.recipient))
+                    .await;
+
+                // remove from cache
+                self.base
+                    .cachedb
+                    .remove(format!("rbeam.auth.mail:{}", id))
                     .await;
 
                 // return

@@ -396,6 +396,34 @@ impl Default for Group {
     }
 }
 
+/// Mail state
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub enum MailState {
+    /// The mail has been sent, but has never been opened by the recipient
+    Unread,
+    /// The mail has been opened by the recipient at least once
+    Read,
+}
+
+/// Basic mail structure
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Mail {
+    /// The title of the mail
+    pub title: String,
+    /// The content of the mail
+    pub content: String,
+    /// The timestamp of when the mail was created
+    pub timestamp: u128,
+    /// The ID of the mail
+    pub id: String,
+    /// The state of the mail
+    pub state: MailState,
+    /// The author of the mail
+    pub author: String,
+    /// The recipient of the mail
+    pub recipient: String,
+}
+
 // props
 #[derive(Serialize, Deserialize, Debug, Hcaptcha)]
 pub struct ProfileCreate {
@@ -469,6 +497,13 @@ pub struct IpBanCreate {
 pub struct IpBlockCreate {
     pub ip: String,
     pub context: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct MailCreate {
+    pub title: String,
+    pub content: String,
+    pub recipient: String,
 }
 
 /// General API errors
