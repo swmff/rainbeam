@@ -14,11 +14,14 @@
         {% block head %}{% endblock %}
 
         <link rel="icon" href="/static/favicon.svg" />
-        <link rel="stylesheet" href="/static/style.css" />
+        <link rel="stylesheet" href="/static/build/css/style.css" />
 
         <!-- shared js -->
-        <script src="https://unpkg.com/regns@1.0.1/index.js"></script>
-        <script src="https://unpkg.com/@twemoji/api@15.1.0/dist/twemoji.min.js"></script>
+        <script
+            src="/static/build/js/loader.js"
+            id="loader.js"
+            data-turbo-permanent
+        ></script>
 
         <script>
             globalThis.ns_config = {
@@ -32,7 +35,11 @@
             };
         </script>
 
-        <script src="/static/js/app.js"></script>
+        <script
+            src="/static/build/js/app.js"
+            id="app.js"
+            data-turbo-permanent
+        ></script>
     </head>
 
     <body class="flex flex-col">
@@ -40,11 +47,12 @@
         {% let anonymous_username = other.metadata.kv.get("sparkler:anonymous_username") %}
         {% let anonymous_avatar = other.metadata.kv.get("sparkler:anonymous_avatar") %}
 
-        <nav id="top" class="card flex justify-between gap-2">
+        <nav id="top" class="flex justify-between gap-2">
             <a
                 href="/@{{ other.username }}"
                 target="_blank"
-                class="flex items-center gap-2"
+                class="flex items-center gap-2 title button"
+                title="@{{ other.username }}"
             >
                 <img
                     title="{{ other.username }}'s avatar"
@@ -62,20 +70,18 @@
                         {{ other.username }}
                     {% endif %}
                 </b>
-
-                <span>&lpar;{{ other.username }}&rpar;</span>
             </a>
 
             <a
                 href="/"
                 target="_blank"
                 title="{{ config.name }}"
-                class="flex items-center"
+                class="button flex items-center title"
             >
                 <img
-                    src="/static/favicon.svg"
+                    src="/static/images/ui/logo.svg"
                     alt="{{ config.name }} logo"
-                    class="avatar shadow round-sm"
+                    class="avatar shadow round-sm title-content"
                     style="--size: 20px"
                 />
             </a>
@@ -97,7 +103,7 @@
 
                 <div>
                     <!-- prettier-ignore -->
-                    {% if !lock_profile %}
+                    {% if !lock_profile && (other.group != -1) %}
                     {% if (require_account && profile.is_some()) | (disallow_anonymous && profile.is_some()) | (!require_account && !disallow_anonymous) %}
                     <form id="question_form" class="flex flex-col gap-2">
                         <div id="carp_context"></div>
@@ -108,41 +114,64 @@
                             style="display: none"
                         />
 
+                        {% if let Some(profile) = profile %}
                         <textarea
                             class="w-full"
                             placeholder="Type your question!"
                             minlength="1"
-                            maxlength="2048"
+                            maxlength="{% if (profile.tier >= config.tiers.double_limits) | (other.tier >= config.tiers.double_limits) %}4096{% else %}2048{% endif %}"
                             required
                             name="content"
                             id="content"
                             hook="counter"
                         ></textarea>
+                        {% else %}
+                        <textarea
+                            class="w-full"
+                            placeholder="Type your question!"
+                            minlength="1"
+                            maxlength="{% if other.tier >= config.tiers.double_limits %}4096{% else %}2048{% endif %}"
+                            required
+                            name="content"
+                            id="content"
+                            hook="counter"
+                        ></textarea>
+                        {% endif %}
 
                         <!-- prettier-ignore -->
-                        <div class="flex justify-between w-full gap-1">
-                        <div class="footernav items-center gap-2">
-                            <span id="content:counter" class="notification item"></span>
-                            {% if profile.is_some() && (disallow_anonymous == false) %}
-                            <div class="checkbox_container item">
-                                <input
-                                    type="checkbox"
-                                    name="anonymous"
-                                    id="anonymous"
-                                />
+                        <div class="flex justify-between w-full gap-1 flex-wrap">
+                            <div class="footernav items-center gap-2">
+                                <span id="content:counter" class="notification item"></span>
+                                {% if profile.is_some() && (disallow_anonymous == false) %}
+                                <div class="checkbox_container item">
+                                    <input
+                                        type="checkbox"
+                                        name="anonymous"
+                                        id="anonymous"
+                                    />
 
-                                <label for="anonymous" class="normal">
-                                    Hide your name
-                                </label>
-                            </div>
-                            {% else %}
-                            <div></div>
-                            {% endif %}
+                                    <label for="anonymous" class="normal">
+                                        Hide your name
+                                    </label>
+                                </div>
+
+                                <script>
+                                function ls_anon_check() {
+                                    if (window.localStorage.getItem("always_anon") === "true") {
+                                        document.getElementById("anonymous").checked = true
+                                    }
+                                }
+
+                                ls_anon_check();
+                                </script>
+                                {% else %}
+                                <div></div>
+                                {% endif %}
                             </div>
 
                             <div class="flex gap-2">
                                 {% if other.metadata.is_true("sparkler:allow_drawings") %}
-                                <button class="round-lg" onclick="attach_carp(event)" type="button">Draw</button>
+                                <button onclick="attach_carp(event)" type="button">Draw</button>
                                 {% endif %}
 
                                 <button class="primary bold">Ask</button>
@@ -153,6 +182,12 @@
                     <b>This profile does not allow anonymous questions.</b>
                     {% endif %} {% else %}
                     <b>This profile is not currently accepting questions.</b>
+
+                    <style>
+                        #question_box {
+                            display: none;
+                        }
+                    </style>
                     {% endif %}
                 </div>
             </header>
@@ -210,6 +245,9 @@
             </footer>
         </div>
 
+        <script src="https://unpkg.com/@twemoji/api@15.1.0/dist/twemoji.min.js"></script>
+        <script src="https://unpkg.com/lucide@latest"></script>
+
         <script>
             use("questions", () => {});
             use("responses", () => {});
@@ -227,6 +265,7 @@
                 app["hook.long_text.init"]();
 
                 twemoji.parse(document.body);
+                app.lucide();
 
                 // anchors
                 for (const anchor of Array.from(
@@ -249,7 +288,6 @@
                             "{{ other.id }}",
                             e.target.content.value,
                             (e.target.anonymous || { checked: false }).checked,
-                            reply_intent || "",
                             e.target.carp_content.value.length != 0
                                 ? e.target.carp_content.value
                                 : "",
@@ -263,19 +301,36 @@
                         });
                     });
             })();
+
+            function attach_carp(e) {
+                e.target.innerText = "Remove drawing";
+                e.target.onclick = async (e) => {
+                    if (
+                        !(await trigger("app:confirm", [
+                            "Are you sure you want to do this?",
+                        ]))
+                    ) {
+                        return;
+                    }
+
+                    globalThis.detach_carp(e);
+                };
+
+                use("carp", (carp) => {
+                    const sammy = carp.new(
+                        document.getElementById("carp_context"),
+                    );
+
+                    sammy.create_canvas();
+                    sammy.onedit = (text) => {
+                        document.getElementById("carp_content").value =
+                            `--CARP${text}`;
+                    };
+
+                    globalThis.sammy = sammy;
+                });
+            }
         </script>
-
-        <style>
-            nav {
-                margin-bottom: 0.25rem !important;
-                border-radius: 0;
-                border: none;
-            }
-
-            nav a::before {
-                display: none;
-            }
-        </style>
 
         {% let raw_metadata =
         crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
