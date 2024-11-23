@@ -41,7 +41,7 @@ pub fn escape_username(name: &String) -> String {
     }
 
     if !found_good {
-        return name.escape_default().to_string();
+        return "bad username".to_string();
     }
 
     // return given data

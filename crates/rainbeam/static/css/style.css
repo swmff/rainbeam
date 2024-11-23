@@ -1708,6 +1708,10 @@ canvas {
     transform: rotateZ(-25deg);
 }
 
+.date {
+    display: none;
+}
+
 /* codemirror */
 .CodeMirror {
     color: var(--color-text) !important;

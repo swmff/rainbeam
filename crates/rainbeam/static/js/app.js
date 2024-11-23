@@ -93,6 +93,8 @@
 
             element.innerText =
                 pretty === undefined ? then.toLocaleDateString() : pretty;
+
+            element.style.display = "inline-block";
         }
     });
 

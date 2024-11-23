@@ -2252,7 +2252,7 @@ impl Database {
             // get question from database
             match self.get_question(props.question.clone()).await {
                 Ok(q) => q,
-                Err(_) => Question::unknown(),
+                Err(_) => return Err(DatabaseError::NotFound),
             }
         } else {
             // create post question
