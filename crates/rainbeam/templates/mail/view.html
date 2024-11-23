@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% block title %}My mail inbox - {{ config.name }}{%
+{% extends "base.html" %} {% block title %}View mail - {{ config.name }}{%
 endblock %} {% block nav_left %}
 <a class="button" href="/" title="Timeline">
     <i class="icon" data-lucide="house"></i>
@@ -25,16 +25,19 @@ endblock %} {% block nav_left %}
 {% endblock %} {% block content %}
 <article>
     <main class="flex flex-col gap-4">
-        {% include "components/mail.html" %}
-
+        {% include "components/mail.html" %} {% if let Some(user) = profile %}
         <script>
             setTimeout(() => {
-                if (document.getElementById("unread")) {
+                if (
+                    document.getElementById("unread") &&
+                    "{{ user.id }}" !== "{{ author.id }}"
+                ) {
                     // this mail has the "unread" state
                     trigger("mail:state", ["{{ letter.id }}", "Read"]);
                 }
             }, 250);
         </script>
+        {% endif %}
     </main>
 </article>
 

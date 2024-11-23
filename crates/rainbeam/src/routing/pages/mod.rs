@@ -2105,6 +2105,7 @@ pub async fn routes(database: Database) -> Router {
         .route("/chats/_app/msg.html", post(chats::render_message_request))
         // mail
         .route("/inbox/mail", get(mail::inbox_request))
+        .route("/inbox/mail/sent", get(mail::outbox_request))
         .route("/inbox/mail/compose", get(mail::compose_request))
         .route("/inbox/mail/letter/:id", get(mail::view_request))
         .route(

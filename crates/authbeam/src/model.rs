@@ -165,6 +165,8 @@ pub enum TokenPermission {
     ///
     /// Generated tokens cannot have any permissions the token used to generate it doesn't have
     GenerateTokens,
+    /// Send mail to other users on behalf of the user
+    SendMail,
 }
 
 impl TokenContext {

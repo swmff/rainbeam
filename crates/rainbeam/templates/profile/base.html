@@ -398,6 +398,12 @@ config.name }}{% endblock %} {% block head %}
                                 Chat
                             </button>
                             <a
+                                href="/inbox/mail/compose?to={{ other.id }}"
+                            >
+                                <i class="icon" data-lucide="mail-plus"></i>
+                                Mail
+                            </a>
+                            <a
                                 href="/settings?block={{ other.username }}#sparkler:block_somebody"
                                 target="_blank"
                             >

@@ -3907,6 +3907,63 @@ impl Database {
         Ok(res)
     }
 
+    /// Get all mail by their recipient, 50 at a time
+    ///
+    /// ## Arguments:
+    /// * `recipient`
+    /// * `page`
+    pub async fn get_mail_by_recipient_sent_paginated(
+        &self,
+        recipient: String,
+        page: i32,
+    ) -> Result<Vec<(Mail, Profile)>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            format!("SELECT * FROM \"xmail\" WHERE \"author\" = ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        } else {
+            format!("SELECT * FROM \"xmail\" WHERE \"author\" = $1 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        };
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query)
+            .bind::<&String>(&recipient.to_lowercase())
+            .fetch_all(c)
+            .await
+        {
+            Ok(p) => {
+                let mut out: Vec<(Mail, Profile)> = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let author = res.get("author").unwrap();
+
+                    out.push((
+                        Mail {
+                            title: res.get("title").unwrap().to_string(),
+                            content: res.get("content").unwrap().to_string(),
+                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            id: res.get("id").unwrap().to_string(),
+                            state: serde_json::from_str(res.get("state").unwrap()).unwrap(),
+                            author: author.to_string(),
+                            recipient: res.get("recipient").unwrap().to_string(),
+                        },
+                        match self.get_profile(author.to_string()).await {
+                            Ok(ua) => ua,
+                            Err(e) => return Err(e),
+                        },
+                    ));
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        Ok(res)
+    }
+
     // SET
     /// Create a new mail
     ///

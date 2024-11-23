@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% block title %}My mail inbox - {{ config.name }}{%
+{% extends "base.html" %} {% block title %}My mail outbox - {{ config.name }}{%
 endblock %} {% block nav_left %}
 <a class="button" href="/" title="Timeline">
     <i class="icon" data-lucide="house"></i>
@@ -26,8 +26,8 @@ endblock %} {% block nav_left %}
 <article>
     <main class="flex flex-col gap-4">
         <div class="pillmenu convertible">
-            <a href="/inbox/mail" class="active"><span>Received</span></a>
-            <a href="/inbox/mail/sent"><span>Sent</span></a>
+            <a href="/inbox/mail"><span>Received</span></a>
+            <a href="/inbox/mail/sent" class="active"><span>Sent</span></a>
         </div>
 
         <div class="flex w-full gap-2 justify-between">

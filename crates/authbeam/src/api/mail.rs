@@ -1,5 +1,5 @@
 use crate::database::Database;
-use crate::model::{DatabaseError, MailCreate, SetMailState};
+use crate::model::{DatabaseError, MailCreate, SetMailState, TokenPermission};
 use databeam::DefaultReturn;
 
 use axum::response::IntoResponse;
@@ -17,19 +17,35 @@ pub async fn create_request(
 ) -> impl IntoResponse {
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
-            Ok(ua) => ua,
-            Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: None,
-                });
+        Some(c) => {
+            let token = c.value_trimmed().to_string();
+
+            match database.get_profile_by_unhashed(token.clone()).await {
+                Ok(ua) => {
+                    // check token permission
+                    if !ua
+                        .token_context_from_token(&token)
+                        .can_do(TokenPermission::SendMail)
+                    {
+                        return Json(DefaultReturn {
+                            success: false,
+                            message: DatabaseError::NotAllowed.to_string(),
+                            payload: None,
+                        });
+                    }
+
+                    // return
+                    ua
+                }
+                Err(e) => {
+                    return Json(DefaultReturn {
+                        success: false,
+                        message: e.to_string(),
+                        payload: None,
+                    });
+                }
             }
-        },
+        }
         None => {
             return Json(DefaultReturn {
                 success: false,
