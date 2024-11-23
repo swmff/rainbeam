@@ -21,6 +21,7 @@ use super::api;
 
 mod chats;
 mod circles;
+mod mail;
 mod profile;
 mod search;
 mod settings;
@@ -2102,6 +2103,14 @@ pub async fn routes(database: Database) -> Router {
         .route("/chats", get(chats::chats_homepage_request))
         .route("/chats/:id", get(chats::chat_request))
         .route("/chats/_app/msg.html", post(chats::render_message_request))
+        // mail
+        .route("/inbox/mail", get(mail::inbox_request))
+        .route("/inbox/mail/compose", get(mail::compose_request))
+        .route("/inbox/mail/letter/:id", get(mail::view_request))
+        .route(
+            "/inbox/mail/_app/components/mail.html",
+            get(mail::partial_mail_request),
+        )
         // auth
         .route("/login", get(login_request))
         .route("/sign_up", get(sign_up_request))

@@ -1,5 +1,5 @@
 use crate::database::Database;
-use crate::model::{DatabaseError, MailCreate};
+use crate::model::{DatabaseError, MailCreate, SetMailState};
 use databeam::DefaultReturn;
 
 use axum::response::IntoResponse;
@@ -53,7 +53,7 @@ pub async fn create_request(
 
     Json(DefaultReturn {
         success: true,
-        message: "Mail exists".to_string(),
+        message: "Mail created".to_string(),
         payload: Some(mail),
     })
 }
@@ -100,6 +100,53 @@ pub async fn delete_request(
     Json(DefaultReturn {
         success: true,
         message: "Mail deleted".to_string(),
+        payload: (),
+    })
+}
+
+/// Update mail state
+pub async fn update_state_request(
+    jar: CookieJar,
+    Path(id): Path<String>,
+    State(database): State<Database>,
+    Json(props): Json<SetMailState>,
+) -> impl IntoResponse {
+    // get user from token
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(e) => {
+                return Json(DefaultReturn {
+                    success: false,
+                    message: e.to_string(),
+                    payload: (),
+                });
+            }
+        },
+        None => {
+            return Json(DefaultReturn {
+                success: false,
+                message: DatabaseError::NotAllowed.to_string(),
+                payload: (),
+            });
+        }
+    };
+
+    // return
+    if let Err(e) = database.update_mail_state(id, props.state, auth_user).await {
+        return Json(DefaultReturn {
+            success: false,
+            message: e.to_string(),
+            payload: (),
+        });
+    }
+
+    Json(DefaultReturn {
+        success: true,
+        message: "Mail updated".to_string(),
         payload: (),
     })
 }

@@ -397,7 +397,7 @@ impl Default for Group {
 }
 
 /// Mail state
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub enum MailState {
     /// The mail has been sent, but has never been opened by the recipient
     Unread,
@@ -504,6 +504,11 @@ pub struct MailCreate {
     pub title: String,
     pub content: String,
     pub recipient: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SetMailState {
+    pub state: MailState,
 }
 
 /// General API errors

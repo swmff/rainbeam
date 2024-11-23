@@ -1,0 +1,68 @@
+<div class="card-nest" style="gap: 0">
+    <div class="card w-full flex flex-col flex-2">
+        <div class="flex justify-between items-center flex-2">
+            <div class="flex gap-1 items-center">
+                {% if letter.state == authbeam::model::MailState::Unread %}
+                <i class="icon" data-lucide="mail-open"></i>
+                <div id="unread"></div>
+                {% else %}
+                <i class="icon" data-lucide="mail-check"></i>
+                {% endif %}
+
+                <b>{{ letter.title }}</b>
+            </div>
+
+            <!-- prettier-ignore -->
+            <div class="flex gap-2">
+                {% if let Some(user) = profile %}
+                {% if (user.id == letter.recipient) | (user.id == letter.author) %}
+                <a
+                    class="button icon-only border"
+                    title="Reply"
+                    href="/inbox/mail/compose?reply={{ letter.id }}&title=Re%3A%20{{ letter.title }}&to={{ letter.author }}"
+                >
+                    <i class="icon" data-lucide="reply"></i>
+                </a>
+                {% endif %}
+
+                {% if user.id == letter.recipient %}
+                <button
+                    class="icon-only border red"
+                    title="Delete"
+                    onclick="trigger('mail:delete', ['{{ letter.id }}'])"
+                >
+                    <i class="icon" data-lucide="trash"></i>
+                </button>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+
+        <hr />
+
+        <div class="fade flex items-center gap-2">
+            <span>From:</span>
+
+            <a href="/@{{ author.username }}">
+                <img
+                    title="{{ author.username }}'s avatar"
+                    src="/api/v0/auth/profile/{{ author.id }}/avatar"
+                    alt="@{{ author.username }}"
+                    class="avatar"
+                    loading="lazy"
+                    style="--size: 20px"
+                />
+                <span>{{ author.username }}</span>
+            </a>
+        </div>
+
+        <div class="fade flex items-center gap-2">
+            <span>Sent:</span>
+            <span class="date">{{ letter.timestamp }}</span>
+        </div>
+    </div>
+
+    <span class="card flex flex-col gap-4">
+        {{ shared::ui::render_markdown(letter.content)|safe }}
+    </span>
+</div>

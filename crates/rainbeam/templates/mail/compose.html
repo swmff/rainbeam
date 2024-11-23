@@ -1,0 +1,103 @@
+{% extends "base.html" %} {% block title %}My mail inbox - {{ config.name }}{%
+endblock %} {% block nav_left %}
+<a class="button" href="/" title="Timeline">
+    <i class="icon" data-lucide="house"></i>
+    <span class="desktop">Timeline</span>
+    <span class="mobile">Home</span>
+</a>
+
+<a class="button" href="/inbox" title="My inbox">
+    <i class="icon" data-lucide="inbox"></i>
+    <span class="flex items-center gap-2">
+        <span>Inbox</span>
+        {% if unread != 0 %}
+        <span class="notification tr">{{ unread }}</span>
+        {% endif %}
+    </span>
+</a>
+{% endblock %} {% block nav_right %}
+<a class="button" href="/inbox/notifications" title="My notifications">
+    <i class="icon" data-lucide="bell"></i>
+    {% if notifs != 0 %}
+    <span class="notification tr">{{ notifs }}</span>
+    {% endif %}
+</a>
+{% endblock %} {% block content %}
+<article>
+    <main class="flex flex-col gap-4">
+        <form class="card-nest" onsubmit="send_mail(event)" style="gap: 0">
+            <div class="card w-full flex justify-between items-center flex-2">
+                <b>Compose mail</b>
+
+                <button class="icon-only primary" title="Send">
+                    <i class="icon" data-lucide="send"></i>
+                </button>
+            </div>
+
+            <div class="card flex flex-col gap-4">
+                <div class="flex flex-col gap-2">
+                    <label for="recipient">To</label>
+                    <input
+                        type="text"
+                        name="recipient"
+                        id="recipient"
+                        required
+                    />
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <label for="title">Subject</label>
+                    <input type="text" name="title" id="title" required />
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <label for="content">Content</label>
+                    <textarea
+                        type="text"
+                        name="content"
+                        id="content"
+                        required
+                    ></textarea>
+                </div>
+            </div>
+        </form>
+
+        <script>
+            const search = new URLSearchParams(window.location.search);
+
+            if (search.get("title")) {
+                const title = search.get("title");
+                document.getElementById("title").value = title;
+            }
+
+            if (search.get("to")) {
+                const title = search.get("to");
+                document.getElementById("recipient").value = title;
+            }
+
+            // ...
+            function send_mail(event) {
+                event.preventDefault();
+                const reply = search.get("reply");
+
+                trigger("mail:create", [
+                    event.target.recipient.value,
+                    event.target.title.value,
+                    reply
+                        ? `/inbox/mail/letter/${reply}\n\n${event.target.content.value}` // include embed
+                        : event.target.content.value,
+                ]).then((mail) => {
+                    event.target.reset();
+                    window.location.href = `/inbox/mail/letter/${mail.id}`;
+                });
+            }
+        </script>
+    </main>
+</article>
+
+{% if let Some(profile) = profile %} {% let other = profile.clone() %} {% if
+profile.username == other.username %}
+<div id="is_self"></div>
+{% endif %} {% let raw_metadata =
+crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
+"components/theming.html" %} {% endif %} {% call super() %} {% endblock %}

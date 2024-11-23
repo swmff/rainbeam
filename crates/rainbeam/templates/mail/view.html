@@ -1,0 +1,46 @@
+{% extends "base.html" %} {% block title %}My mail inbox - {{ config.name }}{%
+endblock %} {% block nav_left %}
+<a class="button" href="/" title="Timeline">
+    <i class="icon" data-lucide="house"></i>
+    <span class="desktop">Timeline</span>
+    <span class="mobile">Home</span>
+</a>
+
+<a class="button" href="/inbox" title="My inbox">
+    <i class="icon" data-lucide="inbox"></i>
+    <span class="flex items-center gap-2">
+        <span>Inbox</span>
+        {% if unread != 0 %}
+        <span class="notification tr">{{ unread }}</span>
+        {% endif %}
+    </span>
+</a>
+{% endblock %} {% block nav_right %}
+<a class="button" href="/inbox/notifications" title="My notifications">
+    <i class="icon" data-lucide="bell"></i>
+    {% if notifs != 0 %}
+    <span class="notification tr">{{ notifs }}</span>
+    {% endif %}
+</a>
+{% endblock %} {% block content %}
+<article>
+    <main class="flex flex-col gap-4">
+        {% include "components/mail.html" %}
+
+        <script>
+            setTimeout(() => {
+                if (document.getElementById("unread")) {
+                    // this mail has the "unread" state
+                    trigger("mail:state", ["{{ letter.id }}", "Read"]);
+                }
+            }, 250);
+        </script>
+    </main>
+</article>
+
+{% if let Some(profile) = profile %} {% let other = profile.clone() %} {% if
+profile.username == other.username %}
+<div id="is_self"></div>
+{% endif %} {% let raw_metadata =
+crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
+"components/theming.html" %} {% endif %} {% call super() %} {% endblock %}

@@ -341,13 +341,13 @@ impl Database {
         if id.len() <= 32 {
             return match self.get_profile_by_username(id).await {
                 Ok(ua) => Ok(ua),
-                Err(_) => Err(DatabaseError::Other),
+                Err(e) => return Err(e),
             };
         }
 
         match self.get_profile_by_id(id).await {
             Ok(ua) => Ok(ua),
-            Err(_) => Err(DatabaseError::Other),
+            Err(e) => return Err(e),
         }
     }
 
@@ -3754,7 +3754,7 @@ impl Database {
             content: res.get("content").unwrap().to_string(),
             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
             id: res.get("id").unwrap().to_string(),
-            state: serde_json::from_str(res.get("address").unwrap()).unwrap(),
+            state: serde_json::from_str(res.get("state").unwrap()).unwrap(),
             author: res.get("author").unwrap().to_string(),
             recipient: res.get("recipient").unwrap().to_string(),
         };
@@ -3802,7 +3802,7 @@ impl Database {
                         content: res.get("content").unwrap().to_string(),
                         timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
                         id: res.get("id").unwrap().to_string(),
-                        state: serde_json::from_str(res.get("address").unwrap()).unwrap(),
+                        state: serde_json::from_str(res.get("state").unwrap()).unwrap(),
                         author: res.get("author").unwrap().to_string(),
                         recipient: res.get("recipient").unwrap().to_string(),
                     });
@@ -3859,7 +3859,7 @@ impl Database {
         &self,
         recipient: String,
         page: i32,
-    ) -> Result<Vec<Mail>> {
+    ) -> Result<Vec<(Mail, Profile)>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -3875,19 +3875,27 @@ impl Database {
             .await
         {
             Ok(p) => {
-                let mut out: Vec<Mail> = Vec::new();
+                let mut out: Vec<(Mail, Profile)> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    out.push(Mail {
-                        title: res.get("title").unwrap().to_string(),
-                        content: res.get("content").unwrap().to_string(),
-                        timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-                        id: res.get("id").unwrap().to_string(),
-                        state: serde_json::from_str(res.get("address").unwrap()).unwrap(),
-                        author: res.get("author").unwrap().to_string(),
-                        recipient: res.get("recipient").unwrap().to_string(),
-                    });
+                    let author = res.get("author").unwrap();
+
+                    out.push((
+                        Mail {
+                            title: res.get("title").unwrap().to_string(),
+                            content: res.get("content").unwrap().to_string(),
+                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            id: res.get("id").unwrap().to_string(),
+                            state: serde_json::from_str(res.get("state").unwrap()).unwrap(),
+                            author: author.to_string(),
+                            recipient: res.get("recipient").unwrap().to_string(),
+                        },
+                        match self.get_profile(author.to_string()).await {
+                            Ok(ua) => ua,
+                            Err(e) => return Err(e),
+                        },
+                    ));
                 }
 
                 out
@@ -3900,24 +3908,51 @@ impl Database {
     }
 
     // SET
-    /// Create a new notification
+    /// Create a new mail
     ///
     /// ## Arguments:
     /// * `props` - [`MailCreate`]
-    pub async fn create_mail(&self, props: MailCreate, author: String) -> Result<()> {
-        // make sure author and recipient exist
-        if let Err(e) = self.get_profile(author.clone()).await {
-            return Err(e);
+    pub async fn create_mail(&self, props: MailCreate, author: String) -> Result<Mail> {
+        // check content length
+        if props.title.len() > (64 * 4) {
+            return Err(DatabaseError::Other);
         }
 
-        match self.get_profile(props.recipient.clone()).await {
+        if props.title.len() < 2 {
+            return Err(DatabaseError::Other);
+        }
+
+        if props.content.len() > (64 * 8) {
+            return Err(DatabaseError::Other);
+        }
+
+        if props.content.len() < 2 {
+            return Err(DatabaseError::Other);
+        }
+
+        // check markdown content
+        let markdown = shared::ui::render_markdown(&props.content);
+
+        if markdown.trim().len() == 0 {
+            return Err(DatabaseError::Other);
+        }
+
+        // make sure author and recipient exist
+        let author = match self.get_profile(author.clone()).await {
+            Ok(ua) => ua,
+            Err(e) => return Err(e),
+        };
+
+        let recipient = match self.get_profile(props.recipient.clone()).await {
             Ok(ua) => {
                 if ua.metadata.is_true("sparkler:disable_mailbox") {
                     return Err(DatabaseError::NotAllowed);
                 }
+
+                ua
             }
             Err(e) => return Err(e),
-        }
+        };
 
         // ...
         let mail = Mail {
@@ -3926,11 +3961,11 @@ impl Database {
             timestamp: utility::unix_epoch_timestamp(),
             id: utility::random_id(),
             state: MailState::Unread,
-            author,
-            recipient: props.recipient,
+            author: author.id.clone(),
+            recipient: recipient.id.clone(),
         };
 
-        // create notification
+        // create mail
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
             "INSERT INTO \"xmail\" VALUES (?, ?, ?, ?, ?, ?, ?)"
@@ -3958,8 +3993,27 @@ impl Database {
                     .incr(format!("rbeam.auth.mail_count:{}", mail.recipient))
                     .await;
 
+                // send notification
+                if let Err(e) = self
+                    .create_notification(
+                        NotificationCreate {
+                            title: format!(
+                                "[@{}](/+u/{}) sent you new mail!",
+                                author.username, author.id
+                            ),
+                            content: String::new(),
+                            address: format!("/inbox/mail/letter/{}", mail.id),
+                            recipient: recipient.id.clone(),
+                        },
+                        None,
+                    )
+                    .await
+                {
+                    return Err(e);
+                };
+
                 // ...
-                return Ok(());
+                return Ok(mail);
             }
             Err(_) => return Err(DatabaseError::Other),
         };
@@ -3973,7 +4027,7 @@ impl Database {
     /// * `id` - the ID of the mail
     /// * `user` - the user doing this
     pub async fn delete_mail(&self, id: String, user: Profile) -> Result<()> {
-        // make sure notification exists
+        // make sure mail exists
         let mail = match self.get_mail(id.clone()).await {
             Ok(n) => n,
             Err(e) => return Err(e),
@@ -3992,7 +4046,7 @@ impl Database {
             }
         }
 
-        // delete notification
+        // delete mail
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
             "DELETE FROM \"xmail\" WHERE \"id\" = ?"
@@ -4017,6 +4071,67 @@ impl Database {
                     .await;
 
                 // return
+                return Ok(());
+            }
+            Err(_) => return Err(DatabaseError::Other),
+        };
+    }
+
+    /// Update mail state
+    ///
+    /// ## Arguments:
+    /// * `id`
+    /// * `state` - [`MailState`]
+    /// * `user`
+    pub async fn update_mail_state(
+        &self,
+        id: String,
+        state: MailState,
+        user: Profile,
+    ) -> Result<()> {
+        // make sure mail exists and check permission
+        let mail = match self.get_mail(id.clone()).await {
+            Ok(n) => n,
+            Err(e) => return Err(e),
+        };
+
+        // check username
+        if user.id != mail.recipient {
+            // check permission
+            let group = match self.get_group_by_id(user.group).await {
+                Ok(g) => g,
+                Err(_) => return Err(DatabaseError::Other),
+            };
+
+            if !group.permissions.contains(&Permission::Helper) {
+                return Err(DatabaseError::NotAllowed);
+            }
+        }
+
+        // update mail
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "UPDATE \"xmail\" SET \"state\" = ? WHERE \"id\" = ?"
+        } else {
+            "UPDATE \"xmail\" SET (\"state\") = ($1) WHERE \"id\" = $2"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query)
+            .bind::<&String>(&serde_json::to_string(&state).unwrap())
+            .bind::<&String>(&id)
+            .execute(c)
+            .await
+        {
+            Ok(_) => {
+                // remove from cache
+                self.base
+                    .cachedb
+                    .remove(format!("rbeam.auth.mail:{}", id))
+                    .await;
+
+                // ...
                 return Ok(());
             }
             Err(_) => return Err(DatabaseError::Other),
