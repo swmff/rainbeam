@@ -32,3 +32,6 @@ CREATE FULLTEXT INDEX IF NOT EXISTS "idx_chat_members" ON "xchats" ("users");
 CREATE FULLTEXT INDEX IF NOT EXISTS "idx_messages" ON "xmessages" ("chat");
 CREATE FULLTEXT INDEX IF NOT EXISTS "idx_pages" ON "xpages" ("owner", "slug");
 CREATE FULLTEXT INDEX IF NOT EXISTS "idx_ipblocks" ON "xipblocks" ("user", "ip");
+CREATE FULLTEXT INDEX IF NOT EXISTS "idx_mail" ON "xmail" ("recipient");
+CREATE FULLTEXT INDEX IF NOT EXISTS "idx_mail_author" ON "xmail" ("author");
+CREATE FULLTEXT INDEX IF NOT EXISTS "idx_mail_id" ON "xmail" ("id");
