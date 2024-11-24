@@ -397,7 +397,6 @@
             require("PartialComponent", () => {});
         </script>
 
-        <script src="https://unpkg.com/lucide@latest"></script>
         <script src="https://unpkg.com/@twemoji/api@15.1.0/dist/twemoji.min.js"></script>
 
         <script>
@@ -436,7 +435,7 @@
                 app["hook.check_reactions"]();
 
                 twemoji.parse(document.body);
-                lucide.createIcons();
+                app.icons();
             })();
         </script>
 

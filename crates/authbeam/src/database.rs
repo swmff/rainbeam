@@ -3957,6 +3957,58 @@ impl Database {
             }
         }
 
+        // check recipients against citrus
+        let mut seen_severs: Vec<String> = Vec::new();
+
+        for recipient in recipients.clone() {
+            // check with citrus
+            let cid = CitrusID(recipient.clone()).fields();
+
+            if cid.0 != self.config.citrus_id && !cid.0.is_empty() {
+                if seen_severs.contains(&cid.0) {
+                    continue;
+                }
+
+                seen_severs.push(cid.0.clone());
+
+                // make sure server supports the correct schema
+                let server = match self.citrus.server(cid.0.to_string()).await {
+                    Ok(s) => s,
+                    Err(_) => return Err(DatabaseError::Other),
+                };
+
+                if server.get_schema("net.rainbeam.structs.Mail").is_none() {
+                    return Err(DatabaseError::Other);
+                }
+
+                // send mail to remote server
+                //
+                // mail sent to remote servers will be broken up, so recipients
+                // will receive copies of the same email instead of all being
+                // grouped into the same mail
+                //
+                // This does not currently work because we cannot pass authentication
+                // checks on the remote server. We'll see the mail send, but the recipient will not
+                // receive it.
+                if let Err(_) = self
+                    .citrus
+                    .post::<MailCreate, DefaultReturn<Option<Profile>>>(
+                        server,
+                        "net.rainbeam.structs.Mail",
+                        "/api/v0/auth/mail",
+                        MailCreate {
+                            title: props.title.clone(),
+                            content: props.content.clone(),
+                            recipient: vec![recipient.clone()],
+                        },
+                    )
+                    .await
+                {
+                    return Err(DatabaseError::Other);
+                };
+            }
+        }
+
         // ...
         let mail = Mail {
             title: props.title,

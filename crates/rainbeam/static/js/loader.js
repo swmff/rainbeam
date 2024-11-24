@@ -115,6 +115,10 @@ globalThis.trigger = (id, args) => {
         return console.error("namespace does not exist:", namespace);
     }
 
+    if (!self[func]) {
+        return console.error("namespace function does not exist:", id);
+    }
+
     return self[func](...(args || []));
 };
 

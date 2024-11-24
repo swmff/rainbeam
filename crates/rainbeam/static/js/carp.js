@@ -254,7 +254,7 @@
                 });
 
                 setTimeout(() => {
-                    trigger("app:lucide");
+                    trigger("app:icons");
                 }, 250);
             }
         }

@@ -114,8 +114,64 @@
         });
     });
 
-    app.define("lucide", function (_) {
-        lucide.createIcons();
+    app.define("icons", async function ({ $ }) {
+        if (!$.ICONS) {
+            $.ICONS = {};
+        }
+
+        const observer = $.offload_work_to_client_when_in_view(
+            async (element) => {
+                const classes = element.getAttribute("class");
+                const style = element.getAttribute("style");
+
+                const icon_name = element.getAttribute("data-lucide");
+
+                if (icon_name === null) {
+                    return;
+                }
+
+                if (element.children.length !== 0) {
+                    return;
+                }
+
+                if ($.ICONS[icon_name]) {
+                    const icon = $.ICONS[icon_name];
+
+                    const parser = new DOMParser().parseFromString(
+                        icon,
+                        "text/xml",
+                    );
+
+                    const icon_element = parser.firstChild;
+
+                    icon_element.setAttribute("class", classes);
+                    icon_element.setAttribute("style", style);
+
+                    element.replaceWith(icon_element);
+                } else {
+                    const icon = await (
+                        await fetch(`/static/build/icons/${icon_name}.svg`)
+                    ).text();
+
+                    const parser = new DOMParser().parseFromString(
+                        icon,
+                        "text/xml",
+                    );
+
+                    const icon_element = parser.firstChild;
+
+                    icon_element.setAttribute("class", classes);
+                    icon_element.setAttribute("style", style);
+
+                    element.replaceWith(icon_element);
+                    $.ICONS[icon_name] = icon;
+                }
+            },
+        );
+
+        for (const element of document.querySelectorAll("[data-lucide]")) {
+            observer.observe(element);
+        }
     });
 
     app.define("copy_text", function ({ $ }, text) {
@@ -502,7 +558,7 @@
                             .then(async () => {
                                 page += 1;
                                 await load_partial();
-                                app.lucide();
+                                app.icons();
                             })
                             .catch(() => {
                                 console.log("partial stuck");
@@ -529,7 +585,7 @@
             paragraph.innerText = paragraph.innerText.replace(groups[0], "");
             paragraph.parentElement.innerHTML += `<include-partial
                 src="/_app/components/response.html?id=${groups[2]}&do_render_nested=false"
-                uses="app:clean_date_codes,app:link_filter,app:hook.alt,app:lucide"
+                uses="app:clean_date_codes,app:link_filter,app:hook.alt,app:icons"
             ></include-partial>`;
         }
 
@@ -548,7 +604,7 @@
             paragraph.innerText = paragraph.innerText.replace(groups[0], "");
             paragraph.parentElement.innerHTML = `<include-partial
                 src="/inbox/mail/_app/components/mail.html?id=${groups[2]}&do_render_nested=false"
-                uses="app:clean_date_codes,app:link_filter,app:hook.alt,app:lucide,app:hook.partial_embeds"
+                uses="app:clean_date_codes,app:link_filter,app:hook.alt,app:icons,app:hook.partial_embeds"
             ></include-partial>${paragraph.parentElement.innerHTML}`;
         }
     });
@@ -579,7 +635,7 @@
     app.define("prompt", function (_, msg) {
         const dialog = document.getElementById("web_api_prompt");
         document.getElementById("web_api_prompt:msg").innerText = msg;
-        app.lucide();
+        app.icons();
 
         return new Promise((resolve, _) => {
             globalThis.web_api_prompt_submit = (value) => {
@@ -594,7 +650,7 @@
     app.define("confirm", function (_, msg) {
         const dialog = document.getElementById("web_api_confirm");
         document.getElementById("web_api_confirm:msg").innerText = msg;
-        app.lucide();
+        app.icons();
 
         return new Promise((resolve, _) => {
             globalThis.web_api_confirm_submit = (value) => {

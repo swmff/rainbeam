@@ -20,6 +20,7 @@ export default async function build(options) {
         dir_root = __cwd,
         build_sub_dir = "",
         sub_dir = "",
+        do_sub = true,
     ) {
         try {
             await fs.stat(`${__cwd}/${options.build_dir}/${build_sub_dir}`);
@@ -36,21 +37,24 @@ export default async function build(options) {
             if (stat.isDirectory()) {
                 console.log(`sub ${sub_dir}${file}`);
 
-                try {
-                    await fs.stat(
-                        `${__cwd}/${options.build_dir}/${build_sub_dir}${sub_dir}${file}`,
-                    );
-                } catch {
-                    await fs.mkdir(
-                        `${__cwd}/${options.build_dir}/${build_sub_dir}${sub_dir}${file}`,
-                    );
+                if (do_sub) {
+                    try {
+                        await fs.stat(
+                            `${__cwd}/${options.build_dir}/${build_sub_dir}${sub_dir}${file}`,
+                        );
+                    } catch {
+                        await fs.mkdir(
+                            `${__cwd}/${options.build_dir}/${build_sub_dir}${sub_dir}${file}`,
+                        );
+                    }
                 }
 
                 await walk_dir(
                     transform_callback,
                     dir_root,
                     build_sub_dir,
-                    `${file}/`,
+                    `${sub_dir}${file}/`,
+                    do_sub,
                 );
                 continue;
             }
@@ -58,7 +62,9 @@ export default async function build(options) {
             await transform_callback(
                 file,
                 full_path,
-                `${__cwd}/${options.build_dir}/${build_sub_dir}${sub_dir}${file}`,
+                do_sub
+                    ? `${__cwd}/${options.build_dir}/${build_sub_dir}${sub_dir}${file}`
+                    : `${__cwd}/${options.build_dir}/${build_sub_dir}${file}`,
             );
         }
     }
@@ -117,4 +123,54 @@ export default async function build(options) {
         `${__cwd}/${options.js_dir}`,
         "js/",
     );
+
+    // walk templates dir to download icons
+    const icons = [];
+
+    await walk_dir(
+        async (file_name, full_path, _) => {
+            // minify
+            console.log(`template ${file_name}`);
+
+            const content = await fs.readFile(full_path, { encoding: "utf8" });
+
+            const regex = new RegExp(/(data-lucide)\=\"(.*?)\"/g);
+            let groups = regex.exec(content);
+
+            while (null !== groups) {
+                if (!icons.includes(groups[2])) {
+                    icons.push(groups[2]);
+                }
+
+                groups = regex.exec(content);
+            }
+        },
+        `${__cwd}/${options.templates_dir}`,
+        "icons/",
+        "",
+        false,
+    );
+
+    // download icons
+    const icons_endpoint =
+        "https://raw.githubusercontent.com/lucide-icons/lucide/refs/heads/main/icons/";
+
+    for (const icon of icons) {
+        const file_path = `${__cwd}/${options.build_dir}/icons/${icon}.svg`;
+
+        try {
+            // if the file exists, don't fetch it
+            console.log(`icon/check ${icon}`);
+            await fs.stat(file_path);
+        } catch {
+            (async () => {
+                console.log(`icon/save ${icon}`);
+                await fs.writeFile(
+                    file_path,
+                    await (await fetch(`${icons_endpoint}${icon}.svg`)).text(),
+                );
+                console.log(`icon/finish ${icon}`);
+            })();
+        }
+    }
 }

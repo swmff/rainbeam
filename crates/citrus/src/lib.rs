@@ -93,4 +93,44 @@ impl CitrusClient {
         // we're going to assume most things return json
         Ok(serde_json::from_str::<T>(&body).unwrap())
     }
+
+    /// Get data(`D`) from the given server after POST-ing data(`T`) which must support `schema`
+    ///
+    /// # Arguments
+    /// * `server` - [`ServerRepresentation`]
+    /// * `schema` - the ID of the schema the remote server must support
+    /// * `url` - the URL to fetch the data from (starting with forward slash)
+    /// * `data` - the data to send to the server
+    pub async fn post<T: Serialize + DeserializeOwned, D: Serialize + DeserializeOwned>(
+        &self,
+        server: ServerRepresentation,
+        schema: &str,
+        url: &str,
+        data: T,
+    ) -> Result<D> {
+        if !server.has_schema(schema) {
+            return Err(Error::new(
+                ErrorKind::Other,
+                "Server does not support schema",
+            ));
+        }
+
+        let address = format!("{}//{}", self.protocol.to_string(), server.server.id);
+        let body = match self
+            .http
+            .post(format!("{address}{url}"))
+            .json(&data)
+            .send()
+            .await
+        {
+            Ok(b) => match b.text().await {
+                Ok(t) => t,
+                Err(_) => return Err(Error::new(ErrorKind::InvalidData, "Body is invalid")),
+            },
+            Err(_) => return Err(Error::new(ErrorKind::Other, "Failed to request")),
+        };
+
+        // we're going to assume most things return json
+        Ok(serde_json::from_str::<D>(&body).unwrap())
+    }
 }

@@ -33,3 +33,7 @@ location = "schemas/structs/comment.toml"
 [[schemas]]
 id = "net.rainbeam.structs.Comment.Context"
 location = "schemas/structs/contexts/comment.toml"
+
+[[schemas]]
+id = "net.rainbeam.structs.Mail"
+location = "schemas/structs/contexts/mail.toml"

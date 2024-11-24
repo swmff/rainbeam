@@ -129,7 +129,7 @@
             {% if !response.reply.is_empty() && response.context.is_post == false && do_render_nested == true %}
             <include-partial
                 src="/_app/components/response.html?id={{ response.reply }}&do_render_nested=false"
-                uses="app:clean_date_codes,app:link_filter,app:hook.alt,app:lucide"
+                uses="app:clean_date_codes,app:link_filter,app:hook.alt,app:icons"
             ></include-partial>
             {% endif %}
         </span>
@@ -151,7 +151,7 @@
             {% if !response.reply.is_empty() && response.context.is_post == true && do_render_nested == true %}
             <include-partial
                 src="/_app/components/response.html?id={{ response.reply }}&do_render_nested=false"
-                uses="app:clean_date_codes,app:link_filter,app:hook.alt,app:lucide"
+                uses="app:clean_date_codes,app:link_filter,app:hook.alt,app:icons"
             ></include-partial>
             {% endif %}
         </span>
