@@ -23,6 +23,7 @@
             <li>Joined: <span class="date">{{ other.joined }}</span></li>
             <li>Group: <a href="javascript:change_group()">{{ other.group }}</a></li>
             <li>Tier: <a href="javascript:change_tier()">{{ other.tier }}</a></li>
+            <li><a href="/inbox/mail?profile={{ other.id }}">View mail</a></li>
             <li><a href="/inbox/notifications?profile={{ other.id }}">View notifications</a></li>
         </ul>
 

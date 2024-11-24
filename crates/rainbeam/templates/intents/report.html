@@ -8,6 +8,16 @@ block head %}
 {% endblock %} {% block content %}
 <article>
     <main class="flex flex-col gap-2">
+        {% if profile.is_some() %}
+        <div class="markdown-alert-tip">
+            <span>
+                Since you have an account, please directly mail
+                <a href="/+u/0">@system</a> instead if you expect a reply to
+                your report.
+            </span>
+        </div>
+        {% endif %}
+
         <form
             class="card shadow-md"
             onsubmit="trigger('reports:file', [event])"

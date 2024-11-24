@@ -1,0 +1,10 @@
+{% extends "base.html" %} {% block title %}{{ title }} - {{ config.name }}{%
+endblock %} {% block head %}
+<meta name="description" content="{{ config.description }}" />
+{% endblock %} {% block content %}
+<article>
+    <main>
+        <div class="card">{{ shared::ui::render_markdown(text)|safe }}</div>
+    </main>
+</article>
+{% call super() %} {% endblock %}

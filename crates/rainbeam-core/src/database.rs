@@ -5050,7 +5050,7 @@ impl Database {
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query)
-            .bind::<&String>(&format!("%{id}%"))
+            .bind::<&String>(&format!("%\"{id}\"%"))
             .fetch_all(c)
             .await
         {

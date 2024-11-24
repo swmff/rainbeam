@@ -27,7 +27,7 @@
             <a href="/inbox/reports"><span>Reports</span></a>
         </div>
         {% endif %} {% if unread.len() == 0 %}
-        <div class="markdown-alert-important">
+        <div class="markdown-alert-warning">
             <span>No results matching this query yet!</span>
         </div>
         {% endif %} {% for question in unread %}

@@ -9,7 +9,7 @@
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    recipient,
+                    recipient: recipient.trim().split(","),
                     title,
                     content,
                 }),

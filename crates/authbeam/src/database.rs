@@ -288,6 +288,8 @@ impl Database {
         } else if id.starts_with("anonymous#") | (id == "anonymous") | (id == "#") {
             let tag = Profile::anonymous_tag(&id);
             return Ok(Profile::anonymous(tag.3));
+        } else if (id == "0") | (id == "system") {
+            return Ok(Profile::system());
         }
 
         // check with citrus
@@ -715,6 +717,7 @@ impl Database {
             "comments",
             "pages",
             "inbox",
+            "system",
         ];
 
         let regex = regex::RegexBuilder::new(r"[^\w_\-\.!]+")
@@ -856,6 +859,7 @@ impl Database {
             "sparkler:private_social",
             "sparkler:disable_mailbox",
             "sparkler:filter",
+            "sparkler:mail_signature",
         ]
     }
 
@@ -1410,11 +1414,6 @@ impl Database {
                 self.base
                     .cachedb
                     .remove(format!("rbeam.auth.notification_count:{}", id))
-                    .await;
-
-                self.base
-                    .cachedb
-                    .remove(format!("rbeam.auth.rbeam.auth.mail_count:{}", id))
                     .await;
 
                 Ok(())
@@ -3729,7 +3728,15 @@ impl Database {
             .get(format!("rbeam.auth.mail:{}", id))
             .await
         {
-            Some(c) => return Ok(serde_json::from_str::<Mail>(c.as_str()).unwrap()),
+            Some(c) => match serde_json::from_str::<Mail>(c.as_str()) {
+                Ok(c) => return Ok(c),
+                Err(_) => {
+                    self.base
+                        .cachedb
+                        .remove(format!("rbeam.auth.mail:{}", id))
+                        .await;
+                }
+            },
             None => (),
         };
 
@@ -3749,6 +3756,7 @@ impl Database {
         };
 
         // return
+        let recipient = res.get("recipient").unwrap();
         let mail = Mail {
             title: res.get("title").unwrap().to_string(),
             content: res.get("content").unwrap().to_string(),
@@ -3756,7 +3764,7 @@ impl Database {
             id: res.get("id").unwrap().to_string(),
             state: serde_json::from_str(res.get("state").unwrap()).unwrap(),
             author: res.get("author").unwrap().to_string(),
-            recipient: res.get("recipient").unwrap().to_string(),
+            recipient: serde_json::from_str(recipient).unwrap_or(vec![recipient.to_string()]),
         };
 
         // store in cache
@@ -3780,14 +3788,15 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            "SELECT * FROM \"xmail\" WHERE \"recipient\" = ? ORDER BY \"timestamp\" DESC"
+            "SELECT * FROM \"xmail\" WHERE \"recipient\" LIKE ? OR \"recipient\" = ? ORDER BY \"timestamp\" DESC"
         } else {
-            "SELECT * FROM \"xmail\" WHERE \"recipient\" = $1 ORDER BY \"timestamp\" DESC"
+            "SELECT * FROM \"xmail\" WHERE \"recipient\" LIKE $1 OR \"recipient\" = $2 ORDER BY \"timestamp\" DESC"
         }
         .to_string();
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query)
+            .bind::<&String>(&format!("%\"{}\"%", recipient.to_lowercase()))
             .bind::<&String>(&recipient.to_lowercase())
             .fetch_all(c)
             .await
@@ -3797,6 +3806,8 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
+                    let recipient = res.get("recipient").unwrap();
+
                     out.push(Mail {
                         title: res.get("title").unwrap().to_string(),
                         content: res.get("content").unwrap().to_string(),
@@ -3804,7 +3815,8 @@ impl Database {
                         id: res.get("id").unwrap().to_string(),
                         state: serde_json::from_str(res.get("state").unwrap()).unwrap(),
                         author: res.get("author").unwrap().to_string(),
-                        recipient: res.get("recipient").unwrap().to_string(),
+                        recipient: serde_json::from_str(recipient)
+                            .unwrap_or(vec![recipient.to_string()]),
                     });
                 }
 
@@ -3815,39 +3827,6 @@ impl Database {
 
         // return
         Ok(res)
-    }
-
-    /// Get the number of mail by their recipient
-    ///
-    /// ## Arguments:
-    /// * `recipient`
-    pub async fn get_mail_count_by_recipient(&self, recipient: String) -> usize {
-        // attempt to fetch from cache
-        if let Some(count) = self
-            .base
-            .cachedb
-            .get(format!("rbeam.auth.mail_count:{}", recipient))
-            .await
-        {
-            return count.parse::<usize>().unwrap_or(0);
-        };
-
-        // fetch from database
-        let count = self
-            .get_mail_by_recipient(recipient.clone())
-            .await
-            .unwrap_or(Vec::new())
-            .len();
-
-        self.base
-            .cachedb
-            .set(
-                format!("rbeam.auth.mail_count:{}", recipient),
-                count.to_string(),
-            )
-            .await;
-
-        count
     }
 
     /// Get all mail by their recipient, 50 at a time
@@ -3863,13 +3842,14 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xmail\" WHERE \"recipient\" = ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+            format!("SELECT * FROM \"xmail\" WHERE \"recipient\" LIKE ? OR \"recipient\" = $2 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
         } else {
-            format!("SELECT * FROM \"xmail\" WHERE \"recipient\" = $1 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+            format!("SELECT * FROM \"xmail\" WHERE \"recipient\" LIKE $1 OR \"recipient\" = $2 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
         };
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query)
+            .bind::<&String>(&format!("%\"{}\"%", recipient.to_lowercase()))
             .bind::<&String>(&recipient.to_lowercase())
             .fetch_all(c)
             .await
@@ -3879,7 +3859,9 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
+
                     let author = res.get("author").unwrap();
+                    let recipient = res.get("recipient").unwrap();
 
                     out.push((
                         Mail {
@@ -3889,7 +3871,8 @@ impl Database {
                             id: res.get("id").unwrap().to_string(),
                             state: serde_json::from_str(res.get("state").unwrap()).unwrap(),
                             author: author.to_string(),
-                            recipient: res.get("recipient").unwrap().to_string(),
+                            recipient: serde_json::from_str(recipient)
+                                .unwrap_or(vec![recipient.to_string()]),
                         },
                         match self.get_profile(author.to_string()).await {
                             Ok(ua) => ua,
@@ -3920,13 +3903,14 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xmail\" WHERE \"author\" = ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+            format!("SELECT * FROM \"xmail\" WHERE \"author\" LIKE ? OR \"recipient\" = $2 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
         } else {
-            format!("SELECT * FROM \"xmail\" WHERE \"author\" = $1 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+            format!("SELECT * FROM \"xmail\" WHERE \"author\" LIKE $1 OR \"recipient\" = $2 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
         };
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query)
+            .bind::<&String>(&format!("%\"{}\"%", recipient.to_lowercase()))
             .bind::<&String>(&recipient.to_lowercase())
             .fetch_all(c)
             .await
@@ -3936,7 +3920,9 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
+
                     let author = res.get("author").unwrap();
+                    let recipient = res.get("recipient").unwrap();
 
                     out.push((
                         Mail {
@@ -3946,7 +3932,8 @@ impl Database {
                             id: res.get("id").unwrap().to_string(),
                             state: serde_json::from_str(res.get("state").unwrap()).unwrap(),
                             author: author.to_string(),
-                            recipient: res.get("recipient").unwrap().to_string(),
+                            recipient: serde_json::from_str(recipient)
+                                .unwrap_or(vec![recipient.to_string()]),
                         },
                         match self.get_profile(author.to_string()).await {
                             Ok(ua) => ua,
@@ -4000,16 +3987,24 @@ impl Database {
             Err(e) => return Err(e),
         };
 
-        let recipient = match self.get_profile(props.recipient.clone()).await {
-            Ok(ua) => {
-                if ua.metadata.is_true("sparkler:disable_mailbox") {
-                    return Err(DatabaseError::NotAllowed);
-                }
+        let mut recipients = Vec::new();
 
-                ua
+        for recipient in props.recipient {
+            if recipient.is_empty() {
+                continue;
             }
-            Err(e) => return Err(e),
-        };
+
+            match self.get_profile(recipient.clone()).await {
+                Ok(ua) => {
+                    if ua.metadata.is_true("sparkler:disable_mailbox") {
+                        return Err(DatabaseError::NotAllowed);
+                    }
+
+                    recipients.push(ua.id)
+                }
+                Err(e) => return Err(e),
+            }
+        }
 
         // ...
         let mail = Mail {
@@ -4019,7 +4014,7 @@ impl Database {
             id: utility::random_id(),
             state: MailState::Unread,
             author: author.id.clone(),
-            recipient: recipient.id.clone(),
+            recipient: recipients.clone(),
         };
 
         // create mail
@@ -4039,35 +4034,31 @@ impl Database {
             .bind::<&String>(&mail.id)
             .bind::<&String>(&serde_json::to_string(&mail.state).unwrap())
             .bind::<&String>(&mail.author)
-            .bind::<&String>(&mail.recipient)
+            .bind::<&String>(&serde_json::to_string(&mail.recipient).unwrap())
             .execute(c)
             .await
         {
             Ok(_) => {
-                // incr notifications count
-                self.base
-                    .cachedb
-                    .incr(format!("rbeam.auth.mail_count:{}", mail.recipient))
-                    .await;
-
                 // send notification
-                if let Err(e) = self
-                    .create_notification(
-                        NotificationCreate {
-                            title: format!(
-                                "[@{}](/+u/{}) sent you new mail!",
-                                author.username, author.id
-                            ),
-                            content: String::new(),
-                            address: format!("/inbox/mail/letter/{}", mail.id),
-                            recipient: recipient.id.clone(),
-                        },
-                        None,
-                    )
-                    .await
-                {
-                    return Err(e);
-                };
+                for recipient in recipients {
+                    if let Err(e) = self
+                        .create_notification(
+                            NotificationCreate {
+                                title: format!(
+                                    "[@{}](/+u/{}) sent you new mail!",
+                                    author.username, author.id
+                                ),
+                                content: String::new(),
+                                address: format!("/inbox/mail/letter/{}", mail.id),
+                                recipient: recipient.clone(),
+                            },
+                            None,
+                        )
+                        .await
+                    {
+                        return Err(e);
+                    };
+                }
 
                 // ...
                 return Ok(mail);
@@ -4091,7 +4082,7 @@ impl Database {
         };
 
         // check username
-        if user.id != mail.recipient {
+        if !mail.recipient.contains(&user.id) && (user.id != mail.author) {
             // check permission
             let group = match self.get_group_by_id(user.group).await {
                 Ok(g) => g,
@@ -4115,12 +4106,6 @@ impl Database {
         let c = &self.base.db.client;
         match sqlquery(&query).bind::<&String>(&id).execute(c).await {
             Ok(_) => {
-                // decr notifications count
-                self.base
-                    .cachedb
-                    .decr(format!("rbeam.auth.mail_count:{}", mail.recipient))
-                    .await;
-
                 // remove from cache
                 self.base
                     .cachedb
@@ -4153,7 +4138,7 @@ impl Database {
         };
 
         // check username
-        if user.id != mail.recipient {
+        if user.id != mail.author {
             // check permission
             let group = match self.get_group_by_id(user.group).await {
                 Ok(g) => g,

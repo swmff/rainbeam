@@ -60,6 +60,24 @@ impl Profile {
         }
     }
 
+    /// System profile
+    pub fn system() -> Self {
+        Self {
+            username: "system".to_string(),
+            id: "0".to_string(),
+            password: String::new(),
+            salt: String::new(),
+            tokens: Vec::new(),
+            ips: Vec::new(),
+            token_context: Vec::new(),
+            group: 0,
+            joined: 0,
+            metadata: ProfileMetadata::default(),
+            badges: Vec::new(),
+            tier: 0,
+        }
+    }
+
     /// Anonymous user profile
     pub fn anonymous(tag: String) -> Self {
         Self {
@@ -422,8 +440,8 @@ pub struct Mail {
     pub state: MailState,
     /// The author of the mail
     pub author: String,
-    /// The recipient of the mail
-    pub recipient: String,
+    /// The recipient(s) of the mail
+    pub recipient: Vec<String>,
 }
 
 // props
@@ -505,7 +523,7 @@ pub struct IpBlockCreate {
 pub struct MailCreate {
     pub title: String,
     pub content: String,
-    pub recipient: String,
+    pub recipient: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

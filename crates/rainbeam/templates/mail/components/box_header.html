@@ -1,0 +1,41 @@
+<div class="flex w-full gap-2 justify-between flex-wrap">
+    <div class="flex items-center gap-2">
+        {% if violating_usc18_1702 %}
+        <i class="icon" data-lucide="mail-warning"></i>
+        <b>This is not your mail, please be careful.</b>
+        {% endif %}
+    </div>
+
+    <div class="flex items-center gap-2">
+        {% if is_helper && !violating_usc18_1702 %}
+        <a
+            href="?profile=0"
+            class="button icon-only"
+            title="Switch to system mail"
+        >
+            <i class="icon" data-lucide="key-round"></i>
+        </a>
+        {% else if is_helper %}
+        <a href="?" class="button icon-only" title="Switch to user mail">
+            <i class="icon" data-lucide="user-round"></i>
+        </a>
+        {% endif %}
+
+        <a
+            href="/settings?signature"
+            class="button icon-only"
+            title="Edit signature"
+            target="_blank"
+        >
+            <i class="icon" data-lucide="signature"></i>
+        </a>
+
+        <a
+            href="/inbox/mail/compose"
+            class="button icon-only"
+            title="Compose mail"
+        >
+            <i class="icon" data-lucide="mail-plus"></i>
+        </a>
+    </div>
+</div>

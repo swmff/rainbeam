@@ -26,20 +26,14 @@ endblock %} {% block nav_left %}
 <article>
     <main class="flex flex-col gap-4">
         <div class="pillmenu convertible">
-            <a href="/inbox/mail" class="active"><span>Received</span></a>
-            <a href="/inbox/mail/sent"><span>Sent</span></a>
+            <a href="/inbox/mail?profile={{ pid }}" class="active"
+                ><span>Received</span></a
+            >
+            <a href="/inbox/mail/sent?profile={{ pid }}"><span>Sent</span></a>
         </div>
 
-        <div class="flex w-full gap-2 justify-between">
-            <div></div>
-            <a href="/inbox/mail/compose" class="button secondary">
-                <i class="icon" data-lucide="mail-plus"></i>
-                Create
-            </a>
-        </div>
-
-        {% if mail.len() == 0 %}
-        <div class="markdown-alert-important">
+        {% include "components/box_header.html" %} {% if mail.len() == 0 %}
+        <div class="markdown-alert-warning">
             <span>No results matching this query yet!</span>
         </div>
         {% endif %} {% for letter in mail %} {% include
@@ -48,11 +42,19 @@ endblock %} {% block nav_left %}
         <!-- pagination buttons -->
         <div class="flex justify-between gap-2 w-full">
             {% if page > 0 %}
-            <a class="button secondary" href="?page={{ page - 1 }}">Previous</a>
+            <a
+                class="button secondary"
+                href="?page={{ page - 1 }}&profile={{ pid }}"
+                >Previous</a
+            >
             {% else %}
             <div></div>
             {% endif %} {% if mail.len() != 0 %}
-            <a class="button secondary" href="?page={{ page + 1 }}">Next</a>
+            <a
+                class="button secondary"
+                href="?page={{ page + 1 }}&profile={{ pid }}"
+                >Next</a
+            >
             {% endif %}
         </div>
     </main>

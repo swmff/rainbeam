@@ -7,13 +7,13 @@ use axum::{
 };
 use axum_extra::extract::CookieJar;
 
-use authbeam::model::{Mail, Profile};
+use authbeam::model::{Mail, Profile, Permission};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
 use crate::database::Database;
 use crate::model::DatabaseError;
-use super::PaginatedQuery;
+use super::NotificationsQuery;
 use crate::ToHtml;
 
 #[derive(Template)]
@@ -25,13 +25,16 @@ struct InboxTemplate {
     notifs: usize,
     mail: Vec<(Mail, Profile)>,
     page: i32,
+    violating_usc18_1702: bool, // if we're trying to view the mail of another user
+    pid: String,
+    is_helper: bool,
 }
 
 /// GET /inbox/mail
 pub async fn inbox_request(
     jar: CookieJar,
     State(database): State<Database>,
-    Query(props): Query<PaginatedQuery>,
+    Query(props): Query<NotificationsQuery>,
 ) -> impl IntoResponse {
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
@@ -58,9 +61,33 @@ pub async fn inbox_request(
         .get_notification_count_by_recipient(auth_user.id.to_owned())
         .await;
 
+    let violating_usc18_1702 =
+        (props.profile.is_empty() == false) && (props.profile != auth_user.id);
+
+    let is_helper = {
+        let group = match database.auth.get_group_by_id(auth_user.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        group.permissions.contains(&Permission::Helper)
+    };
+
+    if violating_usc18_1702 && !is_helper {
+        // we cannot view the mail of other users if we are not a helper
+        return Html(DatabaseError::NotAllowed.to_html(database));
+    }
+
     let mail = match database
         .auth
-        .get_mail_by_recipient_paginated(auth_user.id.clone(), props.page)
+        .get_mail_by_recipient_paginated(
+            if violating_usc18_1702 {
+                props.profile.clone()
+            } else {
+                auth_user.id.clone()
+            },
+            props.page,
+        )
         .await
     {
         Ok(c) => c,
@@ -75,6 +102,13 @@ pub async fn inbox_request(
             notifs,
             mail,
             page: props.page,
+            violating_usc18_1702,
+            pid: if violating_usc18_1702 {
+                props.profile.clone()
+            } else {
+                auth_user.id.clone()
+            },
+            is_helper,
         }
         .render()
         .unwrap(),
@@ -90,13 +124,16 @@ struct OutboxTemplate {
     notifs: usize,
     mail: Vec<(Mail, Profile)>,
     page: i32,
+    violating_usc18_1702: bool,
+    pid: String,
+    is_helper: bool,
 }
 
 /// GET /inbox/mail/sent
 pub async fn outbox_request(
     jar: CookieJar,
     State(database): State<Database>,
-    Query(props): Query<PaginatedQuery>,
+    Query(props): Query<NotificationsQuery>,
 ) -> impl IntoResponse {
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
@@ -123,9 +160,33 @@ pub async fn outbox_request(
         .get_notification_count_by_recipient(auth_user.id.to_owned())
         .await;
 
+    let violating_usc18_1702 =
+        (props.profile.is_empty() == false) && (props.profile != auth_user.id);
+
+    let is_helper = {
+        let group = match database.auth.get_group_by_id(auth_user.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        group.permissions.contains(&Permission::Helper)
+    };
+
+    if violating_usc18_1702 && !is_helper {
+        // we cannot view the mail of other users if we are not a helper
+        return Html(DatabaseError::NotAllowed.to_html(database));
+    }
+
     let mail = match database
         .auth
-        .get_mail_by_recipient_sent_paginated(auth_user.id.clone(), props.page)
+        .get_mail_by_recipient_sent_paginated(
+            if violating_usc18_1702 {
+                props.profile.clone()
+            } else {
+                auth_user.id.clone()
+            },
+            props.page,
+        )
         .await
     {
         Ok(c) => c,
@@ -140,6 +201,13 @@ pub async fn outbox_request(
             notifs,
             mail,
             page: props.page,
+            violating_usc18_1702,
+            pid: if violating_usc18_1702 {
+                props.profile.clone()
+            } else {
+                auth_user.id.clone()
+            },
+            is_helper,
         }
         .render()
         .unwrap(),

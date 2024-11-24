@@ -329,11 +329,12 @@ pub async fn partial_timeline_request(
 }
 
 #[derive(Template)]
-#[template(path = "about.html")]
-struct AboutTemplate {
+#[template(path = "general_markdown_text.html")]
+pub struct MarkdownTemplate {
     config: Config,
     profile: Option<Profile>,
-    about: String,
+    title: String,
+    text: String,
 }
 
 /// GET /site/about
@@ -351,10 +352,11 @@ pub async fn about_request(jar: CookieJar, State(database): State<Database>) -> 
     };
 
     Html(
-        AboutTemplate {
+        MarkdownTemplate {
             config: database.server_options.clone(),
             profile: auth_user,
-            about: shared::fs::read(format!(
+            title: "About".to_string(),
+            text: shared::fs::read(format!(
                 "{}/site/about.md",
                 database.server_options.static_dir
             ))

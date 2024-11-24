@@ -26,7 +26,7 @@ endblock %} {% block nav_left %}
 <article>
     <main class="flex flex-col gap-4">
         {% if chats.len() == 0 %}
-        <div class="markdown-alert-important">
+        <div class="markdown-alert-warning">
             <span>No results matching this query yet!</span>
         </div>
         {% endif %} {% for chat in chats %} {% include "components/listing.html"

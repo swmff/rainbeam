@@ -346,6 +346,8 @@
 
                     // save
                     globalThis.save_settings().then(() => window.close());
+                } else if (window.location.search === "?signature") {
+                    document.getElementById("set_signature_dialog").showModal();
                 }
             }, 250);
 
@@ -532,6 +534,38 @@
             </button>
         </div>
     </form>
+</dialog>
+
+<dialog id="set_signature_dialog">
+    <div class="inner">
+        <textarea
+            name="sparkler:mail-signature"
+            id="sparkler:mail_signature"
+            onchange="update_kv('sparkler:mail_signature', event.target.value)"
+        ></textarea>
+
+        <p class="fade">
+            Your signature is automatically appended to mail sent from your
+            account.
+        </p>
+
+        <hr />
+        <div class="flex gap-2">
+            <button
+                class="primary bold"
+                onclick="globalThis.save_settings().then(() => window.close())"
+            >
+                Confirm
+            </button>
+            <button
+                class="bold"
+                onclick="document.getElementById('set_signature_dialog').close(); window.close()"
+                type="button"
+            >
+                Cancel
+            </button>
+        </div>
+    </div>
 </dialog>
 
 {% let profile = profile.as_ref().unwrap() %}

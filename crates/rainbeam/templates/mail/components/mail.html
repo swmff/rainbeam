@@ -15,19 +15,27 @@
             <!-- prettier-ignore -->
             <div class="flex gap-2">
                 {% if let Some(user) = profile %}
-                {% if (user.id == letter.recipient) | (user.id == letter.author) %}
+                {% if letter.recipient.contains(user.id) | (user.id == letter.author) %}
                 <a
-                    class="button icon-only border"
+                    class="button icon-only camo"
                     title="Reply"
                     href="/inbox/mail/compose?reply={{ letter.id }}&title=Re%3A%20{{ letter.title }}&to={{ letter.author }}"
                 >
                     <i class="icon" data-lucide="reply"></i>
                 </a>
+
+                <a
+                    class="button icon-only camo"
+                    title="Reply all"
+                    href="/inbox/mail/compose?reply={{ letter.id }}&title=Re%3A%20{{ letter.title }}&to={{ letter.author }},{% for recipient in letter.recipient %}{{ recipient }},{% endfor %}"
+                >
+                    <i class="icon" data-lucide="reply-all"></i>
+                </a>
                 {% endif %}
 
-                {% if user.id == letter.recipient %}
+                {% if letter.recipient.contains(user.id) | (user.id == letter.author) %}
                 <button
-                    class="icon-only border red"
+                    class="icon-only camo red"
                     title="Delete"
                     onclick="trigger('mail:delete', ['{{ letter.id }}'])"
                 >
@@ -60,6 +68,17 @@
             <span>Sent:</span>
             <span class="date">{{ letter.timestamp }}</span>
         </div>
+
+        <hr />
+
+        {% if letter.recipient.get(0).unwrap() == "0" %}
+        <div class="markdown-alert-warning">
+            <span
+                >This mail was sent to the system account. It may be seen and
+                replied to by any staff member with access.</span
+            >
+        </div>
+        {% endif %}
     </div>
 
     <span class="card flex flex-col">

@@ -52,12 +52,10 @@ endblock %} {% block nav_left %}
 
                 <div class="flex flex-col gap-2">
                     <label for="content">Content</label>
-                    <textarea
-                        type="text"
-                        name="content"
-                        id="content"
-                        required
-                    ></textarea>
+                    <textarea type="text" name="content" id="content" required>
+&#13;&#10;
+{% if let Some(user) = profile %}{% if let Some(signature) = user.metadata.kv.get("sparkler:mail_signature") %}{% if !signature.is_empty() %}{{ signature }}{% endif %}{% endif %}{% endif %}</textarea
+                    >
                 </div>
             </div>
         </form>
