@@ -3793,7 +3793,7 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xmail\" WHERE \"recipient\" LIKE ? OR \"recipient\" = $2 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+            format!("SELECT * FROM \"xmail\" WHERE \"recipient\" LIKE ? OR \"recipient\" = ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
         } else {
             format!("SELECT * FROM \"xmail\" WHERE \"recipient\" LIKE $1 OR \"recipient\" = $2 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
         };
@@ -3854,9 +3854,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xmail\" WHERE \"author\" LIKE ? OR \"recipient\" = $2 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+            format!("SELECT * FROM \"xmail\" WHERE \"author\" LIKE ? OR \"author\" = ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
         } else {
-            format!("SELECT * FROM \"xmail\" WHERE \"author\" LIKE $1 OR \"recipient\" = $2 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+            format!("SELECT * FROM \"xmail\" WHERE \"author\" LIKE $1 OR \"author\" = $2 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
         };
 
         let c = &self.base.db.client;
