@@ -124,8 +124,15 @@ globalThis.trigger = (id, args) => {
 
 /// Import a namespace from path (relative to ns_config.root)
 globalThis.use = (id, callback) => {
+    let file = id;
+
+    if (id.includes(".h.")) {
+        const split = id.split(".h.");
+        file = split[1];
+    }
+
     // check if namespace already exists
-    const res = globalThis._app_base.ns_store[`$${id}`];
+    const res = globalThis._app_base.ns_store[`$${file}`];
 
     if (res) {
         return callback(res);
@@ -134,7 +141,7 @@ globalThis.use = (id, callback) => {
     // create script to load
     const script = document.createElement("script");
     script.src = `${globalThis.ns_config.root}${id}.js?v=${globalThis.ns_config.version}`;
-    script.id = `${globalThis.ns_config.version}-${id}.js`;
+    script.id = `${globalThis.ns_config.version}-${file}.js`;
     document.head.appendChild(script);
 
     script.setAttribute("data-turbo-permanent", "true");
@@ -143,7 +150,7 @@ globalThis.use = (id, callback) => {
 
     // run callback once the script loads
     script.addEventListener("load", () => {
-        const res = globalThis._app_base.ns_store[`$${id}`];
+        const res = globalThis._app_base.ns_store[`$${file}`];
 
         if (!res) {
             return console.error("imported namespace failed to register:", id);
@@ -157,8 +164,15 @@ globalThis.use = (id, callback) => {
 
 /// Import a class from path (relative to ns_config.root/classes)
 globalThis.require = (id, callback) => {
+    let file = id;
+
+    if (id.includes(".h.")) {
+        const split = id.split(".h.");
+        file = split[1];
+    }
+
     // check if class already exists
-    const res = globalThis._app_base.classes[id];
+    const res = globalThis._app_base.classes[file];
 
     if (res) {
         return callback(res);
@@ -167,7 +181,7 @@ globalThis.require = (id, callback) => {
     // create script to load
     const script = document.createElement("script");
     script.src = `${globalThis.ns_config.root}classes/${id}.js?v=${globalThis.ns_config.version}`;
-    script.id = `${globalThis.ns_config.version}-${id}.class.js`;
+    script.id = `${globalThis.ns_config.version}-${file}.class.js`;
     document.head.appendChild(script);
 
     script.setAttribute("data-turbo-permanent", "true");
@@ -176,7 +190,7 @@ globalThis.require = (id, callback) => {
 
     // run callback once the script loads
     script.addEventListener("load", () => {
-        const res = globalThis._app_base.classes[id];
+        const res = globalThis._app_base.classes[file];
 
         if (!res) {
             return console.error("imported class failed to register:", id);

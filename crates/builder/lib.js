@@ -3,6 +3,15 @@ import swc from "@swc/core";
 
 import process from "node:process";
 import fs from "node:fs/promises";
+import crypto from "node:crypto";
+
+function hash(input) {
+    return crypto
+        .createHash("sha256")
+        .update(input)
+        .digest("hex")
+        .substring(0, 10);
+}
 
 export default async function build(options) {
     const __cwd = process.cwd();
@@ -12,6 +21,16 @@ export default async function build(options) {
         await fs.stat(`${__cwd}/${options.build_dir}`);
     } catch {
         await fs.mkdir(`${__cwd}/${options.build_dir}`);
+    }
+
+    // clear directories we're told to clear before build
+    for (const dir of options.clear_build_dirs) {
+        try {
+            await fs.stat(`${__cwd}/${options.build_dir}/${dir}`);
+            await fs.rm(`${__cwd}/${options.build_dir}/${dir}`, {
+                recursive: true,
+            });
+        } catch {}
     }
 
     // create templates build directory if it doesn't already exist
@@ -25,6 +44,8 @@ export default async function build(options) {
         );
     }
 
+    const hashed_files = {};
+
     // walk css_dir
     async function walk_dir(
         transform_callback,
@@ -32,6 +53,8 @@ export default async function build(options) {
         build_sub_dir = "",
         sub_dir = "",
         do_sub = true,
+        do_hash = true,
+        do_clear_dir = true,
     ) {
         try {
             await fs.stat(`${__cwd}/${options.build_dir}/${build_sub_dir}`);
@@ -41,7 +64,7 @@ export default async function build(options) {
 
         const files = await fs.readdir(`${dir_root}/${sub_dir}`);
 
-        for (const file of files) {
+        for (let file of files) {
             const full_path = `${dir_root}/${sub_dir}${file}`;
             const stat = await fs.stat(full_path);
 
@@ -70,13 +93,21 @@ export default async function build(options) {
                 continue;
             }
 
-            await transform_callback(
-                file,
-                full_path,
-                do_sub
-                    ? `${__cwd}/${options.build_dir}/${build_sub_dir}${sub_dir}${file}`
-                    : `${__cwd}/${options.build_dir}/${build_sub_dir}${file}`,
-            );
+            if (do_hash) {
+                const file_content = await fs.readFile(full_path, {
+                    encoding: "utf8",
+                });
+
+                const hashed_file = `${hash(file_content)}.h.${file}`;
+                hashed_files[file] = hashed_file;
+                file = hashed_file;
+            }
+
+            const build_path = do_sub
+                ? `${__cwd}/${options.build_dir}/${build_sub_dir}${sub_dir}${file}`
+                : `${__cwd}/${options.build_dir}/${build_sub_dir}${file}`;
+
+            await transform_callback(file, full_path, build_path);
         }
     }
 
@@ -94,7 +125,18 @@ export default async function build(options) {
                 sourceMap: true,
             });
 
-            await fs.writeFile(build_path, code);
+            let content = new TextDecoder().decode(code);
+
+            // hashed files
+            for (const hashed_file of Object.entries(hashed_files)) {
+                content = content.replaceAll(
+                    `@import "${hashed_file[0]}"`,
+                    `@import "${hashed_file[1]}"`,
+                );
+            }
+
+            // write
+            await fs.writeFile(build_path, content);
         },
         `${__cwd}/${options.css_dir}`,
         "css/",
@@ -123,12 +165,26 @@ export default async function build(options) {
                 },
             );
 
-            const { code } = await swc.minify(compiled.code, {
+            let { code } = await swc.minify(compiled.code, {
                 compress: true,
                 mangle: true,
                 format: options.js_format_options || {},
             });
 
+            // hashed files
+            for (const hashed_file of Object.entries(hashed_files)) {
+                code = code
+                    .replaceAll(
+                        `use("${hashed_file[0].replace(".js", "")}`,
+                        `use("${hashed_file[1].replace(".js", "")}`,
+                    )
+                    .replaceAll(
+                        `require("${hashed_file[0].replace(".js", "")}`,
+                        `require("${hashed_file[1].replace(".js", "")}`,
+                    );
+            }
+
+            // write
             await fs.writeFile(build_path, code);
         },
         `${__cwd}/${options.js_dir}`,
@@ -174,6 +230,8 @@ export default async function build(options) {
         `${__cwd}/${options.templates_dir}`,
         "icons/",
         "",
+        false,
+        false,
         false,
     );
 
@@ -250,6 +308,27 @@ ${content}`;
                 groups_ = regular_regex.exec(content);
             }
 
+            // hashed files
+            for (const hashed_file of Object.entries(hashed_files)) {
+                content = content
+                    .replaceAll(
+                        `src="/static/build/js/${hashed_file[0]}"`,
+                        `src="/static/build/js/${hashed_file[1]}"`,
+                    )
+                    .replaceAll(
+                        `href="/static/build/css/${hashed_file[0]}"`,
+                        `href="/static/build/css/${hashed_file[1]}"`,
+                    )
+                    .replaceAll(
+                        `use("${hashed_file[0].replace(".js", "")}`,
+                        `use("${hashed_file[1].replace(".js", "")}`,
+                    )
+                    .replaceAll(
+                        `require("${hashed_file[0].replace(".js", "")}`,
+                        `require("${hashed_file[1].replace(".js", "")}`,
+                    );
+            }
+
             // save file
             await fs.writeFile(
                 full_path.replace(
@@ -262,6 +341,8 @@ ${content}`;
         `${__cwd}/${options.templates_dir}`,
         "",
         "",
+        false,
+        false,
         false,
     );
 }

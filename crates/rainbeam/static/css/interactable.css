@@ -1,0 +1,394 @@
+button,
+a.button {
+    background: var(--color-lowered);
+    color: var(--color-text);
+    padding: 0.25rem 0.85rem;
+    min-height: 32px;
+    min-width: max-content;
+    width: max-content;
+    border: 0;
+    outline: none;
+    cursor: pointer;
+    border-radius: var(--radius);
+    outline: solid 1px transparent;
+    /* transition:
+        background 0.15s,
+        outline 0.08s,
+        outline-color 0.15s,
+        border-radius 0.15s,
+        opacity 0.15s,
+        box-shadow 0.3s,
+        transform 0.1s; */
+    transition:
+        transform 0.1s,
+        opacity 0.15s;
+    user-select: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.25rem;
+    text-decoration: none !important;
+    /* font-size: 13.3333px; */
+    font-size: 0.9rem;
+}
+
+button.big,
+a.button.big {
+    padding: 12px 20px;
+    min-height: 40px;
+}
+
+button:active,
+a.button:active {
+    transform: scale(0.95);
+}
+
+button.circle,
+a.button.circle {
+    border-radius: var(--circle);
+}
+
+.icon-only,
+button.icon-only,
+a.button.icon-only {
+    position: relative;
+    width: 35px;
+    height: 35px;
+    aspect-ratio: 1 / 1;
+    border-radius: var(--circle);
+    font-size: 18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.icon-only.small {
+    font-size: 14px;
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    min-height: 28px !important;
+}
+
+.icon-only .icon {
+    width: 1em;
+    height: 1em;
+    position: absolute;
+}
+
+nav button,
+nav a.button {
+    font-size: unset;
+}
+
+button:has(.notification),
+a.button:has(.notification) {
+    gap: 0.5rem;
+}
+
+button:hover,
+a.button:hover {
+    background: var(--color-super-lowered);
+}
+
+button.camo,
+a.button.camo {
+    background: transparent;
+    opacity: 85%;
+}
+
+button.camo:hover,
+a.button.camo:hover {
+    box-shadow: none;
+    background: var(--color-lowered);
+    opacity: 100%;
+}
+
+button.primary,
+a.button.primary {
+    background: var(--color-primary);
+    color: var(--color-text-primary);
+}
+
+button.primary:hover,
+a.button.primary:hover {
+    background: var(--color-primary-lowered);
+}
+
+button.secondary,
+a.button.secondary {
+    background: var(--color-super-raised);
+}
+
+button.secondary:hover,
+a.button.secondary:hover {
+    background: var(--color-raised);
+}
+
+button.floating,
+.button.floating {
+    position: fixed;
+    bottom: 0.5rem;
+    left: 0.5rem;
+    border-radius: var(--circle);
+    width: 48px !important;
+    transition: all 0.15s;
+    opacity: 0%;
+    transform: scale(0);
+    padding: 0 !important;
+    aspect-ratio: 1 / 1 !important;
+    width: 48px !important;
+    height: 48px !important;
+    z-index: 3;
+}
+
+button.floating.right,
+.button.floating.right {
+    left: unset;
+    right: 0.5rem;
+}
+
+button.floating svg,
+.button.floating svg {
+    margin: 0;
+}
+
+button.floating:is(html[data-scroll-500="true"] *),
+.button.floating:is(html[data-scroll-500="true"] *) {
+    opacity: 100%;
+    transform: scale(1);
+}
+
+.card button.secondary,
+.card a.button.secondary {
+    background: var(--color-raised);
+}
+
+.card button.secondary:hover,
+.card a.button.secondary:hover {
+    background: var(--color-super-raised);
+}
+
+button.border,
+.button.border {
+    background: inherit;
+    border: solid 1px var(--color-super-lowered);
+}
+
+button.border:hover,
+.button.border:hover {
+    background: var(--color-lowered);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+button.reaction.active {
+    background: var(--color-primary);
+    color: var(--color-text-primary);
+}
+
+textarea {
+    width: 100%;
+    resize: vertical;
+    min-height: 5rem;
+    padding: 0.75rem;
+    font-family: inherit;
+}
+
+input,
+select {
+    padding: 0.5rem 0.75rem;
+    height: 32px;
+}
+
+input,
+textarea,
+select {
+    background: var(--color-lowered);
+    border: 0;
+    outline: solid 1px transparent;
+    border-radius: var(--radius);
+    transition:
+        background 0.15s,
+        outline 0.08s,
+        outline-color 0.15s;
+    color: var(--color-text-lowered);
+}
+
+@media screen and (max-width: 900px) {
+    input,
+    textarea,
+    select {
+        /* fix safari auto zoom */
+        font-size: 16px;
+    }
+}
+
+input.secondary,
+textarea.secondary,
+select.secondary {
+    background: var(--color-surface);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    outline: solid 2px var(--color-primary);
+    outline-offset: 2px;
+}
+
+input:disabled,
+textarea:disabled,
+select:disabled,
+input[disabled],
+textarea[disabled],
+select[disabled] {
+    opacity: 75%;
+    cursor: not-allowed;
+}
+
+label:has(> input),
+label.normal {
+    font-weight: normal;
+}
+
+input[type="checkbox"] {
+    outline: none !important;
+    padding: 0;
+    height: unset;
+}
+
+.checkbox_container * {
+    display: inline-block;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    max-width: 100%;
+    border-color: var(--color-lowered);
+    transition: border-color 0.15s;
+}
+
+.flex-collapse {
+    display: flex;
+}
+
+.flex-fold {
+    display: flex;
+    flex-direction: column;
+}
+
+@media screen and (max-width: 900px) {
+    .flex-collapse {
+        flex-direction: column !important;
+    }
+
+    .flex-fold {
+        flex-direction: row !important;
+    }
+}
+
+/* codemirror */
+.CodeMirror {
+    color: var(--color-text) !important;
+}
+
+.CodeMirror {
+    background: transparent !important;
+    font-family: inherit !important;
+    height: 10rem !important;
+    min-height: 100%;
+    max-height: 100%;
+    cursor: text;
+}
+
+.CodeMirror-cursor {
+    border-color: rgb(0, 0, 0) !important;
+}
+
+.CodeMirror-cursor:is(.dark *) {
+    border-color: rgb(255, 255, 255) !important;
+}
+
+.CodeMirror-cursor {
+    height: 22px !important;
+}
+
+[role="presentation"]::-moz-selection,
+[role="presentation"] *::-moz-selection {
+    background-color: rgb(191, 219, 254) !important;
+}
+
+[role="presentation"]::selection,
+[role="presentation"] *::selection {
+    background-color: rgb(191, 219, 254) !important;
+}
+
+[role="presentation"]:is(.dark *)::-moz-selection,
+[role="presentation"] *:is(.dark *)::-moz-selection {
+    background-color: rgb(64, 64, 64) !important;
+}
+
+[role="presentation"]:is(.dark *)::selection,
+[role="presentation"] *:is(.dark *)::selection {
+    background-color: rgb(64, 64, 64) !important;
+}
+
+.cm-header {
+    color: inherit !important;
+}
+
+.cm-variable-2,
+.cm-quote {
+    color: rgb(63, 98, 18) !important;
+}
+
+.cm-variable-2:is(.dark *) {
+    color: rgb(217, 249, 157) !important;
+}
+
+.cm-comment {
+    color: rgb(153 27 27) !important;
+}
+
+.cm-comment:is(.dark *) {
+    color: rgb(254, 202, 202) !important;
+}
+
+.cm-comment {
+    font-family: ui-monospace, monospace;
+}
+
+.cm-link {
+    color: var(--color-link) !important;
+}
+
+.cm-url {
+    color: rgb(29, 78, 216) !important;
+}
+
+.cm-url:is(.dark *) {
+    color: rgb(191, 219, 254) !important;
+}
+
+.cm-variable-3 {
+    color: rgb(91, 33, 182) !important;
+}
+
+.cm-variable-3:is(.dark *) {
+    color: rgb(221, 214, 254) !important;
+}
+
+.post_editor .CodeMirror {
+    height: auto !important;
+}
+
+.post_editor .CodeMirror-line {
+    padding-left: 0 !important;
+}
+
+.post_editor .CodeMirror-focused .CodeMirror-placeholder {
+    opacity: 50%;
+}

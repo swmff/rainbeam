@@ -1,0 +1,502 @@
+html:not(.legacy),
+body:not(.legacy *) {
+    font-family: "Inter", "Poppins", "Roboto", ui-sans-serif, system-ui,
+        sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+        "Noto Color Emoji";
+}
+
+html:not(.legacy),
+:not(.legacy *) {
+    --color-surface: hsl(0, 0%, 95%);
+    --color-lowered: hsl(0, 0%, 93%);
+    --color-raised: hsl(0, 0%, 98%);
+    --color-super-lowered: hsl(0, 0%, 85%);
+    --color-super-raised: hsl(0, 0%, 100%);
+    /* --color-primary: hsl(209, 93%, 49%);
+    --color-primary-hsl: 209, 93%, 49%;
+    --color-primary-lowered: hsl(209, 93%, 44%);
+    --color-primary-raised: hsl(209, 93%, 54%); */
+    --color-primary: hsl(341, 59%, 49%);
+    --color-primary-hsl: 341, 59%, 49%;
+    --color-primary-lowered: hsl(341, 59%, 44%);
+    --color-primary-raised: var(--color-primary);
+    --radius: 4px;
+}
+
+html.dark:not(.legacy),
+.dark:not(.legacy) * {
+    --hue: 0;
+    --sat: 0%;
+    --lit: 10%;
+    --color-surface: hsl(var(--hue), var(--sat), calc(0% + var(--lit)));
+    --color-lowered: hsl(var(--hue), var(--sat), calc(6% + var(--lit)));
+    --color-raised: hsl(var(--hue), var(--sat), calc(2% + var(--lit)));
+    --color-super-lowered: hsl(var(--hue), var(--sat), calc(12% + var(--lit)));
+    --color-super-raised: hsl(var(--hue), var(--sat), calc(4% + var(--lit)));
+    --color-primary-raised: hsl(341, 59%, 64%);
+}
+
+nav:not(.legacy *) {
+    /* background: var(--color-raised); */
+    background: var(--color-raised);
+    border-bottom: solid 1px var(--color-super-lowered);
+    padding: 0.5rem 0.25rem;
+    transition: backdrop-filter 0.15s;
+}
+
+nav:not(.legacy *) button,
+nav:not(.legacy *) a.button {
+    padding: 0 0.75rem;
+    font-size: 14px;
+    color: var(--color-text);
+    background-color: transparent !important;
+}
+
+nav:not(.legacy *) a.button.title,
+nav:not(.legacy *) a.button.title .title-content {
+    position: relative;
+    transition:
+        color 0.25s,
+        box-shadow 0.15s,
+        transform 0.15s;
+}
+
+nav:not(.legacy *) a.button.title:hover {
+    color: var(--color-primary) !important;
+}
+
+nav:not(.legacy *)
+    a.button.title:hover:has(.title-content)
+    .title-content:is(img) {
+    opacity: 100%;
+    box-shadow: 0 0 8px 2px hsla(var(--color-primary-hsl), 25%);
+    transform: scale(1.05);
+}
+
+nav:not(.legacy *)
+    a.button.title:hover:has(.title-content)
+    .title-content:not(img) {
+    opacity: 100%;
+    text-shadow: 0 0 8px hsla(var(--color-primary-hsl), 25%);
+    transform: scale(1.05);
+}
+
+.dropdown:not(.legacy *) .inner {
+    padding: 0.25rem;
+}
+
+@media screen and (min-width: 901px) {
+    nav:not(.legacy *) button:not(:is(.dropdown *)):not(:is(.title)),
+    nav:not(.legacy *) a:not(:is(.dropdown *)):not(:is(.title)) {
+        opacity: 60%;
+        transition: opacity 0.15s;
+    }
+
+    nav:not(.legacy *) button:hover,
+    nav:not(.legacy *) a:hover,
+    nav:not(.legacy *) button.active,
+    nav:not(.legacy *) a.active {
+        opacity: 100% !important;
+    }
+
+    nav:not(.legacy *) button::before,
+    nav:not(.legacy *) a::before {
+        content: unset;
+    }
+
+    body:has(#is_chat_page) article:not(.legacy *) {
+        padding-bottom: 1rem !important;
+        height: calc(100dvh - 48px - 1rem) !important;
+    }
+}
+
+@media screen and (max-width: 900px) {
+    nav:not(.legacy *) {
+        padding: 0.5rem 0.25rem;
+        margin-bottom: 0;
+        backdrop-filter: none;
+        border-bottom: solid 1px var(--color-super-lowered);
+    }
+
+    nav:not(.legacy *):not([data-scroll="0"] *),
+    nav:not(.legacy *):is(html:not([data-scroll]) *) {
+        background: var(--color-raised);
+    }
+
+    nav:not(.legacy *) button,
+    nav:not(.legacy *) a.button {
+        font-size: 12px;
+        flex-direction: column;
+        width: 60px;
+        height: 48px;
+        gap: 0 !important;
+        transform: scale(0.9);
+    }
+
+    nav:not(.legacy *) button.active,
+    nav:not(.legacy *) a.button.active {
+        color: var(--color-primary-raised);
+        border: solid 1px var(--color-super-lowered);
+        animation: grow 1 0.25s 0.1s forwards running;
+    }
+
+    nav:not(.legacy *) button .notification.tr,
+    nav:not(.legacy *) a.button .notification.tr {
+        font-size: 12px;
+    }
+
+    nav:not(.legacy *) button::before,
+    nav:not(.legacy *) a::before {
+        content: unset;
+    }
+
+    nav:not(.legacy *) .nav_side {
+        display: contents;
+    }
+
+    /* chat page fixes */
+    body:has(#is_chat_page) article:not(.legacy *) {
+        margin-top: 0 !important;
+    }
+
+    /* seamless sides */
+    article:not(.legacy *) {
+        padding: 0;
+    }
+
+    .card:not(.legacy *):not(.card *):not(include-partial *),
+    .card-nest:not(.legacy *):not(include-partial *),
+    .sidenav:not(.legacy *),
+    .pillmenu:not(.legacy *),
+    .response:not(.legacy *):not(include-partial *)
+        .card:first-child[style="display: none"]:not(.response .response *)
+        + .card:nth-child(n-1) {
+        border-radius: 0 !important;
+        border-left: none;
+        border-right: none;
+    }
+
+    .banner:not(.legacy *) {
+        border-radius: 0 !important;
+    }
+
+    .sidenav:not(.legacy *) *,
+    .pillmenu:not(.legacy *) * {
+        border-radius: 0 !important;
+    }
+
+    .pillmenu:not(.legacy *) {
+        top: 65px;
+        position: sticky;
+        z-index: 1;
+        box-shadow: 0 0 4px var(--color-shadow);
+    }
+
+    /* toast to snackbar */
+    .toast:not(.legacy *) {
+        width: 100% !important;
+    }
+
+    #toast_zone:not(.legacy *) {
+        top: 0.5rem !important;
+        bottom: unset;
+    }
+
+    /* profile */
+    #profile_box:not(.legacy *) {
+        flex-direction: column;
+        position: relative;
+    }
+
+    #profile_box:not(.legacy *) #profile_card {
+        padding: 0.75rem !important;
+        flex-direction: column;
+        justify-content: space-between;
+        height: auto !important;
+        min-height: 100% !important;
+        min-width: 50%;
+    }
+
+    #profile_box:not(.legacy *) .profile_card_section_2 {
+        width: 100% !important;
+
+        & button,
+        & a.button,
+        & .dropdown {
+            width: 100%;
+        }
+    }
+
+    #profile_box:not(.legacy *)
+        #profile_card
+        .profile_card_section_1
+        .profile_avatar_container {
+        margin: -140px 0 0;
+    }
+
+    #profile_box:not(.legacy *)
+        #profile_card
+        .profile_card_section_1
+        .profile_social {
+        justify-content: flex-start;
+    }
+
+    #profile_box:not(.legacy *)
+        #profile_card
+        .profile_card_section_1
+        .profile_card_section_1_1 {
+        flex-direction: column-reverse;
+    }
+
+    #profile_box:not(.legacy *) #profile_card .profile_card_section_2 {
+        flex-direction: row;
+        height: max-content;
+        width: max-content;
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+    }
+
+    #profile_box:not(.legacy *)
+        #profile_card
+        .profile_card_section_2
+        div:nth-child(1) {
+        display: contents;
+    }
+
+    #profile_box:not(.legacy *) #profile_card .profile_card_section_2 .icon {
+        display: block !important;
+    }
+
+    #profile_box:not(.legacy *) .profile_card_section_3:not(:has(*)) {
+        /* remove empty section */
+        display: none;
+    }
+
+    #profile_box:not(.legacy *) .profile_card_section_3 {
+        min-width: 25%;
+    }
+
+    #profile_box:not(.legacy *) .profile_card_section_3 #sidebar {
+        height: 100%;
+    }
+
+    #profile_box:not(.legacy *) {
+        position: unset;
+    }
+
+    #profile_box:not(.legacy *)
+        #profile_card
+        .profile_card_section_1
+        .profile_avatar_container {
+        margin: -100px 0 0;
+    }
+
+    #profile_box:not(.legacy *)
+        #profile_card
+        .profile_card_section_2:has(
+            button:not(.dropdown .inner *):nth-child(2)
+        ) {
+        /* profile card section 2 with 3 buttons that aren't in a dropdown */
+        height: auto;
+        min-height: 100%;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+
+    #profile_box:not(.legacy *) #profile_card .profile_card_section_2 {
+        position: unset;
+    }
+
+    /* sidenav */
+    .sidenav:not(.legacy *) {
+        flex-direction: row;
+        font-size: 14px;
+    }
+
+    .sidenav:not(.legacy *) a {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+}
+
+.sidenav:not(.legacy *) {
+    box-shadow: 0 0 4px var(--color-shadow);
+    background: var(--color-raised) !important;
+    padding: 0.5rem;
+    gap: 0.5rem;
+}
+
+.sidenav:not(.legacy *) a {
+    position: relative;
+    border-radius: var(--radius) !important;
+    padding: 0.25rem 1rem;
+    background: inherit !important;
+}
+
+.sidenav:not(.legacy *) a:hover {
+    color: var(--color-text-lowered);
+    background: var(--color-lowered) !important;
+}
+
+.sidenav:not(.legacy *) a.active {
+    color: var(--color-text-primary);
+    background: var(--color-primary) !important;
+    box-shadow: 0 0 4px hsla(var(--color-primary-hsl), 25%);
+}
+
+.pillmenu.convertible:not(.legacy *) {
+    flex-direction: row;
+    font-size: 14px;
+}
+
+.pillmenu:not(.legacy *) a.active {
+    color: var(--color-text-raised);
+    background: var(--color-super-raised);
+    position: relative;
+}
+
+.pillmenu:not(.legacy *) a.active::before {
+    --height: 70%;
+    --target: 50%; /* middle */
+    width: 95%;
+    border-radius: var(--radius);
+    content: "";
+    z-index: 0;
+    background: var(--color-super-lowered);
+    height: var(--height);
+    transition: background 0.2s;
+    display: block;
+    position: absolute;
+    top: calc(var(--target) - var(--height) / 2);
+}
+
+.notification:not(.legacy *):not(.marker) {
+    background: transparent;
+    color: inherit;
+    font-weight: 600;
+}
+
+@keyframes grow {
+    from {
+        transform: scale(0.9);
+    }
+
+    to {
+        transform: scale(1);
+    }
+}
+
+input:not(.legacy *),
+textarea:not(.legacy *),
+select:not(.legacy *) {
+    background: transparent;
+    border: solid 1px var(--color-super-lowered);
+    padding: 0.25rem 0.75rem;
+    outline: none;
+    /* transition:
+        background 0.15s,
+        border-color 0.15s; */
+}
+
+textarea:not(.legacy *) {
+    padding: 0.5rem 0.75rem;
+}
+
+input:not(.legacy *):focus,
+textarea:not(.legacy *):focus,
+select:not(.legacy *):focus {
+    border-color: var(--color-primary);
+    outline: none;
+}
+
+select:not(.legacy *) {
+    cursor: pointer;
+}
+
+select:not(.legacy *):focus {
+    background: var(--color-super-lowered);
+}
+
+.toast:not(.legacy *) {
+    font-size: 16px;
+    padding: 0.5rem 1rem;
+    min-width: 12rem;
+    box-shadow: 0 0 4px var(--color-shadow);
+    align-items: center;
+    max-width: 100%;
+    overflow: hidden;
+    overflow-wrap: break-word;
+    white-space: normal;
+    text-wrap: wrap;
+    text-overflow: ellipsis;
+    flex-wrap: wrap;
+}
+
+.toast:not(.legacy *) .timer {
+    font-size: 10px;
+    width: 22px;
+    height: 22px;
+    background: var(--color-raised);
+    border: solid 1px var(--color-super-lowered);
+    border-radius: var(--circle);
+    padding: 0.25rem;
+    aspect-ratio: 1 / 1;
+    color: var(--color-text-raised);
+}
+
+/* split page layout */
+#use_split_page {
+    display: none;
+}
+
+nav:is(body:has(#use_split_page) *) {
+    position: absolute;
+}
+
+#page:is(body:has(#use_split_page) *) {
+    display: flex;
+    flex-direction: row;
+    height: 100dvh;
+    width: 100dvw;
+    max-width: 100dvw;
+    padding: 0;
+}
+
+#page .content_container:is(body:has(#use_split_page) *) {
+    display: contents;
+}
+
+article:is(body:has(#use_split_page) *) {
+    margin: 0;
+}
+
+body:has(#use_split_page) .page_section {
+    flex: 1 0 auto;
+    overflow: auto;
+    height: 100dvh;
+    width: 50%;
+    padding: 5rem 2rem;
+}
+
+body:has(#use_split_page) .page_section.smaller {
+    width: max-content;
+}
+
+@media screen and (max-width: 900px) {
+    #page:is(body:has(#use_split_page) *) {
+        flex-direction: column;
+    }
+
+    body:has(#use_split_page) .page_section {
+        height: 50%;
+        width: 100dvw;
+    }
+
+    body:has(#use_split_page) .page_section.smaller,
+    body:has(#use_split_page) .page_section.mobile\:smaller {
+        width: 100dvw;
+        height: max-content;
+    }
+}

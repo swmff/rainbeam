@@ -1,6 +1,7 @@
 {
     "build_dir": "crates/rainbeam/static/build",
     "templates_build_dir": "crates/rainbeam/templates_build",
+    "clear_build_dirs": ["js", "css"],
 
     "css_dir": "crates/rainbeam/static/css",
     "js_dir": "crates/rainbeam/static/js",
