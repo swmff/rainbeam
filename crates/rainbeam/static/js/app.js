@@ -114,6 +114,42 @@
         });
     });
 
+    app.define(
+        "icon",
+        async function ({ $ }, icon_name, classes = "", style = "") {
+            if (!$.ICONS) {
+                $.ICONS = {};
+            }
+
+            // use existing icon text
+            if ($.ICONS[icon_name]) {
+                const parser = new DOMParser().parseFromString(
+                    $.ICONS[icon_name],
+                    "text/xml",
+                );
+
+                const icon_element = parser.firstChild;
+                icon_element.setAttribute("class", classes);
+                icon_element.setAttribute("style", style);
+
+                return icon_element;
+            }
+
+            // fetch icon
+            const icon = await (
+                await fetch(`/static/build/icons/${icon_name}.svg`)
+            ).text();
+
+            const parser = new DOMParser().parseFromString(icon, "text/xml");
+
+            const icon_element = parser.firstChild;
+            icon_element.setAttribute("class", classes);
+            icon_element.setAttribute("style", style);
+
+            return icon_element;
+        },
+    );
+
     app.define("copy_text", function ({ $ }, text) {
         navigator.clipboard.writeText(text);
         $.toast("success", "Copied!");
@@ -498,7 +534,6 @@
                             .then(async () => {
                                 page += 1;
                                 await load_partial();
-                                app.icons();
                             })
                             .catch(() => {
                                 console.log("partial stuck");
@@ -575,7 +610,6 @@
     app.define("prompt", function (_, msg) {
         const dialog = document.getElementById("web_api_prompt");
         document.getElementById("web_api_prompt:msg").innerText = msg;
-        app.icons();
 
         return new Promise((resolve, _) => {
             globalThis.web_api_prompt_submit = (value) => {
@@ -590,7 +624,6 @@
     app.define("confirm", function (_, msg) {
         const dialog = document.getElementById("web_api_confirm");
         document.getElementById("web_api_confirm:msg").innerText = msg;
-        app.icons();
 
         return new Promise((resolve, _) => {
             globalThis.web_api_confirm_submit = (value) => {

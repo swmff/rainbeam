@@ -73,7 +73,7 @@
         }
 
         /// Create canvas and init context
-        create_canvas() {
+        async create_canvas() {
             const canvas = document.createElement("canvas");
 
             canvas.width = "300";
@@ -192,8 +192,9 @@
                 color_button.classList.add("primary");
                 color_button.title = "Select color";
                 color_button.setAttribute("type", "button");
-                color_button.innerHTML =
-                    '{{ icon "paint-bucket" }}';
+                color_button.appendChild(
+                    await trigger("app:icon", ["paint-bucket", "icon"]),
+                );
 
                 color_button.addEventListener("click", () => {
                     color_picker.click();
@@ -218,8 +219,9 @@
                 // media buttons
                 const download_button = document.createElement("button");
                 download_button.title = "Download graph";
-                download_button.innerHTML =
-                    '{{ icon "download" }}';
+                download_button.appendChild(
+                    await trigger("app:icon", ["download", "icon"]),
+                );
 
                 media_container.appendChild(download_button);
                 download_button.setAttribute("type", "button");
@@ -229,8 +231,9 @@
 
                 const upload_button = document.createElement("button");
                 upload_button.title = "Upload graph";
-                upload_button.innerHTML =
-                    '{{ icon "upload" }}';
+                upload_button.appendChild(
+                    await trigger("app:icon", ["upload", "icon"]),
+                );
 
                 media_container.appendChild(upload_button);
                 upload_button.setAttribute("type", "button");

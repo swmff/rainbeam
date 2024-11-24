@@ -136,7 +136,7 @@ export default async function build(options) {
     );
 
     // walk templates dir to download icons
-    const icons = [];
+    const icons = options.extra_icon_imports || {};
 
     await walk_dir(
         async (file_name, full_path, _) => {
@@ -213,6 +213,10 @@ export default async function build(options) {
             // minify
             console.log(`template(2) ${file_name}`);
             let content = await fs.readFile(full_path, { encoding: "utf8" });
+
+            content = `<!-- 🌈 RAINBEAM <https://github.com/swmff/rainbeam> -->
+<!-- template built ${new Date().toISOString()} -->
+${content}`;
 
             // selector with class
             const class_regex = new RegExp(
