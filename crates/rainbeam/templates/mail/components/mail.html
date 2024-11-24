@@ -3,10 +3,10 @@
         <div class="flex justify-between items-center flex-2">
             <div class="flex gap-1 items-center">
                 {% if letter.state == authbeam::model::MailState::Unread %}
-                <i class="icon" data-lucide="mail-open"></i>
+                {{ icon "mail-open" }}
                 <div id="unread"></div>
                 {% else %}
-                <i class="icon" data-lucide="mail-check"></i>
+                {{ icon "mail-check" }}
                 {% endif %}
 
                 <b>{{ letter.title }}</b>
@@ -21,7 +21,7 @@
                     title="Reply"
                     href="/inbox/mail/compose?reply={{ letter.id }}&title=Re%3A%20{{ letter.title }}&to={{ letter.author }}"
                 >
-                    <i class="icon" data-lucide="reply"></i>
+                    {{ icon "reply" }}
                 </a>
 
                 <a
@@ -29,7 +29,7 @@
                     title="Reply all"
                     href="/inbox/mail/compose?reply={{ letter.id }}&title=Re%3A%20{{ letter.title }}&to={{ letter.author }},{% for recipient in letter.recipient %}{{ recipient }},{% endfor %}"
                 >
-                    <i class="icon" data-lucide="reply-all"></i>
+                    {{ icon "reply-all" }}
                 </a>
                 {% endif %}
 
@@ -39,7 +39,7 @@
                     title="Delete"
                     onclick="trigger('mail:delete', ['{{ letter.id }}'])"
                 >
-                    <i class="icon" data-lucide="trash"></i>
+                    {{ icon "trash" }}
                 </button>
                 {% endif %}
                 {% endif %}

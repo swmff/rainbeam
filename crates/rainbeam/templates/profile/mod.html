@@ -33,7 +33,7 @@
             {% for kv in other.metadata.kv %}
             <details>
                 <summary class="flex items-center gap-2">
-                    <i class="icon" data-lucide="ellipsis"></i>
+                    {{ icon "ellipsis" }}
                     <code style="background: transparent">{{ kv.0 }}</code>
                 </summary>
                 <pre><code>{{ kv.1 }}</code></pre>
@@ -167,19 +167,7 @@
         <h3>Sessions</h3>
 
         <a href="javascript:create_token()" class="button primary bold">
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 16 16"
-                width="16"
-                height="16"
-                aria-label="Plus symbol"
-                class="icon"
-            >
-                <path
-                    d="M7.75 2a.75.75 0 0 1 .75.75V7h4.25a.75.75 0 0 1 0 1.5H8.5v4.25a.75.75 0 0 1-1.5 0V8.5H2.75a.75.75 0 0 1 0-1.5H7V2.75A.75.75 0 0 1 7.75 2Z"
-                ></path>
-            </svg>
-            New
+            {{ icon "plus" }} New
         </a>
     </div>
 

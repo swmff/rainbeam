@@ -59,7 +59,7 @@ question = question.clone().0 %}
                     exclude="dropdown"
                     class="camo"
                 >
-                    <i class="icon" data-lucide="ellipsis"></i>
+                    {{ icon "ellipsis" }}
                 </button>
 
                 <div class="inner shadow-md w-content" exclude="dropdown">
@@ -71,7 +71,7 @@ question = question.clone().0 %}
                     <button
                         onclick="trigger('app:copy_text', ['{{ config.host }}/+q/{{ short_id }}'])"
                     >
-                        <i class="icon" data-lucide="copy"></i>
+                        {{ icon "copy" }}
                         Copy link
                     </button>
 
@@ -82,7 +82,7 @@ question = question.clone().0 %}
                         onclick="trigger('questions:delete', ['{{ question.id }}'])"
                         class="red"
                     >
-                        <i class="icon" data-lucide="trash"></i>
+                        {{ icon "trash" }}
                         Delete
                     </a>
                     {% else if is_helper == true %}
@@ -92,7 +92,7 @@ question = question.clone().0 %}
                         onclick="trigger('questions:delete', ['{{ question.id }}'])"
                         class="red"
                     >
-                        <i class="icon" data-lucide="trash"></i>
+                        {{ icon "trash" }}
                         Delete
                     </a>
                     {% endif %}
@@ -113,7 +113,7 @@ question = question.clone().0 %}
             title="{{ reaction_count }} reactions"
             onclick="trigger('reactions:toggle', ['{{ question.id }}', 'Question'])"
         >
-            <i class="icon" data-lucide="heart"></i>
+            {{ icon "heart" }}
             <span class="notification camo">{{ reaction_count }}</span>
         </button>
 
@@ -133,7 +133,7 @@ question = question.clone().0 %}
             href="javascript:trigger('reports:bootstrap', ['questions', '{{ question.id }}'])"
             title="Report"
         >
-            <i class="icon" data-lucide="flag"></i>
+            {{ icon "flag" }}
         </a>
         {% else if let Some(profile) = profile %} {% if profile.id !=
         question.author.id %}
@@ -142,7 +142,7 @@ question = question.clone().0 %}
             href="javascript:trigger('reports:bootstrap', ['questions', '{{ question.id }}'])"
             title="Report"
         >
-            <i class="icon" data-lucide="flag"></i>
+            {{ icon "flag" }}
         </a>
         {% endif %} {% endif %}
     </div>

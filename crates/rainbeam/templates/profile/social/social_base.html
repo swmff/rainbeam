@@ -30,13 +30,13 @@ config.name }}{% endblock %} {% block head %}
 <meta name="og:description" content="{{ biography }}" />
 {% endif %} {% endblock %} {% block nav_left %} {% if profile.is_some() %}
 <a class="button" href="/" title="Timeline">
-    <i class="icon" data-lucide="house"></i>
+    {{ icon "house" }}
     <span class="desktop">Timeline</span>
     <span class="mobile">Home</span>
 </a>
 
 <a class="button" href="/inbox" title="My inbox">
-    <i class="icon" data-lucide="inbox"></i>
+    {{ icon "inbox" }}
     <span class="flex items-center gap-2">
         <span>Inbox</span>
         {% if unread != 0 %}
@@ -46,7 +46,7 @@ config.name }}{% endblock %} {% block head %}
 </a>
 {% endif %} {% endblock %} {% block nav_right %} {% if profile.is_some() %}
 <a class="button" href="/inbox/notifications" title="My notifications">
-    <i class="icon" data-lucide="bell"></i>
+    {{ icon "bell" }}
     {% if notifs != 0 %}
     <span class="notification tr">{{ notifs }}</span>
     {% endif %}
@@ -55,7 +55,7 @@ config.name }}{% endblock %} {% block head %}
 <article>
     <main class="flex flex-col gap-4">
         <a class="button bold" href="/@{{ other.username }}">
-            <i class="icon" data-lucide="arrow-left"></i>
+            {{ icon "arrow-left" }}
             Back to profile
         </a>
 

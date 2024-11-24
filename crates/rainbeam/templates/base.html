@@ -97,7 +97,7 @@
             class="markdown-alert-caution flex flex-collapse items-center justify-center gap-4"
             style="border-radius: 0 !important; margin-bottom: 0 !important"
         >
-            <i class="icon" data-lucide="shield-ban"></i>
+            {{ icon "shield-ban" }}
             <span>
                 Your account has been banned and is currently unusable. Please
                 do not register another account while banned.
@@ -121,7 +121,7 @@
             style="border-radius: 0 !important; margin-bottom: 0 !important"
             id="annc_banner"
         >
-            <i class="icon" data-lucide="megaphone"></i>
+            {{ icon "megaphone" }}
             <span>{{ shared::ui::render_markdown(config.alert)|safe }}</span>
         </div>
 
@@ -173,8 +173,7 @@
 
                     {% if profile.is_none() %}
                     <a class="button mobile" href="/">
-                        <i class="icon" data-lucide="house"></i>
-                        Home
+                        {{ icon "house" }} Home
                     </a>
                     {% endif %} {% block nav_left %}{% endblock %}
                 </div>
@@ -187,7 +186,7 @@
                         title="Create a post"
                         href="/intents/post"
                     >
-                        <i class="icon" data-lucide="square-pen"></i>
+                        {{ icon "square-pen" }}
                     </a>
                     {% endif %}
 
@@ -206,12 +205,8 @@
                                 class="avatar shadow"
                                 style="--size: 24px"
                             />
-                            {% endif %}
-
-                            <i
-                                class="icon dropdown-arrow"
-                                data-lucide="chevron-down"
-                            ></i>
+                            {% endif %} {{ icon "chevron-down" c(dropdown-arrow)
+                            }}
                         </button>
 
                         <div class="inner shadow-md" exclude="dropdown">
@@ -219,36 +214,23 @@
                             <b class="title">{{ profile.username }}</b>
 
                             <a href="/@{{ profile.username }}">
-                                <i
-                                    class="icon"
-                                    data-lucide="circle-user-round"
-                                ></i>
-                                Show profile
+                                {{ icon "circle-user-round" }} Show profile
                             </a>
 
                             <a href="/settings">
-                                <i class="icon" data-lucide="settings"></i>
-                                Settings
+                                {{ icon "settings" }} Settings
                             </a>
 
                             <b class="title">Services</b>
 
                             <a href="/chats">
-                                <i
-                                    class="icon"
-                                    data-lucide="message-circle-more"
-                                ></i>
-                                Chats
+                                {{ icon "message-circle-more" }} Chats
                             </a>
 
-                            <a href="/inbox/mail">
-                                <i class="icon" data-lucide="mails"></i>
-                                Mail
-                            </a>
+                            <a href="/inbox/mail"> {{ icon "mails" }} Mail </a>
 
                             <a href="/circles">
-                                <i class="icon" data-lucide="users-round"></i>
-                                Circles
+                                {{ icon "users-round" }} Circles
                             </a>
 
                             <b class="title">Social</b>
@@ -257,55 +239,38 @@
                                 href="/@{{ profile.username }}/friends"
                                 title="My friends"
                             >
-                                <i class="icon" data-lucide="book-user"></i>
-                                Friends
+                                {{ icon "book-user" }} Friends
                             </a>
 
                             <a
                                 href="/@{{ profile.username }}/friends/requests"
                                 title="My friend requests"
                             >
-                                <i
-                                    class="icon"
-                                    data-lucide="user-round-plus"
-                                ></i>
-                                Requests
+                                {{ icon "user-round-plus" }} Requests
                             </a>
                             {% else %}
                             <b class="title">Account</b>
 
                             <a href="/login" data-turbo="false">
-                                <i class="icon" data-lucide="log-in"></i>
-                                Login
+                                {{ icon "log-in" }} Login
                             </a>
 
                             <a href="/sign_up" data-turbo="false">
-                                <i
-                                    class="icon"
-                                    data-lucide="user-round-plus"
-                                ></i>
-                                Sign Up
+                                {{ icon "user-round-plus" }} Sign Up
                             </a>
                             {% endif %}
 
                             <!-- site stuff -->
                             <b class="title">{{ config.name }}</b>
 
-                            <a href="/site/about">
-                                <i class="icon" data-lucide="info"></i>
-                                About
-                            </a>
+                            <a href="/site/about"> {{ icon "info" }} About </a>
 
                             <a href="https://swmff.github.io/rainbeam/">
-                                <i class="icon" data-lucide="book"></i>
-                                Reference
+                                {{ icon "book" }} Reference
                             </a>
 
                             <!-- ... -->
-                            <a href="/search">
-                                <i class="icon" data-lucide="search"></i>
-                                Search
-                            </a>
+                            <a href="/search"> {{ icon "search" }} Search </a>
 
                             {% if profile.is_some() %}
                             <b class="title"></b>
@@ -314,8 +279,7 @@
                                 onclick="trigger('app:logout')"
                                 class="red"
                             >
-                                <i class="icon" data-lucide="log-out"></i>
-                                Sign out
+                                {{ icon "log-out" }} Sign out
                             </a>
                             {% endif %}
                         </div>
@@ -372,7 +336,7 @@
             class="button border floating"
             title="Back to top"
         >
-            <i class="icon" data-lucide="chevron-up"></i>
+            {{ icon "chevron-up" }}
         </a>
 
         <script data-turbo-eval="false">
@@ -435,7 +399,6 @@
                 app["hook.check_reactions"]();
 
                 twemoji.parse(document.body);
-                app.icons();
             })();
         </script>
 
@@ -487,8 +450,7 @@
                                 onclick="globalThis.web_api_prompt_submit(document.getElementById('prompt').value); document.getElementById('prompt').value = ''"
                                 type="buton"
                             >
-                                <i class="icon" data-lucide="check"></i>
-                                Ok
+                                {{ icon "check" }} Ok
                             </button>
 
                             <button
@@ -497,8 +459,7 @@
                                 type="button"
                                 title="Close"
                             >
-                                <i class="icon" data-lucide="x"></i>
-                                Cancel
+                                {{ icon "x" }} Cancel
                             </button>
                         </div>
                     </div>
@@ -524,8 +485,7 @@
                                 onclick="globalThis.web_api_confirm_submit(true)"
                                 type="buton"
                             >
-                                <i class="icon" data-lucide="check"></i>
-                                Yes
+                                {{ icon "check" }} Yes
                             </button>
 
                             <button
@@ -534,8 +494,7 @@
                                 type="button"
                                 title="Close"
                             >
-                                <i class="icon" data-lucide="x"></i>
-                                No
+                                {{ icon "x" }} No
                             </button>
                         </div>
                     </div>

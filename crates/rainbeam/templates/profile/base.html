@@ -30,13 +30,13 @@ config.name }}{% endblock %} {% block head %}
 <meta name="og:description" content="{{ biography }}" />
 {% endif %} {% endblock %} {% block nav_left %} {% if profile.is_some() %}
 <a class="button" href="/" title="Timeline">
-    <i class="icon" data-lucide="house"></i>
+    {{ icon "house" }}
     <span class="desktop">Timeline</span>
     <span class="mobile">Home</span>
 </a>
 
 <a class="button" href="/inbox" title="My inbox">
-    <i class="icon" data-lucide="inbox"></i>
+    {{ icon "inbox" }}
     <span class="flex items-center gap-2">
         <span>Inbox</span>
         {% if unread != 0 %}
@@ -46,7 +46,7 @@ config.name }}{% endblock %} {% block head %}
 </a>
 {% endif %} {% endblock %} {% block nav_right %} {% if profile.is_some() %}
 <a class="button" href="/inbox/notifications" title="My notifications">
-    <i class="icon" data-lucide="bell"></i>
+    {{ icon "bell" }}
     {% if notifs != 0 %}
     <span class="notification tr">{{ notifs }}</span>
     {% endif %}
@@ -54,7 +54,7 @@ config.name }}{% endblock %} {% block head %}
 {% endif %} {% endblock %} {% block content %}
 <article class="flex flex-col gap-4">
     <button onclick="document.getElementById('search_dialog').showModal()" title="Search" class="primary floating right">
-        <i class="icon" data-lucide="search"></i>
+        {{ icon "search" }}
     </button>
 
     <div id="is_profile_page"></div>
@@ -163,7 +163,7 @@ config.name }}{% endblock %} {% block head %}
                                     class="notification ff-inherit fs-md bold flex items-center justify-center"
                                     style="background: {{ badge.1 }}; color: {{ badge.2 }}; gap: 5px"
                                 >
-                                    <i class="icon" data-lucide="award"></i>
+                                    {{ icon "award" }}
                                     {{ badge.0 }}
                                 </span>
                                 {% endfor %}
@@ -173,7 +173,7 @@ config.name }}{% endblock %} {% block head %}
                                     class="notification ff-inherit fs-md bold flex items-center justify-center"
                                     style="background: var(--color-primary); color: var(--color-text-primary); gap: 5px"
                                 >
-                                    <i class="icon" data-lucide="crown"></i>
+                                    {{ icon "crown" }}
                                     Supporter
                                 </span>
                                 {% endif %}
@@ -183,7 +183,7 @@ config.name }}{% endblock %} {% block head %}
                                     class="notification ff-inherit fs-md bold flex items-center justify-center"
                                     style="background: var(--color-lowered); color: var(--color-text-lowered); gap: 5px"
                                 >
-                                    <i class="icon" data-lucide="shield-ban"></i>
+                                    {{ icon "shield-ban" }}
                                     Banned
                                 </span>
                                 {% endif %}
@@ -252,7 +252,7 @@ config.name }}{% endblock %} {% block head %}
                         class="button w-full bold primary"
                         href="/settings/profile"
                     >
-                        <i class="icon" data-lucide="pen"></i>
+                        {{ icon "pen" }}
                         <span class="possible_text">Edit Profile</span>
                     </a>
 
@@ -264,7 +264,7 @@ config.name }}{% endblock %} {% block head %}
                             class="w-full"
                         >
                             <span class="possible_text">More</span>
-                            <i class="icon dropdown-arrow" data-lucide="chevron-down"></i>
+                            {{ icon "chevron-down" c(dropdown-arrow) }}
                         </button>
 
                         <div
@@ -272,14 +272,14 @@ config.name }}{% endblock %} {% block head %}
                             exclude="dropdown"
                         >
                             <a href="/settings">
-                                <i class="icon" data-lucide="settings"></i>
+                                {{ icon "settings" }}
                                 Account settings
                             </a>
 
                             <a
                                 href="javascript:document.getElementById('embed_dialog').showModal()"
                             >
-                                <i class="icon" data-lucide="code"></i>
+                                {{ icon "code" }}
                                 Embed profile
                             </a>
                         </div>
@@ -383,7 +383,7 @@ config.name }}{% endblock %} {% block head %}
                             class="w-full"
                         >
                             <span class="possible_text">Actions</span>
-                            <i class="icon dropdown-arrow" data-lucide="chevron-down"></i>
+                            {{ icon "chevron-down" c(dropdown-arrow) }}
                         </button>
 
                         <div
@@ -394,39 +394,39 @@ config.name }}{% endblock %} {% block head %}
                             <button
                                 onclick="trigger('chats:create', ['{{ other.id }}'])"
                             >
-                                <i class="icon" data-lucide="message-circle-plus"></i>
+                                {{ icon "message-circle-plus" }}
                                 Chat
                             </button>
                             <a
                                 href="/inbox/mail/compose?to={{ other.id }}"
                             >
-                                <i class="icon" data-lucide="mail-plus"></i>
+                                {{ icon "mail-plus" }}
                                 Mail
                             </a>
                             <a
                                 href="/settings?block={{ other.username }}#sparkler:block_somebody"
                                 target="_blank"
                             >
-                                <i class="icon" data-lucide="shield"></i>
+                                {{ icon "shield" }}
                                 Block
                             </a>
                             <a
                                 href="javascript:trigger('reports:bootstrap', ['profiles', '{{ other.username }}'])"
                             >
-                                <i class="icon" data-lucide="flag"></i>
+                                {{ icon "flag" }}
                                 Report
                             </a>
                             <a
                                 href="#"
                                 onclick="trigger('app:copy_text', ['{{ config.citrus_id}}:{{ other.id }}'])"
                             >
-                                <i class="icon" data-lucide="copy"></i>
+                                {{ icon "copy" }}
                                 Copy ID
                             </a>
                             {% if is_powerful %}
                             <!-- for managers ONLY -->
                             <a href="javascript:delete_account()">
-                                <i class="icon" data-lucide="trash"></i>
+                                {{ icon "trash" }}
                                 Delete
                             </a>
 
@@ -458,7 +458,7 @@ config.name }}{% endblock %} {% block head %}
                             {% endif %}
                             <b class="title">Your account</b>
                             <a href="/settings#sparkler:blocks">
-                                <i class="icon" data-lucide="lock"></i>
+                                {{ icon "lock" }}
                                 Manage blocks
                             </a>
                         </div>
@@ -472,7 +472,7 @@ config.name }}{% endblock %} {% block head %}
                             class="w-full"
                         >
                             Actions
-                            <i class="icon dropdown-arrow" data-lucide="chevron-down"></i>
+                            {{ icon "chevron-down" c(dropdown-arrow) }}
                         </button>
 
                         <div
@@ -483,7 +483,7 @@ config.name }}{% endblock %} {% block head %}
                             <a
                                 href="javascript:trigger('reports:bootstrap', ['profiles', '{{ other.username }}'])"
                             >
-                                <i class="icon" data-lucide="flag"></i>
+                                {{ icon "flag" }}
                                 Report
                             </a>
                         </div>
@@ -501,7 +501,7 @@ config.name }}{% endblock %} {% block head %}
         <div
             class="card padded shadow flex flex-col w-full gap-4 items-center justify-center"
         >
-            <i class="icon" data-lucide="lock-keyhole" style="width: 48px !important;"></i>
+            {{ icon "lock-keyhole" }}
             <h4>This profile only allows friends to view their feeds.</h4>
         </div>
         {% else %}
@@ -634,7 +634,7 @@ config.name }}{% endblock %} {% block head %}
                     type="button"
                     title="Close"
                 >
-                    <i class="icon" data-lucide="circle-x"></i>
+                    {{ icon "circle-x" }}
                 </button>
             </div>
         </div>

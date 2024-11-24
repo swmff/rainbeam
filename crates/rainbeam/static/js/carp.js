@@ -193,7 +193,7 @@
                 color_button.title = "Select color";
                 color_button.setAttribute("type", "button");
                 color_button.innerHTML =
-                    '<i class="icon" data-lucide="paint-bucket"></i>';
+                    '{{ icon "paint-bucket" }}';
 
                 color_button.addEventListener("click", () => {
                     color_picker.click();
@@ -219,7 +219,7 @@
                 const download_button = document.createElement("button");
                 download_button.title = "Download graph";
                 download_button.innerHTML =
-                    '<i class="icon" data-lucide="download"></i>';
+                    '{{ icon "download" }}';
 
                 media_container.appendChild(download_button);
                 download_button.setAttribute("type", "button");
@@ -230,7 +230,7 @@
                 const upload_button = document.createElement("button");
                 upload_button.title = "Upload graph";
                 upload_button.innerHTML =
-                    '<i class="icon" data-lucide="upload"></i>';
+                    '{{ icon "upload" }}';
 
                 media_container.appendChild(upload_button);
                 upload_button.setAttribute("type", "button");
@@ -252,10 +252,6 @@
                     input.click();
                     input.remove();
                 });
-
-                setTimeout(() => {
-                    trigger("app:icons");
-                }, 250);
             }
         }
 

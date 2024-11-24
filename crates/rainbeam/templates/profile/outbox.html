@@ -84,7 +84,7 @@
                         onclick="trigger('app:hook.dropdown', [event])"
                         exclude="dropdown"
                     >
-                        <i class="icon" data-lucide="ellipsis"></i>
+                        {{ icon "ellipsis" }}
                     </button>
 
                     <div class="inner shadow-md" exclude="dropdown">
@@ -94,7 +94,7 @@
                             onclick="trigger('questions:delete', ['{{ question.id }}'])"
                             class="red"
                         >
-                            <i class="icon" data-lucide="trash"></i>
+                            {{ icon "trash" }}
                             Delete
                         </a>
                     </div>
@@ -108,7 +108,7 @@
         </div>
 
         <b class="card flex items-center gap-2" title="Recipient">
-            <i class="icon" data-lucide="at-sign"></i>
+            {{ icon "at-sign" }}
 
             <img
                 title="{{ question.recipient.username }}'s avatar"

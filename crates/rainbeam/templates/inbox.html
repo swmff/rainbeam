@@ -1,19 +1,18 @@
 {% extends "base.html" %} {% block title %}Inbox - {{ config.name }}{% endblock
 %} {% block nav_left %}
 <a class="button" href="/" title="Timeline">
-    <i class="icon" data-lucide="house"></i>
+    {{ icon "house" }}
     <span class="desktop">Timeline</span>
     <span class="mobile">Home</span>
 </a>
 
 <a class="button active" href="/inbox" title="My inbox">
-    <i class="icon" data-lucide="inbox"></i>
+    {{ icon "inbox" }}
     <span>Inbox</span>
 </a>
 {% endblock %} {% block nav_right %}
 <a class="button" href="/inbox/notifications" title="My notifications">
-    <i class="icon" data-lucide="bell"></i>
-    {% if notifs != 0 %}
+    {{ icon "bell" }} {% if notifs != 0 %}
     <span class="notification tr">{{ notifs }}</span>
     {% endif %}
 </a>
@@ -120,7 +119,7 @@
                             exclude="dropdown"
                             class="camo circle"
                         >
-                            <i class="icon" data-lucide="ellipsis"></i>
+                            {{ icon "ellipsis" }}
                         </button>
 
                         <div class="inner shadow-md" exclude="dropdown">
@@ -130,22 +129,19 @@
                                 onclick="trigger('questions:delete', ['{{ question.id }}'])"
                                 class="red"
                             >
-                                <i class="icon" data-lucide="trash"></i>
-                                Delete
+                                {{ icon "trash" }} Delete
                             </a>
 
                             <a
                                 href="javascript:trigger('questions:ipblock', ['{{ question.id }}'])"
                             >
-                                <i class="icon" data-lucide="shield"></i>
-                                IP block
+                                {{ icon "shield" }} IP block
                             </a>
 
                             <a
                                 href="javascript:trigger('reports:bootstrap', ['questions', '{{ question.id }}'])"
                             >
-                                <i class="icon" data-lucide="flag"></i>
-                                Report
+                                {{ icon "flag" }} Report
                             </a>
                         </div>
                     </div>

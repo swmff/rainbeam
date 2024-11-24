@@ -31,7 +31,7 @@
                         onclick="trigger('app:hook.dropdown', [event])"
                         exclude="dropdown"
                     >
-                        <i class="icon" data-lucide="ellipsis"></i>
+                        {{ icon "ellipsis" }}
                     </button>
 
                     <div class="inner shadow-md w-content" exclude="dropdown">
@@ -44,7 +44,7 @@
                             onclick="trigger('account_warnings:delete', ['{{ warning.id }}'])"
                             class="red"
                         >
-                            <i class="icon" data-lucide="trash"></i>
+                            {{ icon "trash" }}
                             Delete
                         </a>
                         {% endif %} {% endif %}
@@ -54,7 +54,7 @@
                             href="#"
                             onclick="trigger('app:copy_text', ['{{ warning.id }}'])"
                         >
-                            <i class="icon" data-lucide="copy"></i>
+                            {{ icon "copy" }}
                             Copy ID
                         </a>
                     </div>

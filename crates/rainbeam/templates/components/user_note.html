@@ -31,7 +31,7 @@ let Some(note) = user.metadata.kv.get("sparkler:status_note") %} {% if
                     title="Edit note"
                     target="_blank"
                 >
-                    <i class="icon" data-lucide="pen"></i>
+                    {{ icon "pen" }}
                 </a>
                 {% endif %}
 
@@ -41,7 +41,7 @@ let Some(note) = user.metadata.kv.get("sparkler:status_note") %} {% if
                         exclude="dropdown"
                         class="camo icon-only"
                     >
-                        <i class="icon" data-lucide="ellipsis"></i>
+                        {{ icon "ellipsis" }}
                     </button>
 
                     <div class="inner shadow-md w-content" exclude="dropdown">
@@ -51,33 +51,26 @@ let Some(note) = user.metadata.kv.get("sparkler:status_note") %} {% if
                             target="_blank"
                             class="red"
                         >
-                            <i class="icon" data-lucide="trash"></i>
-                            Clear
+                            {{ icon "trash" }} Clear
                         </a>
                         {% endif %}
 
                         <b class="title">Actions</b>
 
                         <a href="/@{{ user.username }}">
-                            <i class="icon" data-lucide="circle-user-round"></i>
-                            Show profile
+                            {{ icon "circle-user-round" }} Show profile
                         </a>
 
                         <button
                             onclick="trigger('chats:create', ['{{ user.id }}'])"
                         >
-                            <i
-                                class="icon"
-                                data-lucide="message-circle-plus"
-                            ></i>
-                            Chat
+                            {{ icon "message-circle-plus" }} Chat
                         </button>
 
                         <a
                             href="javascript:trigger('reports:bootstrap', ['profiles', '{{ user.username }}'])"
                         >
-                            <i class="icon" data-lucide="flag"></i>
-                            Report
+                            {{ icon "flag" }} Report
                         </a>
                     </div>
                 </div>
@@ -88,7 +81,7 @@ let Some(note) = user.metadata.kv.get("sparkler:status_note") %} {% if
                     type="button"
                     title="Close"
                 >
-                    <i class="icon" data-lucide="circle-x"></i>
+                    {{ icon "circle-x" }}
                 </button>
             </div>
         </div>

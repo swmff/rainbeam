@@ -29,13 +29,13 @@
 <meta name="og:description" content="{{ biography }}" />
 {% endif %} {% endblock %} {% block nav_left %} {% if profile.is_some() %}
 <a class="button" href="/" title="Timeline">
-    <i class="icon" data-lucide="house"></i>
+    {{ icon "house" }}
     <span class="desktop">Timeline</span>
     <span class="mobile">Home</span>
 </a>
 
 <a class="button" href="/inbox" title="My inbox">
-    <i class="icon" data-lucide="inbox"></i>
+    {{ icon "inbox" }}
     <span class="flex items-center gap-2">
         <span>Inbox</span>
         {% if unread != 0 %}
@@ -45,8 +45,7 @@
 </a>
 {% endif %} {% endblock %} {% block nav_right %} {% if profile.is_some() %}
 <a class="button" href="/inbox/notifications" title="My notifications">
-    <i class="icon" data-lucide="bell"></i>
-    {% if notifs != 0 %}
+    {{ icon "bell" }} {% if notifs != 0 %}
     <span class="notification tr">{{ notifs }}</span>
     {% endif %}
 </a>
@@ -152,11 +151,7 @@
                             class="button primary bold"
                             style="flex: 1 0 auto"
                         >
-                            <i
-                                class="icon dropdown-arrow"
-                                data-lucide="plus"
-                            ></i>
-                            Post
+                            {{ icon "plus" }} Post
                         </a>
                         {% endif %}
 
@@ -167,11 +162,8 @@
                                 exclude="dropdown"
                                 class="w-full"
                             >
-                                Actions
-                                <i
-                                    class="icon dropdown-arrow"
-                                    data-lucide="chevron-down"
-                                ></i>
+                                Actions {{ icon "chevron-down" c(dropdown-arrow)
+                                }}
                             </button>
 
                             <div
@@ -183,20 +175,12 @@
                                     href="#"
                                     onclick="trigger('app:copy_text', ['{{ circle.id }}'])"
                                 >
-                                    <i
-                                        class="icon dropdown-arrow"
-                                        data-lucide="copy"
-                                    ></i>
-                                    Copy ID
+                                    {{ icon "copy" }} Copy ID
                                 </a>
                                 <a
                                     href="javascript:trigger('reports:bootstrap', ['circles', '{{ circle.id }}'])"
                                 >
-                                    <i
-                                        class="icon dropdown-arrow"
-                                        data-lucide="flag"
-                                    ></i>
-                                    Report
+                                    {{ icon "flag" }} Report
                                 </a>
 
                                 {% if is_owner %}
@@ -204,11 +188,7 @@
                                     href="javascript:delete_circle_as_owner()"
                                     class="red"
                                 >
-                                    <i
-                                        class="icon dropdown-arrow"
-                                        data-lucide="trash"
-                                    ></i>
-                                    Delete
+                                    {{ icon "trash" }} Delete
                                 </a>
 
                                 <script>
@@ -245,8 +225,7 @@
                                     href="javascript:leave_circle()"
                                     class="red w-full"
                                 >
-                                    <i class="icon" data-lucide="x"></i>
-                                    Leave
+                                    {{ icon "x" }} Leave
                                 </a>
 
                                 <script>
@@ -285,11 +264,7 @@
                                     href="javascript:delete_circle()"
                                     class="red"
                                 >
-                                    <i
-                                        class="icon dropdown-arrow"
-                                        data-lucide="trash"
-                                    ></i>
-                                    Delete
+                                    {{ icon "trash" }} Delete
                                 </a>
 
                                 <script>
@@ -333,11 +308,8 @@
                                 exclude="dropdown"
                                 class="w-full"
                             >
-                                Actions
-                                <i
-                                    class="icon dropdown-arrow"
-                                    data-lucide="chevron-down"
-                                ></i>
+                                Actions {{ icon "chevevron-down"
+                                c(dropdown-arrow) }}
                             </button>
 
                             <div
@@ -348,11 +320,7 @@
                                 <a
                                     href="javascript:trigger('reports:bootstrap', ['circles', '{{ circle.id }}'])"
                                 >
-                                    <i
-                                        class="icon dropdown-arrow"
-                                        data-lucide="flag"
-                                    ></i>
-                                    Report
+                                    {{ icon "flag" }} Report
                                 </a>
                             </div>
                         </div>

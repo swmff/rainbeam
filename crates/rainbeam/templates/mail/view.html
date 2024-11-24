@@ -1,13 +1,13 @@
 {% extends "base.html" %} {% block title %}View mail - {{ config.name }}{%
 endblock %} {% block nav_left %}
 <a class="button" href="/" title="Timeline">
-    <i class="icon" data-lucide="house"></i>
+    {{ icon "house" }}
     <span class="desktop">Timeline</span>
     <span class="mobile">Home</span>
 </a>
 
 <a class="button" href="/inbox" title="My inbox">
-    <i class="icon" data-lucide="inbox"></i>
+    {{ icon "inbox" }}
     <span class="flex items-center gap-2">
         <span>Inbox</span>
         {% if unread != 0 %}
@@ -17,7 +17,7 @@ endblock %} {% block nav_left %}
 </a>
 {% endblock %} {% block nav_right %}
 <a class="button" href="/inbox/notifications" title="My notifications">
-    <i class="icon" data-lucide="bell"></i>
+    {{ icon "bell" }}
     {% if notifs != 0 %}
     <span class="notification tr">{{ notifs }}</span>
     {% endif %}

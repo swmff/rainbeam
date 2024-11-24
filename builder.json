@@ -1,8 +1,11 @@
 {
+    "build_dir": "crates/rainbeam/static/build",
+    "templates_build_dir": "crates/rainbeam/templates_build",
+
     "css_dir": "crates/rainbeam/static/css",
     "js_dir": "crates/rainbeam/static/js",
     "templates_dir": "crates/rainbeam/templates",
-    "build_dir": "crates/rainbeam/static/build",
+
     "js_format_options": {
         "comments": false,
         "preamble": "'https://github.com/swmff/rainbeam';"

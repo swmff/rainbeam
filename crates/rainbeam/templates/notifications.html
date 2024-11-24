@@ -3,13 +3,13 @@ endblock %} {% block head %}
 <meta name="description" content="{{ config.description }}" />
 {% endblock %} {% block nav_left %}
 <a class="button" href="/" title="Timeline">
-    <i class="icon" data-lucide="house"></i>
+    {{ icon "house" }}
     <span class="desktop">Timeline</span>
     <span class="mobile">Home</span>
 </a>
 
 <a class="button" href="/inbox" title="My inbox">
-    <i class="icon" data-lucide="inbox"></i>
+    {{ icon "inbox" }}
     <span class="flex items-center gap-2">
         <span>Inbox</span>
         {% if unread != 0 %}
@@ -19,7 +19,7 @@ endblock %} {% block head %}
 </a>
 {% endblock %} {% block nav_right %}
 <a class="button active" href="/inbox/notifications" title="My notifications">
-    <i class="icon" data-lucide="bell"></i>
+    {{ icon "bell" }}
 </a>
 {% endblock %} {% block content %}
 <article>
@@ -34,7 +34,7 @@ endblock %} {% block head %}
                 onclick="trigger('notifications:clear', [])"
                 class="secondary bold"
             >
-                <i class="icon" data-lucide="mailbox"></i>
+                {{ icon "mailbox" }}
                 Mark all as read
             </button>
             {% endif %} {% endif %}

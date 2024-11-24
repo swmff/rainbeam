@@ -1,7 +1,7 @@
 <div class="flex w-full gap-2 justify-between flex-wrap">
     <div class="flex items-center gap-2">
         {% if violating_usc18_1702 %}
-        <i class="icon" data-lucide="mail-warning"></i>
+        {{ icon "mail-warning" }}
         <b>This is not your mail, please be careful.</b>
         {% endif %}
     </div>
@@ -13,11 +13,11 @@
             class="button icon-only"
             title="Switch to system mail"
         >
-            <i class="icon" data-lucide="key-round"></i>
+            {{ icon "key-round" }}
         </a>
         {% else if is_helper %}
         <a href="?" class="button icon-only" title="Switch to user mail">
-            <i class="icon" data-lucide="user-round"></i>
+            {{ icon "user-round" }}
         </a>
         {% endif %}
 
@@ -27,7 +27,7 @@
             title="Edit signature"
             target="_blank"
         >
-            <i class="icon" data-lucide="signature"></i>
+            {{ icon "signature" }}
         </a>
 
         <a
@@ -35,7 +35,7 @@
             class="button icon-only"
             title="Compose mail"
         >
-            <i class="icon" data-lucide="mail-plus"></i>
+            {{ icon "mail-plus" }}
         </a>
     </div>
 </div>

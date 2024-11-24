@@ -11,6 +11,7 @@ crates/rainbeam/static/images/logo/
 crates/rainbeam/static/images/ui/logo.*
 crates/rainbeam/static/favicon.svg
 crates/rainbeam/static/build/
+crates/rainbeam/templates_build/
 *.db
 .config/config.toml
 .config/.well-known/citrus/citrus.toml

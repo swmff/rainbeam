@@ -19,7 +19,7 @@
                 onclick="trigger('notifications:onopen', ['{{ notif.id }}'])"
                 do="notification"
             >
-                <i class="icon" data-lucide="external-link"></i>
+                {{ icon "external-link" }}
                 Open
             </a>
             {% endif %} {% if show_mark_as_read %}
@@ -27,7 +27,7 @@
                 class="button secondary bold"
                 onclick="trigger('notifications:delete', ['{{ notif.id }}'])"
             >
-                <i class="icon" data-lucide="mail-check"></i>
+                {{ icon "mail-check" }}
                 Mark as Read
             </button>
             {% endif %}

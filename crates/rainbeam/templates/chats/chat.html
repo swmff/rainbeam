@@ -1,13 +1,13 @@
 {% extends "base.html" %} {% block title %}My chats - {{ config.name }}{%
 endblock %} {% block nav_left %}
 <a class="button" href="/" title="Timeline">
-    <i class="icon" data-lucide="house"></i>
+    {{ icon "house" }}
     <span class="desktop">Timeline</span>
     <span class="mobile">Home</span>
 </a>
 
 <a class="button" href="/inbox" title="My inbox">
-    <i class="icon" data-lucide="inbox"></i>
+    {{ icon "inbox" }}
     <span class="flex items-center gap-2">
         <span>Inbox</span>
         {% if unread != 0 %}
@@ -17,7 +17,7 @@ endblock %} {% block nav_left %}
 </a>
 {% endblock %} {% block nav_right %}
 <a class="button" href="/inbox/notifications" title="My notifications">
-    <i class="icon" data-lucide="bell"></i>
+    {{ icon "bell" }}
     {% if notifs != 0 %}
     <span class="notification tr">{{ notifs }}</span>
     {% endif %}
@@ -55,7 +55,7 @@ endblock %} {% block nav_left %}
         >
             <div class="flex items-center gap-2">
                 <a href="/chats" class="camo button icon-only" title="Back">
-                    <i class="icon" data-lucide="chevron-left"></i>
+                    {{ icon "chevron-left" }}
                 </a>
 
                 <b>{{ chat.name }}</b>
@@ -66,7 +66,7 @@ endblock %} {% block nav_left %}
                     onclick="trigger('app:hook.dropdown', [event])"
                     exclude="dropdown"
                 >
-                    <i class="icon" data-lucide="ellipsis"></i>
+                    {{ icon "ellipsis" }}
                 </button>
 
                 <div class="inner shadow-md" exclude="dropdown">
@@ -74,14 +74,14 @@ endblock %} {% block nav_left %}
                     <button
                         onclick="document.getElementById('name_dialog').showModal()"
                     >
-                        <i class="icon" data-lucide="pen"></i>
+                        {{ icon "pen" }}
                         Change name
                     </button>
 
                     <button
                         onclick="document.getElementById('add_friends_dialog').showModal()"
                     >
-                        <i class="icon" data-lucide="user-plus"></i>
+                        {{ icon "user-plus" }}
                         Add friend
                     </button>
 
@@ -89,7 +89,7 @@ endblock %} {% block nav_left %}
                         class="red"
                         onclick="trigger('chats:leave', ['{{ chat.id }}'])"
                     >
-                        <i class="icon" data-lucide="x"></i>
+                        {{ icon "x" }}
                         Leave
                     </button>
 
@@ -97,7 +97,7 @@ endblock %} {% block nav_left %}
                     <a
                         href="javascript:trigger('reports:bootstrap', ['chats', '{{ chat.id }}'])"
                     >
-                        <i class="icon" data-lucide="flag"></i>
+                        {{ icon "flag" }}
                         Report
                     </a>
                 </div>
@@ -184,7 +184,7 @@ endblock %} {% block nav_left %}
             >
                 <div id="message_writer" class="message_editor"></div>
                 <button class="normal primary icon-only" title="Send">
-                    <i class="icon" data-lucide="send"></i>
+                    {{ icon "send" }}
                 </button>
 
                 <script>
@@ -209,7 +209,7 @@ endblock %} {% block nav_left %}
             >
                 <div id="message_editor" class="message_editor"></div>
                 <button class="normal primary icon-only" title="Save">
-                    <i class="icon" data-lucide="save"></i>
+                    {{ icon "save" }}
                 </button>
 
                 <script>
@@ -335,8 +335,6 @@ endblock %} {% block nav_left %}
                                             msg[1].id === window.CHAT_USER_ID, // check if this message is from us (so we don't send notif request)
                                         ]);
                                     }
-
-                                    trigger("app:icons", []);
                                 });
                         }
 

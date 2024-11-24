@@ -14,6 +14,17 @@ export default async function build(options) {
         await fs.mkdir(`${__cwd}/${options.build_dir}`);
     }
 
+    // create templates build directory if it doesn't already exist
+    try {
+        await fs.stat(`${__cwd}/${options.templates_build_dir}`);
+    } catch {
+        await fs.cp(
+            `${__cwd}/${options.templates_dir}`,
+            `${__cwd}/${options.templates_build_dir}`,
+            { recursive: true },
+        );
+    }
+
     // walk css_dir
     async function walk_dir(
         transform_callback,
@@ -134,15 +145,30 @@ export default async function build(options) {
 
             const content = await fs.readFile(full_path, { encoding: "utf8" });
 
-            const regex = new RegExp(/(data-lucide)\=\"(.*?)\"/g);
-            let groups = regex.exec(content);
+            // with class
+            const class_regex = new RegExp(
+                /(\{\{)\s*(icon)\s*\"(.*?)\"\s*c\((.*?)\)\s*(\}\})/g,
+            );
 
+            let groups = class_regex.exec(content);
             while (null !== groups) {
-                if (!icons.includes(groups[2])) {
-                    icons.push(groups[2]);
+                if (!icons.includes(groups[3])) {
+                    icons.push(groups[3]);
                 }
 
-                groups = regex.exec(content);
+                groups = class_regex.exec(content);
+            }
+
+            // regular
+            const regex = new RegExp(/(\{\{)\s*(icon)\s*\"(.*?)\"\s*(\}\})/g);
+            let groups_ = regex.exec(content);
+
+            while (null !== groups_) {
+                if (!icons.includes(groups_[3])) {
+                    icons.push(groups_[3]);
+                }
+
+                groups_ = regex.exec(content);
             }
         },
         `${__cwd}/${options.templates_dir}`,
@@ -152,6 +178,7 @@ export default async function build(options) {
     );
 
     // download icons
+    const icons_mem = {};
     const icons_endpoint =
         "https://raw.githubusercontent.com/lucide-icons/lucide/refs/heads/main/icons/";
 
@@ -161,16 +188,76 @@ export default async function build(options) {
         try {
             // if the file exists, don't fetch it
             console.log(`icon/check ${icon}`);
+
             await fs.stat(file_path);
+            icons_mem[icon] = await fs.readFile(file_path, {
+                encoding: "utf8",
+            });
         } catch {
-            (async () => {
-                console.log(`icon/save ${icon}`);
-                await fs.writeFile(
-                    file_path,
-                    await (await fetch(`${icons_endpoint}${icon}.svg`)).text(),
-                );
-                console.log(`icon/finish ${icon}`);
-            })();
+            console.log(`icon/save ${icon}`);
+
+            const text = await (
+                await fetch(`${icons_endpoint}${icon}.svg`)
+            ).text();
+
+            await fs.writeFile(file_path, text);
+            icons_mem[icon] = text;
+
+            console.log(`icon/finish ${icon}`);
         }
     }
+
+    // walk templates dir to replace icons
+    await walk_dir(
+        async (file_name, full_path, _) => {
+            // minify
+            console.log(`template(2) ${file_name}`);
+            let content = await fs.readFile(full_path, { encoding: "utf8" });
+
+            // selector with class
+            const class_regex = new RegExp(
+                /(\{\{)\s*(icon)\s*\"(.*?)\"\s*c\((.*?)\)\s*(\}\})/g,
+            );
+
+            let groups = class_regex.exec(content);
+            while (null !== groups) {
+                const icon_text = icons_mem[groups[3]].replace(
+                    "<svg",
+                    `<svg class="icon ${groups[4]}"`,
+                );
+
+                content = content.replace(groups[0], icon_text); // replace icon element with svg
+                groups = class_regex.exec(content);
+            }
+
+            // regular selector
+            const regular_regex = new RegExp(
+                /(\{\{)\s*(icon)\s*\"(.*?)\"\s*(\}\})/g,
+            );
+
+            let groups_ = regular_regex.exec(content);
+            while (null !== groups_) {
+                const icon_text = icons_mem[groups_[3]].replace(
+                    "<svg",
+                    '<svg class="icon"',
+                );
+
+                content = content.replace(groups_[0], icon_text); // replace icon element with svg
+                groups_ = regular_regex.exec(content);
+            }
+
+            // save file
+            await fs.writeFile(
+                full_path.replace(
+                    `${__cwd}/${options.templates_dir}`,
+                    `${__cwd}/${options.templates_build_dir}`,
+                ),
+                content,
+            );
+        },
+        `${__cwd}/${options.templates_dir}`,
+        "",
+        "",
+        false,
+    );
 }

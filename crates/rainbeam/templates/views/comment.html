@@ -3,13 +3,13 @@ block head %}
 <meta name="description" content="{{ config.description }}" />
 {% endblock %} {% block nav_left %} {% if profile.is_some() %}
 <a class="button" href="/" title="Timeline">
-    <i class="icon" data-lucide="house"></i>
+    {{ icon "house" }}
     <span class="desktop">Timeline</span>
     <span class="mobile">Home</span>
 </a>
 
 <a class="button" href="/inbox" title="My inbox">
-    <i class="icon" data-lucide="inbox"></i>
+    {{ icon "inbox" }}
     <span class="flex items-center gap-2">
         <span>Inbox</span>
         {% if unread != 0 %}
@@ -19,7 +19,7 @@ block head %}
 </a>
 {% endif %} {% endblock %} {% block nav_right %} {% if profile.is_some() %}
 <a class="button" href="/inbox/notifications" title="My notifications">
-    <i class="icon" data-lucide="bell"></i>
+    {{ icon "bell" }}
     {% if notifs != 0 %}
     <span class="notification tr">{{ notifs }}</span>
     {% endif %}
@@ -32,7 +32,7 @@ block head %}
         <h5 id="response" class="flex items-center gap-2">
             Response
             <a title="Previous in thread" href="/response/{{ response.1.id }}" class="button icon-only border">
-                <i class="icon" data-lucide="arrow-up"></i>
+                {{ icon "arrow-up" }}
             </a>
         </h5>
         <!-- show original response -->
@@ -53,7 +53,7 @@ block head %}
         <h5 id="comment" class="flex items-center gap-2">
             Replying to
             <a title="Previous in thread" href="/comment/{{ comment.0.id }}" class="button icon-only border">
-                <i class="icon" data-lucide="arrow-up"></i>
+                {{ icon "arrow-up" }}
             </a>
         </h5>
         {% let show_replies = false %} {% include "components/comment.html" %}

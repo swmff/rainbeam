@@ -1,8 +1,5 @@
 {% extends "base.html" %} {% block sidenav %}
-<a href="/+{{ circle.name }}">
-    <i class="icon" data-lucide="arrow-left"></i>
-    Back
-</a>
+<a href="/+{{ circle.name }}"> {{ icon "arrow-left" }} Back </a>
 <a href="/circles/@{{ circle.name }}/settings" class="active">General</a>
 <a href="/circles/@{{ circle.name }}/settings/privacy"> Privacy </a>
 {% endblock %} {% block panel %}

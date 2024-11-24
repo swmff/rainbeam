@@ -3,12 +3,12 @@
 <meta name="description" content="{{ config.description }}" />
 {% endblock %} {% block nav_left %}
 <a class="button" href="/">
-    <i class="icon" data-lucide="house"></i>
+    {{ icon "house" }}
     <span class="desktop">Timeline</span>
 </a>
 
 <a class="button" href="/inbox">
-    <i class="icon" data-lucide="inbox"></i>
+    {{ icon "inbox" }}
     <span class="desktop">Inbox</span>
     {% if unread != 0 %}
     <span class="notification">{{ unread }}</span>
@@ -16,7 +16,7 @@
 </a>
 {% endblock %} {% block nav_right %}
 <a class="button" href="/inbox/notifications">
-    <i class="icon" data-lucide="bell"></i>
+    {{ icon "bell" }}
     {% if notifs != 0 %}
     <span class="notification">{{ notifs }}</span>
     {% endif %}

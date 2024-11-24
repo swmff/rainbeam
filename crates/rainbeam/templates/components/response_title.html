@@ -48,7 +48,7 @@
             title="This question/response is pinned"
             href="/@{{ response.author.username }}"
         >
-            <i class="icon" data-lucide="pin"></i>
+            {{ icon "pin" }}
         </a>
         {% endif %} {% if !response.context.circle.is_empty() %}
         <a
@@ -56,7 +56,7 @@
             href="/+g/{{ response.context.circle }}"
             title="Posted in circle"
         >
-            <i class="icon" data-lucide="users-round"></i>
+            {{ icon "users-round" }}
         </a>
         {% endif %}
     </div>
@@ -71,9 +71,7 @@
             hook="check_reaction"
             hook-arg:id="{{ response.id }}"
         >
-            <i class="icon" data-lucide="heart"></i>
-
-            {% if reaction_count > 0 %}
+            {{ icon "heart" }} {% if reaction_count > 0 %}
             <span class="notification camo">{{ reaction_count }}</span>
             {% endif %}
         </button>
@@ -85,9 +83,7 @@
             title="{{ comment_count }} comments"
             class="button camo circle"
         >
-            <i class="icon" data-lucide="message-circle"></i>
-
-            {% if comment_count > 0 %}
+            {{ icon "message-circle" }} {% if comment_count > 0 %}
             <span class="notification camo">{{ comment_count }}</span>
             {% endif %}
         </a>
@@ -101,7 +97,7 @@
                 exclude="dropdown"
                 title="Quote"
             >
-                <i class="icon" data-lucide="repeat-2"></i>
+                {{ icon "repeat-2" }}
             </button>
 
             <div class="inner shadow-md w-content" exclude="dropdown">
@@ -112,15 +108,13 @@
                             p.success ? window.location.href = `/response/${p.payload.id}` : ''
                         })"
                 >
-                    <i class="icon" data-lucide="rocket"></i>
-                    Boost
+                    {{ icon "rocket" }} Boost
                 </button>
 
                 <a
                     href="/intents/post?reply={{ response.id }}&title=Quote%20post"
                 >
-                    <i class="icon" data-lucide="quote"></i>
-                    Quote
+                    {{ icon "quote" }} Quote
                 </a>
                 {% endif %}
 
@@ -129,8 +123,7 @@
                     data-turbo="false"
                     target="_blank"
                 >
-                    <i class="icon" data-lucide="reply"></i>
-                    Ask about this
+                    {{ icon "reply" }} Ask about this
                 </a>
             </div>
         </div>
@@ -143,7 +136,7 @@
                 exclude="dropdown"
                 title="More"
             >
-                <i class="icon" data-lucide="ellipsis"></i>
+                {{ icon "ellipsis" }}
             </button>
 
             <div class="inner shadow-md w-content" exclude="dropdown">
@@ -155,29 +148,25 @@
                 <button
                     onclick="trigger('app:copy_text', [trigger('responses:gen_share', [event.target, '{{ short_id }}', 280])])"
                 >
-                    <i class="icon" data-lucide="copy"></i>
-                    Copy to Clipboard
+                    {{ icon "copy" }} Copy to Clipboard
                 </button>
 
                 <button
                     onclick="trigger('app:intent_twitter', [trigger('responses:gen_share', [event.target, '{{ short_id }}', 280, false]), '{{ config.host }}/+r/{{ short_id }}'])"
                 >
-                    <i class="icon" data-lucide="twitter"></i>
-                    Twitter
+                    {{ icon "twitter" }} Twitter
                 </button>
 
                 <button
                     onclick="trigger('app:intent_bluesky', [trigger('responses:gen_share', [event.target, '{{ short_id }}', 280, false]), '{{ config.host }}/+r/{{ short_id }}'])"
                 >
-                    <i class="icon" data-lucide="external-link"></i>
-                    Bluesky
+                    {{ icon "external-link" }} Bluesky
                 </button>
 
                 <button
                     onclick="trigger('app:copy_text', ['{{ config.host }}/+r/{{ short_id }}'])"
                 >
-                    <i class="icon" data-lucide="copy"></i>
-                    Copy link
+                    {{ icon "copy" }} Copy link
                 </button>
 
                 {% if let Some(profile) = profile %} {% if profile.id ==
@@ -188,25 +177,21 @@
                 <!-- pin -->
                 {% if show_pin_button == true %} {% if is_pinned == false %}
                 <a href="#" onclick="pin_response('{{ response.id }}')">
-                    <i class="icon" data-lucide="pin"></i>
-                    Pin
+                    {{ icon "pin" }} Pin
                 </a>
                 {% else %}
                 <a href="#" onclick="unpin_response('{{ response.id }}')">
-                    <i class="icon" data-lucide="pin-off"></i>
-                    Unpin
+                    {{ icon "pin-off" }} Unpin
                 </a>
                 {% endif %} {% endif %}
 
                 <!-- ... -->
                 <a href="/response/{{ response.id }}?edit" target="_blank">
-                    <i class="icon" data-lucide="pen"></i>
-                    Edit
+                    {{ icon "pen" }} Edit
                 </a>
 
                 <a href="/response/{{ response.id }}?edit_tags" target="_blank">
-                    <i class="icon" data-lucide="tag"></i>
-                    Edit tags
+                    {{ icon "tag" }} Edit tags
                 </a>
 
                 {% if response.context.is_post == false %}
@@ -215,8 +200,7 @@
                     onclick="trigger('responses:unsend', ['{{ response.id }}'])"
                     class="red"
                 >
-                    <i class="icon" data-lucide="undo-2"></i>
-                    Return to Inbox
+                    {{ icon "undo-2" }} Return to Inbox
                 </a>
                 {% endif %}
 
@@ -225,8 +209,7 @@
                     onclick="trigger('responses:delete', ['{{ response.id }}'])"
                     class="red"
                 >
-                    <i class="icon" data-lucide="trash"></i>
-                    Delete all
+                    {{ icon "trash" }} Delete all
                 </a>
                 {% endif %} {% endif %}
                 <!-- actions for everybody -->
@@ -235,19 +218,16 @@
                     href="#"
                     onclick="trigger('app:copy_text', ['{{ config.citrus_id}}:{{ response.id }}'])"
                 >
-                    <i class="icon" data-lucide="copy"></i>
-                    Copy ID
+                    {{ icon "copy" }} Copy ID
                 </a>
 
                 <a href="/response/{{ response.id }}">
-                    <i class="icon" data-lucide="external-link"></i>
-                    Open
+                    {{ icon "external-link" }} Open
                 </a>
 
                 {% if is_helper %}
                 <a href="/question/{{ question.id }}">
-                    <i class="icon" data-lucide="external-link"></i>
-                    Open question
+                    {{ icon "external-link" }} Open question
                 </a>
                 {% endif %}
 
@@ -258,8 +238,7 @@
                 <a
                     href="javascript:trigger('reports:bootstrap', ['responses', '{{ response.id }}'])"
                 >
-                    <i class="icon" data-lucide="flag"></i>
-                    Report
+                    {{ icon "flag" }} Report
                 </a>
                 {% endif %} {% if is_helper %}
                 <b class="title">Mod</b>
@@ -268,8 +247,7 @@
                     onclick="trigger('responses:delete', ['{{ response.id }}'])"
                     class="red"
                 >
-                    <i class="icon" data-lucide="trash"></i>
-                    Delete
+                    {{ icon "trash" }} Delete
                 </a>
                 {% endif %} {% endif %}
             </div>

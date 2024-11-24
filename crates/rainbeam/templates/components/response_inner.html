@@ -115,7 +115,7 @@
                     href="/question/{{ question.id }}"
                     title="Global question"
                 >
-                    <i class="icon" data-lucide="globe"></i>
+                    {{ icon "globe" }}
                 </a>
                 {% endif %}
             </div>
@@ -129,7 +129,7 @@
             {% if !response.reply.is_empty() && response.context.is_post == false && do_render_nested == true %}
             <include-partial
                 src="/_app/components/response.html?id={{ response.reply }}&do_render_nested=false"
-                uses="app:clean_date_codes,app:link_filter,app:hook.alt,app:icons"
+                uses="app:clean_date_codes,app:link_filter,app:hook.alt"
             ></include-partial>
             {% endif %}
         </span>
@@ -151,7 +151,7 @@
             {% if !response.reply.is_empty() && response.context.is_post == true && do_render_nested == true %}
             <include-partial
                 src="/_app/components/response.html?id={{ response.reply }}&do_render_nested=false"
-                uses="app:clean_date_codes,app:link_filter,app:hook.alt,app:icons"
+                uses="app:clean_date_codes,app:link_filter,app:hook.alt"
             ></include-partial>
             {% endif %}
         </span>
