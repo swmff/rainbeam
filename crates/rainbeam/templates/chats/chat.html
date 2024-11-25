@@ -17,8 +17,7 @@ endblock %} {% block nav_left %}
 </a>
 {% endblock %} {% block nav_right %}
 <a class="button" href="/inbox/notifications" title="My notifications">
-    {{ icon "bell" }}
-    {% if notifs != 0 %}
+    {{ icon "bell" }} {% if notifs != 0 %}
     <span class="notification tr">{{ notifs }}</span>
     {% endif %}
 </a>
@@ -74,31 +73,27 @@ endblock %} {% block nav_left %}
                     <button
                         onclick="document.getElementById('name_dialog').showModal()"
                     >
-                        {{ icon "pen" }}
-                        Change name
+                        {{ icon "pen" }} Change name
                     </button>
 
                     <button
                         onclick="document.getElementById('add_friends_dialog').showModal()"
                     >
-                        {{ icon "user-plus" }}
-                        Add friend
+                        {{ icon "user-plus" }} Add friend
                     </button>
 
                     <button
                         class="red"
                         onclick="trigger('chats:leave', ['{{ chat.id }}'])"
                     >
-                        {{ icon "x" }}
-                        Leave
+                        {{ icon "x" }} Leave
                     </button>
 
                     <b class="title">Tools</b>
                     <a
                         href="javascript:trigger('reports:bootstrap', ['chats', '{{ chat.id }}'])"
                     >
-                        {{ icon "flag" }}
-                        Report
+                        {{ icon "flag" }} Report
                     </a>
                 </div>
             </div>
@@ -164,7 +159,7 @@ endblock %} {% block nav_left %}
             </div>
         </div>
 
-        <footer class="card shadow w-full flex flex-col gap-2">
+        <section class="card shadow w-full flex flex-col gap-2">
             <script src="https://unpkg.com/codemirror@5.39.2/lib/codemirror.js"></script>
             <script src="https://unpkg.com/codemirror@5.39.2/addon/display/placeholder.js"></script>
             <script src="https://unpkg.com/codemirror@5.39.2/mode/markdown/markdown.js"></script>
@@ -235,7 +230,7 @@ endblock %} {% block nav_left %}
                     height: max-content !important;
                 }
             </style>
-        </footer>
+        </section>
 
         {% if let Some(user) = profile %}
         <script>

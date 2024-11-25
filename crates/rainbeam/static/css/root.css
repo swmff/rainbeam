@@ -69,6 +69,12 @@ body {
     overflow-x: hidden;
 }
 
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
 .turbo-progress-bar {
     background: var(--color-link) !important;
     z-index: 6375 !important;
@@ -80,6 +86,7 @@ body {
     display: flex;
     justify-content: center;
     max-width: 100%;
+    flex: 1 0 auto;
 }
 
 main {
@@ -105,7 +112,7 @@ article {
 }
 
 .content_container {
-    margin: auto;
+    margin: 0 auto;
     width: 100%;
 }
 

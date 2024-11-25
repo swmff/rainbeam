@@ -41,7 +41,6 @@ nav:not(.legacy *) {
     background: var(--color-raised);
     border-bottom: solid 1px var(--color-super-lowered);
     padding: 0.5rem 0.25rem;
-    transition: backdrop-filter 0.15s;
 }
 
 nav:not(.legacy *) button,

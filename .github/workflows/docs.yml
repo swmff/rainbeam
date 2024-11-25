@@ -26,6 +26,8 @@ jobs:
             - name: Configure pages
               id: pages
               uses: actions/configure-pages@v4
+            - name: Link templates directory to avoid static build
+              run: ln -s ./templates ./crates/rainbeam/templates_build
             - name: Clean docs directory
               run: cargo clean --doc
             - name: Build documentation

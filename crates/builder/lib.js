@@ -4,6 +4,7 @@ import swc from "@swc/core";
 import process from "node:process";
 import fs from "node:fs/promises";
 import crypto from "node:crypto";
+import child_process from "node:child_process";
 
 function hash(input) {
     return crypto
@@ -13,8 +14,35 @@ function hash(input) {
         .substring(0, 10);
 }
 
+function replace_vars(content, vars) {
+    const regex = new RegExp(/(\{\{)\s*(var)\s*\"(.*?)\"\s*(\}\})/g);
+    let groups = regex.exec(content);
+
+    while (null !== groups) {
+        if (vars[groups[3]]) {
+            content = content.replace(groups[0], vars[groups[3]]);
+        }
+
+        groups = regex.exec(content);
+    }
+
+    return content;
+}
+
 export default async function build(options) {
     const __cwd = process.cwd();
+
+    const commit = child_process
+        .execSync("git rev-parse HEAD")
+        .toString()
+        .trim();
+
+    const build_vars = {
+        time: new Date().toISOString(),
+        time_unix: new Date().getTime(),
+        commit,
+        commit_short: commit.substring(0, 10),
+    };
 
     // create build directory if it doesn't already exist
     try {
@@ -275,6 +303,8 @@ export default async function build(options) {
             content = `<!-- 🌈 RAINBEAM <https://github.com/swmff/rainbeam> -->
 <!-- template built ${new Date().toISOString()} -->
 ${content}`;
+
+            content = replace_vars(content, build_vars);
 
             // selector with class
             const class_regex = new RegExp(

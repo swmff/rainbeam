@@ -53,6 +53,12 @@ config.name }}{% endblock %} {% block head %}
 </a>
 {% endif %} {% endblock %} {% block content %}
 <article class="flex flex-col gap-4">
+    <style>
+        footer {
+            display: none !important;
+        }
+    </style>
+
     <button onclick="document.getElementById('search_dialog').showModal()" title="Search" class="primary floating right">
         {{ icon "search" }}
     </button>

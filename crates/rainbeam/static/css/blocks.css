@@ -131,7 +131,8 @@ nav {
     transition: opacity 0.15s;
 }
 
-nav .content_container {
+nav .content_container,
+footer .content_container {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -184,6 +185,65 @@ nav a.active::before,
 nav button:not(.inner button):hover::before,
 nav a:not(.inner a):hover {
     background: var(--color-primary-lowered);
+}
+
+/* footer */
+footer {
+    display: flex;
+    background: var(--color-surface);
+    border-top: solid 1px var(--color-super-lowered);
+    padding: 1rem;
+    font-size: 14px;
+}
+
+footer .content_container {
+    align-items: flex-start;
+}
+
+footer .title {
+    font-size: 16px;
+}
+
+footer .header {
+    font-weight: 600;
+}
+
+footer a.button,
+footer button,
+footer .header {
+    padding: 0.25rem 0.5rem;
+}
+
+footer a.button,
+footer button {
+    justify-content: flex-start;
+    font-size: 14px;
+    width: 100%;
+    gap: 8px;
+}
+
+footer a.button svg,
+footer button svg {
+    width: calc(1em + 2px);
+}
+
+footer section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 10rem;
+}
+
+@media screen and (max-width: 900px) {
+    footer section {
+        width: 100%;
+    }
+
+    footer a.button,
+    footer button,
+    footer .header {
+        padding: 0;
+    }
 }
 
 /* markdown */

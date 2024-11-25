@@ -21,9 +21,9 @@
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="{{ config.name }}" />
 
-        <!-- <meta name="turbo-prefetch" content="false" /> -->
-        <!-- <meta name="turbo-refresh-method" content="morph" /> -->
-        <!-- <meta name="turbo-refresh-scroll" content="preserve" /> -->
+        <meta name="turbo-prefetch" content="false" />
+        <meta name="turbo-refresh-method" content="morph" />
+        <meta name="turbo-refresh-scroll" content="preserve" />
 
         <link rel="stylesheet" href="/static/build/css/style.css" />
 
@@ -40,7 +40,7 @@
             globalThis.ns_verbose = false;
             globalThis.ns_config = {
                 root: "/static/build/js/",
-                version: "1.17.1",
+                version: '{{ var "commit" }}',
                 verbose: globalThis.ns_verbose,
             };
 
@@ -51,6 +51,11 @@
                     description: `{{ config.description }}`,
                     host: "{{ config.host }}",
                     citrus_id: "{{ config.citrus_id }}",
+                },
+                build: {
+                    time: '{{ var "time" }}',
+                    commit: '{{ var "commit" }}',
+                    commit_short: '{{ var "commit_short" }}',
                 },
                 ns_store: {},
                 classes: {},
@@ -335,6 +340,69 @@
                 }
             </script>
         </div>
+
+        <footer>
+            <div class="content_container flex-collapse gap-4">
+                <div class="flex flex-col gap-1">
+                    <b class="title">{{ config.name }}</b>
+
+                    <span class="fade">
+                        Commit
+                        <a
+                            href='https://github.com/swmff/rainbeam/commit/{{ var "commit" }}'
+                            >{{ var "commit_short" }}</a
+                        >
+                    </span>
+
+                    <span class="fade">
+                        Built <span class="date">{{ var "time_unix" }}</span>
+                    </span>
+                </div>
+
+                <div class="flex gap-4 flex-collapse">
+                    {% if let Some(user) = profile %}
+                    <section class="fade">
+                        <b class="header">Actions</b>
+
+                        <a href="/intents/post" class="button camo">
+                            {{ icon "square-pen" }} Post
+                        </a>
+
+                        <a href="/search" class="button camo">
+                            {{ icon "search" }} Search
+                        </a>
+                    </section>
+
+                    <section class="fade">
+                        <b class="header">Services</b>
+
+                        <a href="/chats" class="button camo">
+                            {{ icon "message-circle-more" }} Chats
+                        </a>
+
+                        <a href="/inbox/mail" class="button camo">
+                            {{ icon "mails" }} Mail
+                        </a>
+                    </section>
+                    {% endif %}
+
+                    <section class="fade">
+                        <b class="header">Site</b>
+
+                        <a href="/site/about" class="button camo">
+                            {{ icon "info" }} About
+                        </a>
+
+                        <a
+                            href="https://github.com/swmff/rainbeam"
+                            class="button camo"
+                        >
+                            {{ icon "code" }} Source code
+                        </a>
+                    </section>
+                </div>
+            </div>
+        </footer>
 
         <a
             href="#top"
