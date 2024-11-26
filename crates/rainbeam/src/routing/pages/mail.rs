@@ -7,7 +7,7 @@ use axum::{
 };
 use axum_extra::extract::CookieJar;
 
-use authbeam::model::{Mail, Profile, Permission};
+use authbeam::model::{DatabaseError as AuthError, Mail, Permission, Profile};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
@@ -317,6 +317,20 @@ pub async fn view_request(
         Err(e) => return Html(e.to_string()),
     };
 
+    // check view permission
+    let group = match database.auth.get_group_by_id(auth_user.group).await {
+        Ok(g) => g,
+        Err(e) => return Html(e.to_string()),
+    };
+
+    if !group.permissions.contains(&Permission::Manager) {
+        // make sure we're a recipient or the author
+        if !letter.recipient.contains(&auth_user.id) && auth_user.id != author.id {
+            return Html(AuthError::NotAllowed.to_string());
+        }
+    }
+
+    // ...
     Html(
         ViewTemplate {
             config: database.server_options.clone(),
@@ -356,10 +370,10 @@ pub async fn partial_mail_request(
             .get_profile_by_unhashed(c.value_trimmed().to_string())
             .await
         {
-            Ok(ua) => Some(ua),
-            Err(_) => None,
+            Ok(ua) => ua,
+            Err(_) => return Html(DatabaseError::NotAllowed.to_html(database)),
         },
-        None => None,
+        None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
     let letter = match database.auth.get_mail(props.id.clone()).await {
@@ -372,10 +386,23 @@ pub async fn partial_mail_request(
         Err(e) => return Html(e.to_string()),
     };
 
+    // check view permission
+    let group = match database.auth.get_group_by_id(auth_user.group).await {
+        Ok(g) => g,
+        Err(e) => return Html(e.to_string()),
+    };
+
+    if !group.permissions.contains(&Permission::Manager) {
+        // make sure we're a recipient or the author
+        if !letter.recipient.contains(&auth_user.id) && auth_user.id != author.id {
+            return Html(AuthError::NotAllowed.to_string());
+        }
+    }
+
     // ...
     Html(
         PartialMailTemplate {
-            profile: auth_user,
+            profile: Some(auth_user),
             letter,
             author,
         }

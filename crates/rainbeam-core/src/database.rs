@@ -1451,7 +1451,11 @@ impl Database {
         };
 
         // check username
-        if (user.id != question.recipient.id) && (user.id != question.author.id) {
+        let tag = Database::anonymous_tag(&question.author.id);
+        if (user.id != question.recipient.id)
+            && (user.id != question.author.id)
+            && (user.id != tag.1)
+        {
             // check permission
             let group = match self.auth.get_group_by_id(user.group).await {
                 Ok(g) => g,

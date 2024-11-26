@@ -194,6 +194,7 @@ footer {
     border-top: solid 1px var(--color-super-lowered);
     padding: 1rem;
     font-size: 14px;
+    margin-top: 2rem;
 }
 
 footer .content_container {

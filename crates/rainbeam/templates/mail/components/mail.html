@@ -2,12 +2,10 @@
     <div class="card w-full flex flex-col flex-2">
         <div class="flex justify-between items-center flex-2">
             <div class="flex gap-1 items-center">
-                {% if letter.state == authbeam::model::MailState::Unread %}
-                {{ icon "mail-open" }}
+                {% if letter.state == authbeam::model::MailState::Unread %} {{
+                icon "mail-open" }}
                 <div id="unread"></div>
-                {% else %}
-                {{ icon "mail-check" }}
-                {% endif %}
+                {% else %} {{ icon "mail-check" }} {% endif %}
 
                 <b>{{ letter.title }}</b>
             </div>
@@ -47,6 +45,23 @@
         </div>
 
         <hr />
+
+        <div class="fade flex items-center gap-2">
+            <span>To:</span>
+
+            {% for recipient in letter.recipient %}
+            <a href="/+u/{{ recipient }}">
+                <img
+                    title="User avatar"
+                    src="/api/v0/auth/profile/{{ recipient }}/avatar"
+                    alt="@{{ recipient }}"
+                    class="avatar"
+                    loading="lazy"
+                    style="--size: 20px"
+                />
+            </a>
+            {% endfor %}
+        </div>
 
         <div class="fade flex items-center gap-2">
             <span>From:</span>
