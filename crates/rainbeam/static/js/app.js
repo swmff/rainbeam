@@ -534,6 +534,7 @@
                             .then(async () => {
                                 page += 1;
                                 await load_partial();
+                                await $["hook.partial_embeds"]();
                             })
                             .catch(() => {
                                 console.log("partial stuck");
