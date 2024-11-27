@@ -48,7 +48,7 @@ dialog::backdrop {
     display: none;
     position: absolute;
     background: var(--color-raised);
-    z-index: 1;
+    z-index: 2;
     border-radius: var(--radius);
     top: calc(100% + 5px);
     right: 0;

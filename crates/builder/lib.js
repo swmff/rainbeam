@@ -300,9 +300,9 @@ export default async function build(options) {
             console.log(`template(2) ${file_name}`);
             let content = await fs.readFile(full_path, { encoding: "utf8" });
 
-            content = `<!-- 🌈 RAINBEAM <https://github.com/swmff/rainbeam> -->
-<!-- template built ${new Date().toISOString()} -->
-${content}`;
+            content = `<!-- <${file_name}> -->
+${content}
+<!-- </${file_name}> -->`;
 
             content = replace_vars(content, build_vars);
 

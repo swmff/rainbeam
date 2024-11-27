@@ -297,10 +297,9 @@
                 return;
             }
 
-            const permissions = await trigger(
-                "app:prompt",
+            const permissions = await trigger("app:prompt", [
                 "Permissions (comma separated):",
-            );
+            ]);
 
             const res = await (
                 await fetch(
