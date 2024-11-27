@@ -1,10 +1,10 @@
 {% extends "base.html" %} {% block sidenav %}
-<a href="/settings">{{ lang.get("settings:link.account") }}</a>
-<a href="/settings/sessions">{{ lang.get("settings:link.sessions") }}</a>
+<a href="/settings">{{ text "settings:link.account" }}</a>
+<a href="/settings/sessions">{{ text "settings:link.sessions" }}</a>
 <a class="active" href="/settings/profile"
-    >{{ lang.get("settings:link.profile") }}</a
+    >{{ text "settings:link.profile" }}</a
 >
-<a href="/settings/privacy">{{ lang.get("settings:link.privacy") }}</a>
+<a href="/settings/privacy">{{ text "settings:link.privacy" }}</a>
 {% endblock %} {% block panel %}
 <!-- prettier-ignore -->
 {% include "components/profile_options.html" %}

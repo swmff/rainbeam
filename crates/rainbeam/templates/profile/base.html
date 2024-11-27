@@ -31,14 +31,14 @@ config.name }}{% endblock %} {% block head %}
 {% endif %} {% endblock %} {% block nav_left %} {% if profile.is_some() %}
 <a class="button" href="/" title="Timeline">
     {{ icon "house" }}
-    <span class="desktop">{{ lang.get("general:link.timeline") }}</span>
-    <span class="mobile">{{ lang.get("general:link.home") }}</span>
+    <span class="desktop">{{ text "general:link.timeline" }}</span>
+    <span class="mobile">{{ text "general:link.home" }}</span>
 </a>
 
 <a class="button" href="/inbox" title="My inbox">
     {{ icon "inbox" }}
     <span class="flex items-center gap-2">
-        <span>{{ lang.get("general:link.inbox") }}</span>
+        <span>{{ text "general:link.inbox" }}</span>
         {% if unread != 0 %}
         <span class="notification tr">{{ unread }}</span>
         {% endif %}
@@ -222,7 +222,7 @@ config.name }}{% endblock %} {% block head %}
                                 style="color: var(--color-text)"
                             >
                                 <b>{{ followers_count }}</b>
-                                <span class="fade">{{ lang.get("profile:base.html:link.follower") }}{% if followers_count > 1 %}s{% endif %}</span>
+                                <span class="fade">{{ text "profile:base.html:link.follower" }}{% if followers_count > 1 %}s{% endif %}</span>
                             </a>
 
                             <a
@@ -231,7 +231,7 @@ config.name }}{% endblock %} {% block head %}
                                 style="color: var(--color-text)"
                             >
                                 <b>{{ following_count }}</b>
-                                <span class="fade">{{ lang.get("profile:base.html:link.following") }}</span>
+                                <span class="fade">{{ text "profile:base.html:link.following" }}</span>
                             </a>
 
                             <a
@@ -240,7 +240,7 @@ config.name }}{% endblock %} {% block head %}
                                 style="color: var(--color-text)"
                             >
                                 <b>{{ friends_count }}</b>
-                                <span class="fade">{{ lang.get("profile:base.html:link.friend") }}{% if friends_count > 1 %}s{% endif %}</span>
+                                <span class="fade">{{ text "profile:base.html:link.friend" }}{% if friends_count > 1 %}s{% endif %}</span>
                             </a>
                         </div>
                         {% endif %}
@@ -259,7 +259,7 @@ config.name }}{% endblock %} {% block head %}
                         href="/settings/profile"
                     >
                         {{ icon "pen" }}
-                        <span class="possible_text">{{ lang.get("profile:base.html:link.edit_profile") }}</span>
+                        <span class="possible_text">{{ text "profile:base.html:link.edit_profile" }}</span>
                     </a>
 
                     <div class="dropdown">
@@ -269,7 +269,7 @@ config.name }}{% endblock %} {% block head %}
                             exclude="dropdown"
                             class="w-full"
                         >
-                            <span class="possible_text">{{ lang.get("general:link.more") }}</span>
+                            <span class="possible_text">{{ text "general:link.more" }}</span>
                             {{ icon "chevron-down" c(dropdown-arrow) }}
                         </button>
 
@@ -279,14 +279,14 @@ config.name }}{% endblock %} {% block head %}
                         >
                             <a href="/settings">
                                 {{ icon "settings" }}
-                                {{ lang.get("profile:base.html:link.account_settings") }}
+                                {{ text "profile:base.html:link.account_settings" }}
                             </a>
 
                             <a
                                 href="javascript:document.getElementById('embed_dialog').showModal()"
                             >
                                 {{ icon "code" }}
-                                {{ lang.get("profile:base.html:link.embed_profile") }}
+                                {{ text "profile:base.html:link.embed_profile" }}
                             </a>
                         </div>
                     </div>
@@ -299,7 +299,7 @@ config.name }}{% endblock %} {% block head %}
                         onclick="follow()"
                         id="follow_button"
                     >
-                        {{ lang.get("profile:base.html:action.follow") }}
+                        {{ text "profile:base.html:action.follow" }}
                     </button>
                     {% else %}
                     <button
@@ -307,13 +307,13 @@ config.name }}{% endblock %} {% block head %}
                         onclick="follow()"
                         id="follow_button"
                     >
-                        {{ lang.get("profile:base.html:action.unfollow") }}
+                        {{ text "profile:base.html:action.unfollow" }}
                     </button>
                     {% endif %}
 
                     {% if relationship == crate::model::RelationshipStatus::Unknown %}
                     <button class="w-full primary bold" onclick="friend()">
-                        {{ lang.get("profile:base.html:action.friend") }}
+                        {{ text "profile:base.html:action.friend" }}
                     </button>
 
                     <script>
@@ -332,7 +332,7 @@ config.name }}{% endblock %} {% block head %}
                     </script>
                     {% else if relationship == crate::model::RelationshipStatus::Friends %}
                     <button class="w-full" onclick="unfriend()">
-                        {{ lang.get("profile:base.html:action.unfriend") }}
+                        {{ text "profile:base.html:action.unfriend" }}
                     </button>
 
                     <script>
@@ -355,7 +355,7 @@ config.name }}{% endblock %} {% block head %}
                     </script>
                     {% else if relationship == crate::model::RelationshipStatus::Pending %}
                     <button class="w-full" onclick="cancel_fr()" title="Cancel friend request">
-                        {{ lang.get("general:dialog.cancel") }}
+                        {{ text "general:dialog.cancel" }}
                     </button>
 
                     <script>
@@ -401,39 +401,39 @@ config.name }}{% endblock %} {% block head %}
                                 onclick="trigger('chats:create', ['{{ other.id }}'])"
                             >
                                 {{ icon "message-circle-plus" }}
-                                {{ lang.get("general:link.chat") }}
+                                {{ text "general:link.chat" }}
                             </button>
                             <a
                                 href="/inbox/mail/compose?to={{ other.id }}"
                             >
                                 {{ icon "mail-plus" }}
-                                {{ lang.get("general:service.mail") }}
+                                {{ text "general:service.mail" }}
                             </a>
                             <a
                                 href="/settings?block={{ other.username }}#sparkler:block_somebody"
                                 target="_blank"
                             >
                                 {{ icon "shield" }}
-                                {{ lang.get("general:action.block") }}
+                                {{ text "general:action.block" }}
                             </a>
                             <a
                                 href="javascript:trigger('reports:bootstrap', ['profiles', '{{ other.username }}'])"
                             >
                                 {{ icon "flag" }}
-                                {{ lang.get("general:action.report") }}
+                                {{ text "general:action.report" }}
                             </a>
                             <a
                                 href="#"
                                 onclick="trigger('app:copy_text', ['{{ config.citrus_id}}:{{ other.id }}'])"
                             >
                                 {{ icon "copy" }}
-                                {{ lang.get("general:action.copy_id") }}
+                                {{ text "general:action.copy_id" }}
                             </a>
                             {% if is_powerful %}
                             <!-- for managers ONLY -->
                             <a href="javascript:delete_account()">
                                 {{ icon "trash" }}
-                                {{ lang.get("general:action.delete") }}
+                                {{ text "general:action.delete" }}
                             </a>
 
                             <script>
@@ -465,7 +465,7 @@ config.name }}{% endblock %} {% block head %}
                             <b class="title">Your account</b>
                             <a href="/settings#sparkler:blocks">
                                 {{ icon "lock" }}
-                                {{ lang.get("profile:base.html:link.manage_blocks") }}
+                                {{ text "profile:base.html:link.manage_blocks" }}
                             </a>
                         </div>
                     </div>
@@ -477,7 +477,7 @@ config.name }}{% endblock %} {% block head %}
                             exclude="dropdown"
                             class="w-full"
                         >
-                            {{ lang.get("general:link.actions") }}
+                            {{ text "general:link.actions" }}
                             {{ icon "chevron-down" c(dropdown-arrow) }}
                         </button>
 
@@ -485,12 +485,12 @@ config.name }}{% endblock %} {% block head %}
                             class="inner shadow-md w-content left"
                             exclude="dropdown"
                         >
-                            <b class="title">{{ lang.get("profile:base.html:title.this_user") }}</b>
+                            <b class="title">{{ text "profile:base.html:title.this_user" }}</b>
                             <a
                                 href="javascript:trigger('reports:bootstrap', ['profiles', '{{ other.username }}'])"
                             >
                                 {{ icon "flag" }}
-                                {{ lang.get("general:action.report") }}
+                                {{ text "general:action.report" }}
                             </a>
                         </div>
                     </div>
@@ -508,7 +508,7 @@ config.name }}{% endblock %} {% block head %}
             class="card padded shadow flex flex-col w-full gap-4 items-center justify-center"
         >
             {{ icon "lock-keyhole" }}
-            <h4>{{ lang.get("profile:base.html:text.private") }}</h4>
+            <h4>{{ text "profile:base.html:text.private" }}</h4>
         </div>
         {% else %}
         <section id="feed" class="flex flex-col gap-4 w-full">
@@ -573,7 +573,7 @@ config.name }}{% endblock %} {% block head %}
                                     />
 
                                     <label for="anonymous" class="normal">
-                                        {{ lang.get("general:action.hide_your_name") }}
+                                        {{ text "general:action.hide_your_name" }}
                                     </label>
                                 </div>
 
@@ -597,15 +597,15 @@ config.name }}{% endblock %} {% block head %}
                                 {% endif %}
 
                                 <button class="primary bold">
-                                    {{ lang.get("profile:base.html:action.ask") }}
+                                    {{ text "profile:base.html:action.ask" }}
                                 </button>
                             </div>
                         </div>
                     </form>
                     {% else %}
-                    <b>{{ lang.get("profile:base.html:text.no_anonymous_questions") }}</b>
+                    <b>{{ text "profile:base.html:text.no_anonymous_questions" }}</b>
                     {% endif %} {% else %}
-                    <b>{{ lang.get("profile:base.html:text.no_questions") }}</b>
+                    <b>{{ text "profile:base.html:text.no_questions" }}</b>
 
                     <style>
                         #question_box {
@@ -634,7 +634,7 @@ config.name }}{% endblock %} {% block head %}
 <dialog id="search_dialog">
     <div class="inner flex flex-col gap-2">
         <div class="w-full flex justify-between items-center gap-2">
-            <b class="title">{{ lang.get("general:link.search") }}</b>
+            <b class="title">{{ text "general:link.search" }}</b>
             <div class="flex gap-2">
                 <button
                     class="bold red camo icon-only"
@@ -655,24 +655,24 @@ config.name }}{% endblock %} {% block head %}
 {% if is_self %}
 <dialog id="embed_dialog">
     <div class="inner flex flex-col gap-2">
-        <p>{{ lang.get("profile:base.html:text.embed_title") }}</p>
+        <p>{{ text "profile:base.html:text.embed_title" }}</p>
 
         <pre><code id="embed_link">{{ config.host }}/@{{ other.username }}/embed</code></pre>
 
-        <p>{{ lang.get("profile:base.html:text.embed_help") }}</p>
+        <p>{{ text "profile:base.html:text.embed_help" }}</p>
 
         <div class="flex gap-2">
             <button
                 class="primary bold"
                 onclick="trigger('app:copy_text', [document.getElementById('embed_link').innerText]); document.getElementById('embed_dialog').close()"
             >
-                {{ lang.get("general:dialog.okay") }}
+                {{ text "general:dialog.okay" }}
             </button>
             <button
                 onclick="document.getElementById('embed_dialog').close()"
                 class="button bold"
             >
-                {{ lang.get("general:dialog.cancel") }}
+                {{ text "general:dialog.cancel" }}
             </button>
         </div>
     </div>
@@ -681,21 +681,21 @@ config.name }}{% endblock %} {% block head %}
 %} {% if !warning.is_empty() %}
 <dialog id="warning_dialog">
     <div class="inner flex flex-col gap-2">
-        <span class="fade">{{ lang.get("profile:base.html:text.warning_title") }}</span>
+        <span class="fade">{{ text "profile:base.html:text.warning_title" }}</span>
 
         <hr />
         <div class="profile_warning">{{ shared::ui::render_markdown(warning)|safe }}</div>
 
         <hr />
         <span class="fade">
-            {{ lang.get("profile:base.html:text.warning_continue") }}
+            {{ text "profile:base.html:text.warning_continue" }}
         </span>
 
         <div class="flex gap-2">
             <button class="primary bold" onclick="trigger('warnings:accept')">
-                {{ lang.get("general:dialog.continue") }}
+                {{ text "general:dialog.continue" }}
             </button>
-            <a href="/" class="button bold">{{ lang.get("general:dialog.cancel") }}</a>
+            <a href="/" class="button bold">{{ text "general:dialog.cancel" }}</a>
         </div>
     </div>
 </dialog>

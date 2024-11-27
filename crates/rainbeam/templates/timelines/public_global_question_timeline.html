@@ -4,14 +4,14 @@ block head %}
 {% endblock %} {% block nav_left %}
 <a class="button active" href="/" title="Timeline">
     {{ icon "house" }}
-    <span class="desktop">{{ lang.get("general:link.timeline") }}</span>
-    <span class="mobile">{{ lang.get("general:link.home") }}</span>
+    <span class="desktop">{{ text "general:link.timeline" }}</span>
+    <span class="mobile">{{ text "general:link.home" }}</span>
 </a>
 
 <a class="button" href="/inbox" title="My inbox">
     {{ icon "inbox" }}
     <span class="flex items-center gap-2">
-        <span>{{ lang.get("general:link.inbox") }}</span>
+        <span>{{ text "general:link.inbox" }}</span>
         {% if unread != 0 %}
         <span class="notification tr">{{ unread }}</span>
         {% endif %}
@@ -28,28 +28,28 @@ block head %}
     <main class="flex flex-col gap-2">
         <div class="pillmenu convertible">
             <a href="/"
-                ><span>{{ lang.get("timelines:link.timeline") }}</span></a
+                ><span>{{ text "timelines:link.timeline" }}</span></a
             >
             <a href="/inbox/posts"
-                ><span>{{ lang.get("timelines:link.posts") }}</span></a
+                ><span>{{ text "timelines:link.posts" }}</span></a
             >
             <a href="/inbox/global" class="active"
-                ><span>{{ lang.get("timelines:link.global") }}</span></a
+                ><span>{{ text "timelines:link.global" }}</span></a
             >
         </div>
 
         <div class="pillmenu convertible">
             <a href="/inbox/global" class="active"
-                ><span>{{ lang.get("timelines:link.public") }}</span></a
+                ><span>{{ text "timelines:link.public" }}</span></a
             >
             <a href="/inbox/global/following"
-                ><span>{{ lang.get("timelines:link.following") }}</span></a
+                ><span>{{ text "timelines:link.following" }}</span></a
             >
         </div>
 
         {% if questions.len() == 0 %}
         <div class="markdown-alert-warning">
-            <span>{{ lang.get("general:text.no_results") }}</span>
+            <span>{{ text "general:text.no_results" }}</span>
         </div>
         {% endif %}
 
@@ -89,7 +89,7 @@ block head %}
         <div class="flex justify-between">
             <div></div>
             <a href="/search?driver=1" class="button secondary bold">
-                {{ icon "search" }} {{ lang.get("general:link.search") }}
+                {{ icon "search" }} {{ text "general:link.search" }}
             </a>
         </div>
 
@@ -101,13 +101,13 @@ block head %}
         <div class="flex justify-between gap-2 w-full">
             {% if page > 0 %}
             <a class="button secondary" href="?page={{ page - 1 }}"
-                >{{ lang.get("general:link.previous") }}</a
+                >{{ text "general:link.previous" }}</a
             >
             {% else %}
             <div></div>
             {% endif %} {% if questions.len() != 0 %}
             <a class="button secondary" href="?page={{ page + 1 }}"
-                >{{ lang.get("general:link.next") }}</a
+                >{{ text "general:link.next" }}</a
             >
             {% endif %}
         </div>

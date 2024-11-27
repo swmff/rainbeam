@@ -24,7 +24,7 @@ block head %}
         >
             <div class="flex flex-col gap-1">
                 <label for="content"
-                    >{{ lang.get("report.html:label.reason") }}</label
+                    >{{ text "report.html:label.reason" }}</label
                 >
 
                 <textarea
@@ -35,11 +35,11 @@ block head %}
                 ></textarea>
 
                 <p class="fade">
-                    {{ lang.get("report.html:text.please_describe") }}
+                    {{ text "report.html:text.please_describe" }}
                 </p>
 
-                <p class="fade">{{ lang.get("report.html:text.details1") }}</p>
-                <p class="fade">{{ lang.get("report.html:text.details2") }}</p>
+                <p class="fade">{{ text "report.html:text.details1" }}</p>
+                <p class="fade">{{ text "report.html:text.details2" }}</p>
             </div>
 
             <div
@@ -50,11 +50,11 @@ block head %}
             <hr />
             <div class="flex gap-2">
                 <button class="primary bold">
-                    {{ lang.get("general:action.report") }}
+                    {{ text "general:action.report" }}
                 </button>
 
                 <button class="bold" type="button" onclick="window.close()">
-                    {{ lang.get("general:dialog.cancel") }}
+                    {{ text "general:dialog.cancel" }}
                 </button>
             </div>
         </form>

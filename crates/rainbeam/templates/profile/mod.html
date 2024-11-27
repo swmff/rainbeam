@@ -1,14 +1,14 @@
 {% extends "base.html" %} {% block pillmenu %}
 <a href="/@{{ other.username }}">
     <span
-        >{{ lang.get("profile:link.feed") }}
+        >{{ text "profile:link.feed" }}
         <b class="notification">{{ response_count }}</b></span
     >
 </a>
 
 <a href="/@{{ other.username }}/questions">
     <span
-        >{{ lang.get("profile:link.questions") }}
+        >{{ text "profile:link.questions" }}
         <b class="notification">{{ questions_count }}</b></span
     >
 </a>
@@ -16,7 +16,7 @@
 {% if is_helper %}
 <a href="/@{{ other.username }}/mod" class="active">
     <span
-        >{{ lang.get("profile:link.manage") }}
+        >{{ text "profile:link.manage" }}
         <b class="notification">Mod</b></span
     >
 </a>
@@ -66,7 +66,7 @@
 {{ badges }}</textarea
             >
 
-            <button>{{ lang.get("general:form.submit") }}</button>
+            <button>{{ text "general:form.submit" }}</button>
         </form>
     </div>
 
@@ -122,7 +122,7 @@
             minlength="6"
         />
 
-        <button>{{ lang.get("general:form.submit") }}</button>
+        <button>{{ text "general:form.submit" }}</button>
     </form>
 
     <script>
@@ -373,7 +373,7 @@
                 <div class="flex justify-between w-full gap-1">
                     <div></div>
                     <button class="primary bold">
-                        {{ lang.get("general:form.submit") }}
+                        {{ text "general:form.submit" }}
                     </button>
                 </div>
             </form>

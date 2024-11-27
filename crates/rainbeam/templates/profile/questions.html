@@ -1,7 +1,7 @@
 {% extends "base.html" %} {% block pillmenu %}
 <a href="/@{{ other.username }}">
     <span
-        >{{ lang.get("profile:link.feed") }}
+        >{{ text "profile:link.feed" }}
         <b class="notification">{{ response_count }}</b></span
     >
 </a>
@@ -13,7 +13,7 @@
 {% if is_helper %}
 <a href="/@{{ other.username }}/mod">
     <span
-        >{{ lang.get("profile:link.manage") }}
+        >{{ text "profile:link.manage" }}
         <b class="notification">Mod</b></span
     >
 </a>
@@ -33,7 +33,7 @@
     <div class="flex justify-between">
         <div></div>
         <button title="Search" class="primary bold">
-            {{ icon "search" }} {{ lang.get("general:link.search") }}
+            {{ icon "search" }} {{ text "general:link.search" }}
         </button>
     </div>
 </form>
@@ -42,13 +42,13 @@
 {% if is_self | is_powerful %}
 <div class="pillmenu convertible">
     <a href="/@{{ other.username }}/questions" class="active"
-        ><span>{{ lang.get("timelines:link.global") }}</span></a
+        ><span>{{ text "timelines:link.global" }}</span></a
     >
 
     {% if is_powerful %}
     <a href="/@{{ other.username }}/questions/inbox">
         <span
-            >{{ lang.get("general:link.inbox") }}
+            >{{ text "general:link.inbox" }}
             <b class="notification">Mod</b></span
         >
     </a>
@@ -56,9 +56,9 @@
 
     <a href="/@{{ other.username }}/questions/outbox">
         <span
-            >{{ lang.get("profile:link.outbox") }}
+            >{{ text "profile:link.outbox" }}
             <b class="notification"
-                >{{ lang.get("profile:label.private") }}</b
+                >{{ text "profile:label.private" }}</b
             ></span
         >
     </a>
@@ -77,13 +77,13 @@
     <div class="flex justify-between gap-2 w-full">
         {% if page > 0 %}
         <a class="button secondary" href="?page={{ page - 1 }}"
-            >{{ lang.get("general:link.previous") }}</a
+            >{{ text "general:link.previous" }}</a
         >
         {% else %}
         <div></div>
         {% endif %} {% if questions.len() != 0 %}
         <a class="button secondary" href="?page={{ page + 1 }}"
-            >{{ lang.get("general:link.next") }}</a
+            >{{ text "general:link.next" }}</a
         >
         {% endif %}
     </div>

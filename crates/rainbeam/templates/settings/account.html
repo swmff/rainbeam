@@ -1,8 +1,8 @@
 {% extends "base.html" %} {% block sidenav %}
-<a class="active" href="/settings">{{ lang.get("settings:link.account") }}</a>
-<a href="/settings/sessions">{{ lang.get("settings:link.sessions") }}</a>
-<a href="/settings/profile">{{ lang.get("settings:link.profile") }}</a>
-<a href="/settings/privacy">{{ lang.get("settings:link.privacy") }}</a>
+<a class="active" href="/settings">{{ text "settings:link.account" }}</a>
+<a href="/settings/sessions">{{ text "settings:link.sessions" }}</a>
+<a href="/settings/profile">{{ text "settings:link.profile" }}</a>
+<a href="/settings/privacy">{{ text "settings:link.privacy" }}</a>
 {% endblock %} {% block panel %}
 
 <div class="flex flex-col gap-4">
@@ -17,14 +17,14 @@
             onchange="update_theme(event.target.options[event.target.selectedIndex].value)"
         >
             <option value="light" id="light">
-                {{ lang.get("settings:text.light") }}
+                {{ text "settings:text.light" }}
             </option>
             <option value="dark" id="dark">Dark</option>
             <option value="dark midnight" id="dark midnight">
-                {{ lang.get("settings:text.midnight") }}
+                {{ text "settings:text.midnight" }}
             </option>
             <option value="legacy" id="legacy">
-                Legacy {{ lang.get("settings:text.light") }}
+                Legacy {{ text "settings:text.light" }}
             </option>
             <option value="dark legacy" id="dark legacy">Legacy dark</option>
         </select>
@@ -45,11 +45,11 @@
             onchange="update_theme_preference(event.target.options[event.target.selectedIndex].value)"
         >
             <option value="yes" id="yes">
-                {{ lang.get("general:dialog.yes") }}
+                {{ text "general:dialog.yes" }}
             </option>
 
             <option value="no" id="no">
-                {{ lang.get("general:dialog.no") }}
+                {{ text "general:dialog.no" }}
             </option>
         </select>
 
@@ -175,7 +175,7 @@
         <label for="new_name">New username</label>
         <input type="text" name="new_name" id="new_name" minlength="2" />
 
-        <button>{{ lang.get("general:form.submit") }}</button>
+        <button>{{ text "general:form.submit" }}</button>
     </form>
 
     <form class="flex flex-col gap-1" id="change_password">
@@ -192,7 +192,7 @@
             minlength="6"
         />
 
-        <button>{{ lang.get("general:form.submit") }}</button>
+        <button>{{ text "general:form.submit" }}</button>
     </form>
 
     <form class="flex flex-col gap-1" id="delete_account">
@@ -210,7 +210,7 @@
             id="current_password_delete"
         />
 
-        <button>{{ lang.get("general:form.submit") }}</button>
+        <button>{{ text "general:form.submit" }}</button>
     </form>
 
     <h4 class="title">Blocks</h4>
@@ -248,7 +248,7 @@
             />
 
             <button type="button" onclick="block_dialog()">
-                {{ lang.get("general:form.submit") }}
+                {{ text "general:form.submit" }}
             </button>
         </div>
 
@@ -441,14 +441,14 @@
         <hr />
         <div class="flex gap-2">
             <button class="primary bold" onclick="block()">
-                {{ lang.get("general:dialog.confirm") }}
+                {{ text "general:dialog.confirm" }}
             </button>
 
             <button
                 class="bold"
                 onclick="document.getElementById('block_dialog').close(); window.close()"
             >
-                {{ lang.get("general:dialog.cancel") }}
+                {{ text "general:dialog.cancel" }}
             </button>
         </div>
     </div>
@@ -524,7 +524,7 @@
                 class="primary bold"
                 onclick="globalThis.save_settings().then(() => window.close())"
             >
-                {{ lang.get("general:dialog.confirm") }}
+                {{ text "general:dialog.confirm" }}
             </button>
 
             <button
@@ -532,7 +532,7 @@
                 onclick="document.getElementById('set_note_dialog').close(); window.close()"
                 type="button"
             >
-                {{ lang.get("general:dialog.cancel") }}
+                {{ text "general:dialog.cancel" }}
             </button>
         </div>
     </form>
@@ -557,14 +557,14 @@
                 class="primary bold"
                 onclick="globalThis.save_settings().then(() => window.close())"
             >
-                {{ lang.get("general:dialog.confirm") }}
+                {{ text "general:dialog.confirm" }}
             </button>
             <button
                 class="bold"
                 onclick="document.getElementById('set_signature_dialog').close(); window.close()"
                 type="button"
             >
-                {{ lang.get("general:dialog.cancel") }}
+                {{ text "general:dialog.cancel" }}
             </button>
         </div>
     </div>

@@ -306,6 +306,18 @@ ${content}
 
             content = replace_vars(content, build_vars);
 
+            // text
+            const text_regex = new RegExp(
+                /(\{\{)\s*(text)\s*\"(.*?)\"\s*(\}\})/g,
+            );
+
+            let groups_t = text_regex.exec(content);
+            while (null !== groups_t) {
+                const text = `{{ lang.get("${groups_t[3]}") }}`;
+                content = content.replace(groups_t[0], text);
+                groups_t = text_regex.exec(content);
+            }
+
             // selector with class
             const class_regex = new RegExp(
                 /(\{\{)\s*(icon)\s*\"(.*?)\"\s*c\((.*?)\)\s*(\}\})/g,

@@ -61,7 +61,7 @@
                 onclick="trigger('chats:msg_delete', ['{{ message.0.id }}'])"
                 class="red"
             >
-                {{ icon "trash" }} {{ lang.get("general:action.delete") }}
+                {{ icon "trash" }} {{ text "general:action.delete" }}
             </button>
             {% endif %} {% endif %}
             <!-- actions for everybody -->
@@ -77,7 +77,7 @@
             <a
                 href="javascript:trigger('reports:bootstrap', ['messages', '{{ message.0.id }}'])"
             >
-                {{ icon "flag" }} {{ lang.get("general:action.report") }}
+                {{ icon "flag" }} {{ text "general:action.report" }}
             </a>
             {% endif %} {% if is_helper %}
             <b class="title">Mod</b>
@@ -85,7 +85,7 @@
                 onclick="trigger('chats:msg_delete', ['{{ message.0.id }}'])"
                 class="red"
             >
-                {{ icon "trash" }} {{ lang.get("general:action.delete") }}
+                {{ icon "trash" }} {{ text "general:action.delete" }}
             </button>
             {% endif %} {% endif %}
         </div>
