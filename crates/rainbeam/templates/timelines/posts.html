@@ -44,21 +44,23 @@ block head %}
     <main class="flex flex-col gap-2">
         {% if profile.is_some() %}
         <div class="pillmenu convertible">
-            <a href="/"><span>{{ lang.get("timelines:link.timeline }}</span></a>
+            <a href="/"
+                ><span>{{ lang.get("timelines:link.timeline") }}</span></a
+            >
             <a href="/inbox/posts" class="active"
-                ><span>{{ lang.get("timelines:link.posts }}</span></a
+                ><span>{{ lang.get("timelines:link.posts") }}</span></a
             >
             <a href="/inbox/global"
-                ><span>{{ lang.get("timelines:link.global }}</span></a
+                ><span>{{ lang.get("timelines:link.global") }}</span></a
             >
         </div>
 
         <div class="pillmenu convertible">
             <a href="/inbox/posts" class="active"
-                ><span>{{ lang.get("timelines:link.public }}</span></a
+                ><span>{{ lang.get("timelines:link.public") }}</span></a
             >
             <a href="/inbox/posts/following"
-                ><span>{{ lang.get("timelines:link.following }}</span></a
+                ><span>{{ lang.get("timelines:link.following") }}</span></a
             >
         </div>
         {% endif %} {% if responses.len() == 0 %}
