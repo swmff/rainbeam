@@ -1,15 +1,21 @@
 {% extends "base.html" %} {% block pillmenu %}
 <a href="/@{{ other.username }}">
-    <span>Feed <b class="notification">{{ response_count }}</b></span>
+    <span
+        >{{ lang.get("profile:link.feed") }}
+        <b class="notification">{{ response_count }}</b></span
+    >
 </a>
 
 <a href="/@{{ other.username }}/questions" class="active">
-    <span> Questions <b class="notification">{{ questions_count }}</b></span>
+    <span>Questions <b class="notification">{{ questions_count }}</b></span>
 </a>
 
 {% if is_helper %}
 <a href="/@{{ other.username }}/mod">
-    <span>Manage <b class="notification">Mod</b></span>
+    <span
+        >{{ lang.get("profile:link.manage") }}
+        <b class="notification">Mod</b></span
+    >
 </a>
 {% endif %} {% endblock %} {% block search %}
 <!-- search -->
@@ -27,8 +33,7 @@
     <div class="flex justify-between">
         <div></div>
         <button title="Search" class="primary bold">
-            {{ icon "search" }}
-            Search
+            {{ icon "search" }} {{ lang.get("general:link.search") }}
         </button>
     </div>
 </form>
@@ -37,17 +42,25 @@
 {% if is_self | is_powerful %}
 <div class="pillmenu convertible">
     <a href="/@{{ other.username }}/questions" class="active"
-        ><span>Global</span></a
+        ><span>{{ lang.get("timelines:link.global }}</span></a
     >
 
     {% if is_powerful %}
     <a href="/@{{ other.username }}/questions/inbox">
-        <span>Inbox <b class="notification">Mod</b></span>
+        <span
+            >{{ lang.get("general:link.inbox") }}
+            <b class="notification">Mod</b></span
+        >
     </a>
     {% endif %}
 
     <a href="/@{{ other.username }}/questions/outbox">
-        <span>Outbox <b class="notification">Private</b></span>
+        <span
+            >{{ lang.get("profile:link.outbox") }}
+            <b class="notification"
+                >{{ lang.get("profile:label.private") }}</b
+            ></span
+        >
     </a>
 </div>
 {% endif %}
@@ -63,11 +76,15 @@
     {% if questions_count != 0 %}
     <div class="flex justify-between gap-2 w-full">
         {% if page > 0 %}
-        <a class="button secondary" href="?page={{ page - 1 }}">Previous</a>
+        <a class="button secondary" href="?page={{ page - 1 }}"
+            >{{ lang.get("general:link.previous") }}</a
+        >
         {% else %}
         <div></div>
         {% endif %} {% if questions.len() != 0 %}
-        <a class="button secondary" href="?page={{ page + 1 }}">Next</a>
+        <a class="button secondary" href="?page={{ page + 1 }}"
+            >{{ lang.get("general:link.next") }}</a
+        >
         {% endif %}
     </div>
     {% endif %}

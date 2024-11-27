@@ -132,7 +132,7 @@ comment = comment.0.clone() %}
                         onclick="trigger('app:copy_text', ['{{ config.host }}/+c/{{ short_id }}'])"
                     >
                         {{ icon "copy" }} {{
-                        lang.get("general:actions.copy_link") }}
+                        lang.get("general:action.copy_link") }}
                     </button>
 
                     {% if let Some(profile) = profile %} {% if (profile.id ==
@@ -141,7 +141,7 @@ comment = comment.0.clone() %}
                     <b class="title">Manage</b>
 
                     <a href="/comment/{{ comment.id }}?edit" target="_blank">
-                        {{ icon "pen" }} {{ lang.get("general:actions.edit") }}
+                        {{ icon "pen" }} {{ lang.get("general:action.edit") }}
                     </a>
 
                     <a
@@ -149,7 +149,7 @@ comment = comment.0.clone() %}
                         onclick="trigger('comments:delete', ['{{ comment.id }}'])"
                         class="red"
                     >
-                        {{ icon "trash" }} {{ lang.get("general:actions.delete")
+                        {{ icon "trash" }} {{ lang.get("general:action.delete")
                         }}
                     </a>
 
@@ -157,7 +157,7 @@ comment = comment.0.clone() %}
                         href="javascript:trigger('comments:ipblock', ['{{ comment.id }}'])"
                     >
                         {{ icon "shield" }} {{
-                        lang.get("general:actions.ip_block") }}
+                        lang.get("general:action.ip_block") }}
                     </a>
                     {% endif %} {% endif %}
                     <!-- actions for everybody -->
@@ -166,13 +166,13 @@ comment = comment.0.clone() %}
                         href="#"
                         onclick="trigger('app:copy_text', ['{{ comment.id }}'])"
                     >
-                        {{ icon "copy" }} {{ lang.get("general:actions.copy_id")
+                        {{ icon "copy" }} {{ lang.get("general:action.copy_id")
                         }}
                     </a>
 
                     <a href="/comment/{{ comment.id }}">
                         {{ icon "external-link" }} {{
-                        lang.get("general:links.open") }}
+                        lang.get("general:link.open") }}
                     </a>
 
                     <!-- prettier-ignore -->
@@ -182,7 +182,7 @@ comment = comment.0.clone() %}
                     <a
                         href="javascript:trigger('reports:bootstrap', ['comments', '{{ comment.id }}'])"
                     >
-                        {{ icon "flag" }} {{ lang.get("general:actions.report")
+                        {{ icon "flag" }} {{ lang.get("general:action.report")
                         }}
                     </a>
                     {% endif %} {% if is_helper %}
@@ -192,7 +192,7 @@ comment = comment.0.clone() %}
                         onclick="trigger('comments:delete', ['{{ comment.id }}'])"
                         class="red"
                     >
-                        {{ icon "trash" }} {{ lang.get("general:actions.delete")
+                        {{ icon "trash" }} {{ lang.get("general:action.delete")
                         }}
                     </a>
                     {% endif %} {% endif %}

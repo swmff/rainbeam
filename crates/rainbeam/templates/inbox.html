@@ -2,13 +2,13 @@
 %} {% block nav_left %}
 <a class="button" href="/" title="Timeline">
     {{ icon "house" }}
-    <span class="desktop">{{ lang.get("general:links.home") }}</span>
-    <span class="mobile">{{ lang.get("general:links.home") }}</span>
+    <span class="desktop">{{ lang.get("general:link.timeline") }}</span>
+    <span class="mobile">{{ lang.get("general:link.home") }}</span>
 </a>
 
 <a class="button active" href="/inbox" title="My inbox">
     {{ icon "inbox" }}
-    <span>{{ lang.get("general:links.inbox") }}</span>
+    <span>{{ lang.get("general:link.inbox") }}</span>
 </a>
 {% endblock %} {% block nav_right %}
 <a class="button" href="/inbox/notifications" title="My notifications">
@@ -130,21 +130,21 @@
                                 class="red"
                             >
                                 {{ icon "trash" }} {{
-                                lang.get("general:actions.delete") }}
+                                lang.get("general:action.delete") }}
                             </a>
 
                             <a
                                 href="javascript:trigger('questions:ipblock', ['{{ question.id }}'])"
                             >
                                 {{ icon "shield" }} {{
-                                lang.get("general:actions.ip_block") }}
+                                lang.get("general:action.ip_block") }}
                             </a>
 
                             <a
                                 href="javascript:trigger('reports:bootstrap', ['questions', '{{ question.id }}'])"
                             >
                                 {{ icon "flag" }} {{
-                                lang.get("general:actions.report") }}
+                                lang.get("general:action.report") }}
                             </a>
                         </div>
                     </div>

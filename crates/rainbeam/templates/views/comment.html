@@ -4,14 +4,14 @@ block head %}
 {% endblock %} {% block nav_left %} {% if profile.is_some() %}
 <a class="button" href="/" title="Timeline">
     {{ icon "house" }}
-    <span class="desktop">{{ lang.get("general:links.home") }}</span>
-    <span class="mobile">{{ lang.get("general:links.home") }}</span>
+    <span class="desktop">{{ lang.get("general:link.timeline") }}</span>
+    <span class="mobile">{{ lang.get("general:link.home") }}</span>
 </a>
 
 <a class="button" href="/inbox" title="My inbox">
     {{ icon "inbox" }}
     <span class="flex items-center gap-2">
-        <span>{{ lang.get("general:links.inbox") }}</span>
+        <span>{{ lang.get("general:link.inbox") }}</span>
         {% if unread != 0 %}
         <span class="notification tr">{{ unread }}</span>
         {% endif %}
@@ -77,7 +77,7 @@ block head %}
 
         <!-- reactions -->
         <hr />
-        <h5 id="reactions">Reactions</h5>
+        <h5 id="reactions">{{ lang.get("views:text.reactions") }}</h5>
         <div id="reactions" class="flex gap-2 flex-wrap w-full">
             {% for reaction in reactions %}
             <a href="/@{{ reaction.user.username }}">
@@ -95,7 +95,7 @@ block head %}
 
         <!-- replies -->
         <hr />
-        <h5 id="replies">Replies</h5>
+        <h5 id="replies">{{ lang.get("views:text.replies") }}</h5>
         <div class="card-nest w-full" id="comment_field">
             <div class="card flex flex-col gap-1">Add a reply</div>
 
@@ -143,7 +143,7 @@ block head %}
                                 />
 
                                 <label for="anonymous" class="normal">
-                                    {{ lang.get("general:actions.hide_your_name") }}
+                                    {{ lang.get("general:action.hide_your_name") }}
                                 </label>
                             </div>
 
@@ -180,11 +180,11 @@ block head %}
         <!-- pagination buttons -->
         <div class="flex justify-between gap-2 w-full">
             {% if page > 0 %}
-            <a class="button secondary" href="?page={{ page - 1 }}">Previous</a>
+            <a class="button secondary" href="?page={{ page - 1 }}">{{ lang.get("general:link.previous") }}</a>
             {% else %}
             <div></div>
             {% endif %} {% if replies.len() != 0 %}
-            <a class="button secondary" href="?page={{ page + 1 }}">Next</a>
+            <a class="button secondary" href="?page={{ page + 1 }}">{{ lang.get("general:link.next") }}</a>
             {% endif %}
         </div>
     </main>

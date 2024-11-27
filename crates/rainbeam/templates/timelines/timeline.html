@@ -4,14 +4,14 @@ block head %}
 {% endblock %} {% block nav_left %}
 <a class="button active" href="/" title="Timeline">
     {{ icon "house" }}
-    <span class="desktop">{{ lang.get("general:links.home") }}</span>
-    <span class="mobile">{{ lang.get("general:links.home") }}</span>
+    <span class="desktop">{{ lang.get("general:link.timeline") }}</span>
+    <span class="mobile">{{ lang.get("general:link.home") }}</span>
 </a>
 
 <a class="button" href="/inbox" title="My inbox">
     {{ icon "inbox" }}
     <span class="flex items-center gap-2">
-        <span>{{ lang.get("general:links.inbox") }}</span>
+        <span>{{ lang.get("general:link.inbox") }}</span>
         {% if unread != 0 %}
         <span class="notification tr">{{ unread }}</span>
         {% endif %}
@@ -27,9 +27,15 @@ block head %}
 <article>
     <main class="flex flex-col gap-2">
         <div class="pillmenu convertible">
-            <a href="/" class="active"><span>Timeline</span></a>
-            <a href="/inbox/posts"><span>Posts</span></a>
-            <a href="/inbox/global"><span>Global</span></a>
+            <a href="/" class="active"
+                ><span>{{ lang.get("timelines:link.timeline }}</span></a
+            >
+            <a href="/inbox/posts"
+                ><span>{{ lang.get("timelines:link.posts }}</span></a
+            >
+            <a href="/inbox/global"
+                ><span>{{ lang.get("timelines:link.global }}</span></a
+            >
         </div>
 
         {% if responses.len() == 0 %}
@@ -60,7 +66,7 @@ block head %}
             <div class="flex justify-between">
                 <div></div>
                 <a href="/search?driver=0" class="button secondary bold">
-                    {{ icon "search" }} {{ lang.get("general:links.search") }}
+                    {{ icon "search" }} {{ lang.get("general:link.search") }}
                 </a>
             </div>
         </div>

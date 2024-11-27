@@ -1,28 +1,28 @@
 {% extends "./social_base.html" %} {% block pillmenu %}
 <a href="/@{{ other.username }}/followers">
     <span
-        >{{ lang.get("profile:links.followers") }}
+        >{{ lang.get("profile:link.followers") }}
         <b class="notification">{{ followers_count }}</b></span
     >
 </a>
 
 <a href="/@{{ other.username }}/following">
     <span
-        >{{ lang.get("profile:links.following") }}
+        >{{ lang.get("profile:link.following") }}
         <b class="notification">{{ following_count }}</b></span
     >
 </a>
 
 <a href="/@{{ other.username }}/friends" class="active">
     <span
-        >{{ lang.get("general:links.friends") }}
+        >{{ lang.get("general:link.friends") }}
         <b class="notification">{{ friends_count }}</b></span
     >
 </a>
 
 {% if is_self | is_helper %}
 <a href="/@{{ other.username }}/friends/requests"
-    ><span>{{ lang.get("general:links.requests") }}</span></a
+    ><span>{{ lang.get("general:link.requests") }}</span></a
 >
 {% endif %} {% endblock %} {% block panel %}
 <!-- friends -->
@@ -42,11 +42,15 @@
     {% if friends_count != 0 %}
     <div class="flex justify-between gap-2 w-full">
         {% if page > 0 %}
-        <a class="button secondary" href="?page={{ page - 1 }}">Previous</a>
+        <a class="button secondary" href="?page={{ page - 1 }}"
+            >{{ lang.get("general:link.previous") }}</a
+        >
         {% else %}
         <div></div>
         {% endif %} {% if friends.len() != 0 %}
-        <a class="button secondary" href="?page={{ page + 1 }}">Next</a>
+        <a class="button secondary" href="?page={{ page + 1 }}"
+            >{{ lang.get("general:link.next") }}</a
+        >
         {% endif %}
     </div>
     {% endif %}

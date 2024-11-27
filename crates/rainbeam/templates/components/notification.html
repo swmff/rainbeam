@@ -19,15 +19,14 @@
                 onclick="trigger('notifications:onopen', ['{{ notif.id }}'])"
                 do="notification"
             >
-                {{ icon "external-link" }} {{ lang.get("general:links.delete")
-                }}
+                {{ icon "external-link" }} {{ lang.get("general:link.open") }}
             </a>
             {% endif %} {% if show_mark_as_read %}
             <button
                 class="button secondary bold"
                 onclick="trigger('notifications:delete', ['{{ notif.id }}'])"
             >
-                {{ icon "bell-minus" }} {{ lang.get("general:actions.delete") }}
+                {{ icon "bell-minus" }} {{ lang.get("general:action.delete") }}
             </button>
             {% endif %}
         </div>

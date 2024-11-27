@@ -31,7 +31,9 @@
     <!-- pagination buttons -->
     {% if page != 0 %}
     <div class="flex justify-center items-center gap-4 w-full">
-        <a class="button primary" href="?page=0">View full feed</a>
+        <a class="button primary" href="?page=0"
+            >{{ lang.get("general:text.view_full_feed") }}</a
+        >
     </div>
     {% endif %}
 

@@ -23,7 +23,9 @@ block head %}
             onsubmit="trigger('reports:file', [event])"
         >
             <div class="flex flex-col gap-1">
-                <label for="content">Reason</label>
+                <label for="content"
+                    >{{ lang.get("report.html:label.reason") }}</label
+                >
 
                 <textarea
                     name="content"
@@ -33,22 +35,11 @@ block head %}
                 ></textarea>
 
                 <p class="fade">
-                    Please describe your reason for reporting this asset above.
+                    {{ lang.get("report.html:text.please_describe") }}
                 </p>
 
-                <p class="fade">
-                    Reports support Markdown formatting. Please include images
-                    if they will enforce your report. If you would like to
-                    receive a reply, please be sure to include a contact
-                    location in your report (such as an email address).
-                </p>
-
-                <p class="fade">
-                    Please try to cite the site rule or possible law that the
-                    asset you are reporting breaks. Citing rules will help us
-                    get to your report faster, and reports without them may be
-                    discarded.
-                </p>
+                <p class="fade">{{ lang.get("report.html:text.details1") }}</p>
+                <p class="fade">{{ lang.get("report.html:text.details2") }}</p>
             </div>
 
             <div
@@ -58,9 +49,12 @@ block head %}
 
             <hr />
             <div class="flex gap-2">
-                <button class="primary bold">Report</button>
+                <button class="primary bold">
+                    {{ lang.get("general:action.report") }}
+                </button>
+
                 <button class="bold" type="button" onclick="window.close()">
-                    Cancel
+                    {{ lang.get("general:dialog.cancel") }}
                 </button>
             </div>
         </form>

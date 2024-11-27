@@ -1,8 +1,8 @@
 {% extends "base.html" %} {% block sidenav %}
-<a class="active" href="/settings">Account</a>
-<a href="/settings/sessions">Sessions</a>
-<a href="/settings/profile">Profile</a>
-<a href="/settings/privacy">Privacy</a>
+<a class="active" href="/settings">{{ lang.get("settings:link.account") }}</a>
+<a href="/settings/sessions">{{ lang.get("settings:link.sessions") }}</a>
+<a href="/settings/profile">{{ lang.get("settings:link.profile") }}</a>
+<a href="/settings/privacy">{{ lang.get("settings:link.privacy") }}</a>
 {% endblock %} {% block panel %}
 
 <div class="flex flex-col gap-4">
@@ -16,10 +16,16 @@
             id="sparkler:website_theme"
             onchange="update_theme(event.target.options[event.target.selectedIndex].value)"
         >
-            <option value="light" id="light">Light</option>
+            <option value="light" id="light">
+                {{ lang.get("settings:text.light") }}
+            </option>
             <option value="dark" id="dark">Dark</option>
-            <option value="dark midnight" id="dark midnight">Midnight</option>
-            <option value="legacy" id="legacy">Legacy light</option>
+            <option value="dark midnight" id="dark midnight">
+                {{ lang.get("settings:text.midnight") }}
+            </option>
+            <option value="legacy" id="legacy">
+                Legacy {{ lang.get("settings:text.light") }}
+            </option>
             <option value="dark legacy" id="dark legacy">Legacy dark</option>
         </select>
 
@@ -38,8 +44,13 @@
             id="sparkler:allow_profile_themes"
             onchange="update_theme_preference(event.target.options[event.target.selectedIndex].value)"
         >
-            <option value="yes" id="yes">Yes</option>
-            <option value="no" id="no">No</option>
+            <option value="yes" id="yes">
+                {{ lang.get("general:dialog.yes") }}
+            </option>
+
+            <option value="no" id="no">
+                {{ lang.get("general:dialog.no") }}
+            </option>
         </select>
 
         <p class="fade">
@@ -236,7 +247,9 @@
                 placeholder="username"
             />
 
-            <button type="button" onclick="block_dialog()">{{ lang.get("general:form.submit") }}</button>
+            <button type="button" onclick="block_dialog()">
+                {{ lang.get("general:form.submit") }}
+            </button>
         </div>
 
         <p class="fade">
@@ -427,12 +440,15 @@
 
         <hr />
         <div class="flex gap-2">
-            <button class="primary bold" onclick="block()">Confirm</button>
+            <button class="primary bold" onclick="block()">
+                {{ lang.get("general:dialog.confirm") }}
+            </button>
+
             <button
                 class="bold"
                 onclick="document.getElementById('block_dialog').close(); window.close()"
             >
-                Cancel
+                {{ lang.get("general:dialog.cancel") }}
             </button>
         </div>
     </div>
@@ -508,14 +524,15 @@
                 class="primary bold"
                 onclick="globalThis.save_settings().then(() => window.close())"
             >
-                Confirm
+                {{ lang.get("general:dialog.confirm") }}
             </button>
+
             <button
                 class="bold"
                 onclick="document.getElementById('set_note_dialog').close(); window.close()"
                 type="button"
             >
-                Cancel
+                {{ lang.get("general:dialog.cancel") }}
             </button>
         </div>
     </form>
@@ -540,14 +557,14 @@
                 class="primary bold"
                 onclick="globalThis.save_settings().then(() => window.close())"
             >
-                Confirm
+                {{ lang.get("general:dialog.confirm") }}
             </button>
             <button
                 class="bold"
                 onclick="document.getElementById('set_signature_dialog').close(); window.close()"
                 type="button"
             >
-                Cancel
+                {{ lang.get("general:dialog.cancel") }}
             </button>
         </div>
     </div>

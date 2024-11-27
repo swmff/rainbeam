@@ -4,14 +4,14 @@ block head %}
 {% endblock %} {% block nav_left %} {% if profile.is_some() %}
 <a class="button" href="/" title="Timeline">
     {{ icon "house" }}
-    <span class="desktop">{{ lang.get("general:links.home") }}</span>
-    <span class="mobile">{{ lang.get("general:links.home") }}</span>
+    <span class="desktop">{{ lang.get("general:link.timeline") }}</span>
+    <span class="mobile">{{ lang.get("general:link.home") }}</span>
 </a>
 
 <a class="button" href="/inbox" title="My inbox">
     {{ icon "inbox" }}
     <span class="flex items-center gap-2">
-        <span>{{ lang.get("general:links.inbox") }}</span>
+        <span>{{ lang.get("general:link.inbox") }}</span>
         {% if unread != 0 %}
         <span class="notification tr">{{ unread }}</span>
         {% endif %}
@@ -19,8 +19,7 @@ block head %}
 </a>
 {% endif %} {% endblock %} {% block nav_right %} {% if profile.is_some() %}
 <a class="button" href="/inbox/notifications" title="My notifications">
-    {{ icon "bell" }}
-    {% if notifs != 0 %}
+    {{ icon "bell" }} {% if notifs != 0 %}
     <span class="notification tr">{{ notifs }}</span>
     {% endif %}
 </a>
@@ -88,8 +87,7 @@ block head %}
                                 onclick="trigger('questions:delete', ['{{ question.id }}'])"
                                 class="red"
                             >
-                                {{ icon "trash" }}
-                                Delete
+                                {{ icon "trash" }} Delete
                             </a>
                             {% else if is_helper == true %}
                             <b class="title">Mod</b>
@@ -98,8 +96,7 @@ block head %}
                                 onclick="trigger('questions:delete', ['{{ question.id }}'])"
                                 class="red"
                             >
-                                {{ icon "trash" }}
-                                Delete
+                                {{ icon "trash" }} Delete
                             </a>
                             {% endif %}
                         </div>
@@ -148,7 +145,9 @@ block head %}
                             id="content:counter"
                             class="notification item"
                         ></span>
-                        <button class="primary bold">{{ lang.get("general:form.submit") }}</button>
+                        <button class="primary bold">
+                            {{ lang.get("general:form.submit") }}
+                        </button>
                     </div>
                 </form>
             </div>
@@ -164,7 +163,7 @@ block head %}
         {% endif %}
 
         <hr />
-        <h5 id="reactions">Reactions</h5>
+        <h5 id="reactions">{{ lang.get("views:text.reactions") }}</h5>
         <div id="reactions" class="flex gap-2 flex-wrap w-full">
             {% for reaction in reactions %}
             <a href="/@{{ reaction.user.username }}">
@@ -181,7 +180,7 @@ block head %}
         </div>
 
         <hr />
-        <h5 id="comments">Responses</h5>
+        <h5 id="responses">{{ lang.get("views:text.responses") }}</h5>
         <div id="feed" class="flex flex-col gap-2">
             <!-- prettier-ignore -->
             {% for response in responses %}

@@ -266,10 +266,16 @@
             onchange="update_kv('sparkler:profile_theme', event.target.options[event.target.selectedIndex].value)"
         >
             <option value="">User-choice</option>
-            <option value="light" id="light">Light</option>
+            <option value="light" id="light">
+                {{ lang.get("settings:text.light") }}
+            </option>
             <option value="dark" id="dark">Dark</option>
-            <option value="dark midnight" id="dark midnight">Midnight</option>
-            <option value="legacy" id="legacy">Legacy light</option>
+            <option value="dark midnight" id="dark midnight">
+                {{ lang.get("settings:text.midnight") }}
+            </option>
+            <option value="legacy" id="legacy">
+                Legacy {{ lang.get("settings:text.light") }}
+            </option>
             <option value="dark legacy" id="dark legacy">Legacy dark</option>
         </select>
 

@@ -224,12 +224,12 @@
 
                             <a href="/@{{ profile.username }}">
                                 {{ icon "circle-user-round" }} {{
-                                lang.get("general:links.show_profile") }}
+                                lang.get("general:link.show_profile") }}
                             </a>
 
                             <a href="/settings">
                                 {{ icon "settings" }} {{
-                                lang.get("general:links.settings") }}
+                                lang.get("general:link.settings") }}
                             </a>
 
                             <b class="title"
@@ -260,7 +260,7 @@
                                 title="My friends"
                             >
                                 {{ icon "book-user" }} {{
-                                lang.get("general:links.friends") }}
+                                lang.get("general:link.friends") }}
                             </a>
 
                             <a
@@ -268,7 +268,7 @@
                                 title="My friend requests"
                             >
                                 {{ icon "user-round-plus" }} {{
-                                lang.get("general:links.requests") }}
+                                lang.get("general:link.requests") }}
                             </a>
                             {% else %}
                             <b class="title"
@@ -277,12 +277,12 @@
 
                             <a href="/login" data-turbo="false">
                                 {{ icon "log-in" }} {{
-                                lang.get("general:links.login") }}
+                                lang.get("general:link.login") }}
                             </a>
 
                             <a href="/sign_up" data-turbo="false">
                                 {{ icon "user-round-plus" }} {{
-                                lang.get("base.html:links.sign_up") }}
+                                lang.get("base.html:link.sign_up") }}
                             </a>
                             {% endif %}
 
@@ -291,18 +291,18 @@
 
                             <a href="/site/about">
                                 {{ icon "info" }} {{
-                                lang.get("base.html:links.about") }}
+                                lang.get("base.html:link.about") }}
                             </a>
 
                             <a href="https://swmff.github.io/rainbeam/">
                                 {{ icon "book" }} {{
-                                lang.get("base.html:links.reference") }}
+                                lang.get("base.html:link.reference") }}
                             </a>
 
                             <!-- ... -->
                             <a href="/search">
                                 {{ icon "search" }} {{
-                                lang.get("general:links.search") }}
+                                lang.get("general:link.search") }}
                             </a>
 
                             {% if profile.is_some() %}
@@ -313,7 +313,7 @@
                                 class="red"
                             >
                                 {{ icon "log-out" }} {{
-                                lang.get("base.html:links.sign_out") }}
+                                lang.get("base.html:link.sign_out") }}
                             </a>
                             {% endif %}
                         </div>
@@ -389,12 +389,12 @@
 
                         <a href="/intents/post" class="button camo">
                             {{ icon "square-pen" }} {{
-                            lang.get("general:links.post") }}
+                            lang.get("general:link.post") }}
                         </a>
 
                         <a href="/search" class="button camo">
                             {{ icon "search" }} {{
-                            lang.get("general:links.search") }}
+                            lang.get("general:link.search") }}
                         </a>
                     </section>
 
@@ -418,7 +418,7 @@
 
                         <a href="/site/about" class="button camo">
                             {{ icon "info" }} {{
-                            lang.get("base.html:links.about") }}
+                            lang.get("base.html:link.about") }}
                         </a>
 
                         <a
@@ -426,7 +426,7 @@
                             class="button camo"
                         >
                             {{ icon "code" }} {{
-                            lang.get("base.html:links.source_code") }}
+                            lang.get("base.html:link.source_code") }}
                         </a>
                     </section>
                 </div>

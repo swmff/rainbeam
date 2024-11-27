@@ -172,7 +172,7 @@ impl Database {
                 .get("net.rainbeam.langs:en-US")
                 .unwrap()
                 .to_owned();
-        } else if id == "aa-BB" {
+        } else if (id == "aa-BB") | (id == "net.rainbeam.langs.testing:aa-BB") {
             // debug
             return langbeam::LangFile::default();
         }
