@@ -250,6 +250,15 @@ impl ProfileMetadata {
         self.kv.get(key).unwrap() == "true"
     }
 
+    /// Get a value from `kv`, returns an empty string if it doesn't exist
+    pub fn soft_get(&self, key: &str) -> String {
+        if !self.exists(key) {
+            return String::new();
+        }
+
+        self.kv.get(key).unwrap().to_owned()
+    }
+
     /// Check `kv` lengths
     ///
     /// # Returns
