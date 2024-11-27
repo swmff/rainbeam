@@ -5,12 +5,13 @@ use axum::{
     body::Body,
     extract::{Query, State},
     routing::get,
-    Router,
+    Json, Router,
 };
 use serde::{Deserialize, Serialize};
 
 pub fn routes(database: Database) -> Router {
     Router::new()
+        .route("/lang", get(langfile_request))
         .route("/ext/image", get(external_image_request))
         // ...
         .with_state(database.clone())
@@ -101,4 +102,18 @@ pub async fn external_image_request(
             )),
         ),
     }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct LangFileQuery {
+    #[serde(default)]
+    pub id: String,
+}
+
+/// Get a langfile
+pub async fn langfile_request(
+    Query(props): Query<LangFileQuery>,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    Json(database.lang(&props.id))
 }

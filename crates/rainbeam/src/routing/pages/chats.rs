@@ -19,6 +19,7 @@ use crate::ToHtml;
 #[template(path = "chats/homepage.html")]
 struct HomepageTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -63,6 +64,11 @@ pub async fn chats_homepage_request(
     Html(
         HomepageTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: Some(auth_user.clone()),
             unread,
             notifs,
@@ -77,6 +83,7 @@ pub async fn chats_homepage_request(
 #[template(path = "chats/chat.html")]
 struct ChatTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -151,6 +158,11 @@ pub async fn chat_request(
     Html(
         ChatTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: Some(auth_user.clone()),
             unread,
             notifs,
@@ -177,6 +189,7 @@ pub async fn chat_request(
 #[derive(Template)]
 #[template(path = "chats/components/message.html")]
 struct MessageTemplate {
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     message: (Message, Profile),
     is_helper: bool,
@@ -212,6 +225,11 @@ pub async fn render_message_request(
 
     Html(
         MessageTemplate {
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: Some(auth_user.clone()),
             is_own: auth_user.id == message.1.id,
             message,

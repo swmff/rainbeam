@@ -164,7 +164,7 @@
         <label for="new_name">New username</label>
         <input type="text" name="new_name" id="new_name" minlength="2" />
 
-        <button>Submit</button>
+        <button>{{ lang.get("general:form.submit") }}</button>
     </form>
 
     <form class="flex flex-col gap-1" id="change_password">
@@ -181,7 +181,7 @@
             minlength="6"
         />
 
-        <button>Submit</button>
+        <button>{{ lang.get("general:form.submit") }}</button>
     </form>
 
     <form class="flex flex-col gap-1" id="delete_account">
@@ -199,7 +199,7 @@
             id="current_password_delete"
         />
 
-        <button>Submit</button>
+        <button>{{ lang.get("general:form.submit") }}</button>
     </form>
 
     <h4 class="title">Blocks</h4>
@@ -236,7 +236,7 @@
                 placeholder="username"
             />
 
-            <button type="button" onclick="block_dialog()">Submit</button>
+            <button type="button" onclick="block_dialog()">{{ lang.get("general:form.submit") }}</button>
         </div>
 
         <p class="fade">

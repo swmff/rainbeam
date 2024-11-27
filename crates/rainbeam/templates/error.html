@@ -6,12 +6,14 @@ endblock %} {% block head %}
     <main class="flex flex-col gap-2">
         <div class="card flex flex-col gap-2 w-full">
             <p>
-                <b>Uh oh.</b>
+                <b>{{ lang.get("error.html:links.uh_oh") }}</b>
                 <span id="error">{{ message }}</span>
             </p>
 
             <hr />
-            <a href="/" class="button bold">Go Home</a>
+            <a href="/" class="button bold"
+                >{{ lang.get("error.html:links.ho_home") }}</a
+            >
         </div>
     </main>
 </article>

@@ -29,8 +29,7 @@
     <div class="flex justify-between">
         <div></div>
         <button title="Search" class="primary bold">
-            {{ icon "search" }}
-            Search
+            {{ icon "search" }} {{ lang.get("general:links.search") }}
         </button>
     </div>
 </form>
@@ -57,7 +56,7 @@
     <h3>#{{ tag }}</h3>
     {% endif %} {% if responses.len() == 0 %}
     <div class="markdown-alert-warning">
-        <span>No results matching this query yet!</span>
+        <span>{{ lang.get("general:text.no_results") }}</span>
     </div>
     {% endif %}
 

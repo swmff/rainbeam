@@ -1,0 +1,97 @@
+{
+    "name": "net.rainbeam.langs:en-US",
+    "version": "1.0.0",
+    "data": {
+        "general:links.show_profile": "Show profile",
+        "general:links.settings": "Settings",
+        "general:links.friends": "Friends",
+        "general:links.requests": "Requests",
+        "general:links.login": "Login",
+        "general:links.search": "Search",
+        "general:links.more": "More",
+        "general:links.chat": "Chat",
+        "general:links.actions": "Actions",
+        "general:links.open": "Open",
+        "general:links.post": "Post",
+
+        "general:links.timeline": "Timeline",
+        "general:links.home": "Home",
+        "general:links.inbox": "Inbox",
+
+        "general:service.chats": "Chats",
+        "general:service.mail": "Mail",
+        "general:service.circles": "Circles",
+
+        "general:title.services": "Services",
+        "general:title.social": "Social",
+        "general:title.account": "Account",
+
+        "general:dialog.continue": "Continue",
+        "general:dialog.cancel": "Cancel",
+        "general:dialog.okay": "Ok",
+        "general:dialog.yes": "Yes",
+        "general:dialog.no": "No",
+
+        "general:form.submit": "Submit",
+
+        "general:actions.delete": "Delete",
+        "general:actions.ip_block": "IP Block",
+        "general:actions.report": "Report",
+        "general:actions.copy_id": "Copy ID",
+        "general:actions.copy_link": "Copy link",
+        "general:actions.block": "Block",
+        "general:actions.hide_your_name": "Hide your name",
+        "general:actions.edit": "Edit",
+        "general:actions.clear": "Clear",
+
+        "general:text.no_results": "No results matching this query yet!",
+
+        "base.html:text.account_banned": "Your account has been banned and is currently unusable. Please do not register another account while banned.",
+        "base.html:links.about": "About",
+        "base.html:links.reference": "Reference",
+        "base.html:links.source_code": "Source code",
+        "base.html:links.sign_up": "Sign up",
+        "base.html:links.sign_out": "Sign out",
+
+        "homepage.html:links.create_account": "Create account",
+
+        "error.html:links.uh_oh": "Uh oh.",
+        "error.html:links.go_home": "Go home",
+
+        "profile:links.followers": "Followers",
+        "profile:links.following": "Following",
+
+        "profile:base.html:text.private": "This profile only allows friends to view their feeds.",
+        "profile:base.html:text.no_anonymous_questions": "This profile does not allow anonymous questions.",
+        "profile:base.html:text.no_questions": "This profile is not currently accepting questions.",
+        "profile:base.html:text.embed_title": "Embed your profile using the embed link below:",
+        "profile:base.html:text.embed_help": "Use this link in an HTML IFrame to embed your profile.",
+        "profile:base.html:text.warning_title": "This profile has published this warning:",
+        "profile:base.html:text.warning_continue": "Press \"Continue\" if you wish to view this profile.",
+
+        "profile:base.html:links.follower": "follower",
+        "profile:base.html:links.following": "following",
+        "profile:base.html:links.friend": "friend",
+        "profile:base.html:links.edit_profile": "Edit profile",
+        "profile:base.html:links.account_settings": "Account settings",
+        "profile:base.html:links.embed_profile": "Embed profile",
+        "profile:base.html:links.manage_blocks": "Manage blocks",
+        "profile:base.html:actions.follow": "Follow",
+        "profile:base.html:actions.unfollow": "Unfollow",
+        "profile:base.html:actions.friend": "Add friend",
+        "profile:base.html:actions.unfriend": "Unfriend",
+        "profile:base.html:actions.ask": "Ask",
+        "profile:base.html:title.this_user": "This user",
+
+        "response_title.html:actions.boost": "Boost",
+        "response_title.html:actions.quote": "Quote",
+        "response_title.html:actions.ask_about_this": "Ask about this",
+        "response_title.html:actions.copy_to_clipboard": "Copy to clipboard",
+        "response_title.html:actions.pin": "Pin",
+        "response_title.html:actions.unpin": "Unpin",
+        "response_title.html:actions.edit_tags": "Edit tags",
+        "response_title.html:actions.return_to_inbox": "Return to inbox",
+        "response_title.html:actions.delete_all": "Delete all",
+        "response_title.html:links.open_question": "Open qustion"
+    }
+}

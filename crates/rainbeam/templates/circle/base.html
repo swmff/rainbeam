@@ -30,14 +30,14 @@
 {% endif %} {% endblock %} {% block nav_left %} {% if profile.is_some() %}
 <a class="button" href="/" title="Timeline">
     {{ icon "house" }}
-    <span class="desktop">Timeline</span>
-    <span class="mobile">Home</span>
+    <span class="desktop">{{ lang.get("general:links.home") }}</span>
+    <span class="mobile">{{ lang.get("general:links.home") }}</span>
 </a>
 
 <a class="button" href="/inbox" title="My inbox">
     {{ icon "inbox" }}
     <span class="flex items-center gap-2">
-        <span>Inbox</span>
+        <span>{{ lang.get("general:links.inbox") }}</span>
         {% if unread != 0 %}
         <span class="notification tr">{{ unread }}</span>
         {% endif %}
@@ -180,7 +180,8 @@
                                 <a
                                     href="javascript:trigger('reports:bootstrap', ['circles', '{{ circle.id }}'])"
                                 >
-                                    {{ icon "flag" }} Report
+                                    {{ icon "flag" }} {{
+                                    lang.get("general:actions.report") }}
                                 </a>
 
                                 {% if is_owner %}
@@ -188,7 +189,8 @@
                                     href="javascript:delete_circle_as_owner()"
                                     class="red"
                                 >
-                                    {{ icon "trash" }} Delete
+                                    {{ icon "trash" }} {{
+                                    lang.get("general:actions.delete") }}
                                 </a>
 
                                 <script>
@@ -264,7 +266,8 @@
                                     href="javascript:delete_circle()"
                                     class="red"
                                 >
-                                    {{ icon "trash" }} Delete
+                                    {{ icon "trash" }} {{
+                                    lang.get("general:actions.delete") }}
                                 </a>
 
                                 <script>
@@ -320,7 +323,8 @@
                                 <a
                                     href="javascript:trigger('reports:bootstrap', ['circles', '{{ circle.id }}'])"
                                 >
-                                    {{ icon "flag" }} Report
+                                    {{ icon "flag" }} {{
+                                    lang.get("general:actions.report") }}
                                 </a>
                             </div>
                         </div>

@@ -18,6 +18,7 @@ use crate::ToHtml;
 #[template(path = "search/homepage.html")]
 struct HomepageTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -64,6 +65,11 @@ pub async fn search_homepage_request(
     Html(
         HomepageTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: auth_user.clone(),
             unread,
             notifs,
@@ -79,6 +85,7 @@ pub async fn search_homepage_request(
 #[template(path = "search/responses.html")]
 struct ResponsesTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -200,6 +207,11 @@ pub async fn search_responses_request(
     Html(
         ResponsesTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: auth_user.clone(),
             unread,
             notifs,
@@ -221,6 +233,7 @@ pub async fn search_responses_request(
 #[template(path = "search/responses.html")]
 struct PostsTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -332,6 +345,11 @@ pub async fn search_posts_request(
     Html(
         PostsTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: auth_user.clone(),
             unread,
             notifs,
@@ -353,6 +371,7 @@ pub async fn search_posts_request(
 #[template(path = "search/questions.html")]
 struct QuestionsTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -425,6 +444,11 @@ pub async fn search_questions_request(
     Html(
         QuestionsTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: auth_user.clone(),
             unread,
             notifs,
@@ -444,6 +468,7 @@ pub async fn search_questions_request(
 #[template(path = "search/users.html")]
 struct UsersTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -503,6 +528,11 @@ pub async fn search_users_request(
     Html(
         UsersTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: auth_user.clone(),
             unread,
             notifs,

@@ -19,6 +19,7 @@ use super::{clean_metadata, PaginatedQuery, ProfileQuery, MarkdownTemplate};
 #[template(path = "profile/profile.html")]
 struct ProfileTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -95,6 +96,11 @@ pub async fn profile_request(
         return Html(
             MarkdownTemplate {
                 config: database.server_options.clone(),
+                lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                    c.value_trimmed()
+                } else {
+                    ""
+                }),
                 profile: auth_user,
                 title: "System".to_string(),
                 text: "Reserved system profile.
@@ -324,6 +330,11 @@ All mail sent to this account can be viewed by any staff member with access.
     Html(
         ProfileTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: auth_user.clone(),
             unread,
             notifs,
@@ -395,6 +406,7 @@ All mail sent to this account can be viewed by any staff member with access.
 #[template(path = "partials/profile/feed.html")]
 struct PartialProfileTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     other: Profile,
     responses: Vec<FullResponse>,
@@ -557,6 +569,11 @@ pub async fn partial_profile_request(
     Html(
         PartialProfileTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: auth_user.clone(),
             other: other.clone(),
             responses,
@@ -574,6 +591,7 @@ pub async fn partial_profile_request(
 #[template(path = "profile/embed.html")]
 struct ProfileEmbedTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     other: Profile,
     responses: Vec<FullResponse>,
@@ -751,6 +769,11 @@ pub async fn profile_embed_request(
     Html(
         ProfileEmbedTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: auth_user.clone(),
             other: other.clone(),
             responses,
@@ -771,6 +794,7 @@ pub async fn profile_embed_request(
 #[template(path = "profile/social/followers.html")]
 struct FollowersTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -885,6 +909,11 @@ pub async fn followers_request(
     Html(
         FollowersTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: auth_user.clone(),
             unread,
             notifs,
@@ -914,6 +943,7 @@ pub async fn followers_request(
 #[template(path = "profile/social/following.html")]
 struct FollowingTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -1028,6 +1058,11 @@ pub async fn following_request(
     Html(
         FollowingTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: auth_user.clone(),
             unread,
             notifs,
@@ -1057,6 +1092,7 @@ pub async fn following_request(
 #[template(path = "profile/social/friends.html")]
 struct FriendsTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -1171,6 +1207,11 @@ pub async fn friends_request(
     Html(
         FriendsTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: auth_user.clone(),
             unread,
             notifs,
@@ -1204,6 +1245,7 @@ pub async fn friends_request(
 #[template(path = "profile/social/requests.html")]
 struct FriendRequestsTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -1277,6 +1319,11 @@ pub async fn friend_requests_request(
     Html(
         FriendRequestsTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: Some(auth_user),
             unread,
             notifs,
@@ -1310,6 +1357,7 @@ pub async fn friend_requests_request(
 #[template(path = "profile/questions.html")]
 struct ProfileQuestionsTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -1475,6 +1523,11 @@ pub async fn questions_request(
     Html(
         ProfileQuestionsTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: auth_user.clone(),
             unread,
             notifs,
@@ -1543,6 +1596,7 @@ pub async fn questions_request(
 #[template(path = "profile/mod.html")]
 struct ModTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -1672,6 +1726,11 @@ pub async fn mod_request(
     Html(
         ModTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: Some(auth_user.clone()),
             unread,
             notifs,
@@ -1742,6 +1801,7 @@ pub async fn mod_request(
 #[template(path = "profile/inbox.html")]
 struct ProfileQuestionsInboxTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -1868,6 +1928,11 @@ pub async fn inbox_request(
     Html(
         ProfileQuestionsInboxTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: Some(auth_user.clone()),
             unread,
             notifs,
@@ -1934,6 +1999,7 @@ pub async fn inbox_request(
 #[template(path = "profile/outbox.html")]
 struct ProfileQuestionsOutboxTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -2062,6 +2128,11 @@ pub async fn outbox_request(
     Html(
         ProfileQuestionsOutboxTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: Some(auth_user.clone()),
             unread,
             notifs,
@@ -2129,6 +2200,7 @@ pub async fn outbox_request(
 #[template(path = "profile/social/friend_request.html")]
 struct FriendRequestTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -2188,6 +2260,11 @@ pub async fn friend_request(
     Html(
         FriendRequestTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: Some(auth_user.clone()),
             unread,
             notifs,
@@ -2201,6 +2278,7 @@ pub async fn friend_request(
 #[derive(Template)]
 #[template(path = "fun/styled_profile_card.html")]
 struct CardTemplate {
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     user: Profile,
 }
@@ -2225,6 +2303,11 @@ pub async fn render_card_request(
 
     Html(
         CardTemplate {
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: auth_user,
             user: match database.get_profile(username).await {
                 Ok(ua) => ua,

@@ -2,13 +2,13 @@
 %} {% block nav_left %}
 <a class="button" href="/" title="Timeline">
     {{ icon "house" }}
-    <span class="desktop">Timeline</span>
-    <span class="mobile">Home</span>
+    <span class="desktop">{{ lang.get("general:links.home") }}</span>
+    <span class="mobile">{{ lang.get("general:links.home") }}</span>
 </a>
 
 <a class="button active" href="/inbox" title="My inbox">
     {{ icon "inbox" }}
-    <span>Inbox</span>
+    <span>{{ lang.get("general:links.inbox") }}</span>
 </a>
 {% endblock %} {% block nav_right %}
 <a class="button" href="/inbox/notifications" title="My notifications">
@@ -27,7 +27,7 @@
         </div>
         {% endif %} {% if unread.len() == 0 %}
         <div class="markdown-alert-warning">
-            <span>No results matching this query yet!</span>
+            <span>{{ lang.get("general:text.no_results") }}</span>
         </div>
         {% endif %} {% for question in unread %}
         <div class="card-nest w-full shadow" id="question:{{ question.id }}">
@@ -129,19 +129,22 @@
                                 onclick="trigger('questions:delete', ['{{ question.id }}'])"
                                 class="red"
                             >
-                                {{ icon "trash" }} Delete
+                                {{ icon "trash" }} {{
+                                lang.get("general:actions.delete") }}
                             </a>
 
                             <a
                                 href="javascript:trigger('questions:ipblock', ['{{ question.id }}'])"
                             >
-                                {{ icon "shield" }} IP block
+                                {{ icon "shield" }} {{
+                                lang.get("general:actions.ip_block") }}
                             </a>
 
                             <a
                                 href="javascript:trigger('reports:bootstrap', ['questions', '{{ question.id }}'])"
                             >
-                                {{ icon "flag" }} Report
+                                {{ icon "flag" }} {{
+                                lang.get("general:actions.report") }}
                             </a>
                         </div>
                     </div>
@@ -189,7 +192,9 @@
                             id="content-{{ question.id }}:counter"
                             class="notification item"
                         ></span>
-                        <button class="primary bold">Submit</button>
+                        <button class="primary bold">
+                            {{ lang.get("general:form.submit") }}
+                        </button>
                     </div>
                 </form>
             </div>

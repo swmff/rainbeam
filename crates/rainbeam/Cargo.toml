@@ -1,6 +1,6 @@
 [package]
 name = "rainbeam"
-version = "1.17.1"
+version = "1.18.0"
 edition = "2021"
 authors = ["trisuaso", "swmff"]
 description = "Ask, share, socialize!"
@@ -37,6 +37,7 @@ tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 shared = { path = "../shared" }
 databeam = { path = "../databeam", default-features = false }
 authbeam = { path = "../authbeam", default-features = false }
+langbeam = { path = "../langbeam" }
 rainbeam-core = { path = "../rainbeam-core", default-features = false }
 citrus = { path = "../citrus" }
 mimalloc = "0.1.43"

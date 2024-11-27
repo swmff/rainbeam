@@ -108,13 +108,15 @@
                             p.success ? window.location.href = `/response/${p.payload.id}` : ''
                         })"
                 >
-                    {{ icon "rocket" }} Boost
+                    {{ icon "rocket" }} {{
+                    lang.get("response_title.html:actions.boost") }}
                 </button>
 
                 <a
                     href="/intents/post?reply={{ response.id }}&title=Quote%20post"
                 >
-                    {{ icon "quote" }} Quote
+                    {{ icon "quote" }} {{
+                    lang.get("response_title.html:actions.quote") }}
                 </a>
                 {% endif %}
 
@@ -123,7 +125,8 @@
                     data-turbo="false"
                     target="_blank"
                 >
-                    {{ icon "reply" }} Ask about this
+                    {{ icon "reply" }} {{
+                    lang.get("response_title.html:actions.ask_about_this") }}
                 </a>
             </div>
         </div>
@@ -148,7 +151,8 @@
                 <button
                     onclick="trigger('app:copy_text', [trigger('responses:gen_share', [event.target, '{{ short_id }}', 280])])"
                 >
-                    {{ icon "copy" }} Copy to Clipboard
+                    {{ icon "copy" }} {{
+                    lang.get("response_title.html:actions.copy_to_clipboard") }}
                 </button>
 
                 <button
@@ -166,7 +170,8 @@
                 <button
                     onclick="trigger('app:copy_text', ['{{ config.host }}/+r/{{ short_id }}'])"
                 >
-                    {{ icon "copy" }} Copy link
+                    {{ icon "copy" }} {{ lang.get("general:actions.copy_link")
+                    }}
                 </button>
 
                 {% if let Some(profile) = profile %} {% if profile.id ==
@@ -177,21 +182,24 @@
                 <!-- pin -->
                 {% if show_pin_button == true %} {% if is_pinned == false %}
                 <a href="#" onclick="pin_response('{{ response.id }}')">
-                    {{ icon "pin" }} Pin
+                    {{ icon "pin" }} {{
+                    lang.get("response_title.html:actions.pin") }}
                 </a>
                 {% else %}
                 <a href="#" onclick="unpin_response('{{ response.id }}')">
-                    {{ icon "pin-off" }} Unpin
+                    {{ icon "pin-off" }} {{
+                    lang.get("response_title.html:actions.unpin") }}
                 </a>
                 {% endif %} {% endif %}
 
                 <!-- ... -->
                 <a href="/response/{{ response.id }}?edit" target="_blank">
-                    {{ icon "pen" }} Edit
+                    {{ icon "pen" }} {{ lang.get("general:actions.edit") }}
                 </a>
 
                 <a href="/response/{{ response.id }}?edit_tags" target="_blank">
-                    {{ icon "tag" }} Edit tags
+                    {{ icon "tag" }} {{
+                    lang.get("response_title.html:actions.edit_tags") }}
                 </a>
 
                 {% if response.context.is_post == false %}
@@ -200,7 +208,8 @@
                     onclick="trigger('responses:unsend', ['{{ response.id }}'])"
                     class="red"
                 >
-                    {{ icon "undo-2" }} Return to Inbox
+                    {{ icon "undo-2" }} {{
+                    lang.get("response_title.html:actions.return_to_inbox") }}
                 </a>
                 {% endif %}
 
@@ -209,7 +218,8 @@
                     onclick="trigger('responses:delete', ['{{ response.id }}'])"
                     class="red"
                 >
-                    {{ icon "trash" }} Delete all
+                    {{ icon "trash" }} {{
+                    lang.get("response_title.html:actions.delete_all") }}
                 </a>
                 {% endif %} {% endif %}
                 <!-- actions for everybody -->
@@ -218,16 +228,18 @@
                     href="#"
                     onclick="trigger('app:copy_text', ['{{ config.citrus_id}}:{{ response.id }}'])"
                 >
-                    {{ icon "copy" }} Copy ID
+                    {{ icon "copy" }} {{ lang.get("general:actions.copy_id") }}
                 </a>
 
                 <a href="/response/{{ response.id }}">
-                    {{ icon "external-link" }} Open
+                    {{ icon "external-link" }} {{ lang.get("general:links.open")
+                    }}
                 </a>
 
                 {% if is_helper %}
                 <a href="/question/{{ question.id }}">
-                    {{ icon "external-link" }} Open question
+                    {{ icon "external-link" }} {{
+                    lang.get("response_title.html:links.open_question") }}
                 </a>
                 {% endif %}
 
@@ -238,7 +250,7 @@
                 <a
                     href="javascript:trigger('reports:bootstrap', ['responses', '{{ response.id }}'])"
                 >
-                    {{ icon "flag" }} Report
+                    {{ icon "flag" }} {{ lang.get("general:actions.report") }}
                 </a>
                 {% endif %} {% if is_helper %}
                 <b class="title">Mod</b>
@@ -247,7 +259,7 @@
                     onclick="trigger('responses:delete', ['{{ response.id }}'])"
                     class="red"
                 >
-                    {{ icon "trash" }} Delete
+                    {{ icon "trash" }} {{ lang.get("general:actions.delete") }}
                 </a>
                 {% endif %} {% endif %}
             </div>

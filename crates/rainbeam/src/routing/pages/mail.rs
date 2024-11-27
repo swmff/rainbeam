@@ -20,6 +20,7 @@ use crate::ToHtml;
 #[template(path = "mail/inbox.html")]
 struct InboxTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -97,6 +98,11 @@ pub async fn inbox_request(
     Html(
         InboxTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: Some(auth_user.clone()),
             unread,
             notifs,
@@ -119,6 +125,7 @@ pub async fn inbox_request(
 #[template(path = "mail/outbox.html")]
 struct OutboxTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -196,6 +203,11 @@ pub async fn outbox_request(
     Html(
         OutboxTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: Some(auth_user.clone()),
             unread,
             notifs,
@@ -218,6 +230,7 @@ pub async fn outbox_request(
 #[template(path = "mail/compose.html")]
 struct ComposeTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -256,6 +269,11 @@ pub async fn compose_request(
     Html(
         ComposeTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: Some(auth_user.clone()),
             unread,
             notifs,
@@ -269,6 +287,7 @@ pub async fn compose_request(
 #[template(path = "mail/view.html")]
 struct ViewTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -334,6 +353,11 @@ pub async fn view_request(
     Html(
         ViewTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: Some(auth_user.clone()),
             unread,
             notifs,

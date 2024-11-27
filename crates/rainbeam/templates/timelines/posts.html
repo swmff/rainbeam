@@ -4,15 +4,15 @@ block head %}
 {% endblock %} {% block nav_left %}
 <a class="button active" href="/" title="Timeline">
     {{ icon "house" }}
-    <span class="desktop">Timeline</span>
-    <span class="mobile">Home</span>
+    <span class="desktop">{{ lang.get("general:links.home") }}</span>
+    <span class="mobile">{{ lang.get("general:links.home") }}</span>
 </a>
 
 {% if profile.is_some() %}
 <a class="button" href="/inbox" title="My inbox">
     {{ icon "inbox" }}
     <span class="flex items-center gap-2">
-        <span>Inbox</span>
+        <span>{{ lang.get("general:links.inbox") }}</span>
         {% if unread != 0 %}
         <span class="notification tr">{{ unread }}</span>
         {% endif %}
@@ -20,8 +20,7 @@ block head %}
 </a>
 {% endif %} {% endblock %} {% block nav_right %} {% if profile.is_some() %}
 <a class="button" href="/inbox/notifications" title="My notifications">
-    {{ icon "bell" }}
-    {% if notifs != 0 %}
+    {{ icon "bell" }} {% if notifs != 0 %}
     <span class="notification tr">{{ notifs }}</span>
     {% endif %}
 </a>
@@ -56,7 +55,7 @@ block head %}
         </div>
         {% endif %} {% if responses.len() == 0 %}
         <div class="markdown-alert-warning">
-            <span>No results matching this query yet!</span>
+            <span>{{ lang.get("general:text.no_results") }}</span>
         </div>
         {% endif %}
 
@@ -65,14 +64,12 @@ block head %}
             <div class="flex gap-2">
                 {% if profile.is_some() %}
                 <a href="/intents/post" class="button primary bold">
-                    {{ icon "plus" }}
-                    New
+                    {{ icon "plus" }} New
                 </a>
                 {% endif %}
 
                 <a href="/search?driver=2" class="button secondary bold">
-                    {{ icon "search" }}
-                    Search
+                    {{ icon "search" }} {{ lang.get("general:links.search") }}
                 </a>
             </div>
         </div>

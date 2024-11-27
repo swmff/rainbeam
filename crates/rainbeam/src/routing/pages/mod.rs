@@ -9,6 +9,7 @@ use axum::{extract::State, response::Html, Router};
 use axum_extra::extract::CookieJar;
 
 use ammonia::Builder;
+use langbeam::LangFile;
 use serde::{Deserialize, Serialize};
 use authbeam::model::{IpBan, Notification, Permission, Profile, ProfileMetadata, RelationshipStatus};
 
@@ -53,6 +54,7 @@ pub fn escape_username(name: &String) -> String {
 #[template(path = "error.html")]
 pub struct ErrorTemplate {
     pub config: Config,
+    pub lang: LangFile,
     pub profile: Option<Profile>,
     pub message: String,
 }
@@ -68,6 +70,7 @@ pub async fn not_found(State(database): State<Database>) -> impl IntoResponse {
 #[template(path = "homepage.html")]
 struct HomepageTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
 }
 
@@ -75,6 +78,7 @@ struct HomepageTemplate {
 #[template(path = "timelines/timeline.html")]
 struct TimelineTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -200,7 +204,12 @@ pub async fn homepage_request(
         // ...
         return Html(
             TimelineTemplate {
-                config: database.server_options,
+                config: database.server_options.clone(),
+                lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                    c.value_trimmed()
+                } else {
+                    ""
+                }),
                 profile: auth_user.clone(),
                 unread,
                 notifs,
@@ -225,7 +234,12 @@ pub async fn homepage_request(
     // homepage
     Html(
         HomepageTemplate {
-            config: database.server_options,
+            config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: auth_user,
         }
         .render()
@@ -237,6 +251,7 @@ pub async fn homepage_request(
 #[template(path = "partials/timelines/timeline.html")]
 struct PartialTimelineTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     responses: Vec<FullResponse>,
     relationships: HashMap<String, RelationshipStatus>,
@@ -316,7 +331,12 @@ pub async fn partial_timeline_request(
     // ...
     return Html(
         PartialTimelineTemplate {
-            config: database.server_options,
+            config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: Some(auth_user.clone()),
             responses,
             relationships,
@@ -332,6 +352,7 @@ pub async fn partial_timeline_request(
 #[template(path = "general_markdown_text.html")]
 pub struct MarkdownTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     title: String,
     text: String,
@@ -354,6 +375,11 @@ pub async fn about_request(jar: CookieJar, State(database): State<Database>) -> 
     Html(
         MarkdownTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: auth_user,
             title: "About".to_string(),
             text: shared::fs::read(format!(
@@ -380,6 +406,7 @@ pub async fn carp_request() -> impl IntoResponse {
 #[template(path = "auth/login.html")]
 struct LoginTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
 }
 
@@ -399,7 +426,12 @@ pub async fn login_request(jar: CookieJar, State(database): State<Database>) -> 
 
     Html(
         LoginTemplate {
-            config: database.server_options,
+            config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: auth_user,
         }
         .render()
@@ -411,6 +443,7 @@ pub async fn login_request(jar: CookieJar, State(database): State<Database>) -> 
 #[template(path = "auth/sign_up.html")]
 struct SignUpTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
 }
 
@@ -438,7 +471,12 @@ pub async fn sign_up_request(
 
     Html(
         SignUpTemplate {
-            config: database.server_options,
+            config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: auth_user,
         }
         .render()
@@ -569,6 +607,7 @@ pub fn clean_metadata_short_raw(metadata: &ProfileMetadata) -> ProfileMetadata {
 #[template(path = "views/question.html")]
 struct QuestionTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -648,6 +687,11 @@ pub async fn question_request(
     Html(
         QuestionTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             already_responded: if let Some(ref ua) = auth_user {
                 database
                     .get_response_by_question_and_author(id.clone(), ua.id.clone())
@@ -674,6 +718,7 @@ pub async fn question_request(
 #[template(path = "timelines/posts.html")]
 struct PublicPostsTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -808,6 +853,11 @@ pub async fn public_posts_timeline_request(
     Html(
         PublicPostsTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: auth_user,
             unread,
             notifs,
@@ -826,6 +876,7 @@ pub async fn public_posts_timeline_request(
 #[template(path = "partials/timelines/posts.html")]
 struct PartialPostsTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     responses: Vec<FullResponse>,
     relationships: HashMap<String, RelationshipStatus>,
@@ -930,7 +981,12 @@ pub async fn partial_posts_request(
     // ...
     return Html(
         PartialPostsTemplate {
-            config: database.server_options,
+            config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: auth_user,
             responses,
             relationships,
@@ -946,6 +1002,7 @@ pub async fn partial_posts_request(
 #[template(path = "timelines/posts_following.html")]
 struct FollowingPostsTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -1038,6 +1095,11 @@ pub async fn following_posts_timeline_request(
     Html(
         FollowingPostsTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: Some(auth_user),
             unread,
             notifs,
@@ -1056,6 +1118,7 @@ pub async fn following_posts_timeline_request(
 #[template(path = "views/response.html")]
 struct ResponseTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -1160,6 +1223,11 @@ pub async fn response_request(
     Html(
         ResponseTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: auth_user.clone(),
             unread,
             notifs,
@@ -1184,6 +1252,7 @@ pub async fn response_request(
 #[template(path = "components/response.html")]
 struct PartialResponseTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     response: FullResponse,
     anonymous_username: Option<String>,
@@ -1243,6 +1312,11 @@ pub async fn partial_response_request(
     Html(
         PartialResponseTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: auth_user,
             do_not_render_question: response.1.context.is_post,
             is_pinned: false,
@@ -1264,6 +1338,7 @@ pub async fn partial_response_request(
 #[template(path = "views/comment.html")]
 struct CommentTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -1356,6 +1431,11 @@ pub async fn comment_request(
     Html(
         CommentTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: auth_user,
             unread,
             notifs,
@@ -1380,6 +1460,7 @@ pub async fn comment_request(
 #[template(path = "inbox.html")]
 struct InboxTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: Vec<Question>,
     notifs: usize,
@@ -1426,7 +1507,12 @@ pub async fn inbox_request(jar: CookieJar, State(database): State<Database>) -> 
 
     Html(
         InboxTemplate {
-            config: database.server_options,
+            config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             unread,
             notifs,
             anonymous_username: Some(
@@ -1457,6 +1543,7 @@ pub async fn inbox_request(jar: CookieJar, State(database): State<Database>) -> 
 #[template(path = "timelines/global_question_timeline.html")]
 struct GlobalTimelineTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -1541,7 +1628,12 @@ pub async fn global_timeline_request(
     // ...
     Html(
         GlobalTimelineTemplate {
-            config: database.server_options,
+            config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: Some(auth_user),
             unread,
             notifs,
@@ -1559,6 +1651,7 @@ pub async fn global_timeline_request(
 #[template(path = "timelines/public_global_question_timeline.html")]
 struct PublicGlobalTimelineTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -1661,7 +1754,12 @@ pub async fn public_global_timeline_request(
 
     Html(
         PublicGlobalTimelineTemplate {
-            config: database.server_options,
+            config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: Some(auth_user),
             unread,
             notifs,
@@ -1679,6 +1777,7 @@ pub async fn public_global_timeline_request(
 #[template(path = "intents/post.html")]
 struct ComposeTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
 }
 
@@ -1701,7 +1800,12 @@ pub async fn compose_request(
 
     Html(
         ComposeTemplate {
-            config: database.server_options,
+            config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: Some(auth_user),
         }
         .render()
@@ -1713,6 +1817,7 @@ pub async fn compose_request(
 #[template(path = "notifications.html")]
 struct NotificationsTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: Vec<Notification>,
@@ -1775,6 +1880,11 @@ pub async fn notifications_request(
     Html(
         NotificationsTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: Some(auth_user),
             unread,
             notifs,
@@ -1790,6 +1900,7 @@ pub async fn notifications_request(
 #[template(path = "reports.html")]
 struct ReportsTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     reports: Vec<Notification>,
@@ -1844,6 +1955,11 @@ pub async fn reports_request(
     Html(
         ReportsTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: Some(auth_user),
             unread,
             reports,
@@ -1857,6 +1973,7 @@ pub async fn reports_request(
 #[template(path = "audit.html")]
 struct AuditTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     logs: Vec<Notification>,
@@ -1913,6 +2030,11 @@ pub async fn audit_log_request(
     Html(
         AuditTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: Some(auth_user),
             unread,
             logs,
@@ -1927,6 +2049,7 @@ pub async fn audit_log_request(
 #[template(path = "ipbans.html")]
 struct IpbansTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     bans: Vec<IpBan>,
@@ -1974,6 +2097,11 @@ pub async fn ipbans_request(jar: CookieJar, State(database): State<Database>) ->
     Html(
         IpbansTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: Some(auth_user),
             unread,
             bans,
@@ -1987,6 +2115,7 @@ pub async fn ipbans_request(jar: CookieJar, State(database): State<Database>) ->
 #[template(path = "intents/report.html")]
 struct ReportTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
 }
 
@@ -2007,6 +2136,11 @@ pub async fn report_request(jar: CookieJar, State(database): State<Database>) ->
     Html(
         ReportTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: auth_user,
         }
         .render()

@@ -1,18 +1,29 @@
 {% extends "./social_base.html" %} {% block pillmenu %}
 <a href="/@{{ other.username }}/followers">
-    <span>Followers <b class="notification">{{ followers_count }}</b></span>
+    <span
+        >{{ lang.get("profile:links.followers") }}
+        <b class="notification">{{ followers_count }}</b></span
+    >
 </a>
 
 <a href="/@{{ other.username }}/following">
-    <span>Following <b class="notification">{{ following_count }}</b></span>
+    <span
+        >{{ lang.get("profile:links.following") }}
+        <b class="notification">{{ following_count }}</b></span
+    >
 </a>
 
 <a href="/@{{ other.username }}/friends" class="active">
-    <span>Friends <b class="notification">{{ friends_count }}</b></span>
+    <span
+        >{{ lang.get("general:links.friends") }}
+        <b class="notification">{{ friends_count }}</b></span
+    >
 </a>
 
 {% if is_self | is_helper %}
-<a href="/@{{ other.username }}/friends/requests"><span>Requests</span></a>
+<a href="/@{{ other.username }}/friends/requests"
+    ><span>{{ lang.get("general:links.requests") }}</span></a
+>
 {% endif %} {% endblock %} {% block panel %}
 <!-- friends -->
 <div id="friends" class="flex flex-col items-center gap-4">

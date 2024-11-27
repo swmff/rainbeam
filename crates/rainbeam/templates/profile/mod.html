@@ -57,7 +57,7 @@
 {{ badges }}</textarea
             >
 
-            <button>Submit</button>
+            <button>{{ lang.get("general:form.submit") }}</button>
         </form>
     </div>
 
@@ -113,7 +113,7 @@
             minlength="6"
         />
 
-        <button>Submit</button>
+        <button>{{ lang.get("general:form.submit") }}</button>
     </form>
 
     <script>
@@ -363,7 +363,9 @@
 
                 <div class="flex justify-between w-full gap-1">
                     <div></div>
-                    <button class="primary bold">Submit</button>
+                    <button class="primary bold">
+                        {{ lang.get("general:form.submit") }}
+                    </button>
                 </div>
             </form>
         </div>

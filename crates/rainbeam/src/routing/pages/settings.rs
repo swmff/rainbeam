@@ -16,6 +16,7 @@ use super::clean_metadata_short;
 #[template(path = "settings/account.html")]
 struct AccountSettingsTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -70,7 +71,12 @@ pub async fn account_settings(
 
     Html(
         AccountSettingsTemplate {
-            config: database.server_options,
+            config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             metadata: clean_metadata_short(&auth_user.metadata),
             profile: Some(auth_user),
             unread,
@@ -87,6 +93,7 @@ pub async fn account_settings(
 #[template(path = "settings/profile.html")]
 struct ProfileSettingsTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -125,7 +132,12 @@ pub async fn profile_settings(
 
     Html(
         ProfileSettingsTemplate {
-            config: database.server_options,
+            config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             metadata: clean_metadata_short(&auth_user.metadata),
             profile: Some(auth_user),
             unread,
@@ -140,6 +152,7 @@ pub async fn profile_settings(
 #[template(path = "settings/privacy.html")]
 struct PrivacySettingsTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -178,7 +191,12 @@ pub async fn privacy_settings(
 
     Html(
         PrivacySettingsTemplate {
-            config: database.server_options,
+            config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             metadata: clean_metadata_short(&auth_user.metadata),
             profile: Some(auth_user),
             unread,
@@ -193,6 +211,7 @@ pub async fn privacy_settings(
 #[template(path = "settings/sessions.html")]
 struct SessionsSettingsTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -234,7 +253,12 @@ pub async fn sessions_settings(
 
     Html(
         SessionsSettingsTemplate {
-            config: database.server_options,
+            config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             metadata: clean_metadata_short(&auth_user.metadata),
             tokens: serde_json::to_string(&auth_user.tokens).unwrap(),
             tokens_src: auth_user.tokens.clone(),

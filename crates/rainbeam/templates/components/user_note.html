@@ -51,26 +51,30 @@ note = user.metadata.soft_get("sparkler:status_note") %} {% if !note.is_empty()
                             target="_blank"
                             class="red"
                         >
-                            {{ icon "trash" }} Clear
+                            {{ icon "trash" }} {{
+                            lang.get("general:actions.clear") }}
                         </a>
                         {% endif %}
 
                         <b class="title">Actions</b>
 
                         <a href="/@{{ user.username }}">
-                            {{ icon "circle-user-round" }} Show profile
+                            {{ icon "circle-user-round" }} {{
+                            lang.get("general:links.show_profile") }}
                         </a>
 
                         <button
                             onclick="trigger('chats:create', ['{{ user.id }}'])"
                         >
-                            {{ icon "message-circle-plus" }} Chat
+                            {{ icon "message-circle-plus" }} {{
+                            lang.get("general:links.chat") }}
                         </button>
 
                         <a
                             href="javascript:trigger('reports:bootstrap', ['profiles', '{{ user.username }}'])"
                         >
-                            {{ icon "flag" }} Report
+                            {{ icon "flag" }} {{
+                            lang.get("general:actions.report") }}
                         </a>
                     </div>
                 </div>

@@ -60,6 +60,7 @@ pub fn clean_metadata_raw(metadata: &CircleMetadata) -> CircleMetadata {
 #[template(path = "circle/homepage.html")]
 struct CirclesTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -99,6 +100,11 @@ pub async fn circles_request(
     Html(
         CirclesTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: Some(auth_user.clone()),
             unread,
             notifs,
@@ -116,6 +122,7 @@ pub async fn circles_request(
 #[template(path = "circle/new.html")]
 struct NewCircleTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -154,6 +161,11 @@ pub async fn new_circle_request(
     Html(
         NewCircleTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: Some(auth_user.clone()),
             unread,
             notifs,
@@ -171,6 +183,7 @@ pub async fn profile_redirect_request(Path(name): Path<String>) -> impl IntoResp
 #[template(path = "circle/profile.html")]
 struct ProfileTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -338,6 +351,11 @@ pub async fn profile_request(
     Html(
         ProfileTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: auth_user.clone(),
             unread,
             notifs,
@@ -365,6 +383,7 @@ pub async fn profile_request(
 #[template(path = "partials/profile/feed.html")]
 struct PartialProfileTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     other: Circle,
     responses: Vec<FullResponse>,
@@ -464,6 +483,11 @@ pub async fn partial_profile_request(
     Html(
         PartialProfileTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: auth_user.clone(),
             other: circle.clone(),
             responses,
@@ -481,6 +505,7 @@ pub async fn partial_profile_request(
 #[template(path = "circle/memberlist.html")]
 struct MemberlistTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -566,6 +591,11 @@ pub async fn memberlist_request(
     Html(
         MemberlistTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: auth_user.clone(),
             unread,
             notifs,
@@ -589,6 +619,7 @@ pub async fn memberlist_request(
 #[template(path = "circle/accept_invite.html")]
 struct AcceptInviteTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -672,6 +703,11 @@ pub async fn accept_invite_request(
     Html(
         AcceptInviteTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: auth_user.clone(),
             unread,
             notifs,
@@ -694,6 +730,7 @@ pub async fn accept_invite_request(
 #[template(path = "circle/settings/general.html")]
 struct GeneralSettingsTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -761,6 +798,11 @@ pub async fn general_settings_request(
     Html(
         GeneralSettingsTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: auth_user.clone(),
             unread,
             notifs,
@@ -776,6 +818,7 @@ pub async fn general_settings_request(
 #[template(path = "circle/settings/privacy.html")]
 struct PrivacySettingsTemplate {
     config: Config,
+    lang: langbeam::LangFile,
     profile: Option<Profile>,
     unread: usize,
     notifs: usize,
@@ -843,6 +886,11 @@ pub async fn privacy_settings_request(
     Html(
         PrivacySettingsTemplate {
             config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             profile: auth_user.clone(),
             unread,
             notifs,

@@ -13,6 +13,7 @@ use citrus::model::CitrusID;
 
 use authbeam::model::{NotificationCreate, Permission, Profile, RelationshipStatus};
 use databeam::{utility, query as sqlquery};
+use langbeam::LangFile;
 
 pub type Result<T> = std::result::Result<T, DatabaseError>;
 
@@ -22,6 +23,7 @@ pub struct Database {
     pub base: databeam::StarterDatabase,
     pub auth: authbeam::Database,
     pub server_options: Config,
+    langs: HashMap<String, LangFile>,
 }
 
 impl Database {
@@ -34,6 +36,7 @@ impl Database {
             base: databeam::StarterDatabase::new(opts).await,
             auth,
             server_options,
+            langs: langbeam::read_langs(),
         }
     }
 
@@ -154,6 +157,30 @@ impl Database {
         )
         .execute(c)
         .await;
+    }
+
+    // language
+
+    /// Get a [`LangFile`] given its ID
+    ///
+    /// Returns `net.rainbeam.langs:en-US` if the given file cannot be found.
+    pub fn lang(&self, id: &str) -> LangFile {
+        if id.is_empty() {
+            // don't even try to fetch an empty id
+            return self
+                .langs
+                .get("net.rainbeam.langs:en-US")
+                .unwrap()
+                .to_owned();
+        } else if id == "aa-BB" {
+            // debug
+            return langbeam::LangFile::default();
+        }
+
+        self.langs
+            .get(id)
+            .unwrap_or(self.langs.get("net.rainbeam.langs:en-US").unwrap())
+            .to_owned()
     }
 
     // anonymous tag

@@ -31,14 +31,14 @@ config.name }}{% endblock %} {% block head %}
 {% endif %} {% endblock %} {% block nav_left %} {% if profile.is_some() %}
 <a class="button" href="/" title="Timeline">
     {{ icon "house" }}
-    <span class="desktop">Timeline</span>
-    <span class="mobile">Home</span>
+    <span class="desktop">{{ lang.get("general:links.home") }}</span>
+    <span class="mobile">{{ lang.get("general:links.home") }}</span>
 </a>
 
 <a class="button" href="/inbox" title="My inbox">
     {{ icon "inbox" }}
     <span class="flex items-center gap-2">
-        <span>Inbox</span>
+        <span>{{ lang.get("general:links.inbox") }}</span>
         {% if unread != 0 %}
         <span class="notification tr">{{ unread }}</span>
         {% endif %}
@@ -46,8 +46,7 @@ config.name }}{% endblock %} {% block head %}
 </a>
 {% endif %} {% endblock %} {% block nav_right %} {% if profile.is_some() %}
 <a class="button" href="/inbox/notifications" title="My notifications">
-    {{ icon "bell" }}
-    {% if notifs != 0 %}
+    {{ icon "bell" }} {% if notifs != 0 %}
     <span class="notification tr">{{ notifs }}</span>
     {% endif %}
 </a>
@@ -55,8 +54,7 @@ config.name }}{% endblock %} {% block head %}
 <article>
     <main class="flex flex-col gap-4">
         <a class="button bold" href="/@{{ other.username }}">
-            {{ icon "arrow-left" }}
-            Back to profile
+            {{ icon "arrow-left" }} Back to profile
         </a>
 
         <!-- menu -->

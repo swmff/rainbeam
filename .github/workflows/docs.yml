@@ -29,8 +29,6 @@ jobs:
             - name: Configure pages
               id: pages
               uses: actions/configure-pages@v4
-            - name: Install just
-              run: cargo install just
             - name: Init builder
               run: cd crates/builder && npm i && cd ../../
             - name: Run builder
