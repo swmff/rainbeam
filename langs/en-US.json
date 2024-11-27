@@ -127,6 +127,49 @@
 
         "settings:text.light": "Light",
         "settings:text.dark": "Dark",
-        "settings:text.midnight": "Midnight"
+        "settings:text.midnight": "Midnight",
+
+        "settings:account.html:title.local_theming": "Local themeing",
+        "settings:account.html:label.website_theme": "Website theme",
+        "settings:account.html:label.allow_profile_themes": "Allow profile themes",
+
+        "settings:account.html:title.local_behaviour": "Local behavior",
+        "settings:account.html:label.clear_notifs": "Clear notifications on view",
+        "settings:account.html:label.always_anon": "Default to anonymous",
+
+        "settings:account.html:title.profile_controls": "Profile controls",
+        "settings:account.html:label.limited_friend_requests": "Only allow friend requests from people you follow",
+        "settings:account.html:label.private_profile": "Private profile",
+        "settings:account.html:label.limited_chats": "Only allow friends to add you to chats",
+        "settings:account.html:label.allow_drawings": "Allow drawings in your questions",
+
+        "settings:account.html:title.my_account": "My account",
+
+        "settings:account.html:label.change_username": "Change username",
+        "settings:account.html:label.current_password": "Current password",
+        "settings:account.html:label.new_username": "New username",
+
+        "settings:account.html:label.change_password": "Change password",
+        "settings:account.html:label.new_password": "New password",
+
+        "settings:account.html:label.delete_account": "Delete account",
+        "settings:account.html:text.delete_account_warning": "This cannot be undone, please be sure you want to do this!",
+
+        "settings:account.html:title.blocks": "Blocks",
+
+        "settings:account.html:label.users": "Users",
+        "settings:account.html:action.unblock": "Unblock",
+        "settings:account.html:label.block_somebody": "Block somebody",
+
+        "settings:account.html:label.ips": "IPs",
+        "settings:account.html:text.context": "Context",
+        "settings:account.html:text.blocked": "blocked",
+
+        "settings:account.html:text.confirm_block": "Are you sure you would like to block this user?",
+        "settings:account.html:text.status_note": "Your status note is shown to signed-in users when they view your profile.",
+        "settings:account.html:label.choose_emoji": "Choose emoji",
+        "settings:account.html:text.status_emoji": "Your status emoji is shown in place of the default thought balloon.",
+
+        "settings:account.html:text.signature": "Your signature is automatically appended to mail sent from your account."
     }
 }

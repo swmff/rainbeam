@@ -942,12 +942,7 @@ pub async fn update_password_request(
     // push update
     // TODO: try not to clone
     if let Err(e) = database
-        .update_profile_password(
-            id,
-            props.password,
-            props.new_password.clone(),
-            is_manager == false,
-        )
+        .update_profile_password(id, props.password, props.new_password.clone(), !is_manager)
         .await
     {
         return Json(DefaultReturn {

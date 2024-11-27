@@ -16,8 +16,7 @@
 {% if is_helper %}
 <a href="/@{{ other.username }}/mod" class="active">
     <span
-        >{{ text "profile:link.manage" }}
-        <b class="notification">Mod</b></span
+        >{{ text "profile:link.manage" }} <b class="notification">Mod</b></span
     >
 </a>
 {% endif %} {% endblock %} {% block panel %}
@@ -140,19 +139,16 @@
                         return;
                     }
 
-                    fetch(
-                        "/api/v0/auth/profile/{{ other.username }}/password",
-                        {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                            },
-                            body: JSON.stringify({
-                                password: "",
-                                new_password: e.target.new_password.value,
-                            }),
+                    fetch("/api/v0/auth/profile/{{ other.id }}/password", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
                         },
-                    )
+                        body: JSON.stringify({
+                            password: "",
+                            new_password: e.target.new_password.value,
+                        }),
+                    })
                         .then((res) => res.json())
                         .then((res) => {
                             trigger("app:shout", [

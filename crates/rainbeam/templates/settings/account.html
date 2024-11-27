@@ -6,9 +6,14 @@
 {% endblock %} {% block panel %}
 
 <div class="flex flex-col gap-4">
-    <h4 class="title">Local Theming</h4>
+    <h4 class="title">
+        {{ text "settings:account.html:title.local_theming" }}
+    </h4>
+
     <div class="flex flex-col gap-1">
-        <label for="sparkler:website_theme">Website theme</label>
+        <label for="sparkler:website_theme"
+            >{{ text "settings:account.html:label.website_theme" }}</label
+        >
 
         <select
             type="url"
@@ -36,7 +41,10 @@
     </div>
 
     <div class="flex flex-col gap-1">
-        <label for="sparkler:allow_profile_themes">Allow profile themes</label>
+        <label for="sparkler:allow_profile_themes"
+            >{{ text "settings:account.html:label.allow_profile_themes"
+            }}</label
+        >
 
         <select
             type="url"
@@ -48,9 +56,7 @@
                 {{ text "general:dialog.yes" }}
             </option>
 
-            <option value="no" id="no">
-                {{ text "general:dialog.no" }}
-            </option>
+            <option value="no" id="no">{{ text "general:dialog.no" }}</option>
         </select>
 
         <p class="fade">
@@ -59,7 +65,9 @@
         </p>
     </div>
 
-    <h4 class="title">Local Behaviour</h4>
+    <h4 class="title">
+        {{ text "settings:account.html:title.local_behaviour" }}
+    </h4>
     <div class="flex flex-col gap-1">
         <div class="checkbox_container">
             <input
@@ -70,7 +78,7 @@
             />
 
             <label for="sparkler:clear_notifs" class="normal">
-                Clear notifications on view
+                {{ text "settings:account.html:label.clear_notifs" }}
             </label>
         </div>
 
@@ -89,14 +97,16 @@
             />
 
             <label for="sparkler:always_anon" class="normal">
-                Default to anonymous
+                {{ text "settings:account.html:label.always_anon" }}
             </label>
         </div>
 
         <p class="fade subtext">"Hide your name" will be checked by default.</p>
     </div>
 
-    <h4 class="title">Profile Controls</h4>
+    <h4 class="title">
+        {{ text "settings:account.html:title.profile_controls" }}
+    </h4>
     <div class="flex flex-col gap-1">
         <div class="checkbox_container">
             <input
@@ -107,7 +117,7 @@
             />
 
             <label for="sparkler:limited_friend_requests" class="normal">
-                Only allow friend requests from people you follow
+                {{ text "settings:account.html:label.limited_friend_requests" }}
             </label>
         </div>
     </div>
@@ -122,7 +132,7 @@
             />
 
             <label for="sparkler:private_profile" class="normal">
-                Private profile
+                P{{ text "settings:account.html:label.private_profile" }}
             </label>
         </div>
 
@@ -141,7 +151,7 @@
             />
 
             <label for="sparkler:limited_chats" class="normal">
-                Only allow friends to add you to chats
+                {{ text "settings:account.html:label.limited_chats" }}
             </label>
         </div>
     </div>
@@ -156,16 +166,21 @@
             />
 
             <label for="sparkler:allow_drawings" class="normal">
-                Allow drawings in your questions
+                {{ text "settings:account.html:label.allow_drawings" }}
             </label>
         </div>
     </div>
 
-    <h4 class="title">My Account</h4>
+    <h4 class="title">{{ text "settings:account.html:title.my_account" }}</h4>
     <form class="flex flex-col gap-1" id="change_username">
-        <b class="heading">Change username</b>
+        <b class="heading"
+            >{{ text "settings:account.html:label.change_username" }}</b
+        >
 
-        <label for="current_password_username">Current password</label>
+        <label for="current_password_username"
+            >{{ text "settings:account.html:label.current_password" }}</label
+        >
+
         <input
             type="password"
             name="current_password_username"
@@ -179,12 +194,18 @@
     </form>
 
     <form class="flex flex-col gap-1" id="change_password">
-        <b class="heading">Change password</b>
+        <b class="heading"
+            >{{ text "settings:account.html:label.change_password" }}</b
+        >
 
-        <label for="current_password">Current password</label>
+        <label for="current_password"
+            >{{ text "settings:account.html:label.current_password" }}</label
+        >
         <input type="password" name="current_password" id="current_password" />
 
-        <label for="new_password">New password</label>
+        <label for="new_password"
+            >{{ text "settings:account.html:label.new_password" }}</label
+        >
         <input
             type="password"
             name="new_password"
@@ -196,14 +217,17 @@
     </form>
 
     <form class="flex flex-col gap-1" id="delete_account">
-        <b class="heading">Delete account</b>
+        <b class="heading"
+            >{{ text "settings:account.html:label.delete_account" }}</b
+        >
+
         <p class="fade subtext">
-            Note you
-            <b>cannot</b>
-            undo this! Please be sure this is what you want before you continue.
+            {{ text "settings:account.html:text.delete_account_warning" }}
         </p>
 
-        <label for="current_password_delete">Current password</label>
+        <label for="current_password_delete"
+            >{{ text "settings:account.html:label.current_password" }}</label
+        >
         <input
             type="password"
             name="current_password_delete"
@@ -213,9 +237,9 @@
         <button>{{ text "general:form.submit" }}</button>
     </form>
 
-    <h4 class="title">Blocks</h4>
+    <h4 class="title">{{ text "settings:account.html:title.blocks" }}</h4>
     <div class="flex flex-col gap-1" id="sparkler:blocks">
-        <b class="heading">Users</b>
+        <b class="heading">{{ text "settings:account.html:label.users" }}</b>
         <div class="card">
             <ul style="margin-bottom: 0">
                 {% for relationship in relationships %}
@@ -229,7 +253,7 @@
                             <a
                                 href="javascript:remove_relationship('{{ relationship.0.username }}')"
                             >
-                                Unblock
+                                {{ text "settings:account.html:actions.ips" }}
                             </a>
                         </span>
                     </div>
@@ -257,7 +281,7 @@
             and click "Submit" to add them to your block list.
         </p>
 
-        <b class="heading">IPs</b>
+        <b class="heading">{{ text "settings:account.html:label.ips" }}</b>
 
         <p class="fade subtext">
             Some context is provided to help you remember why you created these
@@ -276,7 +300,8 @@
                             class="gap-2 round"
                             onclick="document.getElementById('blockcontext:{{ block.id }}').showModal()"
                         >
-                            {{ icon "ellipsis" }} Context
+                            {{ icon "ellipsis" }} {{ text
+                            "settings:account.html:text.context" }}
                         </button>
 
                         <dialog id="blockcontext:{{ block.id }}">
@@ -284,7 +309,11 @@
                                 <div
                                     class="w-full flex justify-between items-center gap-2"
                                 >
-                                    <b>Block context</b>
+                                    <b
+                                        >{{ text
+                                        "settings:account.html:text.context"
+                                        }}</b
+                                    >
                                     <div class="flex gap-2">
                                         <button
                                             class="bold red camo icon-only"
@@ -303,7 +332,7 @@
                         </dialog>
 
                         <span class="item fade"
-                            >blocked
+                            >{{ text "settings:account.html:text.blocked" }}
                             <span class="date"
                                 >{{ block.timestamp }}</span
                             ></span
@@ -313,7 +342,8 @@
                             <a
                                 href="javascript:remove_ipblock('{{ block.id }}')"
                             >
-                                Unblock
+                                {{ text "settings:account.html:action.unblock"
+                                }}
                             </a>
                         </span>
                     </div>
@@ -436,7 +466,7 @@
 
 <dialog id="block_dialog">
     <div class="inner">
-        <p>Are you sure you would like to block this user?</p>
+        <p>{{ text "settings:account.html:text.confirm_block" }}</p>
 
         <hr />
         <div class="flex gap-2">
@@ -468,14 +498,12 @@
             placeholder="Tell your friends what you're up to!"
         ></textarea>
 
-        <p class="fade">
-            Your status note is shown on the homepage of your friends.
-        </p>
+        <p class="fade">{{ text "settings:account.html:text.status_note" }}</p>
 
         <details id="emoji_details">
             <summary class="flex gap-2 items-center">
                 <div id="sparkler:status_emoji"></div>
-                Choose emoji
+                {{ text "settings:account.html:label.choose_emoji" }}
             </summary>
 
             <div class="flex gap-2">
@@ -514,9 +542,7 @@
             }, 100);
         </script>
 
-        <p class="fade">
-            Your status emoji is shown in place of the default thought balloon.
-        </p>
+        <p class="fade">{{ text "settings:account.html:text.status_emoji" }}</p>
 
         <hr />
         <div class="flex gap-2">
@@ -541,15 +567,12 @@
 <dialog id="set_signature_dialog">
     <div class="inner">
         <textarea
-            name="sparkler:mail-signature"
+            name="sparkler:mail_signature"
             id="sparkler:mail_signature"
             onchange="update_kv('sparkler:mail_signature', event.target.value)"
         ></textarea>
 
-        <p class="fade">
-            Your signature is automatically appended to mail sent from your
-            account.
-        </p>
+        <p class="fade">{{ text "settings:account.html:text.signature" }}</p>
 
         <hr />
         <div class="flex gap-2">
@@ -642,7 +665,7 @@
             .getElementById("change_password")
             .addEventListener("submit", (e) => {
                 e.preventDefault();
-                fetch("/api/v0/auth/profile/{{ profile.username }}/password", {
+                fetch("/api/v0/auth/profile/{{ profile.id }}/password", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",

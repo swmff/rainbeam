@@ -15,8 +15,7 @@
 {% if is_helper %}
 <a href="/@{{ other.username }}/mod">
     <span
-        >{{ text "profile:link.manage" }}
-        <b class="notification">Mod</b></span
+        >{{ text "profile:link.manage" }} <b class="notification">Mod</b></span
     >
 </a>
 {% endif %} {% endblock %} {% block panel %}
@@ -29,12 +28,18 @@
 
     {% if is_powerful %}
     <a href="/@{{ other.username }}/questions/inbox">
-        <span>Inbox <b class="notification">Mod</b></span>
+        <span
+            >{{ text "general:link.inbox" }}
+            <b class="notification">Mod</b></span
+        >
     </a>
     {% endif %}
 
     <a href="/@{{ other.username }}/questions/outbox" class="active">
-        <span>Outbox <b class="notification">Private</b></span>
+        <span
+            >{{ text "profile:link.outbox" }}
+            <b class="notification">Private</b></span
+        >
     </a>
 </div>
 {% endif %}
