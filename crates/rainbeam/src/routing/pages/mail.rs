@@ -373,6 +373,7 @@ pub async fn view_request(
 #[template(path = "mail/components/mail.html")]
 struct PartialMailTemplate {
     profile: Option<Profile>,
+    lang: langbeam::LangFile,
     letter: Mail,
     author: Profile,
 }
@@ -427,6 +428,11 @@ pub async fn partial_mail_request(
     Html(
         PartialMailTemplate {
             profile: Some(auth_user),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
             letter,
             author,
         }

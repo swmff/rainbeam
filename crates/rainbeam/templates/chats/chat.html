@@ -69,32 +69,33 @@ endblock %} {% block nav_left %}
                 </button>
 
                 <div class="inner shadow-md" exclude="dropdown">
-                    <b class="title">Actions</b>
+                    <b class="title">{{ text "general:link.actions" }}</b>
                     <button
                         onclick="document.getElementById('name_dialog').showModal()"
                     >
-                        {{ icon "pen" }} Change name
+                        {{ icon "pen" }} {{ text
+                        "chats:chat.html:action.change_name" }}
                     </button>
 
                     <button
                         onclick="document.getElementById('add_friends_dialog').showModal()"
                     >
-                        {{ icon "user-plus" }} Add friend
+                        {{ icon "user-plus" }} {{ text
+                        "chats:chat.html:action.add_friend" }}
                     </button>
 
                     <button
                         class="red"
                         onclick="trigger('chats:leave', ['{{ chat.id }}'])"
                     >
-                        {{ icon "x" }} Leave
+                        {{ icon "x" }} {{ text "chats:chat.html:action.leave" }}
                     </button>
 
                     <b class="title">Tools</b>
                     <a
                         href="javascript:trigger('reports:bootstrap', ['chats', '{{ chat.id }}'])"
                     >
-                        {{ icon "flag" }} {{ text "general:action.report"
-                        }}
+                        {{ icon "flag" }} {{ text "general:action.report" }}
                     </a>
                 </div>
             </div>
@@ -138,7 +139,7 @@ endblock %} {% block nav_left %}
                     href="?page={{ page - 1 }}"
                     id="previous_button"
                 >
-                    Go back
+                    {{ text "chats:chat.html:link.go_back" }}
                 </a>
                 {% endif %}
             </div>
@@ -154,7 +155,7 @@ endblock %} {% block nav_left %}
             <div class="flex justify-center w-full">
                 {% if messages.len() >= 50 %}
                 <a class="button secondary" href="?page={{ page + 1 }}">
-                    Load more
+                    {{ text "chats:chat.html:link.load_more" }}
                 </a>
                 {% endif %}
             </div>
@@ -363,7 +364,7 @@ endblock %} {% block nav_left %}
 <dialog id="name_dialog">
     <form class="inner flex flex-col gap-2" onsubmit="update_name(event)">
         <!-- prettier-ignore -->
-        <label for="new_name">Edit chat name</label>
+        <label for="new_name">{{ text "chats:chat.html:label.edit_chat_name" }}</label>
 
         <input
             class="w-full"
@@ -383,13 +384,15 @@ endblock %} {% block nav_left %}
 
         <hr />
         <div class="flex gap-2">
-            <button class="primary bold">Confirm</button>
+            <button class="primary bold">
+                {{ text "general:dialog.continue" }}
+            </button>
             <button
                 class="bold"
                 onclick="document.getElementById('name_dialog').close()"
                 type="button"
             >
-                Cancel
+                {{ text "general:dialog.cancel" }}
             </button>
         </div>
     </form>
@@ -400,10 +403,12 @@ profile.username == other.username %}
 <dialog id="add_friends_dialog">
     <form class="inner flex flex-col gap-2" onsubmit="add_friend(event)">
         <!-- prettier-ignore -->
-        <label for="friend">Add a friend</label>
+        <label for="friend">{{ text "chats:chat.html:action.add_friend" }}</label>
 
         <select name="friend" id="friend" required>
-            <option value="" disabled selected>Select a friend</option>
+            <option value="" disabled selected>
+                {{ text "chats:chat.html:label.select_a_friend" }}
+            </option>
 
             <!-- prettier-ignore -->
             {% for user in friends %}
@@ -428,13 +433,15 @@ profile.username == other.username %}
 
         <hr />
         <div class="flex gap-2">
-            <button class="primary bold">Confirm</button>
+            <button class="primary bold">
+                {{ text "general:dialog.continue" }}
+            </button>
             <button
                 class="bold"
                 onclick="document.getElementById('add_friends_dialog').close()"
                 type="button"
             >
-                Cancel
+                {{ text "general:dialog.cancel" }}
             </button>
         </div>
     </form>

@@ -47,7 +47,7 @@
         <hr />
 
         <div class="fade flex items-center gap-2">
-            <span>To:</span>
+            <span>{{ text "mail:compose.html:label.to" }}:</span>
 
             {% for recipient in letter.recipient %}
             <a href="/+u/{{ recipient }}">
@@ -64,7 +64,7 @@
         </div>
 
         <div class="fade flex items-center gap-2">
-            <span>From:</span>
+            <span>{{ text "mail:mail.html:label.from" }}:</span>
 
             <a href="/@{{ author.username }}">
                 <img
@@ -80,7 +80,7 @@
         </div>
 
         <div class="fade flex items-center gap-2">
-            <span>Sent:</span>
+            <span>{{ text "mail:mail.html:label.sent" }}:</span>
             <span class="date">{{ letter.timestamp }}</span>
         </div>
 
@@ -88,10 +88,7 @@
 
         {% if letter.recipient.get(0).unwrap() == "0" %}
         <div class="markdown-alert-warning">
-            <span
-                >This mail was sent to the system account. It may be seen and
-                replied to by any staff member with access.</span
-            >
+            <span>{{ text "mail:mail.html:text.system" }}</span>
         </div>
         {% endif %}
     </div>

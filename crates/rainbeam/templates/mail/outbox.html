@@ -25,9 +25,11 @@ endblock %} {% block nav_left %}
 <article>
     <main class="flex flex-col gap-4">
         <div class="pillmenu convertible">
-            <a href="/inbox/mail?profile={{ pid }}"><span>Received</span></a>
+            <a href="/inbox/mail?profile={{ pid }}"
+                ><span>{{ text "mail:link.received" }}</span></a
+            >
             <a href="/inbox/mail/sent?profile={{ pid }}" class="active"
-                ><span>Sent</span></a
+                ><span>{{ text "mail:link.sent" }}</span></a
             >
         </div>
 

@@ -26,9 +26,11 @@ endblock %} {% block nav_left %}
     <main class="flex flex-col gap-4">
         <div class="pillmenu convertible">
             <a href="/inbox/mail?profile={{ pid }}" class="active"
-                ><span>Received</span></a
+                ><span>{{ text "mail:link.received" }}</span></a
             >
-            <a href="/inbox/mail/sent?profile={{ pid }}"><span>Sent</span></a>
+            <a href="/inbox/mail/sent?profile={{ pid }}"
+                ><span>{{ text "mail:link.sent" }}</span></a
+            >
         </div>
 
         {% include "components/box_header.html" %} {% if mail.len() == 0 %}

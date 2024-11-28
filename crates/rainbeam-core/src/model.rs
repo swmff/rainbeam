@@ -605,7 +605,6 @@ pub enum DatabaseError {
     NotAllowed,
     ValueError,
     NotFound,
-    Filtered,
     Blocked,
     Banned,
     Other,
@@ -628,7 +627,6 @@ impl DatabaseError {
             NotFound => {
                 String::from("Nothing with this path exists or you do not have access to it!")
             }
-            Filtered => String::from("This content has been blocked by a content filter."),
             Blocked => String::from("You're blocked."),
             Banned => String::from("You're banned for suspected systems abuse or violating TOS."),
             _ => String::from("An unspecified error has occured"),

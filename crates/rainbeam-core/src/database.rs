@@ -1269,7 +1269,7 @@ impl Database {
 
                 let relationship = self
                     .auth
-                    .get_user_relationship(author.id.clone(), recipient.id.clone())
+                    .get_user_relationship(recipient.id.clone(), author.id.clone())
                     .await
                     .0;
 
@@ -1309,7 +1309,8 @@ impl Database {
                 }
 
                 if props.content.contains(filter_string) {
-                    return Err(DatabaseError::Filtered);
+                    // return ok so the client thinks it worked, but really we lied
+                    return Ok(());
                 }
             }
         } else {
@@ -2337,19 +2338,28 @@ impl Database {
         if props.question != "0" {
             // normal questions
             if question.recipient.username != "@" {
-                if !question.recipient.id.starts_with("circle:") {
-                    if question.recipient.id != author.id {
-                        // cannot respond to a question not asked to us
-                        return Err(DatabaseError::NotAllowed);
-                    }
+                if question.recipient.id != author.id {
+                    // cannot respond to a question not asked to us
+                    return Err(DatabaseError::NotAllowed);
+                }
 
-                    // make sure we haven't already answered this
-                    if let Ok(_) = self
-                        .get_response_by_question_and_author(question.id.clone(), author.id.clone())
-                        .await
-                    {
-                        return Err(DatabaseError::Other);
-                    }
+                // check relationship
+                // cannot respond to questions from people who blocked us (or we've blocked)
+                let relationship = self
+                    .auth
+                    .get_user_relationship(question.author.id.clone(), author.id.clone())
+                    .await;
+
+                if relationship.0 == RelationshipStatus::Blocked {
+                    return Err(DatabaseError::NotAllowed);
+                }
+
+                // make sure we haven't already answered this
+                if let Ok(_) = self
+                    .get_response_by_question_and_author(question.id.clone(), author.id.clone())
+                    .await
+                {
+                    return Err(DatabaseError::Other);
                 }
             }
             // global questions
@@ -2359,6 +2369,17 @@ impl Database {
 
                 if tag.0 {
                     // anonymous users cannot answer global questions
+                    return Err(DatabaseError::NotAllowed);
+                }
+
+                // check relationship
+                // cannot respond to questions from people who blocked us (or we've blocked)
+                let relationship = self
+                    .auth
+                    .get_user_relationship(question.author.id.clone(), author.id.clone())
+                    .await;
+
+                if relationship.0 == RelationshipStatus::Blocked {
                     return Err(DatabaseError::NotAllowed);
                 }
 
@@ -3513,6 +3534,16 @@ impl Database {
 
         if author.group == -1 {
             // group -1 (even if it exists) is for marking users as banned
+            return Err(DatabaseError::NotAllowed);
+        }
+
+        // check relationship
+        let relationship = self
+            .auth
+            .get_user_relationship(response.author.id.clone(), author.id.clone())
+            .await;
+
+        if relationship.0 == RelationshipStatus::Blocked {
             return Err(DatabaseError::NotAllowed);
         }
 

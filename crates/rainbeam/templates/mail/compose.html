@@ -26,7 +26,7 @@ endblock %} {% block nav_left %}
     <main class="flex flex-col gap-4">
         <form class="card-nest" onsubmit="send_mail(event)" style="gap: 0">
             <div class="card w-full flex justify-between items-center flex-2">
-                <b>Compose mail</b>
+                <b>{{ text "mail:compose.html:title.compose_mail" }}</b>
 
                 <button class="icon-only primary" title="Send">
                     {{ icon "send" }}
@@ -35,7 +35,9 @@ endblock %} {% block nav_left %}
 
             <div class="card flex flex-col gap-4">
                 <div class="flex flex-col gap-2">
-                    <label for="recipient">To</label>
+                    <label for="recipient"
+                        >{{ text "mail:compose.html:label.to" }}</label
+                    >
                     <input
                         type="text"
                         name="recipient"
@@ -45,12 +47,16 @@ endblock %} {% block nav_left %}
                 </div>
 
                 <div class="flex flex-col gap-2">
-                    <label for="title">Subject</label>
+                    <label for="title"
+                        >{{ text "mail:compose.html:label.subject" }}</label
+                    >
                     <input type="text" name="title" id="title" required />
                 </div>
 
                 <div class="flex flex-col gap-2">
-                    <label for="content">Content</label>
+                    <label for="content"
+                        >{{ text "mail:compose.html:label.content" }}</label
+                    >
                     <textarea type="text" name="content" id="content" required>
 &#13;&#10;
 {% if let Some(user) = profile %}{% if let Some(signature) = user.metadata.kv.get("sparkler:mail_signature") %}{% if !signature.is_empty() %}{{ signature }}{% endif %}{% endif %}{% endif %}</textarea
