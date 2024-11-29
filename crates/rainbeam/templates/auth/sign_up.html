@@ -15,12 +15,16 @@ endblock %} {% block content %}
         ></div>
 
         <div id="forms" class="flex flex-col gap-2 items-center">
-            <h3 class="no-margin">Sign Up</h3>
+            <h3 class="no-margin">
+                {{ text "auth:sign_up.html:title.sign_up" }}
+            </h3>
 
             <div class="card" style="width: 25rem">
                 <form id="register_form" class="flex flex-col gap-2">
                     <div class="row flex flex-col gap-1">
-                        <label for="username">Username</label>
+                        <label for="username"
+                            >{{ text "auth:label.username" }}</label
+                        >
                         <input
                             type="text"
                             name="username"
@@ -32,7 +36,9 @@ endblock %} {% block content %}
                     </div>
 
                     <div class="row flex flex-col gap-1">
-                        <label for="password">Password</label>
+                        <label for="password"
+                            >{{ text "auth:label.password" }}</label
+                        >
                         <input
                             type="password"
                             name="password"
@@ -49,13 +55,17 @@ endblock %} {% block content %}
 
                     <hr />
 
-                    <button class="primary bold">Register</button>
+                    <button class="primary bold">
+                        {{ text "general:link.sign_up" }}
+                    </button>
                 </form>
             </div>
 
             <p>
-                Already have an account?
-                <a href="/login" data-turbo="false">Login</a>
+                {{ text "auth:sign_up.html:text.has_account" }}
+                <a href="/login" data-turbo="false"
+                    >{{ text "general:link.login" }}</a
+                >
             </p>
         </div>
 

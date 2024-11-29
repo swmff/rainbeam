@@ -6,7 +6,6 @@
         "general:link.settings": "Settings",
         "general:link.friends": "Friends",
         "general:link.requests": "Requests",
-        "general:link.login": "Login",
         "general:link.search": "Search",
         "general:link.more": "More",
         "general:link.chat": "Chat",
@@ -15,6 +14,9 @@
         "general:link.post": "Post",
         "general:link.previous": "Previous",
         "general:link.next": "Next",
+
+        "general:link.login": "Login",
+        "general:link.sign_up": "Sign up",
 
         "general:link.timeline": "Timeline",
         "general:link.home": "Home",
@@ -53,13 +55,19 @@
         "base.html:link.about": "About",
         "base.html:link.reference": "Reference",
         "base.html:link.source_code": "Source code",
-        "base.html:link.sign_up": "Sign up",
         "base.html:link.sign_out": "Sign out",
 
         "homepage.html:link.create_account": "Create account",
 
         "error.html:link.uh_oh": "Uh oh.",
         "error.html:link.go_home": "Go home",
+
+        "auth:label.username": "Username",
+        "auth:label.password": "Password",
+        "auth:login.html:title.login": "Login",
+        "auth:login.html:text.no_account": "Don't have an account?",
+        "auth:sign_up.html:title.sign_up": "Sign up",
+        "auth:sign_up.html:text.has_account": "Already have an account?",
 
         "profile:link.followers": "Followers",
         "profile:link.following": "Following",
@@ -129,6 +137,7 @@
         "settings:text.dark": "Dark",
         "settings:text.midnight": "Midnight",
 
+        "settings:account.html:title.language": "Language",
         "settings:account.html:title.local_theming": "Local themeing",
         "settings:account.html:label.website_theme": "Website theme",
         "settings:account.html:label.allow_profile_themes": "Allow profile themes",
@@ -170,6 +179,46 @@
         "settings:account.html:label.choose_emoji": "Choose emoji",
         "settings:account.html:text.status_emoji": "Your status emoji is shown in place of the default thought balloon.",
         "settings:account.html:text.signature": "Your signature is automatically appended to mail sent from your account.",
+
+        "settings:profile_options.html:title.about_me": "About me",
+        "settings:profile_options.html:label.display_name": "Display name",
+        "settings:profile_options.html:label.biography": "Biography",
+        "settings:profile_options.html:label.sidebar": "Sidebar",
+        "settings:profile_options.html:label.avatar_url": "Avatar URL",
+        "settings:profile_options.html:label.banner_url": "Banner URL",
+        "settings:profile_options.html:label.banner_fit": "Banner fit",
+        "settings:profile_options.html:label.desktop_top_left_logo": "(desktop) Top-left logo",
+
+        "settings:profile_options.html:title.greetings": "Greetings",
+        "settings:profile_options.html:label.motivational_header": "Motivational header",
+        "settings:profile_options.html:label.profile_warning": "Profile warning",
+
+        "settings:profile_options.html:title.anonymous": "Anonymous",
+        "settings:profile_options.html:label.anonymous_username": "Anonymous username",
+        "settings:profile_options.html:label.anonymous_avatar_url": "Anonymous avatar URL",
+
+        "settings:profile_options.html:title.feed": "feed",
+        "settings:profile_options.html:label.pinned": "Pinned",
+
+        "settings:privacy_options.html:title.general_privacy": "General privacy",
+        "settings:privacy_options.html:label.disable_questions": "Disable questions",
+        "settings:privacy_options.html:label.disable_anonymous_questions": "Disallow anonymous questions on your profile",
+        "settings:privacy_options.html:label.disable_anonymous_comments": "Disallow anonymous comments on your responses",
+        "settings:privacy_options.html:label.require_account": "Require an account to ask questions on your profile",
+        "settings:privacy_options.html:label.keep_socials_private": "Keep your socials private (followers/following)",
+
+        "settings:privacy_options.html:title.moderation": "Moderation",
+        "settings:privacy_options.html:label.filter": "Filter",
+        "settings:privacy_options.html:text.filter": "A list of strings that are not allowed in questions asked to you. Each different string must be on a new line.",
+
+        "settings:sessions.html:title.sessions": "My sessions",
+        "settings:sessions.html:label.tag": "Tag",
+        "settings:sessions.html:label.app": "App",
+        "settings:sessions.html:label.permissions": "Permisisons",
+        "settings:sessions.html:label.actions": "Actions",
+        "settings:sessions.html:text.active": "Active",
+        "settings:sessions.html:text.none": "None",
+        "settings:sessions.html:text.all": "All",
 
         "chats:chat.html:action.change_name": "Change name",
         "chats:chat.html:action.add_friend": "Add friend",

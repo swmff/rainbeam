@@ -28,8 +28,8 @@ block head %}
                 data-turbo="false"
                 style="gap: 1rem !important"
             >
-                {{ icon "user-round-plus" }} {{
-                text "homepage.html:link.create_account" }}
+                {{ icon "user-round-plus" }} {{ text
+                "homepage.html:link.create_account" }}
             </a>
 
             <a
@@ -40,6 +40,8 @@ block head %}
             >
                 {{ icon "smile" }} {{ text "general:link.login" }}
             </a>
+
+            {% include "settings/components/lang_picker.html" %}
         </div>
     </div>
 </main>

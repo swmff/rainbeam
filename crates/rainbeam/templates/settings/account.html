@@ -6,6 +6,10 @@
 {% endblock %} {% block panel %}
 
 <div class="flex flex-col gap-4">
+    <h4 class="title">{{ text "settings:account.html:title.language" }}</h4>
+
+    {% include "components/lang_picker.html" %}
+
     <h4 class="title">
         {{ text "settings:account.html:title.local_theming" }}
     </h4>

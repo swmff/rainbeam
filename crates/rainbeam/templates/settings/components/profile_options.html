@@ -1,7 +1,11 @@
 <div class="flex flex-col gap-4">
-    <h4 class="title">About Me</h4>
+    <h4 class="title">
+        {{ text "settings:profile_options.html:title.about_me" }}
+    </h4>
     <div class="flex flex-col gap-1">
-        <label for="sparkler:display_name">Display name</label>
+        <label for="sparkler:display_name">
+            {{ text "settings:profile_options.html:label.display_name" }}
+        </label>
 
         <input
             name="sparkler:display_name"
@@ -16,21 +20,8 @@
     </div>
 
     <div class="flex flex-col gap-1">
-        <label for="sparkler:biography" class="flex gap-2 items-center"
-            >Biography
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 16 16"
-                width="16"
-                height="16"
-                title="Supports Markdown formatting"
-                aria-label="Markdown logo"
-                class="icon"
-            >
-                <path
-                    d="M14.85 3c.63 0 1.15.52 1.14 1.15v7.7c0 .63-.51 1.15-1.15 1.15H1.15C.52 13 0 12.48 0 11.84V4.15C0 3.52.52 3 1.15 3ZM9 11V5H7L5.5 7 4 5H2v6h2V8l1.5 1.92L7 8v3Zm2.99.5L14.5 8H13V5h-2v3H9.5Z"
-                ></path>
-            </svg>
+        <label for="sparkler:biography" class="flex gap-2 items-center">
+            {{ text "settings:profile_options.html:label.biography" }}
         </label>
 
         <textarea
@@ -43,21 +34,8 @@
     </div>
 
     <div class="flex flex-col gap-1">
-        <label for="sparkler:sidebar" class="flex gap-2 items-center"
-            >Sidebar
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 16 16"
-                width="16"
-                height="16"
-                title="Supports Markdown formatting"
-                aria-label="Markdown logo"
-                class="icon"
-            >
-                <path
-                    d="M14.85 3c.63 0 1.15.52 1.14 1.15v7.7c0 .63-.51 1.15-1.15 1.15H1.15C.52 13 0 12.48 0 11.84V4.15C0 3.52.52 3 1.15 3ZM9 11V5H7L5.5 7 4 5H2v6h2V8l1.5 1.92L7 8v3Zm2.99.5L14.5 8H13V5h-2v3H9.5Z"
-                ></path>
-            </svg>
+        <label for="sparkler:sidebar" class="flex gap-2 items-center">
+            {{ text "settings:profile_options.html:label.sidebar" }}
         </label>
 
         <textarea
@@ -75,7 +53,9 @@
 
     <h4 class="title">Images</h4>
     <div class="flex flex-col gap-1">
-        <label for="sparkler:avatar_url">Avatar URL</label>
+        <label for="sparkler:avatar_url">
+            {{ text "settings:profile_options.html:label.avatar_url" }}
+        </label>
 
         <input
             type="url"
@@ -92,7 +72,9 @@
     </div>
 
     <div class="flex flex-col gap-1">
-        <label for="sparkler:banner_url">Banner URL</label>
+        <label for="sparkler:banner_url">
+            {{ text "settings:profile_options.html:label.banner_url" }}
+        </label>
 
         <input
             type="url"
@@ -108,7 +90,9 @@
     </div>
 
     <div class="flex flex-col gap-1">
-        <label for="sparkler:banner_fit">Banner fit</label>
+        <label for="sparkler:banner_fit">
+            {{ text "settings:profile_options.html:label.banner_fit" }}
+        </label>
 
         <select
             type="url"
@@ -127,7 +111,10 @@
     </div>
 
     <div class="flex flex-col gap-1">
-        <label for="sparkler:desktop_tl_logo">(desktop) Top-left Logo</label>
+        <label for="sparkler:desktop_tl_logo">
+            {{ text "settings:profile_options.html:label.desktop_top_left_logo"
+            }}
+        </label>
 
         <input
             type="url"
@@ -141,25 +128,15 @@
         </p>
     </div>
 
-    <h4 class="title">Greetings</h4>
+    <h4 class="title">
+        {{ text "settings:profile_options.html:title.greetings" }}
+    </h4>
     <div class="flex flex-col gap-1">
         <label
             for="sparkler:motivational_header"
             class="flex gap-2 items-center"
-            >Motivational header
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 16 16"
-                width="16"
-                height="16"
-                title="Supports Markdown formatting"
-                aria-label="Markdown logo"
-                class="icon"
-            >
-                <path
-                    d="M14.85 3c.63 0 1.15.52 1.14 1.15v7.7c0 .63-.51 1.15-1.15 1.15H1.15C.52 13 0 12.48 0 11.84V4.15C0 3.52.52 3 1.15 3ZM9 11V5H7L5.5 7 4 5H2v6h2V8l1.5 1.92L7 8v3Zm2.99.5L14.5 8H13V5h-2v3H9.5Z"
-                ></path>
-            </svg>
+        >
+            {{ text "settings:profile_options.html:label.motivational_header" }}
         </label>
 
         <input
@@ -175,21 +152,8 @@
     </div>
 
     <div class="flex flex-col gap-1">
-        <label for="sparkler:warning" class="flex gap-2 items-center"
-            >Profile warning
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 16 16"
-                width="16"
-                height="16"
-                title="Supports Markdown formatting"
-                aria-label="Markdown logo"
-                class="icon"
-            >
-                <path
-                    d="M14.85 3c.63 0 1.15.52 1.14 1.15v7.7c0 .63-.51 1.15-1.15 1.15H1.15C.52 13 0 12.48 0 11.84V4.15C0 3.52.52 3 1.15 3ZM9 11V5H7L5.5 7 4 5H2v6h2V8l1.5 1.92L7 8v3Zm2.99.5L14.5 8H13V5h-2v3H9.5Z"
-                ></path>
-            </svg>
+        <label for="sparkler:warning" class="flex gap-2 items-center">
+            {{ text "settings:profile_options.html:label.profile_warning" }}
         </label>
 
         <textarea
@@ -205,9 +169,13 @@
         </p>
     </div>
 
-    <h4 class="title">Anonymous</h4>
+    <h4 class="title">
+        {{ text "settings:profile_options.html:title.anonymous" }}
+    </h4>
     <div class="flex flex-col gap-1">
-        <label for="sparkler:anonymous_username">Anonymous username</label>
+        <label for="sparkler:anonymous_username">
+            {{ text "settings:profile_options.html:title.anonymous_username" }}
+        </label>
 
         <input
             name="sparkler:anonymous_username"
@@ -222,7 +190,10 @@
     </div>
 
     <div class="flex flex-col gap-1">
-        <label for="sparkler:anonymous_avatar">Anonymous avatar URL</label>
+        <label for="sparkler:anonymous_avatar">
+            {{ text "settings:profile_options.html:label.anonymous_avatar_url"
+            }}
+        </label>
 
         <input
             type="url"
@@ -237,9 +208,11 @@
         </p>
     </div>
 
-    <h4 class="title">Feed</h4>
+    <h4 class="title">{{ text "settings:profile_options.html:title.feed" }}</h4>
     <div class="flex flex-col gap-1">
-        <label for="sparkler:pinned">Pinned</label>
+        <label for="sparkler:pinned">
+            {{ text "settings:profile_options.html:label.pinned" }}
+        </label>
 
         <textarea
             name="sparkler:pinned"

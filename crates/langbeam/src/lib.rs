@@ -12,7 +12,7 @@ pub struct LangFile {
 impl Default for LangFile {
     fn default() -> Self {
         Self {
-            name: "net.rainbeam.langs:aa-BB".to_string(),
+            name: "net.rainbeam.langs.testing:aa-BB".to_string(),
             version: "0.0.0".to_string(),
             data: HashMap::new(),
         }

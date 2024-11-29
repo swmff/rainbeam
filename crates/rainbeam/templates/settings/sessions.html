@@ -12,16 +12,20 @@
         id="manage_sessions"
         style="overflow: auto"
     >
-        <h4 class="title">My Sessions</h4>
+        <h4 class="title">
+            {{ text "settings:sessions.html:title.sessions" }}
+        </h4>
 
         <table>
             <thead>
                 <tr>
-                    <th>Tag</th>
+                    <th>{{ text "settings:sessions.html:label.tag" }}</th>
                     <th>IP</th>
-                    <th>App</th>
-                    <th>Permissions</th>
-                    <th>Actions</th>
+                    <th>{{ text "settings:sessions.html:label.app" }}</th>
+                    <th>
+                        {{ text "settings:sessions.html:label.permissions" }}
+                    </th>
+                    <th>{{ text "settings:sessions.html:label.actions" }}</th>
                 </tr>
             </thead>
 
@@ -31,9 +35,9 @@
                 <tr id="session:{{ session }}" title="{{ session[..10] }}">
                     <td style="white-space: nowrap">
                         {% if current_session == session.to_owned() %}
-                        <span class="notification marker">Active</span>
+                        <span class="notification marker">{{ text "settings:sessions.html:text.active" }}</span>
                         {% else %}
-                        <span class="tag">None</span>
+                        <span class="tag">{{ text "settings:sessions.html:text.none" }}</span>
                         {% endif %}
                     </td>
 
@@ -41,7 +45,7 @@
                     {% if let Some(ip) = profile.ips.get(i.to_owned()) %}
                     <td style="white-space: nowrap">
                         {% if ip.is_empty() %}
-                        <span class="tag">None</span>
+                        <span class="tag">{{ text "settings:sessions.html:text.none" }}</span>
                         {% else %}
                         {{ ip }}
                         {% endif %}
@@ -54,14 +58,14 @@
                     <td style="white-space: nowrap">
                         {% let name = ctx.app_name() %}
                         {% if name.is_empty() %}
-                        <span class="tag">None</span>
+                        <span class="tag">{{ text "settings:sessions.html:text.none" }}</span>
                         {% else %}
                         {{ name }}
                         {% endif %}
                     </td>
                     {% else %}
                     <td style="white-space: nowrap">
-                        <span class="tag">None</span>
+                        <span class="tag">{{ text "settings:sessions.html:text.none" }}</span>
                     </td>
                     {% endif %}
 
@@ -75,7 +79,7 @@
                     {% if let Some(permissions) = ctx.permissions %}
                     <td style="white-space: nowrap">
                         {% if permissions.is_empty() %}
-                        <span class="tag">None</span>
+                        <span class="tag">{{ text "settings:sessions.html:text.none" }}</span>
                         {% else %}
                         <ul>
                             {% for permission in permissions %}
@@ -88,7 +92,7 @@
                     </td>
                     {% else %}
                     <td style="white-space: nowrap">
-                        <span class="tag">All</span>
+                        <span class="tag">{{ text "settings:sessions.html:text.all" }}</span>
                     </td>
                     {% endif %}
 
@@ -102,7 +106,7 @@
 
                     <td>
                         <a href="javascript:remove_session('{{ session }}')"
-                            >Delete</a
+                            >{{ text "general:action.delete" }}</a
                         >
                     </td>
                 </tr>

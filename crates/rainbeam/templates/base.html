@@ -223,13 +223,13 @@
                             <b class="title">{{ profile.username }}</b>
 
                             <a href="/@{{ profile.username }}">
-                                {{ icon "circle-user-round" }} {{
-                                text "general:link.show_profile" }}
+                                {{ icon "circle-user-round" }} {{ text
+                                "general:link.show_profile" }}
                             </a>
 
                             <a href="/settings">
-                                {{ icon "settings" }} {{
-                                text "general:link.settings" }}
+                                {{ icon "settings" }} {{ text
+                                "general:link.settings" }}
                             </a>
 
                             <b class="title"
@@ -237,18 +237,18 @@
                             >
 
                             <a href="/chats">
-                                {{ icon "message-circle-more" }} {{
-                                text "general:service.chats" }}
+                                {{ icon "message-circle-more" }} {{ text
+                                "general:service.chats" }}
                             </a>
 
                             <a href="/inbox/mail"
-                                >{{ icon "mails" }} {{
-                                text "general:service.mail" }}</a
+                                >{{ icon "mails" }} {{ text
+                                "general:service.mail" }}</a
                             >
 
                             <a href="/circles">
-                                {{ icon "users-round" }} {{
-                                text "general:service.circles" }}
+                                {{ icon "users-round" }} {{ text
+                                "general:service.circles" }}
                             </a>
 
                             <b class="title"
@@ -259,16 +259,16 @@
                                 href="/@{{ profile.username }}/friends"
                                 title="My friends"
                             >
-                                {{ icon "book-user" }} {{
-                                text "general:link.friends" }}
+                                {{ icon "book-user" }} {{ text
+                                "general:link.friends" }}
                             </a>
 
                             <a
                                 href="/@{{ profile.username }}/friends/requests"
                                 title="My friend requests"
                             >
-                                {{ icon "user-round-plus" }} {{
-                                text "general:link.requests" }}
+                                {{ icon "user-round-plus" }} {{ text
+                                "general:link.requests" }}
                             </a>
                             {% else %}
                             <b class="title"
@@ -276,13 +276,13 @@
                             >
 
                             <a href="/login" data-turbo="false">
-                                {{ icon "log-in" }} {{
-                                text "general:link.login" }}
+                                {{ icon "log-in" }} {{ text "general:link.login"
+                                }}
                             </a>
 
                             <a href="/sign_up" data-turbo="false">
-                                {{ icon "user-round-plus" }} {{
-                                text "base.html:link.sign_up" }}
+                                {{ icon "user-round-plus" }} {{ text
+                                "general:link.sign_up" }}
                             </a>
                             {% endif %}
 
@@ -290,19 +290,19 @@
                             <b class="title">{{ config.name }}</b>
 
                             <a href="/site/about">
-                                {{ icon "info" }} {{
-                                text "base.html:link.about" }}
+                                {{ icon "info" }} {{ text "base.html:link.about"
+                                }}
                             </a>
 
                             <a href="https://swmff.github.io/rainbeam/">
-                                {{ icon "book" }} {{
-                                text "base.html:link.reference" }}
+                                {{ icon "book" }} {{ text
+                                "base.html:link.reference" }}
                             </a>
 
                             <!-- ... -->
                             <a href="/search">
-                                {{ icon "search" }} {{
-                                text "general:link.search" }}
+                                {{ icon "search" }} {{ text
+                                "general:link.search" }}
                             </a>
 
                             {% if profile.is_some() %}
@@ -312,8 +312,8 @@
                                 onclick="trigger('app:logout')"
                                 class="red"
                             >
-                                {{ icon "log-out" }} {{
-                                text "base.html:link.sign_out" }}
+                                {{ icon "log-out" }} {{ text
+                                "base.html:link.sign_out" }}
                             </a>
                             {% endif %}
                         </div>
@@ -388,13 +388,12 @@
                         <b class="header">Actions</b>
 
                         <a href="/intents/post" class="button camo">
-                            {{ icon "square-pen" }} {{
-                            text "general:link.post" }}
+                            {{ icon "square-pen" }} {{ text "general:link.post"
+                            }}
                         </a>
 
                         <a href="/search" class="button camo">
-                            {{ icon "search" }} {{
-                            text "general:link.search" }}
+                            {{ icon "search" }} {{ text "general:link.search" }}
                         </a>
                     </section>
 
@@ -402,13 +401,12 @@
                         <b class="header">Services</b>
 
                         <a href="/chats" class="button camo">
-                            {{ icon "message-circle-more" }} {{
-                            text "general:service.chats" }}
+                            {{ icon "message-circle-more" }} {{ text
+                            "general:service.chats" }}
                         </a>
 
                         <a href="/inbox/mail" class="button camo">
-                            {{ icon "mails" }} {{
-                            text "general:service.mail" }}
+                            {{ icon "mails" }} {{ text "general:service.mail" }}
                         </a>
                     </section>
                     {% endif %}
@@ -417,16 +415,15 @@
                         <b class="header">Site</b>
 
                         <a href="/site/about" class="button camo">
-                            {{ icon "info" }} {{
-                            text "base.html:link.about" }}
+                            {{ icon "info" }} {{ text "base.html:link.about" }}
                         </a>
 
                         <a
                             href="https://github.com/swmff/rainbeam"
                             class="button camo"
                         >
-                            {{ icon "code" }} {{
-                            text "base.html:link.source_code" }}
+                            {{ icon "code" }} {{ text
+                            "base.html:link.source_code" }}
                         </a>
                     </section>
                 </div>
@@ -553,8 +550,8 @@
                                 onclick="globalThis.web_api_prompt_submit(document.getElementById('prompt').value); document.getElementById('prompt').value = ''"
                                 type="buton"
                             >
-                                {{ icon "check" }} {{
-                                text "general:dialog.okay" }}
+                                {{ icon "check" }} {{ text "general:dialog.okay"
+                                }}
                             </button>
 
                             <button
@@ -563,8 +560,8 @@
                                 type="button"
                                 title="Close"
                             >
-                                {{ icon "x" }} {{
-                                text "general:dialog.cancel" }}
+                                {{ icon "x" }} {{ text "general:dialog.cancel"
+                                }}
                             </button>
                         </div>
                     </div>
@@ -590,8 +587,8 @@
                                 onclick="globalThis.web_api_confirm_submit(true)"
                                 type="buton"
                             >
-                                {{ icon "check" }} {{
-                                text "general:dialog.yes" }}
+                                {{ icon "check" }} {{ text "general:dialog.yes"
+                                }}
                             </button>
 
                             <button
@@ -600,8 +597,7 @@
                                 type="button"
                                 title="Close"
                             >
-                                {{ icon "x" }} {{ text "general:dialog.no"
-                                }}
+                                {{ icon "x" }} {{ text "general:dialog.no" }}
                             </button>
                         </div>
                     </div>

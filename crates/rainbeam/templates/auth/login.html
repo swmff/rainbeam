@@ -15,12 +15,14 @@
         ></div>
 
         <div id="forms" class="flex flex-col gap-2 items-center">
-            <h3 class="no-margin">Login</h3>
+            <h3 class="no-margin">{{ text "auth:login.html:title.login" }}</h3>
 
             <div class="card" style="width: 25rem">
                 <form id="login_form" class="flex flex-col gap-2">
                     <div class="row flex flex-col gap-1">
-                        <label for="username">Username</label>
+                        <label for="username"
+                            >{{ text "auth:label.username" }}</label
+                        >
                         <input
                             type="text"
                             name="username"
@@ -32,7 +34,9 @@
                     </div>
 
                     <div class="row flex flex-col gap-1">
-                        <label for="password">Password</label>
+                        <label for="password"
+                            >{{ text "auth:label.password" }}</label
+                        >
                         <input
                             type="password"
                             name="password"
@@ -49,13 +53,17 @@
 
                     <hr />
 
-                    <button class="primary bold">Login</button>
+                    <button class="primary bold">
+                        {{ text "general:link.login" }}
+                    </button>
                 </form>
             </div>
 
             <p>
-                Don't have an account?
-                <a href="/sign_up" data-turbo="false">Sign Up</a>
+                {{ text "auth:login.html:text.no_account" }}
+                <a href="/sign_up" data-turbo="false"
+                    >{{ text "general:link.sign_up" }}</a
+                >
             </p>
         </div>
 

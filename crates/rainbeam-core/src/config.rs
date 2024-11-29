@@ -12,7 +12,7 @@ pub struct Tiers {
     ///
     /// * Questions: ~~2048~~ **4096**
     /// * Responses: ~~4096~~ **8192**
-    /// * CommentS: ~~2048~~ **4096**
+    /// * Comments: ~~2048~~ **4096**
     ///
     /// *\*Carpgraph drawings stay at 32kb maximum*
     #[serde(default)]
