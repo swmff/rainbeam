@@ -13,7 +13,7 @@
             <!-- prettier-ignore -->
             <div class="flex gap-2">
                 {% if let Some(user) = profile %}
-                {% if letter.recipient.contains(user.id) | (user.id == letter.author) %}
+                {% if (letter.recipient.contains(user.id) | (user.id == letter.author)) | is_helper %}
                 <a
                     class="button icon-only camo"
                     title="Reply"
@@ -31,7 +31,7 @@
                 </a>
                 {% endif %}
 
-                {% if letter.recipient.contains(user.id) | (user.id == letter.author) %}
+                {% if (letter.recipient.contains(user.id) | (user.id == letter.author)) | is_helper %}
                 <button
                     class="icon-only camo red"
                     title="Delete"

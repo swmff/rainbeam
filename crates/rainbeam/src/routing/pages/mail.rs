@@ -293,6 +293,7 @@ struct ViewTemplate {
     notifs: usize,
     letter: Mail,
     author: Profile,
+    is_helper: bool,
 }
 
 /// GET /inbox/mail/letter/:id
@@ -350,6 +351,16 @@ pub async fn view_request(
     }
 
     // ...
+    let is_helper = {
+        let group = match database.auth.get_group_by_id(auth_user.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        group.permissions.contains(&Permission::Helper)
+    };
+
+    // ...
     Html(
         ViewTemplate {
             config: database.server_options.clone(),
@@ -363,6 +374,7 @@ pub async fn view_request(
             notifs,
             letter,
             author,
+            is_helper,
         }
         .render()
         .unwrap(),
@@ -376,6 +388,7 @@ struct PartialMailTemplate {
     lang: langbeam::LangFile,
     letter: Mail,
     author: Profile,
+    is_helper: bool,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -425,6 +438,16 @@ pub async fn partial_mail_request(
     }
 
     // ...
+    let is_helper = {
+        let group = match database.auth.get_group_by_id(auth_user.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        group.permissions.contains(&Permission::Helper)
+    };
+
+    // ...
     Html(
         PartialMailTemplate {
             profile: Some(auth_user),
@@ -435,6 +458,7 @@ pub async fn partial_mail_request(
             }),
             letter,
             author,
+            is_helper,
         }
         .render()
         .unwrap(),
