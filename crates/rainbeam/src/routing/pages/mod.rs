@@ -976,6 +976,16 @@ pub async fn partial_posts_request(
                     .0,
             );
         }
+    } else {
+        // the posts timeline requires that we have an entry for every relationship,
+        // since we don't have an account every single relationship should be unknown
+        for response in &responses {
+            if relationships.contains_key(&response.1.author.id) {
+                continue;
+            }
+
+            relationships.insert(response.1.author.id.clone(), RelationshipStatus::Unknown);
+        }
     }
 
     // ...
