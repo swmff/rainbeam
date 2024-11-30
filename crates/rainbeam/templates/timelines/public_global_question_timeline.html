@@ -27,9 +27,7 @@ block head %}
 <article>
     <main class="flex flex-col gap-2">
         <div class="pillmenu convertible">
-            <a href="/"
-                ><span>{{ text "timelines:link.timeline" }}</span></a
-            >
+            <a href="/"><span>{{ text "timelines:link.timeline" }}</span></a>
             <a href="/inbox/posts"
                 ><span>{{ text "timelines:link.posts" }}</span></a
             >
@@ -57,7 +55,7 @@ block head %}
         <div class="card-nest w-full shadow">
             <!-- prettier-ignore -->
             <div class="card">
-                Ask a global question
+                {{ text "profile:base.html:action.ask" }}
             </div>
 
             <div class="card">

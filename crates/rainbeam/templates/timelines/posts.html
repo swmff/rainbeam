@@ -44,9 +44,7 @@ block head %}
     <main class="flex flex-col gap-2">
         {% if profile.is_some() %}
         <div class="pillmenu convertible">
-            <a href="/"
-                ><span>{{ text "timelines:link.timeline" }}</span></a
-            >
+            <a href="/"><span>{{ text "timelines:link.timeline" }}</span></a>
             <a href="/inbox/posts" class="active"
                 ><span>{{ text "timelines:link.posts" }}</span></a
             >
@@ -74,7 +72,7 @@ block head %}
             <div class="flex gap-2">
                 {% if profile.is_some() %}
                 <a href="/intents/post" class="button primary bold">
-                    {{ icon "plus" }} New
+                    {{ icon "plus" }}
                 </a>
                 {% endif %}
 

@@ -1,0 +1,242 @@
+{
+    "name": "net.rainbeam.langs:ko-KR",
+    "version": "1.0.0",
+    "data": {
+        "general:link.show_profile": "프로필 보기",
+        "general:link.settings": "설정",
+        "general:link.friends": "친구",
+        "general:link.requests": "요청",
+        "general:link.search": "검색",
+        "general:link.more": "더보기",
+        "general:link.chat": "채팅",
+        "general:link.actions": "Actions",
+        "general:link.open": "열기",
+        "general:link.post": "게시",
+        "general:link.previous": "이전",
+        "general:link.next": "다음",
+
+        "general:link.login": "로그인",
+        "general:link.sign_up": "회원가입",
+
+        "general:link.timeline": "타임라인",
+        "general:link.home": "홈",
+        "general:link.inbox": "받은 편지함",
+
+        "general:service.chats": "채팅",
+        "general:service.mail": "메일",
+        "general:service.circles": "서클",
+
+        "general:title.services": "서비스",
+        "general:title.social": "소셜",
+        "general:title.account": "계정",
+
+        "general:dialog.continue": "계속",
+        "general:dialog.cancel": "취소",
+        "general:dialog.okay": "확인",
+        "general:dialog.yes": "네",
+        "general:dialog.no": "아니오",
+
+        "general:form.submit": "제출",
+
+        "general:action.delete": "삭제",
+        "general:action.ip_block": "IP 차단",
+        "general:action.report": "신고",
+        "general:action.copy_id": "ID 복사",
+        "general:action.copy_link": "링크 복사",
+        "general:action.block": "차단",
+        "general:action.hide_your_name": "익명",
+        "general:action.edit": "수정",
+        "general:action.clear": "초기화",
+
+        "general:text.no_results": "이 쿼리와 일치하는 결과가 없습니다",
+        "general:text.view_full_feed": "전체 피드 보기",
+
+        "base.html:text.account_banned": "당신의 계정이 정지되었으며 현재 사용할 수 없습니다. 정지기간 동안 다른 계정으로 가입하지 마세요.",
+        "base.html:link.about": "정보",
+        "base.html:link.reference": "레퍼런스",
+        "base.html:link.source_code": "소스코드",
+        "base.html:link.sign_out": "로그아웃",
+
+        "homepage.html:link.create_account": "계정 생성",
+
+        "error.html:link.uh_oh": "이런",
+        "error.html:link.go_home": "홈으로 이동",
+
+        "auth:label.username": "사용자명",
+        "auth:label.password": "비밀번호",
+        "auth:login.html:title.login": "로그인",
+        "auth:login.html:text.no_account": "계정이 없나요?",
+        "auth:sign_up.html:title.sign_up": "회원가입",
+        "auth:sign_up.html:text.has_account": "이미 계정이 있나요?",
+
+        "profile:link.followers": "팔로워",
+        "profile:link.following": "팔로잉",
+
+        "profile:link.feed": "피드",
+        "profile:link.questions": "질문",
+        "profile:link.manage": "관리",
+        "profile:link.outbox": "보낼 편지함",
+
+        "profile:label.private": "이전",
+
+        "profile:base.html:text.private": "이 프로필은 친구만 내 피드를 볼 수 있도록 허용합니다.",
+        "profile:base.html:text.no_anonymous_questions": "이 프로필은 익명질문을 허용하지 않습니다.",
+        "profile:base.html:text.no_questions": "이 프로필은 현재 질문을 받고 있지 않습니다.",
+        "profile:base.html:text.embed_title": "아래 Embed 링크를 사용하여 프로필을 삽입하기:",
+        "profile:base.html:text.embed_help": "이 링크를 HTML IFrame에 사용하여 프로필을 삽입하세요.",
+        "profile:base.html:text.warning_title": "이 프로필은 이 경고를 게시했습니다:",
+        "profile:base.html:text.warning_continue": "이 프로필을 보고싶다면 \"계속\"을 클릭하세요 ",
+
+        "profile:base.html:link.follower": "팔로워",
+        "profile:base.html:link.following": "팔로잉",
+        "profile:base.html:link.friend": "친구",
+        "profile:base.html:link.edit_profile": "프로필 수정",
+        "profile:base.html:link.account_settings": "계정 설정",
+        "profile:base.html:link.embed_profile": "프로필 삽입",
+        "profile:base.html:link.manage_blocks": "차단 관리",
+        "profile:base.html:action.follow": "팔로우",
+        "profile:base.html:action.unfollow": "언팔로우",
+        "profile:base.html:action.friend": "친구추가",
+        "profile:base.html:action.unfriend": "친구추가 해제",
+        "profile:base.html:action.ask": "질문",
+        "profile:base.html:title.this_user": "이 사용자",
+
+        "response_title.html:action.boost": "부스트",
+        "response_title.html:action.quote": "인용",
+        "response_title.html:action.ask_about_this": "이것에 대한 질문",
+        "response_title.html:action.copy_to_clipboard": "클립보드로 복사",
+        "response_title.html:action.pin": "고정",
+        "response_title.html:action.unpin": "고정해제",
+        "response_title.html:action.edit_tags": "태그 수정",
+        "response_title.html:action.return_to_inbox": "받은편지함으로 돌아가기",
+        "response_title.html:action.delete_all": "전체 삭제",
+        "response_title.html:link.open_question": "질문 열기",
+        "response_inner.html:text.click_to_view": "답변 내용을 보려면 클릭하세요.",
+
+        "report.html:label.reason": "이유",
+        "report.html:text.please_describe": "위에 이 에셋을 신고하는 이유를 설명해 주세요.",
+        "report.html:text.details1": "신고 시 마크다운 문법을 지원합니다. 신고에 도움이 되는 이미지가 있는 경우 이미지를 포함해 주세요. 답장을 받고 싶으시면 보고서에 연락처를 반드시 기재해 주세요 (이메일 주소 같은).",
+        "report.html:text.details2": "신고하려는 에셋이 위반한 사이트 규정이나 가능한 법률을 인용해 주세요. 규칙을 인용하면 신고를 더 빨리 처리하는 데 도움이 되며, 규칙이 없는 신고는 폐기될 수 있습니다.",
+
+        "timelines:link.timeline": "타임라인",
+        "timelines:link.posts": "게시물",
+        "timelines:link.global": "글로벌",
+        "timelines:link.public": "공개 타임라인",
+        "timelines:link.following": "팔로잉",
+
+        "views:text.reactions": "리액션",
+        "views:text.responses": "답변",
+        "views:text.comments": "댓글",
+        "views:text.replies": "답글",
+
+        "settings:link.account": "계정",
+        "settings:link.sessions": "세션",
+        "settings:link.profile": "프로필",
+        "settings:link.privacy": "프라이버시",
+
+        "settings:text.light": "라이트",
+        "settings:text.dark": "다크",
+        "settings:text.midnight": "미드나잇",
+
+        "settings:account.html:title.language": "언어",
+        "settings:account.html:title.local_theming": "로컬 테마",
+        "settings:account.html:label.website_theme": "웹사이트 테마",
+        "settings:account.html:label.allow_profile_themes": "프로필 테마 허용",
+
+        "settings:account.html:title.local_behaviour": "로컬 동작",
+        "settings:account.html:label.clear_notifs": "view에서 알림 지우기",
+        "settings:account.html:label.always_anon": "기본값 익명으로 설정",
+
+        "settings:account.html:title.profile_controls": "프로필 제어",
+        "settings:account.html:label.limited_friend_requests": "내가 팔로우하는 사람의 친구 요청만 허용",
+        "settings:account.html:label.private_profile": "비공개 프로필",
+        "settings:account.html:label.limited_chats": "친구만 채팅에 나를 추가하도록 허용",
+        "settings:account.html:label.allow_drawings": "그림 질문 허용",
+
+        "settings:account.html:title.my_account": "내 계정",
+
+        "settings:account.html:label.change_username": "사용자명 변경",
+        "settings:account.html:label.current_password": "현재 비밀번호",
+        "settings:account.html:label.new_username": "새 사용자명",
+
+        "settings:account.html:label.change_password": "비밀번호 변경",
+        "settings:account.html:label.new_password": "새 비밀번호",
+
+        "settings:account.html:label.delete_account": "계정 삭제",
+        "settings:account.html:text.delete_account_warning": "이 작업은 되돌릴 수 없습니다. 진짜로 하실건가요?",
+
+        "settings:account.html:title.blocks": "차단",
+
+        "settings:account.html:label.users": "사용자",
+        "settings:account.html:action.unblock": "차단 해제",
+        "settings:account.html:label.block_somebody": "차단하기",
+
+        "settings:account.html:label.ips": "IPs",
+        "settings:account.html:text.context": "Context",
+        "settings:account.html:text.blocked": "차단됨",
+
+        "settings:account.html:text.confirm_block": "이 유저를 차단하려는게 맞나요?",
+        "settings:account.html:text.status_note": "상태 노트는 로그인한 사용자가 프로필을 볼 때 표시됩니다.",
+        "settings:account.html:label.choose_emoji": "이모지 선택",
+        "settings:account.html:text.status_emoji": "기본 말풍선 대신 내 상태 이모티콘이 표시됩니다.",
+        "settings:account.html:text.signature": "계정에서 보낸 메일에 서명이 자동으로 추가됩니다.",
+
+        "settings:profile_options.html:title.about_me": "내 정보",
+        "settings:profile_options.html:label.display_name": "표시 이름",
+        "settings:profile_options.html:label.biography": "설명",
+        "settings:profile_options.html:label.sidebar": "사이드바",
+        "settings:profile_options.html:label.avatar_url": "아바타 URL",
+        "settings:profile_options.html:label.banner_url": "배너 URL",
+        "settings:profile_options.html:label.banner_fit": "배너 맞춤",
+        "settings:profile_options.html:label.desktop_top_left_logo": "(데스크탑) 좌상단 로고",
+
+        "settings:profile_options.html:title.greetings": "인사말",
+        "settings:profile_options.html:label.motivational_header": "동기부여 헤더",
+        "settings:profile_options.html:label.profile_warning": "프로필 경고",
+
+        "settings:profile_options.html:title.anonymous": "익명",
+        "settings:profile_options.html:label.anonymous_username": "익명 사용자명",
+        "settings:profile_options.html:label.anonymous_avatar_url": "익명 아바타 URL",
+
+        "settings:profile_options.html:title.feed": "피드",
+        "settings:profile_options.html:label.pinned": "고정됨",
+
+        "settings:privacy_options.html:title.general_privacy": "일반 프라이버시",
+        "settings:privacy_options.html:label.disable_questions": "질문 금지",
+        "settings:privacy_options.html:label.disable_anonymous_questions": "익명질문 비허용",
+        "settings:privacy_options.html:label.disable_anonymous_comments": "답글에 익명댓글 비허용",
+        "settings:privacy_options.html:label.require_account": "가입된 사용자만 질문 허용",
+        "settings:privacy_options.html:label.keep_socials_private": "비공개 계정 유지 (팔로워/팔로잉)",
+
+        "settings:privacy_options.html:title.moderation": "모더레이션",
+        "settings:privacy_options.html:label.filter": "필터",
+        "settings:privacy_options.html:text.filter": "질문에서 허용되지 않는 문자열 목록. 각각 다른 문자열은 새 줄에 있어야 합니다.",
+
+        "settings:sessions.html:title.sessions": "내 세션",
+        "settings:sessions.html:label.tag": "태그",
+        "settings:sessions.html:label.app": "앱",
+        "settings:sessions.html:label.permissions": "권한",
+        "settings:sessions.html:label.actions": "동작",
+        "settings:sessions.html:text.active": "활성회",
+        "settings:sessions.html:text.none": "None",
+        "settings:sessions.html:text.all": "전체",
+
+        "chats:chat.html:action.change_name": "이름 변경",
+        "chats:chat.html:action.add_friend": "친구 추가",
+        "chats:chat.html:action.leave": "떠나기",
+        "chats:chat.html:link.load_more": "더보기",
+        "chats:chat.html:link.go_back": "돌아가기",
+        "chats:chat.html:label.edit_chat_name": "채팅명 수정",
+        "chats:chat.html:label.select_a_friend": "친구 선택",
+
+        "mail:link.received": "받음",
+        "mail:link.sent": "보냄",
+        "mail:compose.html:title.compose_mail": "매일 작성",
+        "mail:compose.html:label.to": "To",
+        "mail:compose.html:label.subject": "제목",
+        "mail:compose.html:label.content": "내용",
+        "mail:mail.html:label.from": "From",
+        "mail:mail.html:label.sent": "보냄",
+        "mail:mail.html:text.system": "이 메일은 시스템 계정으로 전송되었습니다. 액세스 권한이 있는 모든 직원이 보고 답장할 수 있습니다."
+    }
+}
