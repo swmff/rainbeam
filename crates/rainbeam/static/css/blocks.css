@@ -252,7 +252,8 @@ footer section {
 .markdown-alert-tip,
 .markdown-alert-important,
 .markdown-alert-warning,
-.markdown-alert-caution {
+.markdown-alert-caution,
+.markdown-alert-draft {
     margin-bottom: 1rem;
     width: 100%;
     border-radius: var(--radius);
@@ -261,13 +262,15 @@ footer section {
     align-items: center;
     font-style: normal;
     border: 0;
+    transform: all 0.15s;
 }
 
 .markdown-alert-note p,
 .markdown-alert-tip p,
 .markdown-alert-important p,
 .markdown-alert-warning p,
-.markdown-alert-caution p {
+.markdown-alert-caution p,
+.markdown-alert-draft p {
     opacity: 100% !important;
 }
 
@@ -319,6 +322,15 @@ footer section {
 .markdown-alert-caution:is(.dark *) {
     background-color: rgb(248 113 113 / 0.15);
     color: rgb(254 202 202 / 0.75);
+}
+
+.markdown-alert-draft {
+    background: var(--color-surface);
+    border: dashed 2px var(--color-super-lowered);
+}
+
+.markdown-alert-draft:hover {
+    border-color: var(--color-primary);
 }
 
 .footnote-definition {

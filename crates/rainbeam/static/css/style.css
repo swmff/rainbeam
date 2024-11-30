@@ -165,3 +165,7 @@
 .red {
     color: var(--color-red) !important;
 }
+
+.hidden {
+    display: none;
+}

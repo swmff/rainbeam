@@ -395,62 +395,6 @@
         }
     });
 
-    app.define("hook.warning", function (_, event) {
-        for (const element of Array.from(
-            document.querySelectorAll("[data-warning]") || [],
-        )) {
-            const warning = element.getAttribute("data-warning");
-
-            if (warning === "") {
-                continue;
-            }
-
-            element.style.position = "relative";
-            element.style.overflow = "hidden";
-
-            const warning_element = document.createElement("div");
-            warning_element.setAttribute(
-                "style",
-                `position: absolute;
-                top: 0;
-                left: 0;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                gap: 0.25rem;
-                width: 100%;
-                height: 100%;
-                border-radius: inherit;
-                cursor: pointer;
-                padding: 1rem;
-                background: var(--color-raised);`,
-            );
-
-            warning_element.innerHTML = `<p>${warning}</p><button class="primary bold round-lg">View content</button>`;
-            element.appendChild(warning_element);
-
-            // compute new height
-            const warning_rect = warning_element.getBoundingClientRect();
-            const paragraph_rect = warning_element
-                .querySelector("p")
-                .getBoundingClientRect();
-
-            element.style.height = `${warning_rect.height + paragraph_rect.height}px`;
-
-            // event
-            const listener = () => {
-                warning_element.removeEventListener("click", listener);
-                warning_element.remove();
-
-                element.style.height = "auto";
-                element.style.overflow = "unset";
-            };
-
-            warning_element.addEventListener("click", listener);
-        }
-    });
-
     app.define("hook.alt", function (_) {
         for (const element of Array.from(
             document.querySelectorAll("img") || [],

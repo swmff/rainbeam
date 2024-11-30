@@ -1,10 +1,9 @@
-<div
-    class="card-nest w-full shadow response"
-    data-warning="{{ response.context.warning }}"
->
+<div class="card-nest w-full shadow response">
     {% if (do_not_render_question == false) && (response.context.is_post ==
     false) %}
-    <div class="card flex flex-col gap-1">
+    <div
+        class="card flex flex-col gap-1 question {% if !response.context.warning.is_empty() %}hidden{% endif %}"
+    >
         <div class="flex justify-between gap-1 question_title">
             <div class="footernav">
                 <b class="flex items-center gap-2 item">
@@ -145,7 +144,7 @@
         {% endif %}
 
         <!-- prettier-ignore -->
-        <span class="response_content" hook="long">
+        <span class="response_content {% if !response.context.warning.is_empty() %}hidden{% endif %}" hook="long">
             {{ shared::ui::render_markdown(response.content)|safe }}
 
             {% if !response.reply.is_empty() && response.context.is_post == true && do_render_nested == true %}
@@ -156,7 +155,26 @@
             {% endif %}
         </span>
 
-        {% if do_render_nested == true %}
+        {% if !response.context.warning.is_empty() %}
+        <span
+            class="response_warning markdown-alert-draft"
+            style="cursor: pointer; margin-bottom: 0"
+        >
+            <div class="flex flex-col gap-4 w-full">
+                {{ response.context.warning }}
+
+                <div class="flex items-center gap-4">
+                    <button class="bold primary border small">
+                        {{ text "general:dialog.okay" }}
+                    </button>
+
+                    <span class="fade text-small">
+                        {{ text "response_inner.html:text.click_to_view" }}
+                    </span>
+                </div>
+            </div>
+        </span>
+        {% endif %} {% if do_render_nested == true %}
         <span class="response_tags flex gap-2 flex-wrap">
             {% for tag in response.tags %}
             <a

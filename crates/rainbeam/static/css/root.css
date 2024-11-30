@@ -298,6 +298,10 @@ a:hover {
     text-decoration: underline;
 }
 
+.text-small {
+    font-size: 14px;
+}
+
 img {
     display: inline;
     max-width: 100%;

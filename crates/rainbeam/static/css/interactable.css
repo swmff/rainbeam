@@ -32,6 +32,11 @@ a.button {
     font-size: 0.9rem;
 }
 
+button.small,
+a.button.small {
+    min-height: 24px;
+}
+
 button.big,
 a.button.big {
     padding: 12px 20px;
@@ -107,6 +112,7 @@ a.button.camo:hover {
 button.primary,
 a.button.primary {
     background: var(--color-primary);
+    border-color: var(--color-primary) !important;
     color: var(--color-text-primary);
 }
 

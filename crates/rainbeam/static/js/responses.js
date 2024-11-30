@@ -228,6 +228,28 @@
             dropdown.removeAttribute("open");
         }
 
+        // check for warning
+        const warning = document.querySelector(
+            `#response\\:${id} .response_warning`,
+        );
+
+        if (warning) {
+            const content = document.querySelector(
+                `#response\\:${id} .response_content`,
+            );
+
+            const question = document.querySelector(
+                `#response\\:${id} .question`,
+            );
+
+            if (question) {
+                question.classList.remove("hidden");
+            }
+
+            content.classList.remove("hidden");
+            warning.classList.add("hidden");
+        }
+
         // ...
         if (!do_render_nested) {
             window.location.href = `/response/${id}`;
