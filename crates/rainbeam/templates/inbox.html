@@ -29,6 +29,13 @@
         <div class="markdown-alert-warning">
             <span>{{ text "general:text.no_results" }}</span>
         </div>
+        {% else %}
+        <div class="w-full flex justify-between">
+            <div></div>
+            <button onclick="clear_inbox()" class="secondary red">
+                {{ icon "bomb" }} {{ text "general:action.clear" }}
+            </button>
+        </div>
         {% endif %} {% for question in unread %}
         <div class="card-nest w-full shadow" id="question:{{ question.id }}">
             <div class="card flex flex-col gap-1">
@@ -129,22 +136,22 @@
                                 onclick="trigger('questions:delete', ['{{ question.id }}'])"
                                 class="red"
                             >
-                                {{ icon "trash" }} {{
-                                text "general:action.delete" }}
+                                {{ icon "trash" }} {{ text
+                                "general:action.delete" }}
                             </a>
 
                             <a
                                 href="javascript:trigger('questions:ipblock', ['{{ question.id }}'])"
                             >
-                                {{ icon "shield" }} {{
-                                text "general:action.ip_block" }}
+                                {{ icon "shield" }} {{ text
+                                "general:action.ip_block" }}
                             </a>
 
                             <a
                                 href="javascript:trigger('reports:bootstrap', ['questions', '{{ question.id }}'])"
                             >
-                                {{ icon "flag" }} {{
-                                text "general:action.report" }}
+                                {{ icon "flag" }} {{ text
+                                "general:action.report" }}
                             </a>
                         </div>
                     </div>
@@ -218,6 +225,27 @@
             // reset if successful
             e.target.reset();
         });
+    }
+
+    async function clear_inbox() {
+        if (
+            !(await trigger("app:confirm", [
+                "Are you sure you want to do this? This will delete every question currently in your inbox permanently.",
+            ]))
+        ) {
+            return;
+        }
+
+        fetch(`/api/v1/questions/inbox/me/clear`, {
+            method: "POST",
+        })
+            .then((res) => res.json())
+            .then((res) => {
+                trigger("app:toast", [
+                    res.success ? "success" : "error",
+                    res.success ? "Inbox cleared!" : res.message,
+                ]);
+            });
     }
 
     setTimeout(() => {

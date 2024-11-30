@@ -1561,6 +1561,51 @@ impl Database {
         };
     }
 
+    /// Delete all questions by their recipient
+    ///
+    /// ## Arguments:
+    /// * `recipient`
+    /// * `user`
+    pub async fn delete_questions_by_recipient(
+        &self,
+        recipient: String,
+        user: Profile,
+    ) -> Result<()> {
+        // check username
+        if user.id != recipient {
+            // check permission
+            let group = match self.auth.get_group_by_id(user.group).await {
+                Ok(g) => g,
+                Err(_) => return Err(DatabaseError::Other),
+            };
+
+            if !group.permissions.contains(&Permission::Helper) {
+                return Err(DatabaseError::NotAllowed);
+            }
+        }
+
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "DELETE FROM \"xquestions\" WHERE \"recipient\" = ?"
+        } else {
+            "DELETE FROM \"xquestions\" WHERE \"recipient\" = $1"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        if let Err(_) = sqlquery(&query)
+            .bind::<&String>(&recipient.to_lowercase())
+            .execute(c)
+            .await
+        {
+            return Err(DatabaseError::NotFound);
+        };
+
+        // return
+        Ok(())
+    }
+
     // responses
 
     /// Get a response from a database result

@@ -51,30 +51,28 @@ note = user.metadata.soft_get("sparkler:status_note") %} {% if !note.is_empty()
                             target="_blank"
                             class="red"
                         >
-                            {{ icon "trash" }} {{
-                            text "general:action.clear" }}
+                            {{ icon "trash" }} {{ text "general:action.clear" }}
                         </a>
                         {% endif %}
 
                         <b class="title">Actions</b>
 
                         <a href="/@{{ user.username }}">
-                            {{ icon "circle-user-round" }} {{
-                            text "general:link.show_profile" }}
+                            {{ icon "circle-user-round" }} {{ text
+                            "general:link.show_profile" }}
                         </a>
 
                         <button
                             onclick="trigger('chats:create', ['{{ user.id }}'])"
                         >
-                            {{ icon "message-circle-plus" }} {{
-                            text "general:link.chat" }}
+                            {{ icon "message-circle-plus" }} {{ text
+                            "general:link.chat" }}
                         </button>
 
                         <a
                             href="javascript:trigger('reports:bootstrap', ['profiles', '{{ user.username }}'])"
                         >
-                            {{ icon "flag" }} {{
-                            text "general:action.report" }}
+                            {{ icon "flag" }} {{ text "general:action.report" }}
                         </a>
                     </div>
                 </div>
@@ -85,7 +83,7 @@ note = user.metadata.soft_get("sparkler:status_note") %} {% if !note.is_empty()
                     type="button"
                     title="Close"
                 >
-                    {{ icon "circle-x" }}
+                    {{ icon "x" }}
                 </button>
             </div>
         </div>

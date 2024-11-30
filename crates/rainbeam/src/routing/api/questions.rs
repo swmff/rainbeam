@@ -19,6 +19,8 @@ pub fn routes(database: Database) -> Router {
         .route("/", post(create_request))
         .route("/:id", get(get_request))
         .route("/:id", delete(delete_request))
+        .route("/inbox/:id/clear", post(delete_inbox_request))
+        .route("/inbox/me/clear", post(delete_my_inbox_request))
         .route("/:id/report", post(report_request))
         .route("/:id/ipblock", post(ipblock_request))
         // ...
@@ -226,6 +228,80 @@ pub async fn delete_request(
         },
         Err(e) => e.into(),
     })
+}
+
+/// [`Database::delete_questions_by_recipient`]
+pub async fn delete_inbox_request(
+    jar: CookieJar,
+    Path(id): Path<String>,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    // get user from token
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => {
+                return Json(DatabaseError::NotAllowed.into());
+            }
+        },
+        None => {
+            return Json(DatabaseError::NotAllowed.into());
+        }
+    };
+
+    // ...
+    Json(
+        match database.delete_questions_by_recipient(id, auth_user).await {
+            Ok(r) => DefaultReturn {
+                success: true,
+                message: String::new(),
+                payload: Some(r),
+            },
+            Err(e) => e.into(),
+        },
+    )
+}
+
+/// [`Database::delete_questions_by_recipient`]
+pub async fn delete_my_inbox_request(
+    jar: CookieJar,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    // get user from token
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => {
+                return Json(DatabaseError::NotAllowed.into());
+            }
+        },
+        None => {
+            return Json(DatabaseError::NotAllowed.into());
+        }
+    };
+
+    // ...
+    Json(
+        match database
+            .delete_questions_by_recipient(auth_user.id.clone(), auth_user)
+            .await
+        {
+            Ok(r) => DefaultReturn {
+                success: true,
+                message: String::new(),
+                payload: Some(r),
+            },
+            Err(e) => e.into(),
+        },
+    )
 }
 
 /// Report a question
