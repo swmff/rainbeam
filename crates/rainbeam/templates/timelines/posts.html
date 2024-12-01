@@ -71,13 +71,16 @@ block head %}
             <div></div>
             <div class="flex gap-2">
                 {% if profile.is_some() %}
-                <a href="/intents/post" class="button primary bold">
+                <a href="/intents/post" class="button primary bold icon-only">
                     {{ icon "plus" }}
                 </a>
                 {% endif %}
 
-                <a href="/search?driver=2" class="button secondary bold">
-                    {{ icon "search" }} {{ text "general:link.search" }}
+                <a
+                    href="/search?driver=2"
+                    class="button secondary bold icon-only"
+                >
+                    {{ icon "search" }}
                 </a>
             </div>
         </div>

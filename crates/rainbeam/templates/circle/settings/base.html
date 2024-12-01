@@ -44,13 +44,16 @@ config.name }}{% endblock %} {% block nav_left %}
     </section>
 </article>
 
-<script type="application/json" id="my_metadata">
-    {{ metadata|safe }}
-</script>
+<!-- prettier-ignore -->
+<script type="application/json" id="my_metadata">{{ metadata|safe }}</script>
 
 <script>
     const app = ns("app");
-    let metadata = JSON.parse(document.getElementById("my_metadata").innerHTML);
+    let metadata = JSON.parse(
+        document
+            .getElementById("my_metadata")
+            .innerText.replaceAll("\n", "\\n"),
+    );
 
     // handle update
     globalThis.update_kv = (key, value) => {

@@ -73,9 +73,8 @@ crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
     </section>
 </article>
 
-<script type="application/json" id="my_metadata">
-    {{ metadata|safe }}
-</script>
+<!-- prettier-ignore -->
+<script type="application/json" id="my_metadata">{{ metadata|safe }}</script>
 
 {% let profile = profile.as_ref().unwrap() %}
 
@@ -83,7 +82,9 @@ crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
     (() => {
         const app = ns("app");
         let metadata = JSON.parse(
-            document.getElementById("my_metadata").innerHTML,
+            document
+                .getElementById("my_metadata")
+                .innerText.replaceAll("\n", "\\n"),
         );
 
         // handle update

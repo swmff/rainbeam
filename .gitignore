@@ -14,4 +14,5 @@ crates/rainbeam/static/build/
 crates/rainbeam/templates_build/
 *.db
 .config/config.toml
+.config/databeam/config.toml
 .config/.well-known/citrus/citrus.toml

@@ -1,0 +1,6 @@
+[connection]
+type = "mysql"
+host="localhost:3306"
+user="mysql"
+pass="mysql"
+name="mysql"
