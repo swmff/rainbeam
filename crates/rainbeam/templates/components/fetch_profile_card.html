@@ -23,10 +23,7 @@
         }
 
         // load shadowroot
-        root.innerHTML = `<div>${await (
-            await fetch(`/@${username}/_app/card.html`)
-        ).text()}</div>`;
-        root.innerHTML += `<style>${sheet}</style>`; // adoptedStyleSheets is so stupid, this is much easier
+        root.innerHTML += `<link rel="stylesheet" href="/static/build/css/style.css" />`;
         root.children[0].setAttribute(
             "class",
             document.documentElement.getAttribute("class"),

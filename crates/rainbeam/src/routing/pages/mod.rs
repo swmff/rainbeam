@@ -20,12 +20,13 @@ use crate::ToHtml;
 
 use super::api;
 
-mod chats;
-mod circles;
-mod mail;
-mod profile;
-mod search;
-mod settings;
+pub mod chats;
+pub mod circles;
+pub mod mail;
+pub mod profile;
+pub mod search;
+pub mod settings;
+pub mod sites;
 
 /// Escape a username's characters if we are unable to find a "good" character
 ///
@@ -1619,6 +1620,12 @@ pub async fn global_timeline_request(
             continue;
         }
 
+        if is_helper {
+            // make sure staff can view your questions
+            relationships.insert(question.0.author.id.clone(), RelationshipStatus::Friends);
+            continue;
+        }
+
         if question.0.author.id == auth_user.id {
             // make sure we can view our own responses
             relationships.insert(question.0.author.id.clone(), RelationshipStatus::Friends);
@@ -1702,6 +1709,15 @@ pub async fn public_global_timeline_request(
         .get_notification_count_by_recipient(auth_user.id.to_owned())
         .await;
 
+    let is_helper = {
+        let group = match database.auth.get_group_by_id(auth_user.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        group.permissions.contains(&Permission::Helper)
+    };
+
     let mut questions = match database.get_global_questions_paginated(query.page).await {
         Ok(r) => r,
         Err(e) => return Html(e.to_html(database)),
@@ -1733,6 +1749,12 @@ pub async fn public_global_timeline_request(
 
     for question in &questions {
         if relationships.contains_key(&question.0.author.id) {
+            continue;
+        }
+
+        if is_helper {
+            // make sure staff can view your questions
+            relationships.insert(question.0.author.id.clone(), RelationshipStatus::Friends);
             continue;
         }
 
@@ -2195,6 +2217,7 @@ pub async fn routes(database: Database) -> Router {
             "/@:username/friends/requests",
             get(profile::friend_requests_request),
         )
+        .route("/@:username/friends/blocks", get(profile::blocks_request))
         .route("/@:username/embed", get(profile::profile_embed_request))
         .route(
             "/@:username/relationship/friend_accept",
@@ -2258,6 +2281,10 @@ pub async fn routes(database: Database) -> Router {
             "/inbox/mail/_app/components/mail.html",
             get(mail::partial_mail_request),
         )
+        // sites
+        .route("/sites", get(sites::sites_homepage_request))
+        .route("/sites/editor", get(sites::site_editor_request))
+        .route("/:id", get(sites::site_view_request))
         // auth
         .route("/login", get(login_request))
         .route("/sign_up", get(sign_up_request))
@@ -2268,6 +2295,7 @@ pub async fn routes(database: Database) -> Router {
         .route("/+u/:id", get(api::profiles::expand_request))
         .route("/+i/:ip", get(api::profiles::expand_ip_request))
         .route("/+g/:id", get(api::circles::expand_request))
+        .route("/+s/:id", get(api::sites::expand_request))
         // partials
         .route(
             "/_app/components/response.html",

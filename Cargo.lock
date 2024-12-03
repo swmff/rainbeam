@@ -1929,7 +1929,7 @@ dependencies = [
 
 [[package]]
 name = "rainbeam"
-version = "1.18.1"
+version = "1.18.3"
 dependencies = [
  "ammonia",
  "askama",
@@ -1960,7 +1960,7 @@ dependencies = [
 
 [[package]]
 name = "rainbeam-core"
-version = "1.18.1"
+version = "1.18.3"
 dependencies = [
  "ammonia",
  "async-recursion",

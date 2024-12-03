@@ -1354,6 +1354,122 @@ pub async fn friend_requests_request(
 }
 
 #[derive(Template)]
+#[template(path = "profile/social/blocks.html")]
+struct BlocksTemplate {
+    config: Config,
+    lang: langbeam::LangFile,
+    profile: Option<Profile>,
+    unread: usize,
+    notifs: usize,
+    other: Profile,
+    blocks: Vec<(Profile, Profile)>,
+    followers_count: usize,
+    following_count: usize,
+    friends_count: usize,
+    page: i32,
+    // ...
+    is_self: bool,
+    is_helper: bool,
+}
+
+/// GET /@:username/friends/blocks
+pub async fn blocks_request(
+    jar: CookieJar,
+    Path(username): Path<String>,
+    State(database): State<Database>,
+    Query(query): Query<PaginatedQuery>,
+) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => return Html(DatabaseError::NotAllowed.to_html(database)),
+        },
+        None => return Html(DatabaseError::NotAllowed.to_html(database)),
+    };
+
+    let unread = match database
+        .get_questions_by_recipient(auth_user.id.to_owned())
+        .await
+    {
+        Ok(unread) => unread.len(),
+        Err(_) => 0,
+    };
+
+    let notifs = database
+        .auth
+        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .await;
+
+    let is_helper = {
+        let group = match database.auth.get_group_by_id(auth_user.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        group.permissions.contains(&Permission::Helper)
+    };
+
+    if !is_helper {
+        return Html(DatabaseError::NotAllowed.to_html(database));
+    }
+
+    let other = match database
+        .auth
+        .get_profile_by_username(username.clone())
+        .await
+    {
+        Ok(ua) => ua,
+        Err(e) => return Html(e.to_string()),
+    };
+
+    let is_self = auth_user.id == other.id;
+
+    if !is_self && !is_helper {
+        return Html(DatabaseError::NotAllowed.to_html(database));
+    }
+
+    Html(
+        BlocksTemplate {
+            config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
+            profile: Some(auth_user),
+            unread,
+            notifs,
+            other: other.clone(),
+            blocks: database
+                .auth
+                .get_user_participating_relationships_of_status_paginated(
+                    other.id.clone(),
+                    RelationshipStatus::Blocked,
+                    query.page,
+                )
+                .await
+                .unwrap(),
+            followers_count: database.auth.get_followers_count(other.id.clone()).await,
+            following_count: database.auth.get_following_count(other.id.clone()).await,
+            friends_count: database
+                .auth
+                .get_friendship_count_by_user(other.id.clone())
+                .await,
+            page: query.page,
+            // ...
+            is_self,
+            is_helper,
+        }
+        .render()
+        .unwrap(),
+    )
+}
+
+#[derive(Template)]
 #[template(path = "profile/questions.html")]
 struct ProfileQuestionsTemplate {
     config: Config,

@@ -13,7 +13,7 @@
     >
 </a>
 
-<a href="/@{{ other.username }}/friends" class="active">
+<a href="/@{{ other.username }}/friends">
     <span
         >{{ text "general:link.friends" }}
         <b class="notification">{{ friends_count }}</b></span
@@ -25,25 +25,46 @@
     ><span>{{ text "general:link.requests" }}</span></a
 >
 {% endif %} {% if is_helper %}
-<a href="/@{{ other.username }}/friends/blocks"
+<a href="/@{{ other.username }}/friends/blocks" class="active"
     ><span>{{ text "settings:account.html:title.blocks" }}</span></a
 >
 {% endif %} {% endblock %} {% block panel %}
-<!-- friends -->
-<div id="friends" class="flex flex-col items-center gap-4">
-    <!-- prettier-ignore -->
-    {% for relationship in friends %}
-        {% if other.id != relationship.0.id %}
-            {% let user = relationship.0.clone () %}
-            {% include "components/fetch_profile_card.html" %}
-        {% else %}
-            {% let user = relationship.1.clone () %}
-            {% include "components/fetch_profile_card.html" %}
+<!-- friend requests -->
+<div id="requests">
+    <table class="w-full">
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>User</th>
+            </tr>
+        </thead>
+
+        {% if let Some(user) = profile %}
+
+        <tbody>
+            {% for block in blocks %} {% let outbound = block.0.id == user.id %}
+            <tr>
+                <td>{% if outbound %}Outbound{% else %}Inbound{% endif %}</td>
+
+                <td>
+                    {% if outbound %}
+                    <a href="/@{{ block.1.username }}">
+                        {{ block.1.username }}
+                    </a>
+                    {% else %}
+                    <a href="/@{{ block.0.username }}">
+                        {{ block.0.username }}
+                    </a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
         {% endif %}
-    {% endfor %}
+    </table>
 
     <!-- pagination buttons -->
-    {% if friends_count != 0 %}
+    {% if blocks.len() != 0 %}
     <div class="flex justify-between gap-2 w-full">
         {% if page > 0 %}
         <a class="button secondary" href="?page={{ page - 1 }}"
@@ -51,11 +72,10 @@
         >
         {% else %}
         <div></div>
-        {% endif %} {% if friends.len() != 0 %}
+        {% endif %}
         <a class="button secondary" href="?page={{ page + 1 }}"
             >{{ text "general:link.next" }}</a
         >
-        {% endif %}
     </div>
     {% endif %}
 </div>

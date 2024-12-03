@@ -1,0 +1,329 @@
+<!-- 🌈 RAINBEAM <https://github.com/swmff/rainbeam> -->
+<!doctype html>
+
+<html lang="en" prefix="og: https://ogp.me/ns#">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <meta
+            http-equiv="content-security-policy"
+            content="default-src 'self' blob:; img-src * data:; media-src *; font-src *; style-src 'unsafe-inline' 'self' blob: *; script-src 'self' 'unsafe-inline' blob: *; object-src 'self' blob: *; upgrade-insecure-requests; connect-src * localhost; frame-src 'self' blob: data: *"
+        />
+
+        <title>{% block title %}{{ title }}{% endblock %}</title>
+        {% block head %}{% endblock %}
+
+        <link rel="icon" href="/static/favicon.svg" />
+        <link rel="manifest" href="/manifest.json" />
+
+        <meta name="theme-color" content="#b62f5a" />
+        <meta name="description" content="{{ config.description }}" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="{{ config.name }}" />
+
+        <meta name="turbo-prefetch" content="false" />
+        <meta name="turbo-refresh-method" content="morph" />
+        <meta name="turbo-refresh-scroll" content="preserve" />
+
+        <link rel="stylesheet" href="/static/build/css/style.css" />
+
+        <!-- shared js -->
+        <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+        <!-- <script
+            src="https://unpkg.com/@hotwired/turbo@8.0.5/dist/turbo.es2017-esm.js"
+            type="module"
+            async
+            defer
+        ></script> -->
+
+        <script>
+            globalThis.ns_verbose = false;
+            globalThis.ns_config = {
+                root: "/static/build/js/",
+                version: '{{ var "commit" }}',
+                verbose: globalThis.ns_verbose,
+            };
+
+            globalThis._app_base = {
+                name: "rainbeam",
+                config: {
+                    name: "{{ config.name }}",
+                    description: `{{ config.description }}`,
+                    host: "{{ config.host }}",
+                    citrus_id: "{{ config.citrus_id }}",
+                },
+                build: {
+                    time: '{{ var "time" }}',
+                    commit: '{{ var "commit" }}',
+                    commit_short: '{{ var "commit_short" }}',
+                },
+                ns_store: {},
+                classes: {},
+            };
+        </script>
+
+        <script
+            src="/static/build/js/loader.js"
+            id="loader.js"
+            data-turbo-permanent
+        ></script>
+
+        <script
+            src="/static/build/js/app.js"
+            id="app.js"
+            data-turbo-permanent
+        ></script>
+
+        <script>
+            function media_theme_pref() {
+                if (
+                    window.matchMedia("(prefers-color-scheme: dark)").matches &&
+                    !window.localStorage.getItem("theme")
+                ) {
+                    document.documentElement.classList.add("dark");
+                    // window.localStorage.setItem("theme", "dark");
+                } else if (
+                    window.matchMedia("(prefers-color-scheme: light)")
+                        .matches &&
+                    !window.localStorage.getItem("theme")
+                ) {
+                    document.documentElement.classList.remove("dark");
+                    // window.localStorage.setItem("theme", "light");
+                } else if (window.localStorage.getItem("theme")) {
+                    /* restore theme */
+                    const current = window.localStorage.getItem("theme");
+                    document.documentElement.className = current;
+                }
+            }
+
+            media_theme_pref();
+        </script>
+    </head>
+
+    <body>
+        <div id="top"></div>
+
+        {% if let Some(user) = profile %} {% if user.group == -1 %}
+        <div
+            class="markdown-alert-caution flex flex-collapse items-center justify-center gap-4"
+            style="border-radius: 0 !important; margin-bottom: 0 !important"
+        >
+            {{ icon "shield-ban" }}
+            <span> {{ text "base.html:text.account_banned" }} </span>
+        </div>
+
+        <style>
+            body {
+                overflow: hidden;
+            }
+
+            #page {
+                opacity: 50%;
+                pointer-events: none;
+                user-select: none;
+            }
+        </style>
+        {% endif %} {% endif %} {% if !config.alert.is_empty() %}
+        <div
+            class="markdown-alert-tip flex flex-collapse items-center justify-center gap-4"
+            style="border-radius: 0 !important; margin-bottom: 0 !important"
+            id="annc_banner"
+        >
+            {{ icon "megaphone" }}
+            <span>{{ shared::ui::render_markdown(config.alert)|safe }}</span>
+        </div>
+
+        <script>
+            (() => {
+                const annc_banner = document.getElementById("annc_banner");
+                const seen_banner = window.localStorage.getItem("seen_banner");
+
+                if (
+                    seen_banner &&
+                    annc_banner.children[1].innerText === seen_banner
+                ) {
+                    annc_banner.remove(); // remove banner
+                } else {
+                    window.localStorage.setItem(
+                        "seen_banner",
+                        annc_banner.children[1].innerText,
+                    );
+                }
+            })();
+        </script>
+
+        <style>
+            #annc_banner span p {
+                margin-bottom: 0;
+            }
+        </style>
+        {% endif %} {% block base %}{% endblock %}
+
+        <script data-turbo-eval="false">
+            // load resources
+            use("dialogs", () => {});
+            use("warnings", () => {});
+            use("search", () => {});
+
+            use("questions", () => {});
+            use("responses", () => {});
+            use("comments", () => {});
+            use("reactions", () => {});
+            use("chats", () => {});
+            use("mail", () => {});
+            use("sites", () => {});
+
+            use("notifications", () => {});
+
+            use("reports", () => {});
+            use("account_warnings", () => {});
+
+            // load classes
+            require("PartialComponent", () => {});
+        </script>
+
+        <script src="https://unpkg.com/@twemoji/api@15.1.0/dist/twemoji.min.js"></script>
+
+        <script>
+            (() => {
+                const app = ns("app");
+                app.clean_date_codes();
+                app.link_filter();
+
+                setTimeout(() => {
+                    // this is so some pages can choose to refresh even with turbo="true"
+                    app.PREVIOUSLY_EXISTED = true;
+
+                    if (
+                        !window.location.pathname.startsWith("@") &&
+                        !window.location.pathname.startsWith("+")
+                    ) {
+                        // everything that isn't a profile will go back to respecting user theme choice
+                        if (
+                            globalThis.USES_DIFF_THEME === true &&
+                            globalThis.IS_SELF_THEME === false
+                        ) {
+                            media_theme_pref();
+                            console.log("use media theme pref");
+                        }
+                    }
+                }, 1000);
+
+                app["hook.scroll"](document.body, document.documentElement);
+                app["hook.dropdown.init"](window);
+                app["hook.character_counter.init"]();
+                app["hook.long_text.init"]();
+                app["hook.alt"]();
+                app["hook.ips"]();
+                app["hook.partial_embeds"]();
+                app["hook.check_reactions"]();
+
+                twemoji.parse(document.body);
+            })();
+        </script>
+
+        <!-- dialogs -->
+        <dialog id="link_filter">
+            <div class="inner">
+                <p>Pressing continue will bring you to the following URL:</p>
+                <pre><code id="link_filter_url"></code></pre>
+                <p>Are sure you want to go there?</p>
+
+                <hr />
+                <div class="flex gap-2">
+                    <a
+                        class="button primary bold"
+                        id="link_filter_continue"
+                        rel="noopener noreferrer"
+                        target="_blank"
+                        onclick="document.getElementById('link_filter').close()"
+                    >
+                        {{ text "general:dialog.continue" }}
+                    </a>
+                    <button
+                        class="bold"
+                        type="button"
+                        onclick="document.getElementById('link_filter').close()"
+                    >
+                        {{ text "general:dialog.cancel" }}
+                    </button>
+                </div>
+            </div>
+        </dialog>
+
+        <dialog id="web_api_prompt">
+            <div class="inner flex flex-col gap-2">
+                <form
+                    class="flex gap-2 flex-col"
+                    onsubmit="event.preventDefault()"
+                >
+                    <label for="prompt" id="web_api_prompt:msg"></label>
+                    <input id="prompt" name="prompt" />
+
+                    <div class="flex justify-between">
+                        <div></div>
+
+                        <div class="flex gap-2">
+                            <button
+                                title="Search"
+                                class="primary bold circle"
+                                onclick="globalThis.web_api_prompt_submit(document.getElementById('prompt').value); document.getElementById('prompt').value = ''"
+                                type="buton"
+                            >
+                                {{ icon "check" }} {{ text "general:dialog.okay"
+                                }}
+                            </button>
+
+                            <button
+                                class="bold red camo circle"
+                                onclick="globalThis.web_api_prompt_submit('')"
+                                type="button"
+                                title="Close"
+                            >
+                                {{ icon "x" }} {{ text "general:dialog.cancel"
+                                }}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </dialog>
+
+        <dialog id="web_api_confirm">
+            <div class="inner flex flex-col gap-2">
+                <form
+                    class="flex gap-2 flex-col"
+                    onsubmit="event.preventDefault()"
+                >
+                    <label id="web_api_confirm:msg"></label>
+
+                    <div class="flex justify-between">
+                        <div></div>
+
+                        <div class="flex gap-2">
+                            <button
+                                title="Search"
+                                class="primary bold circle"
+                                onclick="globalThis.web_api_confirm_submit(true)"
+                                type="buton"
+                            >
+                                {{ icon "check" }} {{ text "general:dialog.yes"
+                                }}
+                            </button>
+
+                            <button
+                                class="bold red camo circle"
+                                onclick="globalThis.web_api_confirm_submit(false)"
+                                type="button"
+                                title="Close"
+                            >
+                                {{ icon "x" }} {{ text "general:dialog.no" }}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </dialog>
+    </body>
+</html>

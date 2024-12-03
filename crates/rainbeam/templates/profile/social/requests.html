@@ -24,6 +24,10 @@
 <a href="/@{{ other.username }}/friends/requests" class="active"
     ><span>{{ text "general:link.requests" }}</span></a
 >
+{% endif %} {% if is_helper %}
+<a href="/@{{ other.username }}/friends/blocks"
+    ><span>{{ text "settings:account.html:title.blocks" }}</span></a
+>
 {% endif %} {% endblock %} {% block panel %}
 <!-- friend requests -->
 <div id="requests">

@@ -26,9 +26,6 @@ pub struct Tiers {
     /// A small badge shwon on the user's profile
     #[serde(default)]
     pub profile_badge: i32,
-    /// Pages access (super long blog-like posts)
-    #[serde(default)]
-    pub pages: i32,
 }
 
 impl Default for Tiers {
@@ -39,7 +36,6 @@ impl Default for Tiers {
             stylish_card: 1,
             avatar_crown: 1,
             profile_badge: 1,
-            pages: 1,
         }
     }
 }

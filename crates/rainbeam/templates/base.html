@@ -1,607 +1,260 @@
-<!-- 🌈 RAINBEAM <https://github.com/swmff/rainbeam> -->
-<!doctype html>
+{% extends "raw_base.html" %} {% block base %}
+<nav>
+    <div class="content_container">
+        <div class="flex gap-1 nav_side">
+            <a class="button desktop title" href="/">
+                <b>
+                    <img
+                        src="/static/images/ui/logo.svg"
+                        alt="{{ config.name }}"
+                        width="32px"
+                        height="32px"
+                        class="title-content"
+                        id="title-img"
+                    />
 
-<html lang="en" prefix="og: https://ogp.me/ns#">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-        <meta
-            http-equiv="content-security-policy"
-            content="default-src 'self' blob:; img-src * data:; media-src *; font-src *; style-src 'unsafe-inline' 'self' blob: *; script-src 'self' 'unsafe-inline' blob: *; object-src 'self' blob: *; upgrade-insecure-requests; connect-src * localhost; frame-src 'self' blob: data: *"
-        />
-
-        <title>{% block title %}{{ title }}{% endblock %}</title>
-        {% block head %}{% endblock %}
-
-        <link rel="icon" href="/static/favicon.svg" />
-        <link rel="manifest" href="/manifest.json" />
-
-        <meta name="theme-color" content="#b62f5a" />
-        <meta name="description" content="{{ config.description }}" />
-        <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="{{ config.name }}" />
-
-        <meta name="turbo-prefetch" content="false" />
-        <meta name="turbo-refresh-method" content="morph" />
-        <meta name="turbo-refresh-scroll" content="preserve" />
-
-        <link rel="stylesheet" href="/static/build/css/style.css" />
-
-        <!-- shared js -->
-        <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
-        <!-- <script
-            src="https://unpkg.com/@hotwired/turbo@8.0.5/dist/turbo.es2017-esm.js"
-            type="module"
-            async
-            defer
-        ></script> -->
-
-        <script>
-            globalThis.ns_verbose = false;
-            globalThis.ns_config = {
-                root: "/static/build/js/",
-                version: '{{ var "commit" }}',
-                verbose: globalThis.ns_verbose,
-            };
-
-            globalThis._app_base = {
-                name: "rainbeam",
-                config: {
-                    name: "{{ config.name }}",
-                    description: `{{ config.description }}`,
-                    host: "{{ config.host }}",
-                    citrus_id: "{{ config.citrus_id }}",
-                },
-                build: {
-                    time: '{{ var "time" }}',
-                    commit: '{{ var "commit" }}',
-                    commit_short: '{{ var "commit_short" }}',
-                },
-                ns_store: {},
-                classes: {},
-            };
-        </script>
-
-        <script
-            src="/static/build/js/loader.js"
-            id="loader.js"
-            data-turbo-permanent
-        ></script>
-
-        <script
-            src="/static/build/js/app.js"
-            id="app.js"
-            data-turbo-permanent
-        ></script>
-
-        <script>
-            function media_theme_pref() {
-                if (
-                    window.matchMedia("(prefers-color-scheme: dark)").matches &&
-                    !window.localStorage.getItem("theme")
-                ) {
-                    document.documentElement.classList.add("dark");
-                    // window.localStorage.setItem("theme", "dark");
-                } else if (
-                    window.matchMedia("(prefers-color-scheme: light)")
-                        .matches &&
-                    !window.localStorage.getItem("theme")
-                ) {
-                    document.documentElement.classList.remove("dark");
-                    // window.localStorage.setItem("theme", "light");
-                } else if (window.localStorage.getItem("theme")) {
-                    /* restore theme */
-                    const current = window.localStorage.getItem("theme");
-                    document.documentElement.className = current;
-                }
-            }
-
-            media_theme_pref();
-        </script>
-    </head>
-
-    <body>
-        <div id="top"></div>
-
-        {% if let Some(user) = profile %} {% if user.group == -1 %}
-        <div
-            class="markdown-alert-caution flex flex-collapse items-center justify-center gap-4"
-            style="border-radius: 0 !important; margin-bottom: 0 !important"
-        >
-            {{ icon "shield-ban" }}
-            <span> {{ text "base.html:text.account_banned" }} </span>
-        </div>
-
-        <style>
-            body {
-                overflow: hidden;
-            }
-
-            #page {
-                opacity: 50%;
-                pointer-events: none;
-                user-select: none;
-            }
-        </style>
-        {% endif %} {% endif %} {% if !config.alert.is_empty() %}
-        <div
-            class="markdown-alert-tip flex flex-collapse items-center justify-center gap-4"
-            style="border-radius: 0 !important; margin-bottom: 0 !important"
-            id="annc_banner"
-        >
-            {{ icon "megaphone" }}
-            <span>{{ shared::ui::render_markdown(config.alert)|safe }}</span>
-        </div>
-
-        <script>
-            (() => {
-                const annc_banner = document.getElementById("annc_banner");
-                const seen_banner = window.localStorage.getItem("seen_banner");
-
-                if (
-                    seen_banner &&
-                    annc_banner.children[1].innerText === seen_banner
-                ) {
-                    annc_banner.remove(); // remove banner
-                } else {
-                    window.localStorage.setItem(
-                        "seen_banner",
-                        annc_banner.children[1].innerText,
-                    );
-                }
-            })();
-        </script>
-
-        <style>
-            #annc_banner span p {
-                margin-bottom: 0;
-            }
-        </style>
-        {% endif %}
-
-        <nav>
-            <div class="content_container">
-                <div class="flex gap-1 nav_side">
-                    <a class="button desktop title" href="/">
-                        <b>
-                            <img
-                                src="/static/images/ui/logo.svg"
-                                alt="{{ config.name }}"
-                                width="32px"
-                                height="32px"
-                                class="title-content"
-                                id="title-img"
-                            />
-
-                            <b class="title-content" style="display: none"
-                                >{{ config.name }}</b
-                            >
-                        </b>
-                    </a>
-
-                    {% if profile.is_none() %}
-                    <a class="button mobile" href="/">
-                        {{ icon "house" }} Home
-                    </a>
-                    {% endif %} {% block nav_left %}{% endblock %}
-                </div>
-
-                <div class="flex gap-1 nav_side">
-                    {% block nav_right %}{% endblock %} {% if profile.is_some()
-                    %}
-                    <a
-                        class="button"
-                        title="Create a post"
-                        href="/intents/post"
+                    <b class="title-content" style="display: none"
+                        >{{ config.name }}</b
                     >
-                        {{ icon "square-pen" }}
+                </b>
+            </a>
+
+            {% if profile.is_none() %}
+            <a class="button mobile" href="/"> {{ icon "house" }} Home </a>
+            {% endif %} {% block nav_left %}{% endblock %}
+        </div>
+
+        <div class="flex gap-1 nav_side">
+            {% block nav_right %}{% endblock %} {% if profile.is_some() %}
+            <a class="button" title="Create a post" href="/intents/post">
+                {{ icon "square-pen" }}
+            </a>
+            {% endif %}
+
+            <div class="dropdown">
+                <button
+                    class="flex-row"
+                    onclick="trigger('app:hook.dropdown', [event])"
+                    exclude="dropdown"
+                    style="gap: 0.25rem !important"
+                >
+                    {% if let Some(profile) = profile %}
+                    <img
+                        title="{{ profile.username }}'s avatar"
+                        src="/api/v0/auth/profile/{{ profile.id }}/avatar"
+                        alt=""
+                        class="avatar shadow"
+                        style="--size: 24px"
+                    />
+                    {% endif %} {{ icon "chevron-down" c(dropdown-arrow) }}
+                </button>
+
+                <div class="inner shadow-md" exclude="dropdown">
+                    {% if let Some(profile) = profile %}
+                    <b class="title">{{ profile.username }}</b>
+
+                    <a href="/@{{ profile.username }}">
+                        {{ icon "circle-user-round" }} {{ text
+                        "general:link.show_profile" }}
+                    </a>
+
+                    <a href="/settings">
+                        {{ icon "settings" }} {{ text "general:link.settings" }}
+                    </a>
+
+                    <b class="title">{{ text "general:title.services" }}</b>
+
+                    <!-- <a href="/sites">
+                        {{ icon "blocks" }} {{ text "general:service.sites" }}
+                    </a> -->
+
+                    <a href="/chats">
+                        {{ icon "message-circle-more" }} {{ text
+                        "general:service.chats" }}
+                    </a>
+
+                    <a href="/inbox/mail"
+                        >{{ icon "mails" }} {{ text "general:service.mail" }}</a
+                    >
+
+                    <a href="/circles">
+                        {{ icon "users-round" }} {{ text
+                        "general:service.circles" }}
+                    </a>
+
+                    <b class="title">{{ text "general:title.social" }}</b>
+
+                    <a
+                        href="/@{{ profile.username }}/friends"
+                        title="My friends"
+                    >
+                        {{ icon "book-user" }} {{ text "general:link.friends" }}
+                    </a>
+
+                    <a
+                        href="/@{{ profile.username }}/friends/requests"
+                        title="My friend requests"
+                    >
+                        {{ icon "user-round-plus" }} {{ text
+                        "general:link.requests" }}
+                    </a>
+                    {% else %}
+                    <b class="title">{{ text "general:title.account" }}</b>
+
+                    <a href="/login" data-turbo="false">
+                        {{ icon "log-in" }} {{ text "general:link.login" }}
+                    </a>
+
+                    <a href="/sign_up" data-turbo="false">
+                        {{ icon "user-round-plus" }} {{ text
+                        "general:link.sign_up" }}
                     </a>
                     {% endif %}
 
-                    <div class="dropdown">
-                        <button
-                            class="flex-row"
-                            onclick="trigger('app:hook.dropdown', [event])"
-                            exclude="dropdown"
-                            style="gap: 0.25rem !important"
-                        >
-                            {% if let Some(profile) = profile %}
-                            <img
-                                title="{{ profile.username }}'s avatar"
-                                src="/api/v0/auth/profile/{{ profile.id }}/avatar"
-                                alt=""
-                                class="avatar shadow"
-                                style="--size: 24px"
-                            />
-                            {% endif %} {{ icon "chevron-down" c(dropdown-arrow)
-                            }}
-                        </button>
-
-                        <div class="inner shadow-md" exclude="dropdown">
-                            {% if let Some(profile) = profile %}
-                            <b class="title">{{ profile.username }}</b>
-
-                            <a href="/@{{ profile.username }}">
-                                {{ icon "circle-user-round" }} {{ text
-                                "general:link.show_profile" }}
-                            </a>
-
-                            <a href="/settings">
-                                {{ icon "settings" }} {{ text
-                                "general:link.settings" }}
-                            </a>
-
-                            <b class="title"
-                                >{{ text "general:title.services" }}</b
-                            >
-
-                            <a href="/chats">
-                                {{ icon "message-circle-more" }} {{ text
-                                "general:service.chats" }}
-                            </a>
-
-                            <a href="/inbox/mail"
-                                >{{ icon "mails" }} {{ text
-                                "general:service.mail" }}</a
-                            >
-
-                            <a href="/circles">
-                                {{ icon "users-round" }} {{ text
-                                "general:service.circles" }}
-                            </a>
-
-                            <b class="title"
-                                >{{ text "general:title.social" }}</b
-                            >
-
-                            <a
-                                href="/@{{ profile.username }}/friends"
-                                title="My friends"
-                            >
-                                {{ icon "book-user" }} {{ text
-                                "general:link.friends" }}
-                            </a>
-
-                            <a
-                                href="/@{{ profile.username }}/friends/requests"
-                                title="My friend requests"
-                            >
-                                {{ icon "user-round-plus" }} {{ text
-                                "general:link.requests" }}
-                            </a>
-                            {% else %}
-                            <b class="title"
-                                >{{ text "general:title.account" }}</b
-                            >
-
-                            <a href="/login" data-turbo="false">
-                                {{ icon "log-in" }} {{ text "general:link.login"
-                                }}
-                            </a>
-
-                            <a href="/sign_up" data-turbo="false">
-                                {{ icon "user-round-plus" }} {{ text
-                                "general:link.sign_up" }}
-                            </a>
-                            {% endif %}
-
-                            <!-- site stuff -->
-                            <b class="title">{{ config.name }}</b>
-
-                            <a href="/site/about">
-                                {{ icon "info" }} {{ text "base.html:link.about"
-                                }}
-                            </a>
-
-                            <a href="https://swmff.github.io/rainbeam/">
-                                {{ icon "book" }} {{ text
-                                "base.html:link.reference" }}
-                            </a>
-
-                            <!-- ... -->
-                            <a href="/search">
-                                {{ icon "search" }} {{ text
-                                "general:link.search" }}
-                            </a>
-
-                            {% if profile.is_some() %}
-                            <b class="title"></b>
-                            <a
-                                href="#"
-                                onclick="trigger('app:logout')"
-                                class="red"
-                            >
-                                {{ icon "log-out" }} {{ text
-                                "base.html:link.sign_out" }}
-                            </a>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </nav>
-
-        <div id="toast_zone"></div>
-
-        {% block under_nav %}{% endblock %}
-
-        <div id="page">
-            <div
-                id="loader"
-                style="width: 100dvw; height: 100dvh; display: none"
-                class="flex justify-center items-center flex-col"
-            >
-                <img
-                    src="/static/images/ui/logo.svg"
-                    alt="{{ config.name }}"
-                    width="64px"
-                    height="64px"
-                    class="spinner"
-                />
-            </div>
-
-            <div class="content_container" id="page_content">
-                {% block content %}{% endblock %}
-            </div>
-
-            <script>
-                function show_loading() {
-                    document.getElementById("page_content").style.display =
-                        "none";
-                    document.getElementById("loader").style.display = "flex";
-                    document.querySelector("nav").style.display = "none";
-                    document.body.style.overflow = "hidden";
-                }
-
-                function show_page() {
-                    document.getElementById("page_content").style.display =
-                        "block";
-                    document.getElementById("loader").style.display = "none";
-                    document.querySelector("nav").style.display = "flex";
-                    document.body.style.overflow = "hidden auto";
-                }
-            </script>
-        </div>
-
-        <footer>
-            <div class="content_container flex-collapse gap-4">
-                <div class="flex flex-col gap-1">
+                    <!-- site stuff -->
                     <b class="title">{{ config.name }}</b>
 
-                    <span class="fade">
-                        Commit
-                        <a
-                            href='https://github.com/swmff/rainbeam/commit/{{ var "commit" }}'
-                            >{{ var "commit_short" }}</a
-                        >
-                    </span>
-
-                    <span class="fade">
-                        Built <span class="date">{{ var "time_unix" }}</span>
-                    </span>
-                </div>
-
-                <div class="flex gap-4 flex-collapse">
-                    {% if let Some(user) = profile %}
-                    <section class="fade">
-                        <b class="header">Actions</b>
-
-                        <a href="/intents/post" class="button camo">
-                            {{ icon "square-pen" }} {{ text "general:link.post"
-                            }}
-                        </a>
-
-                        <a href="/search" class="button camo">
-                            {{ icon "search" }} {{ text "general:link.search" }}
-                        </a>
-                    </section>
-
-                    <section class="fade">
-                        <b class="header">Services</b>
-
-                        <a href="/chats" class="button camo">
-                            {{ icon "message-circle-more" }} {{ text
-                            "general:service.chats" }}
-                        </a>
-
-                        <a href="/inbox/mail" class="button camo">
-                            {{ icon "mails" }} {{ text "general:service.mail" }}
-                        </a>
-                    </section>
-                    {% endif %}
-
-                    <section class="fade">
-                        <b class="header">Site</b>
-
-                        <a href="/site/about" class="button camo">
-                            {{ icon "info" }} {{ text "base.html:link.about" }}
-                        </a>
-
-                        <a
-                            href="https://github.com/swmff/rainbeam"
-                            class="button camo"
-                        >
-                            {{ icon "code" }} {{ text
-                            "base.html:link.source_code" }}
-                        </a>
-                    </section>
-                </div>
-            </div>
-        </footer>
-
-        <a
-            href="#top"
-            id="backtotop"
-            class="button border floating"
-            title="Back to top"
-        >
-            {{ icon "chevron-up" }}
-        </a>
-
-        <script data-turbo-eval="false">
-            // load resources
-            use("dialogs", () => {});
-            use("warnings", () => {});
-            use("search", () => {});
-
-            use("questions", () => {});
-            use("responses", () => {});
-            use("comments", () => {});
-            use("reactions", () => {});
-            use("chats", () => {});
-            use("mail", () => {});
-
-            use("notifications", () => {});
-
-            use("reports", () => {});
-            use("account_warnings", () => {});
-
-            // load classes
-            require("PartialComponent", () => {});
-        </script>
-
-        <script src="https://unpkg.com/@twemoji/api@15.1.0/dist/twemoji.min.js"></script>
-
-        <script>
-            (() => {
-                const app = ns("app");
-                app.clean_date_codes();
-                app.link_filter();
-
-                setTimeout(() => {
-                    // this is so some pages can choose to refresh even with turbo="true"
-                    app.PREVIOUSLY_EXISTED = true;
-
-                    if (
-                        !window.location.pathname.startsWith("@") &&
-                        !window.location.pathname.startsWith("+")
-                    ) {
-                        // everything that isn't a profile will go back to respecting user theme choice
-                        if (
-                            globalThis.USES_DIFF_THEME === true &&
-                            globalThis.IS_SELF_THEME === false
-                        ) {
-                            media_theme_pref();
-                            console.log("use media theme pref");
-                        }
-                    }
-                }, 1000);
-
-                app["hook.scroll"](document.body, document.documentElement);
-                app["hook.dropdown.init"](window);
-                app["hook.character_counter.init"]();
-                app["hook.long_text.init"]();
-                app["hook.alt"]();
-                app["hook.ips"]();
-                app["hook.partial_embeds"]();
-                app["hook.check_reactions"]();
-
-                twemoji.parse(document.body);
-            })();
-        </script>
-
-        <!-- dialogs -->
-        <dialog id="link_filter">
-            <div class="inner">
-                <p>Pressing continue will bring you to the following URL:</p>
-                <pre><code id="link_filter_url"></code></pre>
-                <p>Are sure you want to go there?</p>
-
-                <hr />
-                <div class="flex gap-2">
-                    <a
-                        class="button primary bold"
-                        id="link_filter_continue"
-                        rel="noopener noreferrer"
-                        target="_blank"
-                        onclick="document.getElementById('link_filter').close()"
-                    >
-                        {{ text "general:dialog.continue" }}
+                    <a href="/site/about">
+                        {{ icon "info" }} {{ text "base.html:link.about" }}
                     </a>
-                    <button
-                        class="bold"
-                        type="button"
-                        onclick="document.getElementById('link_filter').close()"
-                    >
-                        {{ text "general:dialog.cancel" }}
-                    </button>
+
+                    <a href="https://swmff.github.io/rainbeam/">
+                        {{ icon "book" }} {{ text "base.html:link.reference" }}
+                    </a>
+
+                    <!-- ... -->
+                    <a href="/search">
+                        {{ icon "search" }} {{ text "general:link.search" }}
+                    </a>
+
+                    {% if profile.is_some() %}
+                    <b class="title"></b>
+                    <a href="#" onclick="trigger('app:logout')" class="red">
+                        {{ icon "log-out" }} {{ text "base.html:link.sign_out"
+                        }}
+                    </a>
+                    {% endif %}
                 </div>
             </div>
-        </dialog>
+        </div>
+    </div>
+</nav>
 
-        <dialog id="web_api_prompt">
-            <div class="inner flex flex-col gap-2">
-                <form
-                    class="flex gap-2 flex-col"
-                    onsubmit="event.preventDefault()"
+<div id="toast_zone"></div>
+
+{% block under_nav %}{% endblock %}
+
+<div id="page">
+    <div
+        id="loader"
+        style="width: 100dvw; height: 100dvh; display: none"
+        class="flex justify-center items-center flex-col"
+    >
+        <img
+            src="/static/images/ui/logo.svg"
+            alt="{{ config.name }}"
+            width="64px"
+            height="64px"
+            class="spinner"
+        />
+    </div>
+
+    <div class="content_container" id="page_content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <script>
+        function show_loading() {
+            document.getElementById("page_content").style.display = "none";
+            document.getElementById("loader").style.display = "flex";
+            document.querySelector("nav").style.display = "none";
+            document.body.style.overflow = "hidden";
+        }
+
+        function show_page() {
+            document.getElementById("page_content").style.display = "block";
+            document.getElementById("loader").style.display = "none";
+            document.querySelector("nav").style.display = "flex";
+            document.body.style.overflow = "hidden auto";
+        }
+    </script>
+</div>
+
+<footer>
+    <div class="content_container flex-collapse gap-4">
+        <div class="flex flex-col gap-1">
+            <b class="title">{{ config.name }}</b>
+
+            <span class="fade">
+                Commit
+                <a
+                    href='https://github.com/swmff/rainbeam/commit/{{ var "commit" }}'
+                    >{{ var "commit_short" }}</a
                 >
-                    <label for="prompt" id="web_api_prompt:msg"></label>
-                    <input id="prompt" name="prompt" />
+            </span>
 
-                    <div class="flex justify-between">
-                        <div></div>
+            <span class="fade">
+                Built <span class="date">{{ var "time_unix" }}</span>
+            </span>
+        </div>
 
-                        <div class="flex gap-2">
-                            <button
-                                title="Search"
-                                class="primary bold circle"
-                                onclick="globalThis.web_api_prompt_submit(document.getElementById('prompt').value); document.getElementById('prompt').value = ''"
-                                type="buton"
-                            >
-                                {{ icon "check" }} {{ text "general:dialog.okay"
-                                }}
-                            </button>
+        <div class="flex gap-4 flex-collapse">
+            {% if let Some(user) = profile %}
+            <section class="fade">
+                <b class="header">Actions</b>
 
-                            <button
-                                class="bold red camo circle"
-                                onclick="globalThis.web_api_prompt_submit('')"
-                                type="button"
-                                title="Close"
-                            >
-                                {{ icon "x" }} {{ text "general:dialog.cancel"
-                                }}
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </dialog>
+                <a href="/intents/post" class="button camo">
+                    {{ icon "square-pen" }} {{ text "general:link.post" }}
+                </a>
 
-        <dialog id="web_api_confirm">
-            <div class="inner flex flex-col gap-2">
-                <form
-                    class="flex gap-2 flex-col"
-                    onsubmit="event.preventDefault()"
-                >
-                    <label id="web_api_confirm:msg"></label>
+                <a href="/search" class="button camo">
+                    {{ icon "search" }} {{ text "general:link.search" }}
+                </a>
+            </section>
 
-                    <div class="flex justify-between">
-                        <div></div>
+            <section class="fade">
+                <b class="header">Services</b>
 
-                        <div class="flex gap-2">
-                            <button
-                                title="Search"
-                                class="primary bold circle"
-                                onclick="globalThis.web_api_confirm_submit(true)"
-                                type="buton"
-                            >
-                                {{ icon "check" }} {{ text "general:dialog.yes"
-                                }}
-                            </button>
+                <!-- <a href="/sites" class="button camo">
+                    {{ icon "blocks" }} {{ text "general:service.sites" }}
+                </a> -->
 
-                            <button
-                                class="bold red camo circle"
-                                onclick="globalThis.web_api_confirm_submit(false)"
-                                type="button"
-                                title="Close"
-                            >
-                                {{ icon "x" }} {{ text "general:dialog.no" }}
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </dialog>
-    </body>
-</html>
+                <a href="/chats" class="button camo">
+                    {{ icon "message-circle-more" }} {{ text
+                    "general:service.chats" }}
+                </a>
+
+                <a href="/inbox/mail" class="button camo">
+                    {{ icon "mails" }} {{ text "general:service.mail" }}
+                </a>
+            </section>
+            {% endif %}
+
+            <section class="fade">
+                <b class="header">Site</b>
+
+                <a href="/site/about" class="button camo">
+                    {{ icon "info" }} {{ text "base.html:link.about" }}
+                </a>
+
+                <a href="https://swmff.github.io/rainbeam/" class="button camo">
+                    {{ icon "book" }} {{ text "base.html:link.reference" }}
+                </a>
+
+                <a href="https://github.com/swmff/rainbeam" class="button camo">
+                    {{ icon "code" }} {{ text "base.html:link.source_code" }}
+                </a>
+            </section>
+        </div>
+    </div>
+</footer>
+
+<a
+    href="#top"
+    id="backtotop"
+    class="button border floating"
+    title="Back to top"
+>
+    {{ icon "chevron-up" }}
+</a>
+{% call super() %} {% endblock %}

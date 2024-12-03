@@ -712,6 +712,7 @@ impl Database {
             "intents",
             "circles",
             "chats",
+            "sites",
             "responses",
             "questions",
             "comments",
@@ -1384,6 +1385,18 @@ impl Database {
                         "DELETE FROM \"xipblocks\" WHERE \"user\" = ?"
                     } else {
                         "DELETE FROM \"xipblocks\" WHERE \"user\" = $1"
+                    };
+
+                if let Err(_) = sqlquery(query).bind::<&String>(&id).execute(c).await {
+                    return Err(DatabaseError::Other);
+                };
+
+                // sites by user
+                let query: &str =
+                    if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+                        "DELETE FROM \"xsites\" WHERE \"owner\" = ?"
+                    } else {
+                        "DELETE FROM \"xsites\" WHERE \"owner\" = $1"
                     };
 
                 if let Err(_) = sqlquery(query).bind::<&String>(&id).execute(c).await {
@@ -3948,14 +3961,32 @@ impl Database {
             match self.get_profile(recipient.clone()).await {
                 Ok(ua) => {
                     if ua.metadata.is_true("sparkler:disable_mailbox") {
-                        return Err(DatabaseError::NotAllowed);
+                        // continue so the mail is not delivered to this person
+                        continue;
                     }
 
+                    // check relationship
+                    let relationship = self
+                        .get_user_relationship(ua.id.clone(), author.id.clone())
+                        .await
+                        .0;
+
+                    if relationship == RelationshipStatus::Blocked {
+                        // continue so the mail is not delivered to this person
+                        continue;
+                    }
+
+                    // ...
                     recipients.push(ua.id)
                 }
                 Err(e) => return Err(e),
             }
         }
+
+        if recipients.len() == 0 {
+            // can't send to nobody!
+            return Err(DatabaseError::ValueError);
+        };
 
         // check recipients against citrus
         let mut seen_severs: Vec<String> = Vec::new();

@@ -6,6 +6,7 @@ pub mod profiles;
 pub mod questions;
 pub mod reactions;
 pub mod responses;
+pub mod sites;
 pub mod util;
 
 use crate::database::Database;
@@ -31,4 +32,5 @@ pub fn routes(database: Database) -> Router {
         .nest("/profiles", profiles::routes(database.clone()))
         .nest("/chats", chats::routes(database.clone()))
         .nest("/messages", messages::routes(database.clone()))
+        .nest("/sites", sites::routes(database.clone()))
 }

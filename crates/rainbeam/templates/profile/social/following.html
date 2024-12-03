@@ -24,6 +24,10 @@
 <a href="/@{{ other.username }}/friends/requests"
     ><span>{{ text "general:link.requests" }}</span></a
 >
+{% endif %} {% if is_helper %}
+<a href="/@{{ other.username }}/friends/blocks"
+    ><span>{{ text "settings:account.html:title.blocks" }}</span></a
+>
 {% endif %} {% endblock %} {% block panel %}
 <!-- followers -->
 <div id="following" class="flex flex-col items-center gap-4">

@@ -1,0 +1,57 @@
+{% extends "../raw_base.html" %} {% block title %}Editor{% endblock %} {% block
+base %}
+<div id="editor"></div>
+
+<style>
+    body {
+        justify-content: flex-start;
+    }
+</style>
+
+<!-- prettier-ignore -->
+<script type="application/json" id="site_content">{{ serde_json::to_string(site_content).unwrap()|safe }}</script>
+
+<script>
+    globalThis.templates = {
+        card: {
+            type: "Container",
+            class_name: "card w-full",
+            children: []
+        },
+        col_split: {
+            type: "Container"
+            class_name: "flex gap-2 flex-collapse flex-col",
+            children: []
+        }
+    };
+
+    setTimeout(async () => {
+        const page = JSON.parse(
+            document
+                .getElementById("site_content")
+                .innerText.replaceAll("\n", "\\n"),
+        );
+
+        // render page
+        async function render_content(content) {
+            const html = await trigger("sites:render", [content]);
+            document.getElementById("editor").innerHTML = html;
+        }
+
+        await render_content(page);
+
+        // display correct leaf
+        globalThis.load_leaf = (id) => {
+            for (const page of Array.from(
+                document.querySelectorAll(".leaf-page:not(.hidden)"),
+            )) {
+                page.classList.add("hidden");
+            }
+
+            document.getElementById(id).classList.remove("hidden");
+        };
+
+        globalThis.load_leaf(Object.keys(page.pages)[0]); // load first page
+    }, 250);
+</script>
+{% call super() %} {% endblock %}

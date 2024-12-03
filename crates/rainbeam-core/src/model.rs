@@ -502,6 +502,29 @@ pub struct Message {
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct MessageContext {}
 
+/// A static site organized into blocks which compile to HTML
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Site {
+    /// The ID of the site
+    pub id: String,
+    /// The **unique** slug of the site
+    pub slug: String,
+    /// The owner of the site (also the only one who can edit it)
+    pub owner: String,
+    /// The time in which the site was created
+    pub published: u128,
+    /// The time in which the site was edited
+    pub edited: u128,
+    /// The content of the site
+    pub content: crate::leafml::Plant,
+    /// Additional context for the site
+    pub context: SiteContext,
+}
+
+/// Additional information about a [`Site`]
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct SiteContext {}
+
 // ...
 
 /// Anonymous user profile
@@ -591,6 +614,17 @@ pub struct ChatAdd {
     #[serde(default)]
     pub chat: String,
     pub friend: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SiteCreate {
+    pub slug: String,
+    pub content: crate::leafml::Plant,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SiteEdit {
+    pub content: crate::leafml::Plant,
 }
 
 /// General API errors
