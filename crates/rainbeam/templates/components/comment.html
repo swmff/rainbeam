@@ -17,20 +17,20 @@ comment = comment.0.clone() %}
                 <!-- prettier-ignore -->
                 {% let author_tag = crate::database::Database::anonymous_tag(comment.author.username.as_ref()) %}
                 {% if author_tag.0 == false %}
+                <img
+                    title="{{ comment.author.username }}'s avatar"
+                    src="/api/v0/auth/profile/{{ comment.author.id }}/avatar"
+                    alt=""
+                    class="avatar"
+                    loading="lazy"
+                    style="--size: 20px"
+                />
+
                 <a
                     href="/@{{ comment.author.username }}"
                     style="color: inherit"
-                    class="username flex gap-2 items-center"
+                    class="username short"
                 >
-                    <img
-                        title="{{ comment.author.username }}'s avatar"
-                        src="/api/v0/auth/profile/{{ comment.author.id }}/avatar"
-                        alt=""
-                        class="avatar"
-                        loading="lazy"
-                        style="--size: 20px"
-                    />
-
                     <!-- prettier-ignore -->
                     {% let display_name = comment.author.metadata.kv.get("sparkler:display_name") %}
 
@@ -131,8 +131,7 @@ comment = comment.0.clone() %}
                     <button
                         onclick="trigger('app:copy_text', ['{{ config.host }}/+c/{{ short_id }}'])"
                     >
-                        {{ icon "copy" }} {{
-                        text "general:action.copy_link" }}
+                        {{ icon "copy" }} {{ text "general:action.copy_link" }}
                     </button>
 
                     {% if let Some(profile) = profile %} {% if (profile.id ==
@@ -149,15 +148,13 @@ comment = comment.0.clone() %}
                         onclick="trigger('comments:delete', ['{{ comment.id }}'])"
                         class="red"
                     >
-                        {{ icon "trash" }} {{ text "general:action.delete"
-                        }}
+                        {{ icon "trash" }} {{ text "general:action.delete" }}
                     </a>
 
                     <a
                         href="javascript:trigger('comments:ipblock', ['{{ comment.id }}'])"
                     >
-                        {{ icon "shield" }} {{
-                        text "general:action.ip_block" }}
+                        {{ icon "shield" }} {{ text "general:action.ip_block" }}
                     </a>
                     {% endif %} {% endif %}
                     <!-- actions for everybody -->
@@ -166,13 +163,12 @@ comment = comment.0.clone() %}
                         href="#"
                         onclick="trigger('app:copy_text', ['{{ comment.id }}'])"
                     >
-                        {{ icon "copy" }} {{ text "general:action.copy_id"
-                        }}
+                        {{ icon "copy" }} {{ text "general:action.copy_id" }}
                     </a>
 
                     <a href="/comment/{{ comment.id }}">
-                        {{ icon "external-link" }} {{
-                        text "general:link.open" }}
+                        {{ icon "external-link" }} {{ text "general:link.open"
+                        }}
                     </a>
 
                     <!-- prettier-ignore -->
@@ -182,8 +178,7 @@ comment = comment.0.clone() %}
                     <a
                         href="javascript:trigger('reports:bootstrap', ['comments', '{{ comment.id }}'])"
                     >
-                        {{ icon "flag" }} {{ text "general:action.report"
-                        }}
+                        {{ icon "flag" }} {{ text "general:action.report" }}
                     </a>
                     {% endif %} {% if is_helper %}
                     <b class="title">Mod</b>
@@ -192,8 +187,7 @@ comment = comment.0.clone() %}
                         onclick="trigger('comments:delete', ['{{ comment.id }}'])"
                         class="red"
                     >
-                        {{ icon "trash" }} {{ text "general:action.delete"
-                        }}
+                        {{ icon "trash" }} {{ text "general:action.delete" }}
                     </a>
                     {% endif %} {% endif %}
                 </div>

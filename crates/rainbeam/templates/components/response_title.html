@@ -3,20 +3,20 @@
 >
     <div class="footernav items-center flex-wrap">
         <b class="flex items-center gap-2">
+            <img
+                title="{{ response.author.username }}'s avatar"
+                src="/api/v0/auth/profile/{{ response.author.id }}/avatar"
+                alt=""
+                class="avatar"
+                loading="lazy"
+                style="--size: 20px"
+            />
+
             <a
                 href="/@{{ response.author.username }}"
                 style="color: inherit"
-                class="username flex gap-2 items-center"
+                class="username short"
             >
-                <img
-                    title="{{ response.author.username }}'s avatar"
-                    src="/api/v0/auth/profile/{{ response.author.id }}/avatar"
-                    alt=""
-                    class="avatar"
-                    loading="lazy"
-                    style="--size: 20px"
-                />
-
                 <!-- prettier-ignore -->
                 {% let display_name = response.author.metadata.kv.get("sparkler:display_name") %}
 
@@ -108,15 +108,15 @@
                             p.success ? window.location.href = `/response/${p.payload.id}` : ''
                         })"
                 >
-                    {{ icon "rocket" }} {{
-                    text "response_title.html:action.boost" }}
+                    {{ icon "rocket" }} {{ text
+                    "response_title.html:action.boost" }}
                 </button>
 
                 <a
                     href="/intents/post?reply={{ response.id }}&title=Quote%20post"
                 >
-                    {{ icon "quote" }} {{
-                    text "response_title.html:action.quote" }}
+                    {{ icon "quote" }} {{ text
+                    "response_title.html:action.quote" }}
                 </a>
                 {% endif %}
 
@@ -125,8 +125,8 @@
                     data-turbo="false"
                     target="_blank"
                 >
-                    {{ icon "reply" }} {{
-                    text "response_title.html:action.ask_about_this" }}
+                    {{ icon "reply" }} {{ text
+                    "response_title.html:action.ask_about_this" }}
                 </a>
             </div>
         </div>
@@ -151,8 +151,8 @@
                 <button
                     onclick="trigger('app:copy_text', [trigger('responses:gen_share', [event.target, '{{ short_id }}', 280])])"
                 >
-                    {{ icon "copy" }} {{
-                    text "response_title.html:action.copy_to_clipboard" }}
+                    {{ icon "copy" }} {{ text
+                    "response_title.html:action.copy_to_clipboard" }}
                 </button>
 
                 <button
@@ -181,13 +181,12 @@
                 <!-- pin -->
                 {% if show_pin_button == true %} {% if is_pinned == false %}
                 <a href="#" onclick="pin_response('{{ response.id }}')">
-                    {{ icon "pin" }} {{
-                    text "response_title.html:action.pin" }}
+                    {{ icon "pin" }} {{ text "response_title.html:action.pin" }}
                 </a>
                 {% else %}
                 <a href="#" onclick="unpin_response('{{ response.id }}')">
-                    {{ icon "pin-off" }} {{
-                    text "response_title.html:action.unpin" }}
+                    {{ icon "pin-off" }} {{ text
+                    "response_title.html:action.unpin" }}
                 </a>
                 {% endif %} {% endif %}
 
@@ -197,8 +196,8 @@
                 </a>
 
                 <a href="/response/{{ response.id }}?edit_tags" target="_blank">
-                    {{ icon "tag" }} {{
-                    text "response_title.html:action.edit_tags" }}
+                    {{ icon "tag" }} {{ text
+                    "response_title.html:action.edit_tags" }}
                 </a>
 
                 {% if response.context.is_post == false %}
@@ -207,8 +206,8 @@
                     onclick="trigger('responses:unsend', ['{{ response.id }}'])"
                     class="red"
                 >
-                    {{ icon "undo-2" }} {{
-                    text "response_title.html:action.return_to_inbox" }}
+                    {{ icon "undo-2" }} {{ text
+                    "response_title.html:action.return_to_inbox" }}
                 </a>
                 {% endif %}
 
@@ -217,8 +216,8 @@
                     onclick="trigger('responses:delete', ['{{ response.id }}'])"
                     class="red"
                 >
-                    {{ icon "trash" }} {{
-                    text "response_title.html:action.delete_all" }}
+                    {{ icon "trash" }} {{ text
+                    "response_title.html:action.delete_all" }}
                 </a>
                 {% endif %} {% endif %}
                 <!-- actions for everybody -->
@@ -231,14 +230,13 @@
                 </a>
 
                 <a href="/response/{{ response.id }}">
-                    {{ icon "external-link" }} {{ text "general:link.open"
-                    }}
+                    {{ icon "external-link" }} {{ text "general:link.open" }}
                 </a>
 
                 {% if is_helper %}
                 <a href="/question/{{ question.id }}">
-                    {{ icon "external-link" }} {{
-                    text "response_title.html:link.open_question" }}
+                    {{ icon "external-link" }} {{ text
+                    "response_title.html:link.open_question" }}
                 </a>
                 {% endif %}
 

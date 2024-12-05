@@ -1,6 +1,8 @@
+use std::str::Split;
+
 use crate::model::{
     DatabaseError, IpBan, IpBanCreate, IpBlock, IpBlockCreate, Mail, MailCreate, MailState,
-    Profile, ProfileCreate, ProfileMetadata, RelationshipStatus, TokenContext, Warning,
+    Profile, ProfileCreate, ProfileMetadata, RelationshipStatus, TokenContext, UserLabel, Warning,
     WarningCreate,
 };
 use crate::model::{Group, Notification, NotificationCreate, Permission, UserFollow};
@@ -152,7 +154,8 @@ impl Database {
                 ips           TEXT,
                 badges        TEXT,
                 tier          TEXT,
-                token_context TEXT
+                token_context TEXT,
+                labels        TEXT
             )",
         )
         .execute(c)
@@ -250,9 +253,31 @@ impl Database {
         )
         .execute(c)
         .await;
+
+        let _ = sqlquery(
+            "CREATE TABLE IF NOT EXISTS \"xlabels\" (
+                id        TEXT,
+                name      TEXT,
+                timestamp TEXT,
+                creator   TEXT
+            )",
+        )
+        .execute(c)
+        .await;
     }
 
     // util
+
+    /// Collect from `Split<&str>` while cloning everything
+    pub fn collect_split_without_stupid_reference(input: Split<&str>) -> Vec<String> {
+        let mut out = Vec::new();
+
+        for section in input {
+            out.push(section.to_owned())
+        }
+
+        out
+    }
 
     /// Create a moderator audit log entry
     pub async fn audit(&self, actor_id: String, content: String) -> Result<()> {
@@ -404,6 +429,9 @@ impl Database {
             group: row.get("gid").unwrap().parse::<i32>().unwrap_or(0),
             joined: row.get("joined").unwrap().parse::<u128>().unwrap(),
             tier: row.get("tier").unwrap().parse::<i32>().unwrap_or(0),
+            labels: Database::collect_split_without_stupid_reference(
+                row.get("labels").unwrap().split(","),
+            ),
         })
     }
 
@@ -467,6 +495,9 @@ impl Database {
             group: row.get("gid").unwrap().parse::<i32>().unwrap_or(0),
             joined: row.get("joined").unwrap().parse::<u128>().unwrap(),
             tier: row.get("tier").unwrap().parse::<i32>().unwrap_or(0),
+            labels: Database::collect_split_without_stupid_reference(
+                row.get("labels").unwrap().split(","),
+            ),
         })
     }
 
@@ -528,6 +559,9 @@ impl Database {
             group: row.get("gid").unwrap().parse::<i32>().unwrap_or(0),
             joined: row.get("joined").unwrap().parse::<u128>().unwrap(),
             tier: row.get("tier").unwrap().parse::<i32>().unwrap_or(0),
+            labels: Database::collect_split_without_stupid_reference(
+                row.get("labels").unwrap().split(","),
+            ),
         })
     }
 
@@ -603,6 +637,9 @@ impl Database {
             group: row.get("gid").unwrap().parse::<i32>().unwrap_or(0),
             joined: row.get("joined").unwrap().parse::<u128>().unwrap(),
             tier: row.get("tier").unwrap().parse::<i32>().unwrap_or(0),
+            labels: Database::collect_split_without_stupid_reference(
+                row.get("labels").unwrap().split(","),
+            ),
         };
 
         self.base
@@ -685,6 +722,9 @@ impl Database {
             group: row.get("gid").unwrap().parse::<i32>().unwrap_or(0),
             joined: row.get("joined").unwrap().parse::<u128>().unwrap(),
             tier: row.get("tier").unwrap().parse::<i32>().unwrap_or(0),
+            labels: Database::collect_split_without_stupid_reference(
+                row.get("labels").unwrap().split(","),
+            ),
         };
 
         self.base
@@ -4212,5 +4252,67 @@ impl Database {
             }
             Err(_) => return Err(DatabaseError::Other),
         };
+    }
+
+    // labels
+
+    /// Get an existing label
+    ///
+    /// ## Arguments:
+    /// * `id`
+    pub async fn get_label(&self, id: String) -> Result<UserLabel> {
+        // check in cache
+        match self
+            .base
+            .cachedb
+            .get(format!("rbeam.auth.label:{}", id))
+            .await
+        {
+            Some(c) => match serde_json::from_str::<UserLabel>(c.as_str()) {
+                Ok(c) => return Ok(c),
+                Err(_) => {
+                    self.base
+                        .cachedb
+                        .remove(format!("rbeam.auth.label:{}", id))
+                        .await;
+                }
+            },
+            None => (),
+        };
+
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "SELECT * FROM \"xlabels\" WHERE \"id\" = ?"
+        } else {
+            "SELECT * FROM \"xlabels\" WHERE \"id\" = $1"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
+            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        let label = UserLabel {
+            id: res.get("id").unwrap().to_string(),
+            name: res.get("name").unwrap().to_string(),
+            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+            creator: res.get("author").unwrap().to_string(),
+        };
+
+        // store in cache
+        self.base
+            .cachedb
+            .set(
+                format!("rbeam.auth.label:{}", id),
+                serde_json::to_string::<UserLabel>(&label).unwrap(),
+            )
+            .await;
+
+        // return
+        Ok(label)
     }
 }

@@ -39,6 +39,8 @@ pub struct Profile {
     pub joined: u128,
     /// User tier for paid benefits
     pub tier: i32,
+    /// The labels applied to the user (comma separated when as string with 1 comma at the end which creates an empty label)
+    pub labels: Vec<String>,
 }
 
 impl Profile {
@@ -57,6 +59,7 @@ impl Profile {
             metadata: ProfileMetadata::default(),
             badges: Vec::new(),
             tier: 0,
+            labels: Vec::new(),
         }
     }
 
@@ -75,6 +78,7 @@ impl Profile {
             metadata: ProfileMetadata::default(),
             badges: Vec::new(),
             tier: 0,
+            labels: Vec::new(),
         }
     }
 
@@ -93,6 +97,7 @@ impl Profile {
             metadata: ProfileMetadata::default(),
             badges: Vec::new(),
             tier: 0,
+            labels: Vec::new(),
         }
     }
 
@@ -157,6 +162,7 @@ impl Default for Profile {
             group: 0,
             joined: databeam::utility::unix_epoch_timestamp(),
             tier: 0,
+            labels: Vec::new(),
         }
     }
 }
@@ -451,6 +457,19 @@ pub struct Mail {
     pub author: String,
     /// The recipient(s) of the mail
     pub recipient: Vec<String>,
+}
+
+/// A label which describes a user
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct UserLabel {
+    /// The ID of the label (unique)
+    pub id: String,
+    /// The name of the label
+    pub name: String,
+    /// The timestamp of when the label was created
+    pub timestamp: u128,
+    /// The ID creator of the label
+    pub creator: String,
 }
 
 // props

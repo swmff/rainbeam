@@ -240,7 +240,7 @@ config.name }}{% endblock %} {% block head %}
                                 style="color: var(--color-text)"
                             >
                                 <b>{{ friends_count }}</b>
-                                <span class="fade">{{ text "profile:base.html:link.friend" }}{% if friends_count > 1 %}s{% endif %}</span>
+                                <span class="fade">{{ text "profile:base.html:link.friend" }}{% if (friends_count > 1) | (friends_count == 0) %}s{% endif %}</span>
                             </a>
                         </div>
                         {% endif %}

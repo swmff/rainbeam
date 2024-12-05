@@ -8,20 +8,20 @@ question = question.clone().0 %}
                     <!-- prettier-ignore -->
                     {% let author_tag = crate::database::Database::anonymous_tag(question.author.username.as_ref()) %}
                     {% if author_tag.0 == false %}
+                    <img
+                        title="{{ question.author.username }}'s avatar"
+                        src="/api/v0/auth/profile/{{ question.author.id }}/avatar"
+                        alt=""
+                        class="avatar"
+                        loading="lazy"
+                        style="--size: 20px"
+                    />
+
                     <a
                         href="/@{{ question.author.username }}"
                         style="color: inherit"
-                        class="username flex gap-2"
+                        class="username short"
                     >
-                        <img
-                            title="{{ question.author.username }}'s avatar"
-                            src="/api/v0/auth/profile/{{ question.author.id }}/avatar"
-                            alt=""
-                            class="avatar"
-                            loading="lazy"
-                            style="--size: 20px"
-                        />
-
                         <!-- prettier-ignore -->
                         {% let display_name = question.author.metadata.kv.get("sparkler:display_name") %}
 
@@ -71,8 +71,7 @@ question = question.clone().0 %}
                     <button
                         onclick="trigger('app:copy_text', ['{{ config.host }}/+q/{{ short_id }}'])"
                     >
-                        {{ icon "copy" }}
-                        Copy link
+                        {{ icon "copy" }} Copy link
                     </button>
 
                     {% if profile.id == question.author.id %}
@@ -82,8 +81,7 @@ question = question.clone().0 %}
                         onclick="trigger('questions:delete', ['{{ question.id }}'])"
                         class="red"
                     >
-                        {{ icon "trash" }}
-                        Delete
+                        {{ icon "trash" }} Delete
                     </a>
                     {% else if is_helper == true %}
                     <b class="title">Mod</b>
@@ -92,8 +90,7 @@ question = question.clone().0 %}
                         onclick="trigger('questions:delete', ['{{ question.id }}'])"
                         class="red"
                     >
-                        {{ icon "trash" }}
-                        Delete
+                        {{ icon "trash" }} Delete
                     </a>
                     {% endif %}
                 </div>

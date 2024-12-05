@@ -26,7 +26,6 @@ pub mod mail;
 pub mod profile;
 pub mod search;
 pub mod settings;
-pub mod sites;
 
 /// Escape a username's characters if we are unable to find a "good" character
 ///
@@ -2281,10 +2280,6 @@ pub async fn routes(database: Database) -> Router {
             "/inbox/mail/_app/components/mail.html",
             get(mail::partial_mail_request),
         )
-        // sites
-        .route("/sites", get(sites::sites_homepage_request))
-        .route("/sites/editor", get(sites::site_editor_request))
-        .route("/:id", get(sites::site_view_request))
         // auth
         .route("/login", get(login_request))
         .route("/sign_up", get(sign_up_request))
@@ -2295,7 +2290,6 @@ pub async fn routes(database: Database) -> Router {
         .route("/+u/:id", get(api::profiles::expand_request))
         .route("/+i/:ip", get(api::profiles::expand_ip_request))
         .route("/+g/:id", get(api::circles::expand_request))
-        .route("/+s/:id", get(api::sites::expand_request))
         // partials
         .route(
             "/_app/components/response.html",
