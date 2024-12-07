@@ -449,6 +449,11 @@
                             if (text.length < 100) {
                                 // pretty much blank content, no more pages
                                 wrapper.removeEventListener("scroll", event);
+
+                                if (globalThis._app_base.ns_store.$questions) {
+                                    trigger("questions:carp");
+                                }
+
                                 return resolve();
                             }
 
@@ -465,6 +470,11 @@
                         .catch(() => {
                             // done scrolling, no more pages (http error)
                             wrapper.removeEventListener("scroll", event);
+
+                            if (globalThis._app_base.ns_store.$questions) {
+                                trigger("questions:carp");
+                            }
+
                             resolve();
                         });
                 }
@@ -480,8 +490,8 @@
                                 await load_partial();
                                 await $["hook.partial_embeds"]();
 
-                                if (run_on_load) {
-                                    run_on_load();
+                                if (globalThis._app_base.ns_store.$questions) {
+                                    trigger("questions:carp");
                                 }
                             })
                             .catch(() => {
