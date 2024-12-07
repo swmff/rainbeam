@@ -334,7 +334,7 @@ pub struct Warning {
     /// The recipient of the warning
     pub recipient: String,
     /// The moderator who warned the recipient
-    pub moderator: Profile,
+    pub moderator: Box<Profile>,
 }
 
 /// Basic IP ban
@@ -347,7 +347,7 @@ pub struct IpBan {
     /// The reason for the ban
     pub reason: String,
     /// The user that banned this IP
-    pub moderator: Profile,
+    pub moderator: Box<Profile>,
     /// The timestamp of when the ban was created
     pub timestamp: u128,
 }

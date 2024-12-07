@@ -19,7 +19,7 @@ use crate::ToHtml;
 struct HomepageTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
     query: String,
@@ -86,7 +86,7 @@ pub async fn search_homepage_request(
 struct ResponsesTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
     query: String,
@@ -234,7 +234,7 @@ pub async fn search_responses_request(
 struct PostsTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
     query: String,
@@ -372,7 +372,7 @@ pub async fn search_posts_request(
 struct QuestionsTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
     query: String,
@@ -469,14 +469,14 @@ pub async fn search_questions_request(
 struct UsersTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
     query: String,
     page: i32,
     driver: i8,
     // search-specific
-    results: Vec<Profile>,
+    results: Vec<Box<Profile>>,
 }
 
 /// GET /search/users

@@ -17,11 +17,11 @@ use super::clean_metadata_short;
 struct AccountSettingsTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
     metadata: String,
-    relationships: Vec<(Profile, RelationshipStatus)>,
+    relationships: Vec<(Box<Profile>, RelationshipStatus)>,
     ipblocks: Vec<IpBlock>,
 }
 
@@ -94,7 +94,7 @@ pub async fn account_settings(
 struct ProfileSettingsTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
     metadata: String,
@@ -153,7 +153,7 @@ pub async fn profile_settings(
 struct PrivacySettingsTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
     metadata: String,
@@ -212,7 +212,7 @@ pub async fn privacy_settings(
 struct SessionsSettingsTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
     metadata: String,

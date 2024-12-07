@@ -20,10 +20,10 @@ use crate::ToHtml;
 struct HomepageTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
-    chats: Vec<(Chat, Vec<Profile>)>,
+    chats: Vec<(Chat, Vec<Box<Profile>>)>,
 }
 
 /// GET /chats
@@ -84,13 +84,13 @@ pub async fn chats_homepage_request(
 struct ChatTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
     chat: Chat,
-    members: Vec<Profile>,
-    messages: Vec<(Message, Profile)>,
-    friends: Vec<(Profile, Profile)>,
+    members: Vec<Box<Profile>>,
+    messages: Vec<(Message, Box<Profile>)>,
+    friends: Vec<(Box<Profile>, Box<Profile>)>,
     last_message_id: String,
     is_helper: bool,
     page: i32,
@@ -190,7 +190,7 @@ pub async fn chat_request(
 #[template(path = "chats/components/message.html")]
 struct MessageTemplate {
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     message: (Message, Profile),
     is_helper: bool,
     is_own: bool,

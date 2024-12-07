@@ -28,9 +28,9 @@ pub trait CtxAsset {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Question {
     /// The author of the question; "anonymous" marks the question as an anonymous question
-    pub author: Profile,
+    pub author: Box<Profile>,
     /// The recipient of the question; cannot be anonymous
-    pub recipient: Profile,
+    pub recipient: Box<Profile>,
     /// The content of the question
     pub content: String,
     /// The ID of the question
@@ -154,7 +154,7 @@ impl From<Question> for RefQuestion {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct QuestionResponse {
     /// The author of the response; cannot be anonymous
-    pub author: Profile,
+    pub author: Box<Profile>,
     /// The ID question this response is replying to
     pub question: String,
     /// The content of the response
@@ -239,7 +239,7 @@ impl Default for ResponseContext {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ResponseComment {
     /// The author of the comment; cannot be anonymous
-    pub author: Profile,
+    pub author: Box<Profile>,
     /// ID of the response this comment is replying to
     pub response: String,
     /// The content of the comment
@@ -289,7 +289,7 @@ impl Default for CommentContext {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Reaction {
     /// The reactor of the reaction; cannot be anonymous
-    pub user: Profile,
+    pub user: Box<Profile>,
     /// ID of the asset this reaction is on (response, comment, etc.)
     pub asset: String,
     /// The time this reaction was created
@@ -352,7 +352,7 @@ pub struct Circle {
     /// The ID of the circle
     pub id: String,
     /// The owner of the circle
-    pub owner: Profile,
+    pub owner: Box<Profile>,
     /// The metadata of the circle
     pub metadata: CircleMetadata,
     /// The time the circle was created
@@ -395,7 +395,7 @@ impl CircleMetadata {
 pub struct DataExport {
     /// The user's profile
     #[serde(default)]
-    pub profile: Profile,
+    pub profile: Box<Profile>,
     /// All of the user's [`Question`]s
     #[serde(default)]
     pub questions: Option<Vec<(Question, usize, usize)>>,
@@ -407,22 +407,22 @@ pub struct DataExport {
     pub comments: Option<Vec<(ResponseComment, usize, usize)>>,
     /// All of the user's [`Chat`]s
     #[serde(default)]
-    pub chats: Option<Vec<(Chat, Vec<Profile>)>>,
+    pub chats: Option<Vec<(Chat, Vec<Box<Profile>>)>>,
     /// All of the user's [`Message`]s
     #[serde(default)]
-    pub messages: Option<Vec<(Message, Profile)>>,
+    pub messages: Option<Vec<(Message, Box<Profile>)>>,
     /// Get all of the user's ipblocks
     #[serde(default)]
     pub ipblocks: Option<Vec<IpBlock>>,
     /// Get all of the user's relationships
     #[serde(default)]
-    pub relationships: Option<Vec<(Profile, RelationshipStatus)>>,
+    pub relationships: Option<Vec<(Box<Profile>, RelationshipStatus)>>,
     /// Get all of the user's following
     #[serde(default)]
-    pub following: Option<Vec<(UserFollow, Profile, Profile)>>,
+    pub following: Option<Vec<(UserFollow, Box<Profile>, Box<Profile>)>>,
     /// Get all of the user's followers
     #[serde(default)]
-    pub followers: Option<Vec<(UserFollow, Profile, Profile)>>,
+    pub followers: Option<Vec<(UserFollow, Box<Profile>, Box<Profile>)>>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -505,8 +505,8 @@ pub struct MessageContext {}
 // ...
 
 /// Anonymous user profile
-pub fn anonymous_profile(tag: String) -> Profile {
-    Profile::anonymous(tag)
+pub fn anonymous_profile(tag: String) -> Box<Profile> {
+    Box::new(Profile::anonymous(tag))
 }
 
 // props

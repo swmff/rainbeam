@@ -21,10 +21,10 @@ use crate::ToHtml;
 struct InboxTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
-    mail: Vec<(Mail, Profile)>,
+    mail: Vec<(Mail, Box<Profile>)>,
     page: i32,
     violating_usc18_1702: bool, // if we're trying to view the mail of another user
     pid: String,
@@ -126,10 +126,10 @@ pub async fn inbox_request(
 struct OutboxTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
-    mail: Vec<(Mail, Profile)>,
+    mail: Vec<(Mail, Box<Profile>)>,
     page: i32,
     violating_usc18_1702: bool,
     pid: String,
@@ -231,7 +231,7 @@ pub async fn outbox_request(
 struct ComposeTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
 }
@@ -288,11 +288,11 @@ pub async fn compose_request(
 struct ViewTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
     letter: Mail,
-    author: Profile,
+    author: Box<Profile>,
     is_helper: bool,
 }
 
@@ -384,10 +384,10 @@ pub async fn view_request(
 #[derive(Template)]
 #[template(path = "mail/components/mail.html")]
 struct PartialMailTemplate {
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     lang: langbeam::LangFile,
     letter: Mail,
-    author: Profile,
+    author: Box<Profile>,
     is_helper: bool,
 }
 

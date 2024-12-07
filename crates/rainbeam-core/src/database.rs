@@ -220,7 +220,7 @@ impl Database {
     // profiles
 
     /// Fetch a profile correctly
-    pub async fn get_profile(&self, id: String) -> Result<Profile> {
+    pub async fn get_profile(&self, id: String) -> Result<Box<Profile>> {
         match self.auth.get_profile(id).await {
             Ok(p) => Ok(p),
             Err(e) => Err(e.into()),
@@ -236,7 +236,7 @@ impl Database {
         &self,
         page: i32,
         search: String,
-    ) -> Result<Vec<Profile>> {
+    ) -> Result<Vec<Box<Profile>>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -252,7 +252,7 @@ impl Database {
             .await
         {
             Ok(p) => {
-                let mut out: Vec<Profile> = Vec::new();
+                let mut out: Vec<Box<Profile>> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
@@ -1486,7 +1486,7 @@ impl Database {
     /// # Arguments
     /// * `id` - the ID of the question
     /// * `user` - the user doing this
-    pub async fn delete_question(&self, id: String, user: Profile) -> Result<()> {
+    pub async fn delete_question(&self, id: String, user: Box<Profile>) -> Result<()> {
         // make sure question exists
         let question = match self.get_question(id.clone()).await {
             Ok(q) => q,
@@ -1584,7 +1584,7 @@ impl Database {
     pub async fn delete_questions_by_recipient(
         &self,
         recipient: String,
-        user: Profile,
+        user: Box<Profile>,
     ) -> Result<()> {
         // check username
         if user.id != recipient {
@@ -2652,7 +2652,7 @@ impl Database {
         &self,
         id: String,
         content: String,
-        user: Profile,
+        user: Box<Profile>,
     ) -> Result<()> {
         // make sure the response exists
         let response = match self.get_response(id.clone()).await {
@@ -2748,7 +2748,7 @@ impl Database {
         &self,
         id: String,
         tags: Vec<String>,
-        user: Profile,
+        user: Box<Profile>,
     ) -> Result<()> {
         // make sure the response exists
         let response = match self.get_response(id.clone()).await {
@@ -2829,7 +2829,7 @@ impl Database {
     pub async fn delete_response(
         &self,
         mut id: String,
-        user: Profile,
+        user: Box<Profile>,
         save_question: bool,
     ) -> Result<()> {
         // make sure response exists
@@ -2932,7 +2932,7 @@ impl Database {
     /// # Arguments
     /// * `id`
     /// * `user` - the user doing this
-    pub async fn unsend_response(&self, id: String, user: Profile) -> Result<()> {
+    pub async fn unsend_response(&self, id: String, user: Box<Profile>) -> Result<()> {
         // make sure the response exists
         let res = match self.get_response(id.clone()).await {
             Ok(q) => q,
@@ -3770,7 +3770,7 @@ impl Database {
         &self,
         id: String,
         content: String,
-        user: Profile,
+        user: Box<Profile>,
     ) -> Result<()> {
         // make sure the response exists
         let comment = match self.get_comment(id.clone(), false).await {
@@ -3861,7 +3861,7 @@ impl Database {
     /// # Arguments
     /// * `id` - the ID of the comment
     /// * `user` - the user doing this
-    pub async fn delete_comment(&self, id: String, user: Profile) -> Result<()> {
+    pub async fn delete_comment(&self, id: String, user: Box<Profile>) -> Result<()> {
         // make sure comment exists
         let comment = match self.get_comment(id.clone(), false).await {
             Ok(q) => q.0,
@@ -4095,7 +4095,7 @@ impl Database {
     /// # Arguments
     /// * `id` - the ID of the asset
     /// * `author` - the user creating the reaction
-    pub async fn create_reaction(&self, id: String, author: Profile) -> Result<()> {
+    pub async fn create_reaction(&self, id: String, author: Box<Profile>) -> Result<()> {
         let tag = Database::anonymous_tag(&author.username);
 
         if tag.0 {
@@ -4159,7 +4159,7 @@ impl Database {
     /// # Arguments
     /// * `id` - the ID of the reaction
     /// * `user` - the user doing this
-    pub async fn delete_reaction(&self, id: String, user: Profile) -> Result<()> {
+    pub async fn delete_reaction(&self, id: String, user: Box<Profile>) -> Result<()> {
         // make sure reaction exists
         let reaction = match self.get_reaction(user.id.clone(), id.clone()).await {
             Ok(q) => q,
@@ -4451,7 +4451,7 @@ impl Database {
     ///
     /// # Arguments
     /// * `circle`
-    pub async fn get_circle_memberships(&self, id: String) -> Result<Vec<Profile>> {
+    pub async fn get_circle_memberships(&self, id: String) -> Result<Vec<Box<Profile>>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -4786,7 +4786,7 @@ impl Database {
         &self,
         id: String,
         mut metadata: CircleMetadata,
-        user: Profile,
+        user: Box<Profile>,
     ) -> Result<()> {
         // make sure circle exists
         let circle = match self.get_circle(id.clone()).await {
@@ -4859,7 +4859,7 @@ impl Database {
     /// # Arguments
     /// * `id` - the ID of the circle
     /// * `user` - the user doing this
-    pub async fn delete_circle(&self, id: String, user: Profile) -> Result<()> {
+    pub async fn delete_circle(&self, id: String, user: Box<Profile>) -> Result<()> {
         // make sure circle exists
         let circle = match self.get_circle(id.clone()).await {
             Ok(c) => c,
@@ -5047,7 +5047,7 @@ impl Database {
     ///
     /// # Arguments
     /// * `id`
-    pub async fn get_chat(&self, id: String) -> Result<(Chat, Vec<Profile>)> {
+    pub async fn get_chat(&self, id: String) -> Result<(Chat, Vec<Box<Profile>>)> {
         // check in cache
         match self
             .base
@@ -5160,7 +5160,7 @@ impl Database {
     ///
     /// # Arguments
     /// * `id` - the ID of the user
-    pub async fn get_chats_for_user(&self, id: String) -> Result<Vec<(Chat, Vec<Profile>)>> {
+    pub async fn get_chats_for_user(&self, id: String) -> Result<Vec<(Chat, Vec<Box<Profile>>)>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -5177,7 +5177,7 @@ impl Database {
             .await
         {
             Ok(p) => {
-                let mut out: Vec<(Chat, Vec<Profile>)> = Vec::new();
+                let mut out: Vec<(Chat, Vec<Box<Profile>>)> = Vec::new();
                 // TODO: fetch latest message and order chats by that
 
                 for row in p {
@@ -5581,7 +5581,7 @@ impl Database {
     ///
     /// # Arguments
     /// * `id`
-    pub async fn get_message(&self, id: String) -> Result<(Message, Profile)> {
+    pub async fn get_message(&self, id: String) -> Result<(Message, Box<Profile>)> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -5624,7 +5624,7 @@ impl Database {
     ///
     /// # Arguments
     /// * `id`
-    pub async fn get_last_message_in_chat(&self, id: String) -> Result<(Message, Profile)> {
+    pub async fn get_last_message_in_chat(&self, id: String) -> Result<(Message, Box<Profile>)> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -5715,7 +5715,7 @@ impl Database {
     ///
     /// # Arguments
     /// * `id` - user id
-    pub async fn get_messages_by_user(&self, id: String) -> Result<Vec<(Message, Profile)>> {
+    pub async fn get_messages_by_user(&self, id: String) -> Result<Vec<(Message, Box<Profile>)>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -5728,7 +5728,7 @@ impl Database {
         let c = &self.base.db.client;
         let res = match sqlquery(&query).bind::<&String>(&id).fetch_all(c).await {
             Ok(p) => {
-                let mut out: Vec<(Message, Profile)> = Vec::new();
+                let mut out: Vec<(Message, Box<Profile>)> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
@@ -5769,7 +5769,7 @@ impl Database {
         &self,
         id: String,
         page: i32,
-    ) -> Result<Vec<(Message, Profile)>> {
+    ) -> Result<Vec<(Message, Box<Profile>)>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -5781,7 +5781,7 @@ impl Database {
         let c = &self.base.db.client;
         let res = match sqlquery(&query).bind::<&String>(&id).fetch_all(c).await {
             Ok(p) => {
-                let mut out: Vec<(Message, Profile)> = Vec::new();
+                let mut out: Vec<(Message, Box<Profile>)> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
@@ -5933,7 +5933,12 @@ impl Database {
     /// * `id`
     /// * `content`
     /// * `user` - the user doing this
-    pub async fn edit_message(&self, id: String, content: String, user: Profile) -> Result<()> {
+    pub async fn edit_message(
+        &self,
+        id: String,
+        content: String,
+        user: Box<Profile>,
+    ) -> Result<()> {
         // make sure the message exists
         let message = match self.get_message(id.clone()).await {
             Ok(q) => q.0,
@@ -6023,7 +6028,7 @@ impl Database {
     /// # Arguments
     /// * `id` - the ID of the message
     /// * `user` - the user doing this
-    pub async fn delete_message(&self, id: String, user: Profile) -> Result<()> {
+    pub async fn delete_message(&self, id: String, user: Box<Profile>) -> Result<()> {
         // make sure comment exists
         let message = match self.get_message(id.clone()).await {
             Ok(q) => q.0,

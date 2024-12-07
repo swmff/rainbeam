@@ -55,7 +55,7 @@ pub fn escape_username(name: &String) -> String {
 pub struct ErrorTemplate {
     pub config: Config,
     pub lang: LangFile,
-    pub profile: Option<Profile>,
+    pub profile: Option<Box<Profile>>,
     pub message: String,
 }
 
@@ -71,7 +71,7 @@ pub async fn not_found(State(database): State<Database>) -> impl IntoResponse {
 struct HomepageTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
 }
 
 #[derive(Template)]
@@ -79,12 +79,12 @@ struct HomepageTemplate {
 struct TimelineTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
     responses: Vec<FullResponse>,
     relationships: HashMap<String, RelationshipStatus>,
-    friends: Vec<(Profile, Profile)>,
+    friends: Vec<(Box<Profile>, Box<Profile>)>,
     is_powerful: bool,
     is_helper: bool,
 }
@@ -252,7 +252,7 @@ pub async fn homepage_request(
 struct PartialTimelineTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     responses: Vec<FullResponse>,
     relationships: HashMap<String, RelationshipStatus>,
     is_powerful: bool,
@@ -353,7 +353,7 @@ pub async fn partial_timeline_request(
 pub struct MarkdownTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     title: String,
     text: String,
 }
@@ -407,7 +407,7 @@ pub async fn carp_request() -> impl IntoResponse {
 struct LoginTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
 }
 
 /// GET /login
@@ -444,7 +444,7 @@ pub async fn login_request(jar: CookieJar, State(database): State<Database>) -> 
 struct SignUpTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
 }
 
 /// GET /sign_up
@@ -608,7 +608,7 @@ pub fn clean_metadata_short_raw(metadata: &ProfileMetadata) -> ProfileMetadata {
 struct QuestionTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
     question: Question,
@@ -719,7 +719,7 @@ pub async fn question_request(
 struct PublicPostsTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
     page: i32,
@@ -877,7 +877,7 @@ pub async fn public_posts_timeline_request(
 struct PartialPostsTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     responses: Vec<FullResponse>,
     relationships: HashMap<String, RelationshipStatus>,
     is_powerful: bool,
@@ -1013,7 +1013,7 @@ pub async fn partial_posts_request(
 struct FollowingPostsTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
     page: i32,
@@ -1129,7 +1129,7 @@ pub async fn following_posts_timeline_request(
 struct ResponseTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
     question: Question,
@@ -1263,7 +1263,7 @@ pub async fn response_request(
 struct PartialResponseTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     response: FullResponse,
     anonymous_username: Option<String>,
     anonymous_avatar: Option<String>,
@@ -1349,7 +1349,7 @@ pub async fn partial_response_request(
 struct CommentTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
     comment: (ResponseComment, usize, usize),
@@ -1471,7 +1471,7 @@ pub async fn comment_request(
 struct InboxTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: Vec<Question>,
     notifs: usize,
     anonymous_username: Option<String>,
@@ -1554,7 +1554,7 @@ pub async fn inbox_request(jar: CookieJar, State(database): State<Database>) -> 
 struct GlobalTimelineTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
     questions: Vec<(Question, usize, usize)>,
@@ -1668,7 +1668,7 @@ pub async fn global_timeline_request(
 struct PublicGlobalTimelineTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
     questions: Vec<(Question, usize, usize)>,
@@ -1809,7 +1809,7 @@ pub async fn public_global_timeline_request(
 struct ComposeTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
 }
 
 /// GET /_app/components/compose.html
@@ -1849,7 +1849,7 @@ pub async fn compose_request(
 struct NotificationsTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: Vec<Notification>,
     page: i32,
@@ -1932,7 +1932,7 @@ pub async fn notifications_request(
 struct ReportsTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     reports: Vec<Notification>,
 }
@@ -2005,7 +2005,7 @@ pub async fn reports_request(
 struct AuditTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     logs: Vec<Notification>,
     page: i32,
@@ -2081,7 +2081,7 @@ pub async fn audit_log_request(
 struct IpbansTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     bans: Vec<IpBan>,
 }
@@ -2147,7 +2147,7 @@ pub async fn ipbans_request(jar: CookieJar, State(database): State<Database>) ->
 struct ReportTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
 }
 
 /// GET /intents/report

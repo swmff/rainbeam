@@ -20,10 +20,10 @@ use super::{clean_metadata, PaginatedQuery, ProfileQuery, MarkdownTemplate};
 struct ProfileTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
-    other: Profile,
+    other: Box<Profile>,
     responses: Vec<FullResponse>,
     relationships: HashMap<String, RelationshipStatus>,
     response_count: usize,
@@ -407,8 +407,8 @@ All mail sent to this account can be viewed by any staff member with access.
 struct PartialProfileTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
-    other: Profile,
+    profile: Option<Box<Profile>>,
+    other: Box<Profile>,
     responses: Vec<FullResponse>,
     relationships: HashMap<String, RelationshipStatus>,
     // ...
@@ -592,8 +592,8 @@ pub async fn partial_profile_request(
 struct ProfileEmbedTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
-    other: Profile,
+    profile: Option<Box<Profile>>,
+    other: Box<Profile>,
     responses: Vec<FullResponse>,
     relationships: HashMap<String, RelationshipStatus>,
     pinned: Option<Vec<FullResponse>>,
@@ -795,11 +795,11 @@ pub async fn profile_embed_request(
 struct FollowersTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
-    other: Profile,
-    followers: Vec<(UserFollow, Profile, Profile)>,
+    other: Box<Profile>,
+    followers: Vec<(UserFollow, Box<Profile>, Box<Profile>)>,
     followers_count: usize,
     following_count: usize,
     friends_count: usize,
@@ -944,13 +944,13 @@ pub async fn followers_request(
 struct FollowingTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
-    other: Profile,
+    other: Box<Profile>,
     followers_count: usize,
     friends_count: usize,
-    following: Vec<(UserFollow, Profile, Profile)>,
+    following: Vec<(UserFollow, Box<Profile>, Box<Profile>)>,
     following_count: usize,
     page: i32,
     // ...
@@ -1093,11 +1093,11 @@ pub async fn following_request(
 struct FriendsTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
-    other: Profile,
-    friends: Vec<(Profile, Profile)>,
+    other: Box<Profile>,
+    friends: Vec<(Box<Profile>, Box<Profile>)>,
     followers_count: usize,
     following_count: usize,
     friends_count: usize,
@@ -1246,11 +1246,11 @@ pub async fn friends_request(
 struct FriendRequestsTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
-    other: Profile,
-    requests: Vec<(Profile, Profile)>,
+    other: Box<Profile>,
+    requests: Vec<(Box<Profile>, Box<Profile>)>,
     followers_count: usize,
     following_count: usize,
     friends_count: usize,
@@ -1358,11 +1358,11 @@ pub async fn friend_requests_request(
 struct BlocksTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
-    other: Profile,
-    blocks: Vec<(Profile, Profile)>,
+    other: Box<Profile>,
+    blocks: Vec<(Box<Profile>, Box<Profile>)>,
     followers_count: usize,
     following_count: usize,
     friends_count: usize,
@@ -1474,10 +1474,10 @@ pub async fn blocks_request(
 struct ProfileQuestionsTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
-    other: Profile,
+    other: Box<Profile>,
     questions: Vec<(Question, usize, usize)>,
     questions_count: usize,
     response_count: usize,
@@ -1713,10 +1713,10 @@ pub async fn questions_request(
 struct ModTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
-    other: Profile,
+    other: Box<Profile>,
     warnings: Vec<Warning>,
     response_count: usize,
     questions_count: usize,
@@ -1727,7 +1727,7 @@ struct ModTemplate {
     is_following_you: bool,
     metadata: String,
     badges: String,
-    chats: Vec<(Chat, Vec<Profile>)>,
+    chats: Vec<(Chat, Vec<Box<Profile>>)>,
     tokens: String,
     tokens_src: Vec<String>,
     // ...
@@ -1918,10 +1918,10 @@ pub async fn mod_request(
 struct ProfileQuestionsInboxTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
-    other: Profile,
+    other: Box<Profile>,
     questions: Vec<Question>,
     questions_count: usize,
     response_count: usize,
@@ -2116,10 +2116,10 @@ pub async fn inbox_request(
 struct ProfileQuestionsOutboxTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
-    other: Profile,
+    other: Box<Profile>,
     questions: Vec<Question>,
     questions_count: usize,
     response_count: usize,
@@ -2317,10 +2317,10 @@ pub async fn outbox_request(
 struct FriendRequestTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
-    other: Profile,
+    other: Box<Profile>,
 }
 
 /// GET /@:username/relationship/friend_accept
@@ -2395,8 +2395,8 @@ pub async fn friend_request(
 #[template(path = "fun/styled_profile_card.html")]
 struct CardTemplate {
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
-    user: Profile,
+    profile: Option<Box<Profile>>,
+    user: Box<Profile>,
 }
 
 /// GET /@:username/_app/card.html

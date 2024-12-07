@@ -61,7 +61,7 @@ pub fn clean_metadata_raw(metadata: &CircleMetadata) -> CircleMetadata {
 struct CirclesTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
     circles: Vec<Circle>,
@@ -123,7 +123,7 @@ pub async fn circles_request(
 struct NewCircleTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
 }
@@ -184,7 +184,7 @@ pub async fn profile_redirect_request(Path(name): Path<String>) -> impl IntoResp
 struct ProfileTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
     circle: Circle,
@@ -384,7 +384,7 @@ pub async fn profile_request(
 struct PartialProfileTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     other: Circle,
     responses: Vec<FullResponse>,
     relationships: HashMap<String, RelationshipStatus>,
@@ -506,11 +506,11 @@ pub async fn partial_profile_request(
 struct MemberlistTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
     circle: Circle,
-    members: Vec<Profile>,
+    members: Vec<Box<Profile>>,
     member_count: usize,
     metadata: String,
     // ...
@@ -620,7 +620,7 @@ pub async fn memberlist_request(
 struct AcceptInviteTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
     circle: Circle,
@@ -731,7 +731,7 @@ pub async fn accept_invite_request(
 struct GeneralSettingsTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
     circle: Circle,
@@ -819,7 +819,7 @@ pub async fn general_settings_request(
 struct PrivacySettingsTemplate {
     config: Config,
     lang: langbeam::LangFile,
-    profile: Option<Profile>,
+    profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
     circle: Circle,

@@ -302,19 +302,19 @@ impl Database {
 
     // GET
     /// Fetch a profile correctly
-    pub async fn get_profile(&self, mut id: String) -> Result<Profile> {
+    pub async fn get_profile(&self, mut id: String) -> Result<Box<Profile>> {
         if id.starts_with("ANSWERED:") {
             // we use the "ANSWERED" prefix whenever we answer a question so it doesn't show up in inboxes
             id = id.replace("ANSWERED:", "");
         }
 
         if id == "@" {
-            return Ok(Profile::global());
+            return Ok(Box::new(Profile::global()));
         } else if id.starts_with("anonymous#") | (id == "anonymous") | (id == "#") {
             let tag = Profile::anonymous_tag(&id);
-            return Ok(Profile::anonymous(tag.3));
+            return Ok(Box::new(Profile::anonymous(tag.3)));
         } else if (id == "0") | (id == "system") {
-            return Ok(Profile::system());
+            return Ok(Box::new(Profile::system()));
         }
 
         // check with citrus
@@ -345,7 +345,7 @@ impl Database {
             {
                 Ok(p) => {
                     if let Some(p) = p.payload {
-                        return Ok(p);
+                        return Ok(Box::new(p));
                     } else {
                         return Err(DatabaseError::NotFound);
                     }
@@ -382,7 +382,7 @@ impl Database {
     ///
     /// # Arguments:
     /// * `hashed` - `String` of the profile's hashed ID
-    pub async fn get_profile_by_hashed(&self, hashed: String) -> Result<Profile> {
+    pub async fn get_profile_by_hashed(&self, hashed: String) -> Result<Box<Profile>> {
         // fetch from database
         let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "SELECT * FROM \"xprofiles\" WHERE \"tokens\" LIKE ?"
@@ -401,7 +401,7 @@ impl Database {
         };
 
         // return
-        Ok(Profile {
+        Ok(Box::new(Profile {
             id: row.get("id").unwrap().to_string(),
             username: row.get("username").unwrap().to_string(),
             password: row.get("password").unwrap().to_string(),
@@ -432,14 +432,14 @@ impl Database {
             labels: Database::collect_split_without_stupid_reference(
                 row.get("labels").unwrap().split(","),
             ),
-        })
+        }))
     }
 
     /// Get a user by their unhashed ID (hashes ID and then calls [`Database::get_profile_by_hashed()`])
     ///
     /// # Arguments:
     /// * `unhashed` - `String` of the user's unhashed ID
-    pub async fn get_profile_by_unhashed(&self, unhashed: String) -> Result<Profile> {
+    pub async fn get_profile_by_unhashed(&self, unhashed: String) -> Result<Box<Profile>> {
         self.get_profile_by_hashed(utility::hash(unhashed.clone()))
             .await
     }
@@ -448,7 +448,7 @@ impl Database {
     ///
     /// # Arguments:
     /// * `hashed` - `String` of the profile's IP
-    pub async fn get_profile_by_ip(&self, ip: String) -> Result<Profile> {
+    pub async fn get_profile_by_ip(&self, ip: String) -> Result<Box<Profile>> {
         // fetch from database
         let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "SELECT * FROM \"xprofiles\" WHERE \"ips\" LIKE ?"
@@ -467,7 +467,7 @@ impl Database {
         };
 
         // return
-        Ok(Profile {
+        Ok(Box::new(Profile {
             id: row.get("id").unwrap().to_string(),
             username: row.get("username").unwrap().to_string(),
             password: row.get("password").unwrap().to_string(),
@@ -498,7 +498,7 @@ impl Database {
             labels: Database::collect_split_without_stupid_reference(
                 row.get("labels").unwrap().split(","),
             ),
-        })
+        }))
     }
 
     /// Get a user by their unhashed secondary token
@@ -569,7 +569,7 @@ impl Database {
     ///
     /// # Arguments:
     /// * `username` - `String` of the user's username
-    pub async fn get_profile_by_username(&self, mut username: String) -> Result<Profile> {
+    pub async fn get_profile_by_username(&self, mut username: String) -> Result<Box<Profile>> {
         username = username.to_lowercase();
 
         // check in cache
@@ -581,7 +581,7 @@ impl Database {
 
         if cached.is_some() {
             match serde_json::from_str::<Profile>(cached.unwrap().as_str()) {
-                Ok(p) => return Ok(p),
+                Ok(p) => return Ok(Box::new(p)),
                 Err(_) => {
                     self.base
                         .cachedb
@@ -651,14 +651,14 @@ impl Database {
             .await;
 
         // return
-        Ok(user)
+        Ok(Box::new(user))
     }
 
     /// Get a user by their id
     ///
     /// # Arguments:
     /// * `id` - `String` of the user's username
-    pub async fn get_profile_by_id(&self, mut id: String) -> Result<Profile> {
+    pub async fn get_profile_by_id(&self, mut id: String) -> Result<Box<Profile>> {
         id = id.to_lowercase();
 
         // check in cache
@@ -670,7 +670,7 @@ impl Database {
 
         if cached.is_some() {
             match serde_json::from_str::<Profile>(cached.unwrap().as_str()) {
-                Ok(p) => return Ok(p),
+                Ok(p) => return Ok(Box::new(p)),
                 Err(_) => {
                     self.base
                         .cachedb
@@ -736,7 +736,7 @@ impl Database {
             .await;
 
         // return
-        Ok(user)
+        Ok(Box::new(user))
     }
 
     /// Validate a username
@@ -1589,7 +1589,10 @@ impl Database {
     ///
     /// # Arguments:
     /// * `user`
-    pub async fn get_followers(&self, user: String) -> Result<Vec<(UserFollow, Profile, Profile)>> {
+    pub async fn get_followers(
+        &self,
+        user: String,
+    ) -> Result<Vec<(UserFollow, Box<Profile>, Box<Profile>)>> {
         // fetch from database
         let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "SELECT * FROM \"xfollows\" WHERE \"following\" = ?"
@@ -1642,7 +1645,7 @@ impl Database {
         &self,
         user: String,
         page: i32,
-    ) -> Result<Vec<(UserFollow, Profile, Profile)>> {
+    ) -> Result<Vec<(UserFollow, Box<Profile>, Box<Profile>)>> {
         // fetch from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -1738,7 +1741,10 @@ impl Database {
     ///
     /// # Arguments:
     /// * `user`
-    pub async fn get_following(&self, user: String) -> Result<Vec<(UserFollow, Profile, Profile)>> {
+    pub async fn get_following(
+        &self,
+        user: String,
+    ) -> Result<Vec<(UserFollow, Box<Profile>, Box<Profile>)>> {
         // fetch from database
         let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "SELECT * FROM \"xfollows\" WHERE \"user\" = ?"
@@ -1799,7 +1805,7 @@ impl Database {
         &self,
         user: String,
         page: i32,
-    ) -> Result<Vec<(UserFollow, Profile, Profile)>> {
+    ) -> Result<Vec<(UserFollow, Box<Profile>, Box<Profile>)>> {
         // fetch from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -2313,7 +2319,7 @@ impl Database {
     /// ## Arguments:
     /// * `id` - the ID of the notification
     /// * `user` - the user doing this
-    pub async fn delete_notification(&self, id: String, user: Profile) -> Result<()> {
+    pub async fn delete_notification(&self, id: String, user: Box<Profile>) -> Result<()> {
         // make sure notification exists
         let notification = match self.get_notification(id.clone()).await {
             Ok(n) => n,
@@ -2375,7 +2381,7 @@ impl Database {
     pub async fn delete_notifications_by_recipient(
         &self,
         recipient: String,
-        user: Profile,
+        user: Box<Profile>,
     ) -> Result<()> {
         // make sure notifications exists
         let notifications = match self.get_notifications_by_recipient(recipient.clone()).await {
@@ -2504,7 +2510,7 @@ impl Database {
     pub async fn get_warnings_by_recipient(
         &self,
         recipient: String,
-        user: Profile,
+        user: Box<Profile>,
     ) -> Result<Vec<Warning>> {
         // make sure user is a manager
         let group = match self.get_group_by_id(user.group).await {
@@ -2566,7 +2572,7 @@ impl Database {
     /// ## Arguments:
     /// * `props` - [`WarningCreate`]
     /// * `user` - the user creating this warning
-    pub async fn create_warning(&self, props: WarningCreate, user: Profile) -> Result<()> {
+    pub async fn create_warning(&self, props: WarningCreate, user: Box<Profile>) -> Result<()> {
         // make sure user is a manager
         let group = match self.get_group_by_id(user.group).await {
             Ok(g) => g,
@@ -2636,7 +2642,7 @@ impl Database {
     /// ## Arguments:
     /// * `id` - the ID of the warning
     /// * `user` - the user doing this
-    pub async fn delete_warning(&self, id: String, user: Profile) -> Result<()> {
+    pub async fn delete_warning(&self, id: String, user: Box<Profile>) -> Result<()> {
         // make sure warning exists
         let warning = match self.get_warning(id.clone()).await {
             Ok(n) => n,
@@ -2786,7 +2792,7 @@ impl Database {
     ///
     /// ## Arguments:
     /// * `user` - the user doing this
-    pub async fn get_ipbans(&self, user: Profile) -> Result<Vec<IpBan>> {
+    pub async fn get_ipbans(&self, user: Box<Profile>) -> Result<Vec<IpBan>> {
         // make sure user is a manager
         let group = match self.get_group_by_id(user.group).await {
             Ok(g) => g,
@@ -2843,7 +2849,7 @@ impl Database {
     /// ## Arguments:
     /// * `props` - [`IpBanCreate`]
     /// * `user` - the user creating this ban
-    pub async fn create_ipban(&self, props: IpBanCreate, user: Profile) -> Result<()> {
+    pub async fn create_ipban(&self, props: IpBanCreate, user: Box<Profile>) -> Result<()> {
         // make sure user is a helper
         let group = match self.get_group_by_id(user.group).await {
             Ok(g) => g,
@@ -2913,7 +2919,7 @@ impl Database {
     /// ## Arguments:
     /// * `id` - the ID of the ban
     /// * `user` - the user doing this
-    pub async fn delete_ipban(&self, id: String, user: Profile) -> Result<()> {
+    pub async fn delete_ipban(&self, id: String, user: Box<Profile>) -> Result<()> {
         // make sure ban exists
         let ipban = match self.get_ipban(id.clone()).await {
             Ok(n) => n,
@@ -3282,7 +3288,7 @@ impl Database {
     pub async fn get_user_relationships(
         &self,
         user: String,
-    ) -> Result<Vec<(Profile, RelationshipStatus)>> {
+    ) -> Result<Vec<(Box<Profile>, RelationshipStatus)>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -3329,7 +3335,7 @@ impl Database {
         &self,
         user: String,
         status: RelationshipStatus,
-    ) -> Result<Vec<(Profile, RelationshipStatus)>> {
+    ) -> Result<Vec<(Box<Profile>, RelationshipStatus)>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -3381,7 +3387,7 @@ impl Database {
         &self,
         user: String,
         status: RelationshipStatus,
-    ) -> Result<Vec<(Profile, Profile)>> {
+    ) -> Result<Vec<(Box<Profile>, Box<Profile>)>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -3438,7 +3444,7 @@ impl Database {
         user: String,
         status: RelationshipStatus,
         page: i32,
-    ) -> Result<Vec<(Profile, Profile)>> {
+    ) -> Result<Vec<(Box<Profile>, Box<Profile>)>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -3658,7 +3664,7 @@ impl Database {
     /// ## Arguments:
     /// * `props` - [`IpBlockCreate`]
     /// * `user` - the user creating this block
-    pub async fn create_ipblock(&self, props: IpBlockCreate, user: Profile) -> Result<()> {
+    pub async fn create_ipblock(&self, props: IpBlockCreate, user: Box<Profile>) -> Result<()> {
         // make sure this ip isn't already banned
         if self
             .get_ipblock_by_ip(props.ip.clone(), user.id.clone())
@@ -3706,7 +3712,7 @@ impl Database {
     /// ## Arguments:
     /// * `id` - the ID of the block
     /// * `user` - the user doing this
-    pub async fn delete_ipblock(&self, id: String, user: Profile) -> Result<()> {
+    pub async fn delete_ipblock(&self, id: String, user: Box<Profile>) -> Result<()> {
         // make sure block exists
         let block = match self.get_ipblock(id.clone()).await {
             Ok(n) => n,
@@ -3843,7 +3849,7 @@ impl Database {
         &self,
         recipient: String,
         page: i32,
-    ) -> Result<Vec<(Mail, Profile)>> {
+    ) -> Result<Vec<(Mail, Box<Profile>)>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -3860,7 +3866,7 @@ impl Database {
             .await
         {
             Ok(p) => {
-                let mut out: Vec<(Mail, Profile)> = Vec::new();
+                let mut out: Vec<(Mail, Box<Profile>)> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
@@ -3904,7 +3910,7 @@ impl Database {
         &self,
         recipient: String,
         page: i32,
-    ) -> Result<Vec<(Mail, Profile)>> {
+    ) -> Result<Vec<(Mail, Box<Profile>)>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -3921,7 +3927,7 @@ impl Database {
             .await
         {
             Ok(p) => {
-                let mut out: Vec<(Mail, Profile)> = Vec::new();
+                let mut out: Vec<(Mail, Box<Profile>)> = Vec::new();
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
@@ -4149,7 +4155,7 @@ impl Database {
     /// ## Arguments:
     /// * `id` - the ID of the mail
     /// * `user` - the user doing this
-    pub async fn delete_mail(&self, id: String, user: Profile) -> Result<()> {
+    pub async fn delete_mail(&self, id: String, user: Box<Profile>) -> Result<()> {
         // make sure mail exists
         let mail = match self.get_mail(id.clone()).await {
             Ok(n) => n,
@@ -4204,7 +4210,7 @@ impl Database {
         &self,
         id: String,
         state: MailState,
-        user: Profile,
+        user: Box<Profile>,
     ) -> Result<()> {
         // make sure mail exists and check permission
         let mail = match self.get_mail(id.clone()).await {
