@@ -432,7 +432,7 @@
 
     app.define(
         "hook.attach_to_partial",
-        function ({ $ }, partial, full, attach, wrapper, page) {
+        function ({ $ }, partial, full, attach, wrapper, page, run_on_load) {
             return new Promise((resolve, reject) => {
                 async function load_partial() {
                     const url = `${partial}?page=${page}`;
@@ -479,6 +479,10 @@
                                 page += 1;
                                 await load_partial();
                                 await $["hook.partial_embeds"]();
+
+                                if (run_on_load) {
+                                    run_on_load();
+                                }
                             })
                             .catch(() => {
                                 console.log("partial stuck");

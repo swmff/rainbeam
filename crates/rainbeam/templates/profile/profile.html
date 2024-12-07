@@ -90,6 +90,9 @@
             document.getElementById("feed"),
             document.body,
             parseInt("{{ page }}"),
+            () => {
+                trigger("questions:carp");
+            },
         ).then(() => {
             console.log("partial end");
             document.getElementById("feed").innerHTML +=
