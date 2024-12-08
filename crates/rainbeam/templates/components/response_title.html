@@ -52,11 +52,21 @@
         </a>
         {% endif %} {% if !response.context.circle.is_empty() %}
         <a
-            class="button item primary icon-only small"
+            class="button item camo icon-only small avatar"
             href="/+g/{{ response.context.circle }}"
             title="Posted in circle"
+            style="
+                --size: 20px;
+                background: url('/api/v1/circles/{{ response.context.circle }}/avatar');
+                border-radius: var(--radius);
+                background-size: cover;
+                padding: 0 !important;
+                width: var(--size) !important;
+                height: var(--size) !important;
+                min-width: var(--size) !important;
+                min-height: var(--size) !important;
+            "
         >
-            {{ icon "users-round" }}
         </a>
         {% endif %}
     </div>

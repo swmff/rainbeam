@@ -140,7 +140,7 @@
                             href="/circles/@{{ circle.name }}/settings"
                             style="flex: 1 0 auto"
                         >
-                            Edit Circle
+                            {{ icon "pen" }} Edit Circle
                         </a>
                         {% endif %}
 
@@ -180,8 +180,8 @@
                                 <a
                                     href="javascript:trigger('reports:bootstrap', ['circles', '{{ circle.id }}'])"
                                 >
-                                    {{ icon "flag" }} {{
-                                    text "general:action.report" }}
+                                    {{ icon "flag" }} {{ text
+                                    "general:action.report" }}
                                 </a>
 
                                 {% if is_owner %}
@@ -189,8 +189,8 @@
                                     href="javascript:delete_circle_as_owner()"
                                     class="red"
                                 >
-                                    {{ icon "trash" }} {{
-                                    text "general:action.delete" }}
+                                    {{ icon "trash" }} {{ text
+                                    "general:action.delete" }}
                                 </a>
 
                                 <script>
@@ -266,8 +266,8 @@
                                     href="javascript:delete_circle()"
                                     class="red"
                                 >
-                                    {{ icon "trash" }} {{
-                                    text "general:action.delete" }}
+                                    {{ icon "trash" }} {{ text
+                                    "general:action.delete" }}
                                 </a>
 
                                 <script>
@@ -323,8 +323,8 @@
                                 <a
                                     href="javascript:trigger('reports:bootstrap', ['circles', '{{ circle.id }}'])"
                                 >
-                                    {{ icon "flag" }} {{
-                                    text "general:action.report" }}
+                                    {{ icon "flag" }} {{ text
+                                    "general:action.report" }}
                                 </a>
                             </div>
                         </div>

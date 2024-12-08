@@ -1,14 +1,14 @@
 {% let reply_count = comment.1 %} {% let reaction_count = comment.2 %} {% let
 comment = comment.0.clone() %}
 <div
-    class="flex flex-row gap-2 comment_body"
+    class="card shadow flex flex-row gap-2 comment_body"
     id="comment:{{ comment.id }}"
     style="margin-top: 1rem"
 >
     <!-- reactions -->
     <button
         title="{{ reaction_count }} reactions"
-        class="secondary icon-only"
+        class="icon-only"
         onclick="trigger('reactions:toggle', ['{{ comment.id }}', 'Comment', event.target])"
         hook="check_reaction"
         hook-arg:id="{{ comment.id }}"
@@ -103,7 +103,7 @@ comment = comment.0.clone() %}
             <a
                 href="/comment/{{ comment.id }}"
                 title="{{ reply_count }} replies"
-                class="button camo"
+                class="circle button camo"
             >
                 {{ icon "message-circle" }} {% if reply_count > 0 %}
                 <span class="notification camo">{{ reply_count }}</span>
@@ -116,7 +116,7 @@ comment = comment.0.clone() %}
                 <button
                     onclick="trigger('app:hook.dropdown', [event])"
                     exclude="dropdown"
-                    class="camo"
+                    class="circle camo"
                 >
                     {{ icon "ellipsis" }}
                 </button>

@@ -118,10 +118,10 @@ question = question.clone().0 %}
         <a
             href="/question/{{ question.id }}"
             class="button item"
-            style="gap: 0.75rem"
+            title="{{ responses}} responses"
         >
-            Respond
-            <span class="notification">{{ responses }}</span>
+            {{ icon "reply" }}
+            <span class="notification camo">{{ responses }}</span>
         </a>
 
         {% if profile.is_none() %}
