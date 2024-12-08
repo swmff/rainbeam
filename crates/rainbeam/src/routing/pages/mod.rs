@@ -2205,6 +2205,7 @@ pub async fn routes(database: Database) -> Router {
         .route("/response/:id", get(response_request))
         .route("/comment/:id", get(comment_request))
         // profiles
+        .route("/@:username/_app/warning", get(profile::warning_request))
         .route("/@:username/mod", get(profile::mod_request)) // staff
         .route("/@:username/questions", get(profile::questions_request))
         .route("/@:username/questions/inbox", get(profile::inbox_request)) // staff

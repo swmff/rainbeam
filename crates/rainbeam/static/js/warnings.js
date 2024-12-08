@@ -1,14 +1,14 @@
 (() => {
-    const self = reg_ns("warnings", ["dialogs"]);
+    const self = reg_ns("warnings", []);
+
+    const accepted_warnings = JSON.parse(
+        window.localStorage.getItem("accepted_warnings") || "{}",
+    );
 
     self.define(
         "open",
-        async function ({ $, dialogs }, warning_id, warning_hash) {
+        async function ({ $ }, warning_id, warning_hash, warning_page = "") {
             // check localStorage for this warning_id
-            const accepted_warnings = JSON.parse(
-                window.localStorage.getItem("accepted_warnings") || "{}",
-            );
-
             if (accepted_warnings[warning_id] !== undefined) {
                 // check hash
                 if (accepted_warnings[warning_id] !== warning_hash) {
@@ -20,23 +20,27 @@
                 }
             }
 
-            // open dialog
-            $.warning = dialogs.get("warning_dialog");
-            $.warning.open();
-
-            dialogs["event:confirm"]("warning_dialog", () => {
-                // write accepted_warnings
-                accepted_warnings[warning_id] = warning_hash;
-
-                window.localStorage.setItem(
-                    "accepted_warnings",
-                    JSON.stringify(accepted_warnings),
-                );
-            });
+            // open page
+            if (warning_page !== "") {
+                window.location.href = warning_page;
+                return;
+            }
         },
     );
 
-    self.define("accept", function ({ $, dialogs }) {
-        $.warning.close();
-    });
+    self.define(
+        "accept",
+        function ({ _ }, warning_id, warning_hash, redirect = "/") {
+            accepted_warnings[warning_id] = warning_hash;
+
+            window.localStorage.setItem(
+                "accepted_warnings",
+                JSON.stringify(accepted_warnings),
+            );
+
+            setTimeout(() => {
+                window.location.href = redirect;
+            }, 100);
+        },
+    );
 })();

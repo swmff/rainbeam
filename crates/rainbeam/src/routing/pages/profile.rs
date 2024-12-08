@@ -2434,3 +2434,55 @@ pub async fn render_card_request(
         .unwrap(),
     )
 }
+
+#[derive(Template)]
+#[template(path = "profile/warning.html")]
+struct WarningTemplate {
+    config: Config,
+    lang: langbeam::LangFile,
+    profile: Option<Box<Profile>>,
+    other: Box<Profile>,
+}
+
+/// GET /@:username/_app/warning
+pub async fn warning_request(
+    jar: CookieJar,
+    Path(username): Path<String>,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => Some(ua),
+            Err(_) => None,
+        },
+        None => None,
+    };
+
+    let other = match database
+        .auth
+        .get_profile_by_username(username.clone())
+        .await
+    {
+        Ok(ua) => ua,
+        Err(e) => return Html(e.to_string()),
+    };
+
+    Html(
+        WarningTemplate {
+            config: database.server_options.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
+            profile: auth_user.clone(),
+            other: other.clone(),
+        }
+        .render()
+        .unwrap(),
+    )
+}

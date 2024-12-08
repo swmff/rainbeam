@@ -679,27 +679,6 @@ config.name }}{% endblock %} {% block head %}
 </dialog>
 {% endif %} {% if let Some(warning) = other.metadata.kv.get("sparkler:warning")
 %} {% if !warning.is_empty() %}
-<dialog id="warning_dialog">
-    <div class="inner flex flex-col gap-2">
-        <span class="fade">{{ text "profile:base.html:text.warning_title" }}</span>
-
-        <hr />
-        <div class="profile_warning">{{ shared::ui::render_markdown(warning)|safe }}</div>
-
-        <hr />
-        <span class="fade">
-            {{ text "profile:base.html:text.warning_continue" }}
-        </span>
-
-        <div class="flex gap-2">
-            <button class="primary bold" onclick="trigger('warnings:accept')">
-                {{ text "general:dialog.continue" }}
-            </button>
-            <a href="/" class="button bold">{{ text "general:dialog.cancel" }}</a>
-        </div>
-    </div>
-</dialog>
-
 <!-- prettier-ignore -->
 {% if !is_self %}
 {% let warning_hash = shared::hash::hash(warning.to_string()) %}
@@ -709,7 +688,7 @@ config.name }}{% endblock %} {% block head %}
         dialogs.add("warning_dialog");
 
         const warnings = ns("warnings");
-        warnings.open("{{ other.id }}", "{{ warning_hash }}");
+        warnings.open("{{ other.id }}", "{{ warning_hash }}", "/@{{ other.username }}/_app/warning");
     }, 100);
 </script>
 {% endif %} {% endif %} {% endif %}
