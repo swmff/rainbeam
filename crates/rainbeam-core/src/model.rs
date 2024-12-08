@@ -20,7 +20,6 @@ pub trait Context {}
 pub trait CtxAsset {
     fn ref_context(&self) -> &impl Context;
     fn ref_content(&self) -> &String;
-
     fn ref_asset(&self) -> (AssetType, &String);
 }
 
@@ -314,6 +313,8 @@ pub enum MembershipStatus {
     Pending,
     /// An active member of a circle
     Active,
+    /// An active moderator of a circle
+    Moderator,
     /// Not pending or an active member
     Inactive,
 }

@@ -786,7 +786,7 @@ pub async fn general_settings_request(
         database
             .get_user_circle_membership(profile.id.clone(), circle.id.clone())
             .await
-            == MembershipStatus::Active
+            == MembershipStatus::Moderator
     } else {
         false
     };
@@ -874,7 +874,7 @@ pub async fn privacy_settings_request(
         database
             .get_user_circle_membership(profile.id.clone(), circle.id.clone())
             .await
-            == MembershipStatus::Active
+            == MembershipStatus::Moderator
     } else {
         false
     };

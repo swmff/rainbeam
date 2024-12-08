@@ -79,6 +79,20 @@ a.button.icon-only {
     width: 1em;
     height: 1em;
     position: absolute;
+    left: calc(50% - 1em / 2.15);
+}
+
+.icon-only:active .icon {
+    transform: scale(1.05); /* negate button transform */
+}
+
+.icon-only .notification {
+    position: absolute;
+    z-index: 2;
+    width: 35px;
+    bottom: -20px;
+    display: block;
+    margin-left: 0.15em;
 }
 
 nav button,

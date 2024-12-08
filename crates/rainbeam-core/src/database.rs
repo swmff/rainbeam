@@ -2374,7 +2374,9 @@ impl Database {
                 .get_user_circle_membership(author.id.clone(), circle.id.clone())
                 .await;
 
-            if membership != MembershipStatus::Active {
+            if (membership != MembershipStatus::Active)
+                && (membership != MembershipStatus::Moderator)
+            {
                 return Err(DatabaseError::NotAllowed);
             }
         }
@@ -4625,6 +4627,27 @@ impl Database {
                     .incr(format!("rbeam.app.circle_memberships_count:{}", circle))
                     .await;
             }
+            MembershipStatus::Moderator => {
+                // update
+                let query: String =
+                    if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+                        "UPDATE \"xcircle_memberships\" SET \"membership\" = ? WHERE \"user\" = ? AND \"circle\" = ?"
+                    } else {
+                        "UPDATE \"xcircle_memberships\" SET (\"membership\") = (?) WHERE \"user\" = ? AND \"circle\" = ?"
+                    }
+                    .to_string();
+
+                let c = &self.base.db.client;
+                if let Err(_) = sqlquery(&query)
+                    .bind::<&String>(&serde_json::to_string(&status).unwrap())
+                    .bind::<&String>(&user)
+                    .bind::<&String>(&circle)
+                    .execute(c)
+                    .await
+                {
+                    return Err(DatabaseError::Other);
+                };
+            }
             MembershipStatus::Inactive => {
                 // delete
                 let query: String =
@@ -4761,7 +4784,7 @@ impl Database {
                     .set_user_circle_membership(
                         circle.owner.id,
                         circle.id,
-                        MembershipStatus::Active,
+                        MembershipStatus::Moderator,
                         true,
                     )
                     .await

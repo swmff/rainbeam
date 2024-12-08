@@ -1,18 +1,21 @@
 {% let reply_count = comment.1 %} {% let reaction_count = comment.2 %} {% let
 comment = comment.0.clone() %}
-<div
-    class="card shadow flex flex-rev-col gap-1 comment_body"
-    id="comment:{{ comment.id }}"
->
-    <!-- prettier-ignore -->
-    <span class="comment_content" hook="long">
-        {{ shared::ui::render_markdown(comment.content)|safe }}
-    </span>
-
-    <div
-        class="flex justify-between flex-collapse sm:items-start items-center gap-1 comment_title"
+<div class="flex flex-row gap-2 comment_body" id="comment:{{ comment.id }}">
+    <!-- reactions -->
+    <button
+        title="{{ reaction_count }} reactions"
+        class="secondary icon-only"
+        onclick="trigger('reactions:toggle', ['{{ comment.id }}', 'Comment', event.target])"
+        hook="check_reaction"
+        hook-arg:id="{{ comment.id }}"
     >
-        <div class="footernav items-center">
+        {{ icon "heart" }}
+        <span class="notification camo">{{ reaction_count }}</span>
+    </button>
+
+    <!-- comment -->
+    <div class="flex flex-col gap-2">
+        <div class="footernav items-center comment_title">
             <b class="flex items-center gap-2 item">
                 <!-- prettier-ignore -->
                 {% let author_tag = crate::database::Database::anonymous_tag(comment.author.username.as_ref()) %}
@@ -74,37 +77,29 @@ comment = comment.0.clone() %}
                 {% endif %} {% endif %} {% endif %}
             </b>
 
-            <span class="flex fade">
+            <span class="flex fade item">
                 {% if (comment.edited != 0) && (comment.edited !=
                 comment.timestamp) %}
-                <span class="date item">{{ comment.edited }}</span>
+                <span class="date">{{ comment.edited }}</span>
                 <sup title="Edited">*</sup>
                 {% else %}
-                <span class="date item">{{ comment.timestamp }}</span>
+                <span class="date">{{ comment.timestamp }}</span>
                 {% endif %}
             </span>
         </div>
 
-        <div class="flex justify-between gap-2 sm:w-full actions_bar">
-            <!-- reactions -->
-            <button
-                title="{{ reaction_count }} reactions"
-                class="camo circle"
-                onclick="trigger('reactions:toggle', ['{{ comment.id }}', 'Comment', event.target])"
-                hook="check_reaction"
-                hook-arg:id="{{ comment.id }}"
-            >
-                {{ icon "heart" }} {% if reaction_count > 0 %}
-                <span class="notification camo">{{ reaction_count }}</span>
-                {% endif %}
-            </button>
+        <!-- prettier-ignore -->
+        <span class="comment_content" hook="long">
+            {{ shared::ui::render_markdown(comment.content)|safe }}
+        </span>
 
+        <div class="flex w-full gap-2 actions_bar">
             <!-- replies -->
             {% if show_replies != false %}
             <a
                 href="/comment/{{ comment.id }}"
                 title="{{ reply_count }} replies"
-                class="button camo circle"
+                class="button camo"
             >
                 {{ icon "message-circle" }} {% if reply_count > 0 %}
                 <span class="notification camo">{{ reply_count }}</span>
@@ -117,7 +112,7 @@ comment = comment.0.clone() %}
                 <button
                     onclick="trigger('app:hook.dropdown', [event])"
                     exclude="dropdown"
-                    class="w-full camo circle"
+                    class="camo"
                 >
                     {{ icon "ellipsis" }}
                 </button>
@@ -173,7 +168,7 @@ comment = comment.0.clone() %}
 
                     <!-- prettier-ignore -->
                     {% if let Some(profile) = profile %}
-                    {% if profile.id != comment.author.id %}
+                        {% if profile.id != comment.author.id %}
                     <!-- actions for users that ARE NOT the author -->
                     <a
                         href="javascript:trigger('reports:bootstrap', ['comments', '{{ comment.id }}'])"
