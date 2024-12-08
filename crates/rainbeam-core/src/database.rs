@@ -160,7 +160,7 @@ impl Database {
 
         // create sites table
         let _ = sqlquery(
-            "CREATE TABLE IF NOT EXISTS \"xsites\" (
+            "CREATE TABLE IF NOT EXISTS \"xposts\" (
                 id        TEXT,
                 slug      TEXT,
                 owner     TEXT,

@@ -1,9 +1,9 @@
 [package]
-name = "rainbeam-core"
-version = "1.18.5"
+name = "blogbeam"
+version = "0.1.0"
 edition = "2021"
 authors = ["trisuaso", "swmff"]
-description = "Rainbeam backend core"
+description = "Rainbeam long-form blogging"
 homepage = "https://rainbeam.net"
 repository = "https://github.com/swmff/rainbeam"
 license = "MIT"
@@ -18,27 +18,8 @@ default = ["databeam/sqlite", "authbeam/sqlite"]
 [dependencies]
 axum = { version = "0.7.5", features = ["macros", "form"] }
 axum-extra = { version = "0.9.3", features = ["cookie"] }
-reqwest = { version = "0.12.5", features = ["json", "stream"] }
 serde = { version = "1.0.215", features = ["derive"] }
-tokio = { version = "1.38.0", features = ["macros", "rt-multi-thread"] }
-toml = "0.8.14"
 serde_json = "1.0.120"
-regex = "1.10.5"
-hcaptcha = "2.4.6"
-ammonia = "4.0.0"
-futures-util = "0.3.30"
-async-recursion = "1.1.1"
-tracing = "0.1.40"
 shared = { path = "../shared" }
 databeam = { path = "../databeam", default-features = false }
 authbeam = { path = "../authbeam", default-features = false }
-langbeam = { path = "../langbeam" }
-citrus = { path = "../citrus" }
-mime_guess = "2.0.5"
-
-[lib]
-crate-type = ["cdylib", "lib"]
-path = "src/lib.rs"
-name = "rainbeam"
-test = false
-doctest = true

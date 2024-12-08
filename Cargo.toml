@@ -8,6 +8,7 @@ members = [
     "crates/rainbeam-core",
     "crates/citrus",
     "crates/langbeam",
+    "crates/blogbeam",
 ]
 
 [profile.release]
