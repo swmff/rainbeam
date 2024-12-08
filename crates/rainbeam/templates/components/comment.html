@@ -1,6 +1,10 @@
 {% let reply_count = comment.1 %} {% let reaction_count = comment.2 %} {% let
 comment = comment.0.clone() %}
-<div class="flex flex-row gap-2 comment_body" id="comment:{{ comment.id }}">
+<div
+    class="flex flex-row gap-2 comment_body"
+    id="comment:{{ comment.id }}"
+    style="margin-top: 1rem"
+>
     <!-- reactions -->
     <button
         title="{{ reaction_count }} reactions"

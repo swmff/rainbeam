@@ -79,7 +79,7 @@ a.button.icon-only {
     width: 1em;
     height: 1em;
     position: absolute;
-    left: calc(50% - 1em / 2.15);
+    left: calc(50% - 1em / 2.12);
 }
 
 .icon-only:active .icon {
@@ -88,11 +88,11 @@ a.button.icon-only {
 
 .icon-only .notification {
     position: absolute;
-    z-index: 2;
+    z-index: 1;
     width: 35px;
     bottom: -20px;
     display: block;
-    margin-left: 0.15em;
+    margin-left: 0.12em;
 }
 
 nav button,
