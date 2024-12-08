@@ -1,45 +1,31 @@
 {% let reply_count = comment.1 %} {% let reaction_count = comment.2 %} {% let
 comment = comment.0.clone() %}
 <div
-    class="card shadow flex flex-row gap-2 comment_body"
+    class="card shadow flex flex-col gap-2 comment_body"
     id="comment:{{ comment.id }}"
     style="margin-top: 1rem"
 >
-    <!-- reactions -->
-    <button
-        title="{{ reaction_count }} reactions"
-        class="icon-only"
-        onclick="trigger('reactions:toggle', ['{{ comment.id }}', 'Comment', event.target])"
-        hook="check_reaction"
-        hook-arg:id="{{ comment.id }}"
-    >
-        {{ icon "heart" }}
-        <span class="notification camo">{{ reaction_count }}</span>
-    </button>
-
-    <!-- comment -->
-    <div class="flex flex-col gap-2">
-        <div class="footernav items-center comment_title">
-            <b class="flex items-center gap-2 item">
-                <!-- prettier-ignore -->
-                {% let author_tag = crate::database::Database::anonymous_tag(comment.author.username.as_ref()) %}
+    <div class="footernav items-center comment_title">
+        <b class="flex items-center gap-2 item">
+            <!-- prettier-ignore -->
+            {% let author_tag = crate::database::Database::anonymous_tag(comment.author.username.as_ref()) %}
                 {% if author_tag.0 == false %}
-                <img
-                    title="{{ comment.author.username }}'s avatar"
-                    src="/api/v0/auth/profile/{{ comment.author.id }}/avatar"
-                    alt=""
-                    class="avatar"
-                    loading="lazy"
-                    style="--size: 20px"
-                />
+            <img
+                title="{{ comment.author.username }}'s avatar"
+                src="/api/v0/auth/profile/{{ comment.author.id }}/avatar"
+                alt=""
+                class="avatar"
+                loading="lazy"
+                style="--size: 20px"
+            />
 
-                <a
-                    href="/@{{ comment.author.username }}"
-                    style="color: inherit"
-                    class="username short"
-                >
-                    <!-- prettier-ignore -->
-                    {% let display_name = comment.author.metadata.kv.get("sparkler:display_name") %}
+            <a
+                href="/@{{ comment.author.username }}"
+                style="color: inherit"
+                class="username short"
+            >
+                <!-- prettier-ignore -->
+                {% let display_name = comment.author.metadata.kv.get("sparkler:display_name") %}
 
                     {% if let Some(display_name) = display_name %}
                         {% if !display_name.trim().is_empty() %}
@@ -50,146 +36,160 @@ comment = comment.0.clone() %}
                     {% else %}
                         {{ comment.author.username }}
                     {% endif %}
-                </a>
-                {% else %}
-                <img
-                    title="{{ comment.author.username }}'s avatar"
-                    src="/static/images/default-avatar.svg"
-                    alt=""
-                    class="avatar"
-                    loading="lazy"
-                    style="--size: 20px"
-                />
+            </a>
+            {% else %}
+            <img
+                title="{{ comment.author.username }}'s avatar"
+                src="/static/images/default-avatar.svg"
+                alt=""
+                class="avatar"
+                loading="lazy"
+                style="--size: 20px"
+            />
 
-                <span>anonymous</span>
+            <span>anonymous</span>
 
-                <!-- prettier-ignore -->
-                {% if is_powerful %}
+            <!-- prettier-ignore -->
+            {% if is_powerful %}
                 {% let author_tag = crate::database::Database::anonymous_tag(comment.author.id.as_ref()) %}
                 {% if author_tag.0 %}
-                <a class="notification" href="/+u/{{ author_tag.1 }}">
-                    {% if author_tag.1.contains("-") %}
-                    <span title="User hiding as anonymous">🤫</span>
-                    {% endif %}
-                    <!-- prettier-ignore -->
-                    {% if author_tag.1.len() >= 10 %}
+            <a class="notification" href="/+u/{{ author_tag.1 }}">
+                {% if author_tag.1.contains("-") %}
+                <span title="User hiding as anonymous">🤫</span>
+                {% endif %}
+                <!-- prettier-ignore -->
+                {% if author_tag.1.len() >= 10 %}
                         {{ author_tag.1[..10] }}
                     {% else %}
                         {{ author_tag.1 }}
                     {% endif %}
-                </a>
-                {% endif %} {% endif %} {% endif %}
-            </b>
+            </a>
+            {% endif %} {% endif %} {% endif %}
+        </b>
 
-            <span class="flex fade item">
-                {% if (comment.edited != 0) && (comment.edited !=
-                comment.timestamp) %}
-                <span class="date">{{ comment.edited }}</span>
-                <sup title="Edited">*</sup>
-                {% else %}
-                <span class="date">{{ comment.timestamp }}</span>
-                {% endif %}
-            </span>
-        </div>
+        <span class="flex fade item">
+            {% if (comment.edited != 0) && (comment.edited != comment.timestamp)
+            %}
+            <span class="date">{{ comment.edited }}</span>
+            <sup title="Edited">*</sup>
+            {% else %}
+            <span class="date">{{ comment.timestamp }}</span>
+            {% endif %}
+        </span>
+    </div>
 
-        <!-- prettier-ignore -->
-        <span class="comment_content" hook="long">
+    <!-- prettier-ignore -->
+    <span class="comment_content" hook="long">
             {{ shared::ui::render_markdown(comment.content)|safe }}
         </span>
 
-        <div class="flex w-full gap-2 actions_bar">
+    <!-- actions -->
+    <div class="flex w-full gap-2 actions_bar w-full justify-between">
+        <div class="flex gap-2 sm:contents">
+            <!-- reactions -->
+            <button
+                title="{{ reaction_count }} reactions"
+                class="circle camo sm:w-full"
+                onclick="trigger('reactions:toggle', ['{{ comment.id }}', 'Comment', event.target])"
+                hook="check_reaction"
+                hook-arg:id="{{ comment.id }}"
+            >
+                {{ icon "heart" }} {% if reaction_count > 0 %}
+                <span class="notification camo">{{ reaction_count }}</span>
+                {% endif %}
+            </button>
+
             <!-- replies -->
             {% if show_replies != false %}
             <a
                 href="/comment/{{ comment.id }}"
                 title="{{ reply_count }} replies"
-                class="circle button camo"
+                class="circle button camo sm:w-full"
             >
                 {{ icon "message-circle" }} {% if reply_count > 0 %}
                 <span class="notification camo">{{ reply_count }}</span>
                 {% endif %}
             </a>
             {% endif %}
+        </div>
 
-            <!-- options -->
-            <div class="dropdown">
+        <!-- options -->
+        <div class="dropdown sm:w-full">
+            <button
+                onclick="trigger('app:hook.dropdown', [event])"
+                exclude="dropdown"
+                class="circle camo w-full"
+            >
+                {{ icon "ellipsis" }}
+            </button>
+
+            <div class="inner shadow-md w-content" exclude="dropdown">
+                <b class="title">Sharing</b>
+
+                <!-- prettier-ignore -->
+                {% let short_id = comment.id[..10] %}
+
                 <button
-                    onclick="trigger('app:hook.dropdown', [event])"
-                    exclude="dropdown"
-                    class="circle camo"
+                    onclick="trigger('app:copy_text', ['{{ config.host }}/+c/{{ short_id }}'])"
                 >
-                    {{ icon "ellipsis" }}
+                    {{ icon "copy" }} {{ text "general:action.copy_link" }}
                 </button>
 
-                <div class="inner shadow-md w-content" exclude="dropdown">
-                    <b class="title">Sharing</b>
+                {% if let Some(profile) = profile %} {% if (profile.id ==
+                comment.author.id) | (profile.id == response.author.id) %}
+                <!-- actions for the comment author/response author only -->
+                <b class="title">Manage</b>
 
-                    <!-- prettier-ignore -->
-                    {% let short_id = comment.id[..10] %}
+                <a href="/comment/{{ comment.id }}?edit" target="_blank">
+                    {{ icon "pen" }} {{ text "general:action.edit" }}
+                </a>
 
-                    <button
-                        onclick="trigger('app:copy_text', ['{{ config.host }}/+c/{{ short_id }}'])"
-                    >
-                        {{ icon "copy" }} {{ text "general:action.copy_link" }}
-                    </button>
+                <a
+                    href="#"
+                    onclick="trigger('comments:delete', ['{{ comment.id }}'])"
+                    class="red"
+                >
+                    {{ icon "trash" }} {{ text "general:action.delete" }}
+                </a>
 
-                    {% if let Some(profile) = profile %} {% if (profile.id ==
-                    comment.author.id) | (profile.id == response.author.id) %}
-                    <!-- actions for the comment author/response author only -->
-                    <b class="title">Manage</b>
+                <a
+                    href="javascript:trigger('comments:ipblock', ['{{ comment.id }}'])"
+                >
+                    {{ icon "shield" }} {{ text "general:action.ip_block" }}
+                </a>
+                {% endif %} {% endif %}
+                <!-- actions for everybody -->
+                <b class="title">Tools</b>
+                <a
+                    href="#"
+                    onclick="trigger('app:copy_text', ['{{ comment.id }}'])"
+                >
+                    {{ icon "copy" }} {{ text "general:action.copy_id" }}
+                </a>
 
-                    <a href="/comment/{{ comment.id }}?edit" target="_blank">
-                        {{ icon "pen" }} {{ text "general:action.edit" }}
-                    </a>
+                <a href="/comment/{{ comment.id }}">
+                    {{ icon "external-link" }} {{ text "general:link.open" }}
+                </a>
 
-                    <a
-                        href="#"
-                        onclick="trigger('comments:delete', ['{{ comment.id }}'])"
-                        class="red"
-                    >
-                        {{ icon "trash" }} {{ text "general:action.delete" }}
-                    </a>
-
-                    <a
-                        href="javascript:trigger('comments:ipblock', ['{{ comment.id }}'])"
-                    >
-                        {{ icon "shield" }} {{ text "general:action.ip_block" }}
-                    </a>
-                    {% endif %} {% endif %}
-                    <!-- actions for everybody -->
-                    <b class="title">Tools</b>
-                    <a
-                        href="#"
-                        onclick="trigger('app:copy_text', ['{{ comment.id }}'])"
-                    >
-                        {{ icon "copy" }} {{ text "general:action.copy_id" }}
-                    </a>
-
-                    <a href="/comment/{{ comment.id }}">
-                        {{ icon "external-link" }} {{ text "general:link.open"
-                        }}
-                    </a>
-
-                    <!-- prettier-ignore -->
-                    {% if let Some(profile) = profile %}
+                <!-- prettier-ignore -->
+                {% if let Some(profile) = profile %}
                         {% if profile.id != comment.author.id %}
-                    <!-- actions for users that ARE NOT the author -->
-                    <a
-                        href="javascript:trigger('reports:bootstrap', ['comments', '{{ comment.id }}'])"
-                    >
-                        {{ icon "flag" }} {{ text "general:action.report" }}
-                    </a>
-                    {% endif %} {% if is_helper %}
-                    <b class="title">Mod</b>
-                    <a
-                        href="#"
-                        onclick="trigger('comments:delete', ['{{ comment.id }}'])"
-                        class="red"
-                    >
-                        {{ icon "trash" }} {{ text "general:action.delete" }}
-                    </a>
-                    {% endif %} {% endif %}
-                </div>
+                <!-- actions for users that ARE NOT the author -->
+                <a
+                    href="javascript:trigger('reports:bootstrap', ['comments', '{{ comment.id }}'])"
+                >
+                    {{ icon "flag" }} {{ text "general:action.report" }}
+                </a>
+                {% endif %} {% if is_helper %}
+                <b class="title">Mod</b>
+                <a
+                    href="#"
+                    onclick="trigger('comments:delete', ['{{ comment.id }}'])"
+                    class="red"
+                >
+                    {{ icon "trash" }} {{ text "general:action.delete" }}
+                </a>
+                {% endif %} {% endif %}
             </div>
         </div>
     </div>

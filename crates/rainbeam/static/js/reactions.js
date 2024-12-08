@@ -1,5 +1,5 @@
 (() => {
-    const self = reg_ns("reactions");
+    const self = reg_ns("reactions", ["app"]);
 
     self.define("create", function (_, id, type) {
         fetch(`/api/v1/reactions/${id}`, {
@@ -45,7 +45,8 @@
         });
     });
 
-    self.define("toggle", async function ({ $ }, id, type, target) {
+    self.define("toggle", async function ({ $, app }, id, type, target) {
+        await app.debounce("reactions:toggle");
         const remove = (await $["has-reacted"](id)) === true;
 
         if (remove) {

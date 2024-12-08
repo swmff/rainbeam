@@ -37,6 +37,10 @@
     justify-content: space-between;
 }
 
+.justify-right {
+    justify-content: right;
+}
+
 .items-center {
     align-items: center;
 }
@@ -86,6 +90,10 @@
 
     .sm\:items-start {
         align-items: flex-start !important;
+    }
+
+    .sm\:contents {
+        display: contents !important;
     }
 }
 
