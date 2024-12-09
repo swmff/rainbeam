@@ -1,13 +1,15 @@
 [workspace]
 resolver = "2"
 members = [
+    "crates/rainbeam-core",
+    "crates/rb",
     "crates/rainbeam",
     "crates/authbeam",
     "crates/databeam",
     "crates/shared",
-    "crates/rainbeam-core",
     "crates/citrus",
     "crates/langbeam",
+    "crates/blogbeam-core",
     "crates/blogbeam",
 ]
 

@@ -3,23 +3,45 @@ name = "blogbeam"
 version = "0.1.0"
 edition = "2021"
 authors = ["trisuaso", "swmff"]
-description = "Rainbeam blogging"
+description = "Rainbeam blogging service"
 homepage = "https://rainbeam.net"
 repository = "https://github.com/swmff/rainbeam"
 license = "MIT"
 rust-version = "1.81"
 
 [features]
-postgres = ["databeam/postgres", "authbeam/postgres"]
-mysql = ["databeam/mysql", "authbeam/mysql"]
-sqlite = ["databeam/sqlite", "authbeam/sqlite"]
-default = ["databeam/sqlite", "authbeam/sqlite"]
+postgres = ["databeam/postgres", "authbeam/postgres", "rb/postgres"]
+mysql = ["databeam/mysql", "authbeam/mysql", "rb/mysql"]
+sqlite = ["databeam/sqlite", "authbeam/sqlite", "rb/sqlite"]
+default = ["databeam/sqlite", "authbeam/sqlite", "rb/sqlite"]
+mimalloc = []
 
 [dependencies]
+askama = { version = "0.12.1", features = ["with-axum"] }
+askama_axum = "0.4.0"
 axum = { version = "0.7.5", features = ["macros", "form"] }
 axum-extra = { version = "0.9.3", features = ["cookie"] }
-serde = { version = "1.0.215", features = ["derive"] }
+reqwest = { version = "0.12.5", features = ["json", "stream"] }
+serde = { version = "1.0.203", features = ["derive"] }
+tokio = { version = "1.38.0", features = ["macros", "rt-multi-thread"] }
+toml = "0.8.14"
+tower-http = { version = "0.5.2", features = ["fs", "trace"] }
 serde_json = "1.0.120"
+regex = "1.10.5"
+futures-util = "0.3.30"
+async-recursion = "1.1.1"
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 shared = { path = "../shared" }
 databeam = { path = "../databeam", default-features = false }
 authbeam = { path = "../authbeam", default-features = false }
+langbeam = { path = "../langbeam" }
+rb = { path = "../rb", default-features = false }
+blogbeam-core = { path = "../blogbeam-core", default-features = false }
+mimalloc = "0.1.43"
+mime_guess = "2.0.5"
+
+[[bin]]
+path = "src/main.rs"
+name = "blogbeam"
+test = false

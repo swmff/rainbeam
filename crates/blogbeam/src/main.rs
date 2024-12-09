@@ -1,8 +1,9 @@
-//! 🌈 Rainbeam!
+//! 🌈 Rainbeam blogging service
 #![doc = include_str!("../../../README.md")]
 #![doc(issue_tracker_base_url = "https://github.com/swmff/rainbeam/issues")]
 #![doc(html_favicon_url = "https://rainbeam.net/static/favicon.svg")]
 #![doc(html_logo_url = "https://rainbeam.net/static/favicon.svg")]
+use askama_axum::Template;
 use axum::routing::{get, get_service};
 use axum::Router;
 
@@ -13,10 +14,10 @@ use authbeam::{api as AuthApi, Database as AuthDatabase};
 use databeam::config::Config as DataConf;
 use shared::fs;
 
-pub use rb::database;
+pub use blogbeam::database;
+pub use blogbeam::model;
 pub use rb::config;
-pub use rb::model;
-pub use rb::routing;
+mod routes;
 
 // mimalloc
 #[cfg(feature = "mimalloc")]
@@ -25,6 +26,25 @@ use mimalloc::MiMalloc;
 #[cfg(feature = "mimalloc")]
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;
+
+// ...
+/// Trait to convert errors into HTML
+pub(crate) trait ToHtml {
+    fn to_html(&self, database: database::Database) -> String;
+}
+
+impl ToHtml for model::DatabaseError {
+    fn to_html(&self, database: database::Database) -> String {
+        crate::routes::ErrorTemplate {
+            config: database.server_options.clone(),
+            lang: database.lang("net.rainbeam.langs:en-US"),
+            profile: None,
+            message: self.to_string(),
+        }
+        .render()
+        .unwrap()
+    }
+}
 
 /// Main server process
 #[tokio::main]
@@ -35,7 +55,6 @@ pub async fn main() {
     let here = c.to_str().unwrap();
 
     let static_dir = format!("{here}/.config/static");
-    let well_known_dir = format!("{here}/.config/.well-known");
     config.static_dir = static_dir.clone();
 
     tracing_subscriber::fmt()
@@ -60,6 +79,14 @@ pub async fn main() {
     .await;
     auth_database.init().await;
 
+    let rb_database = rb::database::Database::new(
+        DataConf::get_config().connection,
+        auth_database.clone(),
+        config.clone(),
+    )
+    .await;
+    rb_database.init().await;
+
     let database = database::Database::new(
         DataConf::get_config().connection,
         auth_database.clone(),
@@ -68,35 +95,21 @@ pub async fn main() {
     .await;
     database.init().await;
 
-    if config.migration == true {
-        // database.migrate_ghsa_gc85_x5qp_77qq().await.unwrap(); // MIGRATION: c8f94a27b1ec3ef171cdc0b8bcf57b8af034e31b
-        std::process::exit(0);
-    }
-
     // create app
     let app = Router::new()
         // api
         .nest_service("/api/v0/auth", AuthApi::routes(auth_database.clone()))
-        .nest("/api/v0/util", routing::api::util::routes(database.clone()))
-        .nest("/api/v1", routing::api::routes(database.clone()))
+        .nest("/api/v1", blogbeam::api::routes(database.clone()))
         // pages
-        .nest("/", routing::pages::routes(database.clone()).await)
+        .nest("/", routes::routes(database.clone()).await)
+        // auth pages
+        .nest("/_rb", routes::rb_external(rb_database.clone()).await)
         // ...
-        .nest_service(
-            "/.well-known",
-            get_service(tower_http::services::ServeDir::new(&well_known_dir)),
-        )
         .nest_service(
             "/static",
             get_service(tower_http::services::ServeDir::new(&static_dir)),
         )
-        .nest_service(
-            "/manifest.json",
-            get_service(tower_http::services::ServeFile::new(format!(
-                "{static_dir}/manifest.json"
-            ))),
-        )
-        .fallback_service(get(routing::pages::not_found).with_state(database.clone()))
+        .fallback_service(get(routes::not_found).with_state(database.clone()))
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(trace::DefaultMakeSpan::new().level(Level::INFO))

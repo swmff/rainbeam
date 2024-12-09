@@ -2,6 +2,24 @@
 
 Rainbeam is a simple Q&A social network designed for community! On Rainbeam, users can create and customize their profile to look how they want, and then other users can ask them questions using their account or an anonymous username. Users receive questions in their inbox and can then answer them or manage them. Users can also ask “global questions” which everybody who is following them can see in a specialized timeline. Global questions can be answered by any logged-in user. Users can also respond to existing responses with comments to further interact with their friends' responses!
 
+## Repository structure
+
+All core packages are contained in the `crates/` directory:
+
+* `crates/builder/` - Client asset builder/bundler
+* `crates/shared/` - Core shared utilities
+* `crates/langbeam/` - l10n service
+* `crates/databeam/` - Database connection manager
+* `crates/authbeam/` - Authentication backend and API routes
+* `crates/citrus/` - Citrus federation protocol client
+* **(v)** `crates/rainbeam-core/` - Rainbeam database connection and types
+    * `crates/rb/` - Rainbeam Axum routes (API and all pages)
+    * `crates/rainbeam/` - Rainbeam server binary
+* **(v)** `crates/blogbeam-core/` - Blogbeam database connection and types
+    * `crates/blogbeam/` - Blogbeam UI
+
+Packages labeled with `(v)` are *version-tied*. This means that it and all the packages nested under it in the list all share the same crate version.
+
 ## Usage
 
 To start, clone the Rainbeam repository and build it:

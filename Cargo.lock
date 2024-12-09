@@ -402,10 +402,41 @@ dependencies = [
 name = "blogbeam"
 version = "0.1.0"
 dependencies = [
+ "askama",
+ "askama_axum",
+ "async-recursion",
+ "authbeam",
+ "axum",
+ "axum-extra",
+ "blogbeam-core",
+ "databeam",
+ "futures-util",
+ "langbeam",
+ "mimalloc",
+ "mime_guess",
+ "rb",
+ "regex",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "shared",
+ "tokio",
+ "toml",
+ "tower-http",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "blogbeam-core"
+version = "0.1.0"
+dependencies = [
  "authbeam",
  "axum",
  "axum-extra",
  "databeam",
+ "langbeam",
+ "rainbeam-core",
  "serde",
  "serde_json",
  "shared",
@@ -1951,14 +1982,13 @@ dependencies = [
  "authbeam",
  "axum",
  "axum-extra",
- "citrus",
  "databeam",
  "futures-util",
  "hcaptcha",
  "langbeam",
  "mimalloc",
  "mime_guess",
- "rainbeam-core",
+ "rb",
  "regex",
  "reqwest",
  "serde",
@@ -2024,6 +2054,37 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
 dependencies = [
  "getrandom",
+]
+
+[[package]]
+name = "rb"
+version = "1.18.5"
+dependencies = [
+ "ammonia",
+ "askama",
+ "askama_axum",
+ "async-recursion",
+ "authbeam",
+ "axum",
+ "axum-extra",
+ "citrus",
+ "databeam",
+ "futures-util",
+ "hcaptcha",
+ "langbeam",
+ "mimalloc",
+ "mime_guess",
+ "rainbeam-core",
+ "regex",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "shared",
+ "tokio",
+ "toml",
+ "tower-http",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]

@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use databeam::{utility, query as sqlquery, DefaultReturn};
 use authbeam::model::{Profile, Permission};
+use rainbeam::config::Config;
 use crate::model::{DatabaseError, Post, PostContext, PostCreate, PostEdit};
 
 pub type Result<T> = std::result::Result<T, DatabaseError>;
@@ -10,13 +11,21 @@ pub type Result<T> = std::result::Result<T, DatabaseError>;
 pub struct Database {
     pub base: databeam::StarterDatabase,
     pub auth: authbeam::Database,
+    pub server_options: Config,
+    langs: HashMap<String, langbeam::LangFile>,
 }
 
 impl Database {
-    pub async fn new(opts: databeam::DatabaseOpts, auth: authbeam::Database) -> Self {
+    pub async fn new(
+        opts: databeam::DatabaseOpts,
+        auth: authbeam::Database,
+        server_options: Config,
+    ) -> Self {
         Self {
             base: databeam::StarterDatabase::new(opts).await,
             auth,
+            server_options,
+            langs: langbeam::read_langs(),
         }
     }
 
@@ -39,6 +48,30 @@ impl Database {
         )
         .execute(c)
         .await;
+    }
+
+    // language
+
+    /// Get a [`LangFile`] given its ID
+    ///
+    /// Returns `net.rainbeam.langs:en-US` if the given file cannot be found.
+    pub fn lang(&self, id: &str) -> langbeam::LangFile {
+        if id.is_empty() {
+            // don't even try to fetch an empty id
+            return self
+                .langs
+                .get("net.rainbeam.langs:en-US")
+                .unwrap()
+                .to_owned();
+        } else if (id == "aa-BB") | (id == "net.rainbeam.langs.testing:aa-BB") {
+            // debug
+            return langbeam::LangFile::default();
+        }
+
+        self.langs
+            .get(id)
+            .unwrap_or(self.langs.get("net.rainbeam.langs:en-US").unwrap())
+            .to_owned()
     }
 
     // posts
@@ -199,7 +232,7 @@ impl Database {
     ///
     /// # Arguments
     /// * `author`
-    pub async fn get_post_by_author_paginated(
+    pub async fn get_posts_by_author_paginated(
         &self,
         author: String,
         page: i32,
