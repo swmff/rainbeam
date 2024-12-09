@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use databeam::{utility, query as sqlquery, DefaultReturn};
 use authbeam::model::{Profile, Permission};
-use crate::model::{DatabaseError, Post, PostContext, PostCreate};
+use crate::model::{DatabaseError, Post, PostContext, PostCreate, PostEdit};
 
 pub type Result<T> = std::result::Result<T, DatabaseError>;
 
@@ -318,11 +318,11 @@ impl Database {
     pub async fn update_post_content(
         &self,
         id: String,
-        content: String,
+        props: PostEdit,
         user: Box<Profile>,
     ) -> Result<()> {
-        // make sure the site exists
-        let site = match self.get_post(id.clone()).await {
+        // make sure the post exists
+        let post = match self.get_post(id.clone()).await {
             Ok(q) => q,
             Err(e) => return Err(e),
         };
@@ -333,7 +333,7 @@ impl Database {
             return Err(DatabaseError::NotAllowed);
         }
 
-        if user.id != site.owner {
+        if user.id != post.owner {
             // check permission
             let group = match self.auth.get_group_by_id(user.group).await {
                 Ok(g) => g,
@@ -348,15 +348,20 @@ impl Database {
         // update post
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            "UPDATE \"xposts\" SET \"content\" = ?, \"edited\" = ? WHERE \"id\" = ?"
+            "UPDATE \"xposts\" SET \"content\" = ?, \"slug\" = ?, \"edited\" = ? WHERE \"id\" = ?"
         } else {
-            "UPDATE \"xposts\" SET (\"content\", \"edited\") = ($1, $2) WHERE \"id\" = $3"
+            "UPDATE \"xposts\" SET (\"content\", \"slug\", \"edited\") = ($1, $2, $3) WHERE \"id\" = $4"
         }
         .to_string();
 
         let c = &self.base.db.client;
         match sqlquery(&query)
-            .bind::<&String>(&content)
+            .bind::<&String>(&props.content)
+            .bind::<&String>(&if !props.new_slug.is_empty() {
+                props.new_slug
+            } else {
+                post.slug.clone()
+            })
             .bind::<&String>(&utility::unix_epoch_timestamp().to_string())
             .bind::<&String>(&id)
             .execute(c)
@@ -370,7 +375,7 @@ impl Database {
 
                 self.base
                     .cachedb
-                    .remove(format!("rbeam.app.post:{}:{}", site.owner, site.slug))
+                    .remove(format!("rbeam.app.post:{}:{}", post.owner, post.slug))
                     .await;
 
                 Ok(())

@@ -34,6 +34,8 @@ pub struct PostCreate {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PostEdit {
     pub content: String,
+    #[serde(default)]
+    pub new_slug: String,
 }
 
 /// General API errors

@@ -107,10 +107,7 @@ pub async fn edit_request(
 
     // ...
     Json(
-        match database
-            .update_post_content(id, req.content, auth_user)
-            .await
-        {
+        match database.update_post_content(id, req, auth_user).await {
             Ok(r) => DefaultReturn {
                 success: true,
                 message: String::new(),
