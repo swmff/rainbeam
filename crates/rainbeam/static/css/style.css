@@ -177,3 +177,16 @@
 .hidden {
     display: none;
 }
+
+align {
+    width: 100%;
+    display: block;
+}
+
+align.center {
+    text-align: center;
+}
+
+align.right {
+    text-align: right;
+}

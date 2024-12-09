@@ -36,4 +36,7 @@ pub fn render_markdown(input: &str) -> String {
             "src=\"",
             "loading=\"lazy\" src=\"/api/v0/util/ext/image?img=",
         )
+        .replace("--&gt;", "<align class=\"right\">")
+        .replace("-&gt;", "<align class=\"center\">")
+        .replace("&lt;-", "</align>")
 }
