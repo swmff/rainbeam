@@ -3970,7 +3970,21 @@ impl Database {
             .get(format!("rbeam.app.reaction:{}:{}", user, asset))
             .await
         {
-            Some(c) => return Ok(serde_json::from_str::<Reaction>(c.as_str()).unwrap()),
+            Some(c) => match serde_json::from_str::<Reaction>(c.as_str()) {
+                Ok(c) => return Ok(c),
+                Err(_) => {
+                    // delete invalid cached reaction
+                    if self
+                        .base
+                        .cachedb
+                        .remove(format!("rbeam.app.reaction:{}:{}", user, asset))
+                        .await
+                        == false
+                    {
+                        return Err(DatabaseError::Other);
+                    }
+                }
+            },
             None => (),
         };
 

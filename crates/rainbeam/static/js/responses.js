@@ -180,7 +180,7 @@
             ).innerText;
 
             const part_2 = target.querySelector(
-                ".response_content p",
+                ".response_content:not(include-partial *) p",
             ).innerText;
 
             // ...

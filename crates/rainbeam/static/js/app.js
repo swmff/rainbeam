@@ -19,7 +19,6 @@
     app.define("debounce", function ({ $ }, name) {
         return new Promise((resolve, reject) => {
             if ($.DEBOUNCE.includes(name)) {
-                $.toast("error", "Too fast!");
                 return reject();
             }
 
