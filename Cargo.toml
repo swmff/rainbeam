@@ -9,8 +9,6 @@ members = [
     "crates/shared",
     "crates/citrus",
     "crates/langbeam",
-    "crates/blogbeam-core",
-    "crates/blogbeam",
 ]
 
 [profile.release]

@@ -15,8 +15,6 @@ All core packages are contained in the `crates/` directory:
 * **(v)** `crates/rainbeam-core/` - Rainbeam database connection and types
     * `crates/rb/` - Rainbeam Axum routes (API and all pages)
     * `crates/rainbeam/` - Rainbeam server binary
-* **(v)** `crates/blogbeam-core/` - Blogbeam database connection and types
-    * `crates/blogbeam/` - Blogbeam UI
 
 Packages labeled with `(v)` are *version-tied*. This means that it and all the packages nested under it in the list share the same crate version.
 

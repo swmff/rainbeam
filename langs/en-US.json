@@ -209,6 +209,7 @@
         "settings:privacy_options.html:label.disable_anonymous_comments": "Disallow anonymous comments on your responses",
         "settings:privacy_options.html:label.require_account": "Require an account to ask questions on your profile",
         "settings:privacy_options.html:label.keep_socials_private": "Keep your socials private (followers/following)",
+        "settings:privacy_options.html:label.private_comments": "Keep your comments list private",
 
         "settings:privacy_options.html:title.moderation": "Moderation",
         "settings:privacy_options.html:label.filter": "Filter",

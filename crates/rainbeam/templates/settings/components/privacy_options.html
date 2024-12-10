@@ -80,6 +80,19 @@
         </label>
     </div>
 
+    <div class="checkbox_container">
+        <input
+            type="checkbox"
+            name="sparkler:private_comments"
+            id="sparkler:private_comments"
+            onchange="update_kv('sparkler:private_comments', event.target.checked.toString())"
+        />
+
+        <label for="sparkler:private_comments" class="normal">
+            {{ text "settings:privacy_options.html:label.private_comments" }}
+        </label>
+    </div>
+
     <h4 class="title">
         {{ text "settings:privacy_options.html:title.moderation" }}
     </h4>

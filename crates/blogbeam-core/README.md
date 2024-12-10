@@ -1,1 +1,0 @@
-# Blogbeam Core Library

@@ -399,50 +399,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "blogbeam"
-version = "0.1.0"
-dependencies = [
- "askama",
- "askama_axum",
- "async-recursion",
- "authbeam",
- "axum",
- "axum-extra",
- "blogbeam-core",
- "databeam",
- "futures-util",
- "langbeam",
- "mimalloc",
- "mime_guess",
- "rb",
- "regex",
- "reqwest",
- "serde",
- "serde_json",
- "shared",
- "tokio",
- "toml",
- "tower-http",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "blogbeam-core"
-version = "0.1.0"
-dependencies = [
- "authbeam",
- "axum",
- "axum-extra",
- "databeam",
- "langbeam",
- "rainbeam-core",
- "serde",
- "serde_json",
- "shared",
-]
-
-[[package]]
 name = "bumpalo"
 version = "3.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
