@@ -73,6 +73,8 @@
         "profile:link.following": "Following",
 
         "profile:link.feed": "Feed",
+        "profile:link.posts": "Posts",
+        "profile:link.comments": "Comments",
         "profile:link.questions": "Questions",
         "profile:link.manage": "Manage",
         "profile:link.outbox": "Outbox",

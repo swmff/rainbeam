@@ -42,6 +42,15 @@
 {% endif %} {% endblock %} {% block panel %}
 <!-- feed -->
 <div id="feed" class="flex flex-col gap-4">
+    <div class="pillmenu convertible">
+        <a href="/@{{ other.username }}" class="active"
+            ><span>{{ text "profile:link.posts" }}</span></a
+        >
+        <a href="/@{{ other.username }}/comments"
+            ><span>{{ text "profile:link.comments" }}</span></a
+        >
+    </div>
+
     <!-- prettier-ignore -->
     {% let anonymous_username = other.metadata.kv.get("sparkler:anonymous_username") %}
     {% let anonymous_avatar = other.metadata.kv.get("sparkler:anonymous_avatar") %}

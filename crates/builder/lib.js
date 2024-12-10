@@ -299,6 +299,7 @@ export default async function build(options) {
             // minify
             console.log(`template(2) ${file_name}`);
             let content = await fs.readFile(full_path, { encoding: "utf8" });
+            content = content.replaceAll("<!-- prettier-ignore -->", "");
 
             content = `<!-- <${file_name}> -->
 ${content}

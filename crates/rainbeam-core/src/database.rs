@@ -3362,6 +3362,74 @@ impl Database {
         Ok(res)
     }
 
+    /// Get all comments by their author ID (paginated by 25)
+    ///
+    /// # Arguments
+    /// * `user`
+    /// * `page`
+    pub async fn get_comments_by_author_paginated(
+        &self,
+        user: String,
+        page: i32,
+    ) -> Result<Vec<(ResponseComment, usize, usize)>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            format!("SELECT * FROM \"xcomments\" WHERE \"author\" = ? ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+        } else {
+            format!("SELECT * FROM \"xcomments\" WHERE \"author\" = $1 ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+        };
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query).bind::<&String>(&user).fetch_all(c).await {
+            Ok(p) => {
+                let mut out: Vec<(ResponseComment, usize, usize)> = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+
+                    let reply = res.get("reply").unwrap().to_string();
+                    let id = res.get("id").unwrap().to_string();
+
+                    out.push((
+                        ResponseComment {
+                            author: match self
+                                .get_profile(res.get("author").unwrap().to_string())
+                                .await
+                            {
+                                Ok(ua) => ua,
+                                Err(_) => anonymous_profile("anonymous".to_string()),
+                            },
+                            response: res.get("response").unwrap().to_string(),
+                            content: res.get("content").unwrap().to_string(),
+                            id: id.clone(),
+                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            reply: if reply.is_empty() {
+                                None
+                            } else {
+                                match self.get_comment(reply, true).await {
+                                    Ok(r) => Some(Box::new(r.0)),
+                                    Err(_) => None,
+                                }
+                            },
+                            edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
+                            ip: res.get("ip").unwrap().to_string(),
+                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
+                        },
+                        self.get_reply_count_by_comment(id.clone()).await,
+                        self.get_reaction_count_by_asset(id).await,
+                    ));
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        Ok(res)
+    }
+
     /// Get all replies by their comment ID
     ///
     /// # Arguments

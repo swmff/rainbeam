@@ -18,7 +18,7 @@ All core packages are contained in the `crates/` directory:
 * **(v)** `crates/blogbeam-core/` - Blogbeam database connection and types
     * `crates/blogbeam/` - Blogbeam UI
 
-Packages labeled with `(v)` are *version-tied*. This means that it and all the packages nested under it in the list all share the same crate version.
+Packages labeled with `(v)` are *version-tied*. This means that it and all the packages nested under it in the list share the same crate version.
 
 ## Usage
 

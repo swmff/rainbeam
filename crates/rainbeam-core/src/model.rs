@@ -172,6 +172,22 @@ pub struct QuestionResponse {
     pub edited: u128,
 }
 
+impl QuestionResponse {
+    pub fn empty() -> Self {
+        Self {
+            author: Box::new(authbeam::model::Profile::global()),
+            question: String::new(),
+            content: String::new(),
+            id: String::new(),
+            timestamp: 0,
+            tags: Vec::new(),
+            context: ResponseContext::default(),
+            reply: String::new(),
+            edited: 0,
+        }
+    }
+}
+
 impl CtxAsset for QuestionResponse {
     fn ref_context(&self) -> &impl Context {
         &self.context
