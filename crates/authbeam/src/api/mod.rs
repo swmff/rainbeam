@@ -67,6 +67,7 @@ pub fn routes(database: Database) -> Router {
             post(profile::update_metdata_request),
         )
         .route("/profile/:id/badges", post(profile::update_badges_request))
+        .route("/profile/:id/labels", post(profile::update_labels_request))
         .route("/profile/:id/banner", get(profile::banner_request))
         .route("/profile/:id/avatar", get(profile::avatar_request))
         .route("/profile/:id", delete(profile::delete_request))

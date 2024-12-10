@@ -737,7 +737,6 @@ pub async fn comments_request(
         return Html(DatabaseError::NotFound.to_html(database));
     }
 
-    dbg!(&other.metadata.exists("sparkler:private_comments"));
     if other.metadata.is_true("sparkler:private_comments") && !is_helper {
         return Html(DatabaseError::NotFound.to_html(database));
     }

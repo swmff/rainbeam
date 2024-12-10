@@ -500,6 +500,11 @@ pub struct SetProfileBadges {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct SetProfileLabels {
+    pub labels: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct SetProfileGroup {
     pub group: i32,
 }

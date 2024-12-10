@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::str::Split;
 
 use crate::model::{
@@ -1046,7 +1047,48 @@ impl Database {
             Ok(_) => {
                 self.base
                     .cachedb
-                    .remove(format!("rbeam.auth.profile:{}", id))
+                    .remove(format!("rbeam.auth.profile:{}", ua.username))
+                    .await;
+
+                self.base
+                    .cachedb
+                    .remove(format!("rbeam.auth.profile:{}", ua.id))
+                    .await;
+
+                Ok(())
+            }
+            Err(_) => Err(DatabaseError::Other),
+        }
+    }
+
+    /// Update a [`Profile`]'s labels by its `id`
+    pub async fn update_profile_labels(&self, id: String, labels: Vec<String>) -> Result<()> {
+        // make sure user exists
+        let ua = match self.get_profile(id.clone()).await {
+            Ok(ua) => ua,
+            Err(e) => return Err(e),
+        };
+
+        // update user
+        let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+            "UPDATE \"xprofiles\" SET \"labels\" = ? WHERE \"id\" = ?"
+        } else {
+            "UPDATE \"xprofiles\" SET (\"labels\") = ($1) WHERE \"id\" = $2"
+        };
+
+        let c = &self.base.db.client;
+        let labels = &serde_json::to_string(&labels).unwrap();
+
+        match sqlquery(query)
+            .bind::<&String>(labels)
+            .bind::<&String>(&id)
+            .execute(c)
+            .await
+        {
+            Ok(_) => {
+                self.base
+                    .cachedb
+                    .remove(format!("rbeam.auth.profile:{}", ua.username))
                     .await;
 
                 self.base
@@ -4264,6 +4306,16 @@ impl Database {
 
     // labels
 
+    /// Get a [`UserLabel`] from a database result
+    pub async fn gimme_label(&self, res: HashMap<String, String>) -> Result<UserLabel> {
+        Ok(UserLabel {
+            id: res.get("id").unwrap().to_string(),
+            name: res.get("name").unwrap().to_string(),
+            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+            creator: res.get("author").unwrap().to_string(),
+        })
+    }
+
     /// Get an existing label
     ///
     /// ## Arguments:
@@ -4304,11 +4356,9 @@ impl Database {
         };
 
         // return
-        let label = UserLabel {
-            id: res.get("id").unwrap().to_string(),
-            name: res.get("name").unwrap().to_string(),
-            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-            creator: res.get("author").unwrap().to_string(),
+        let label = match self.gimme_label(res).await {
+            Ok(l) => l,
+            Err(e) => return Err(e),
         };
 
         // store in cache
@@ -4323,4 +4373,68 @@ impl Database {
         // return
         Ok(label)
     }
+
+    /// Create a new user label
+    ///
+    /// # Arguments
+    /// * `name` - the name of the label
+    /// * `author` - the ID of the user creating the label
+    pub async fn create_label(&self, name: String, author: String) -> Result<UserLabel> {
+        // check author permissions
+        let author = match self.get_profile(author.clone()).await {
+            Ok(ua) => ua,
+            Err(e) => return Err(e),
+        };
+
+        let group = match self.get_group_by_id(author.group).await {
+            Ok(g) => g,
+            Err(e) => return Err(e),
+        };
+
+        if !group.permissions.contains(&Permission::Helper) {
+            return Err(DatabaseError::NotAllowed);
+        }
+
+        // check name length
+        if name.len() < 2 {
+            return Err(DatabaseError::Other);
+        }
+
+        if name.len() > 32 {
+            return Err(DatabaseError::Other);
+        }
+
+        // ...
+        let label = UserLabel {
+            id: utility::random_id(),
+            name,
+            timestamp: utility::unix_epoch_timestamp(),
+            creator: author.id,
+        };
+
+        // create page
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "INSERT INTO \"xlabels\" VALUES (?, ?, ?, ?)"
+        } else {
+            "INSERT INTO \"xlabels\" VALEUS ($1, $2, $3, $4)"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query)
+            .bind::<&String>(&label.id)
+            .bind::<&String>(&label.name)
+            .bind::<&String>(&label.timestamp.to_string())
+            .bind::<&String>(&label.creator)
+            .execute(c)
+            .await
+        {
+            Ok(_) => Ok(label),
+            Err(_) => Err(DatabaseError::Other),
+        }
+    }
+
+    // user labels **CANNOT** be deleted because that could possible affect THOUSANDS of users
+    // user labels should instead be versioned (if possible)
 }

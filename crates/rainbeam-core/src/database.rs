@@ -1247,7 +1247,6 @@ impl Database {
 
         if !props.media.is_empty() {
             if !props.media.starts_with("https://") && !props.media.starts_with("--CARP") {
-                dbg!(1);
                 return Err(DatabaseError::Other);
             }
         }

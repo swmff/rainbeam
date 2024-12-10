@@ -1,8 +1,8 @@
 use crate::database::Database;
 use crate::model::{
     DatabaseError, NotificationCreate, Permission, SetProfileBadges, SetProfileGroup,
-    SetProfileMetadata, SetProfilePassword, SetProfileTier, SetProfileUsername, TokenContext,
-    TokenPermission,
+    SetProfileLabels, SetProfileMetadata, SetProfilePassword, SetProfileTier, SetProfileUsername,
+    TokenContext, TokenPermission,
 };
 use databeam::DefaultReturn;
 
@@ -249,11 +249,8 @@ pub async fn get_request(
         }
     };
 
-    // edit profile
-    auth_user.salt = String::new();
-    auth_user.password = String::new();
-    auth_user.tokens = Vec::new();
-    auth_user.ips = Vec::new();
+    // clean profile
+    auth_user.clean();
 
     // return
     Json(DefaultReturn {
@@ -1226,7 +1223,7 @@ pub async fn update_metdata_request(
     }
 }
 
-/// Update a user's metadata
+/// Update a user's badges
 pub async fn update_badges_request(
     jar: CookieJar,
     Path(id): Path<String>,
@@ -1331,6 +1328,124 @@ pub async fn update_badges_request(
 
     // return
     match database.update_profile_badges(id, props.badges).await {
+        Ok(_) => Json(DefaultReturn {
+            success: true,
+            message: "Acceptable".to_string(),
+            payload: (),
+        }),
+        Err(e) => Json(DefaultReturn {
+            success: false,
+            message: e.to_string(),
+            payload: (),
+        }),
+    }
+}
+
+/// Update a user's labels
+pub async fn update_labels_request(
+    jar: CookieJar,
+    Path(id): Path<String>,
+    State(database): State<Database>,
+    Json(props): Json<SetProfileLabels>,
+) -> impl IntoResponse {
+    // get user from token
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => {
+            let token = c.value_trimmed().to_string();
+
+            match database.get_profile_by_unhashed(token.clone()).await {
+                Ok(ua) => {
+                    // check token permission
+                    if !ua
+                        .token_context_from_token(&token)
+                        .can_do(TokenPermission::Moderator)
+                    {
+                        return Json(DefaultReturn {
+                            success: false,
+                            message: DatabaseError::NotAllowed.to_string(),
+                            payload: (),
+                        });
+                    }
+
+                    // return
+                    ua
+                }
+                Err(e) => {
+                    return Json(DefaultReturn {
+                        success: false,
+                        message: e.to_string(),
+                        payload: (),
+                    });
+                }
+            }
+        }
+        None => {
+            return Json(DefaultReturn {
+                success: false,
+                message: DatabaseError::NotAllowed.to_string(),
+                payload: (),
+            });
+        }
+    };
+
+    // check permission
+    let group = match database.get_group_by_id(auth_user.group).await {
+        Ok(g) => g,
+        Err(e) => {
+            return Json(DefaultReturn {
+                success: false,
+                message: e.to_string(),
+                payload: (),
+            })
+        }
+    };
+
+    if !group.permissions.contains(&Permission::Helper) {
+        // we must have the "Helper" permission to edit other users' badges
+        return Json(DefaultReturn {
+            success: false,
+            message: DatabaseError::NotAllowed.to_string(),
+            payload: (),
+        });
+    }
+
+    // get other user
+    let other_user = match database.get_profile(id.clone()).await {
+        Ok(ua) => ua,
+        Err(e) => {
+            return Json(DefaultReturn {
+                success: false,
+                message: e.to_string(),
+                payload: (),
+            });
+        }
+    };
+
+    // check permission
+    let other_group = match database.get_group_by_id(other_user.group).await {
+        Ok(g) => g,
+        Err(e) => {
+            return Json(DefaultReturn {
+                success: false,
+                message: e.to_string(),
+                payload: (),
+            })
+        }
+    };
+
+    if other_group.permissions.contains(&Permission::Helper)
+        && !group.permissions.contains(&Permission::Manager)
+    {
+        // we cannot manage other helpers without manager
+        return Json(DefaultReturn {
+            success: false,
+            message: DatabaseError::NotAllowed.to_string(),
+            payload: (),
+        });
+    }
+
+    // return
+    match database.update_profile_labels(id, props.labels).await {
         Ok(_) => Json(DefaultReturn {
             success: true,
             message: "Acceptable".to_string(),
