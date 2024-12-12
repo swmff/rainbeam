@@ -227,7 +227,7 @@ impl Database {
         }
     }
 
-    /// Get all profiles by a search query, 25 at a time
+    /// Get all profiles by a search query, 12 at a time
     ///
     /// ## Arguments:
     /// * `page`
@@ -240,9 +240,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xprofiles\" WHERE \"username\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xprofiles\" WHERE \"username\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
-            format!("SELECT * FROM \"xprofiles\" WHERE \"username\" LIKE $1 ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xprofiles\" WHERE \"username\" LIKE $1 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         };
 
         let c = &self.base.db.client;
@@ -600,7 +600,7 @@ impl Database {
         Ok(res)
     }
 
-    /// Get all questions by their author, 25 at a time
+    /// Get all questions by their author, 12 at a time
     ///
     /// ## Arguments:
     /// * `author`
@@ -613,9 +613,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xquestions\" WHERE \"author\" = ? OR \"author\" = ? ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xquestions\" WHERE \"author\" = ? OR \"author\" = ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
-            format!("SELECT * FROM \"xquestions\" WHERE \"author\" = $1 OR \"author\" = $2 ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xquestions\" WHERE \"author\" = $1 OR \"author\" = $2 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         };
 
         let c = &self.base.db.client;
@@ -742,9 +742,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xquestions\" WHERE \"author\" = ? AND \"recipient\" = '@' ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xquestions\" WHERE \"author\" = ? AND \"recipient\" = '@' ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
-            format!("SELECT * FROM \"xquestions\" WHERE \"author\" = $1 AND \"recipient\" = '@' ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xquestions\" WHERE \"author\" = $1 AND \"recipient\" = '@' ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         };
 
         let c = &self.base.db.client;
@@ -797,7 +797,7 @@ impl Database {
         Ok(res)
     }
 
-    /// Get all global questions by their author and a search query, 25 at a time
+    /// Get all global questions by their author and a search query, 12 at a time
     ///
     /// ## Arguments:
     /// * `author`
@@ -812,9 +812,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xquestions\" WHERE \"author\" = ? AND \"recipient\" = '@' AND \"content\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xquestions\" WHERE \"author\" = ? AND \"recipient\" = '@' AND \"content\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
-            format!("SELECT * FROM \"xquestions\" WHERE \"author\" = $1 AND \"recipient\" = '@' AND \"content\" LIKE $2 ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xquestions\" WHERE \"author\" = $1 AND \"recipient\" = '@' AND \"content\" LIKE $2 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         };
 
         let c = &self.base.db.client;
@@ -868,7 +868,7 @@ impl Database {
         Ok(res)
     }
 
-    /// Get all global questions by a search query, 25 at a time
+    /// Get all global questions by a search query, 12 at a time
     ///
     /// ## Arguments:
     /// * `page`
@@ -881,9 +881,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xquestions\" WHERE \"recipient\" = '@' AND \"content\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xquestions\" WHERE \"recipient\" = '@' AND \"content\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
-            format!("SELECT * FROM \"xquestions\" WHERE \"recipient\" = '@' AND \"content\" LIKE $1 ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xquestions\" WHERE \"recipient\" = '@' AND \"content\" LIKE $1 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         };
 
         let c = &self.base.db.client;
@@ -936,7 +936,7 @@ impl Database {
         Ok(res)
     }
 
-    /// Get global questions from people `user` is following, 25 at a time
+    /// Get global questions from people `user` is following, 12 at a time
     ///
     /// # Arguments
     /// * `user`
@@ -976,9 +976,9 @@ impl Database {
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
             // we're also going to include our own responses so we don't have to do any complicated stuff to detect if we should start with "OR" (previous)
-            format!("SELECT * FROM \"xquestions\" WHERE (\"author\" = ?{query_string}) AND \"recipient\" = '@'  ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xquestions\" WHERE (\"author\" = ?{query_string}) AND \"recipient\" = '@'  ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
-            format!( "SELECT * FROM \"xquestions\" WHERE (\"author\" = $1{query_string}) AND \"recipient\" = '@' ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!( "SELECT * FROM \"xquestions\" WHERE (\"author\" = $1{query_string}) AND \"recipient\" = '@' ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         };
 
         let c = &self.base.db.client;
@@ -1031,7 +1031,7 @@ impl Database {
         Ok(res)
     }
 
-    /// Get all global questions, 25 at a time
+    /// Get all global questions, 12 at a time
     ///
     /// # Arguments
     /// * `page`
@@ -1043,9 +1043,9 @@ impl Database {
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
             // we're also going to include our own responses so we don't have to do any complicated stuff to detect if we should start with "OR" (previous)
-            format!("SELECT * FROM \"xquestions\" WHERE \"recipient\" = '@' ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xquestions\" WHERE \"recipient\" = '@' ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
-            format!( "SELECT * FROM \"xquestions\" WHERE \"recipient\" = '@' ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!( "SELECT * FROM \"xquestions\" WHERE \"recipient\" = '@' ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         };
 
         let c = &self.base.db.client;
@@ -1789,7 +1789,7 @@ impl Database {
         })
     }
 
-    /// Get all posts, 25 at a time
+    /// Get all posts, 12 at a time
     ///
     /// # Arguments
     /// * `page`
@@ -1797,9 +1797,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xresponses\" WHERE \"context\" LIKE '%\"is_post\":true%' AND \"context\" NOT LIKE '%\"unlisted\":true%' ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xresponses\" WHERE \"context\" LIKE '%\"is_post\":true%' AND \"context\" NOT LIKE '%\"unlisted\":true%' ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
-            format!("SELECT * FROM \"xresponses\" WHERE \"context\" LIKE '%\"is_post\":true%' AND \"context\" NOT LIKE '%\"unlisted\":true%' ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xresponses\" WHERE \"context\" LIKE '%\"is_post\":true%' AND \"context\" NOT LIKE '%\"unlisted\":true%' ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         };
 
         let c = &self.base.db.client;
@@ -1824,7 +1824,7 @@ impl Database {
         Ok(res)
     }
 
-    /// Get all posts from users the user is following, 25 at a time
+    /// Get all posts from users the user is following, 12 at a time
     ///
     /// # Arguments
     /// * `page`
@@ -1863,9 +1863,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xresponses\" WHERE \"context\" LIKE '%\"is_post\":true%' AND (\"author\" = ?{query_string}) ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xresponses\" WHERE \"context\" LIKE '%\"is_post\":true%' AND (\"author\" = ?{query_string}) ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
-            format!("SELECT * FROM \"xresponses\" WHERE \"context\" LIKE '%\"is_post\":true%' AND (\"author\" = $1{query_string}) ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xresponses\" WHERE \"context\" LIKE '%\"is_post\":true%' AND (\"author\" = $1{query_string}) ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         };
 
         let c = &self.base.db.client;
@@ -1890,7 +1890,7 @@ impl Database {
         Ok(res)
     }
 
-    /// Get all responses, 25 at a time, matching search query
+    /// Get all responses, 12 at a time, matching search query
     ///
     /// # Arguments
     /// * `page`
@@ -1903,9 +1903,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xresponses\" WHERE \"context\" LIKE '%\"is_post\":true%' AND \"context\" NOT LIKE '%\"unlisted\":true%' AND \"content\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xresponses\" WHERE \"context\" LIKE '%\"is_post\":true%' AND \"context\" NOT LIKE '%\"unlisted\":true%' AND \"content\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
-            format!("SELECT * FROM \"xresponses\" WHERE \"context\" LIKE '%\"is_post\":true%' AND \"context\" NOT LIKE '%\"unlisted\":true%' AND \"content\" LIKE $1 ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xresponses\" WHERE \"context\" LIKE '%\"is_post\":true%' AND \"context\" NOT LIKE '%\"unlisted\":true%' AND \"content\" LIKE $1 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         };
 
         let c = &self.base.db.client;
@@ -1974,7 +1974,7 @@ impl Database {
         Ok(res)
     }
 
-    /// Get all responses by their author, 25 at a time
+    /// Get all responses by their author, 12 at a time
     ///
     /// # Arguments
     /// * `author`
@@ -1986,9 +1986,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xresponses\" WHERE \"author\" = ? ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xresponses\" WHERE \"author\" = ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
-            format!("SELECT * FROM \"xresponses\" WHERE \"author\" = $1 ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xresponses\" WHERE \"author\" = $1 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         };
 
         let c = &self.base.db.client;
@@ -2017,7 +2017,7 @@ impl Database {
         Ok(res)
     }
 
-    /// Get all responses by their author and content search, 25 at a time
+    /// Get all responses by their author and content search, 12 at a time
     ///
     /// # Arguments
     /// * `author`
@@ -2030,9 +2030,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xresponses\" WHERE \"author\" = ? AND \"content\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xresponses\" WHERE \"author\" = ? AND \"content\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
-            format!("SELECT * FROM \"xresponses\" WHERE \"author\" = $1 AND \"content\" LIKE $2 ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xresponses\" WHERE \"author\" = $1 AND \"content\" LIKE $2 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         };
 
         let c = &self.base.db.client;
@@ -2062,7 +2062,7 @@ impl Database {
         Ok(res)
     }
 
-    /// Get all responses by their author and tag, 25 at a time
+    /// Get all responses by their author and tag, 12 at a time
     ///
     /// # Arguments
     /// * `author`
@@ -2076,9 +2076,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xresponses\" WHERE \"author\" = ? AND \"tags\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xresponses\" WHERE \"author\" = ? AND \"tags\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
-            format!("SELECT * FROM \"xresponses\" WHERE \"author\" = $1 AND \"tags\" LIKE $2 ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xresponses\" WHERE \"author\" = $1 AND \"tags\" LIKE $2 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         };
 
         let c = &self.base.db.client;
@@ -2108,7 +2108,7 @@ impl Database {
         Ok(res)
     }
 
-    /// Get all responses by their tag, 25 at a time
+    /// Get all responses by their tag, 12 at a time
     ///
     /// # Arguments
     /// * `author`
@@ -2121,9 +2121,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xresponses\" WHERE \"tags\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xresponses\" WHERE \"tags\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
-            format!("SELECT * FROM \"xresponses\" WHERE \"tags\" LIKE $2 ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xresponses\" WHERE \"tags\" LIKE $2 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         };
 
         let c = &self.base.db.client;
@@ -2185,7 +2185,7 @@ impl Database {
         count
     }
 
-    /// Get all responses, 25 at a time, matching search query
+    /// Get all responses, 12 at a time, matching search query
     ///
     /// # Arguments
     /// * `page`
@@ -2198,9 +2198,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xresponses\" WHERE \"content\" LIKE ? AND \"context\" NOT LIKE '%\"unlisted\":true%' ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xresponses\" WHERE \"content\" LIKE ? AND \"context\" NOT LIKE '%\"unlisted\":true%' ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
-            format!("SELECT * FROM \"xresponses\" WHERE \"content\" LIKE $1 AND \"context\" NOT LIKE '%\"unlisted\":true%' ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xresponses\" WHERE \"content\" LIKE $1 AND \"context\" NOT LIKE '%\"unlisted\":true%' ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         };
 
         let c = &self.base.db.client;
@@ -3193,7 +3193,7 @@ impl Database {
         Ok(res)
     }
 
-    /// Get all comments by their response ID, 25 at a time
+    /// Get all comments by their response ID, 12 at a time
     ///
     /// # Arguments
     /// * `id`
@@ -3205,9 +3205,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xcomments\" WHERE \"response\" = ? AND \"reply\" = '' ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xcomments\" WHERE \"response\" = ? AND \"reply\" = '' ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
-            format!("SELECT * FROM \"xcomments\" WHERE \"response\" = $1 AND \"reply\" = '' ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xcomments\" WHERE \"response\" = $1 AND \"reply\" = '' ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         };
 
         let c = &self.base.db.client;
@@ -3374,9 +3374,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xcomments\" WHERE \"author\" = ? ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xcomments\" WHERE \"author\" = ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
-            format!("SELECT * FROM \"xcomments\" WHERE \"author\" = $1 ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xcomments\" WHERE \"author\" = $1 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         };
 
         let c = &self.base.db.client;
@@ -3503,7 +3503,7 @@ impl Database {
         Ok(res)
     }
 
-    /// Get all replies by their comment ID, 25 at a time
+    /// Get all replies by their comment ID, 12 at a time
     ///
     /// # Arguments
     /// * `id`
@@ -3515,9 +3515,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xcomments\" WHERE \"reply\" = ? ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xcomments\" WHERE \"reply\" = ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
-            format!("SELECT * FROM \"xcomments\" WHERE \"reply\" = $1 ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xcomments\" WHERE \"reply\" = $1 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         };
 
         let c = &self.base.db.client;
@@ -5096,7 +5096,7 @@ impl Database {
         };
     }
 
-    /// Get all responses by their circle, 25 at a time
+    /// Get all responses by their circle, 12 at a time
     ///
     /// ## Arguments:
     /// * `circle`
@@ -5114,9 +5114,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xresponses\" WHERE \"context\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xresponses\" WHERE \"context\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
-            format!("SELECT * FROM \"xresponses\" WHERE \"context\" LIKE $1 ORDER BY \"timestamp\" DESC LIMIT 25 OFFSET {}", page * 25)
+            format!("SELECT * FROM \"xresponses\" WHERE \"context\" LIKE $1 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         };
 
         let c = &self.base.db.client;
