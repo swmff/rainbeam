@@ -1,6 +1,6 @@
 use crate::database::Database;
 use crate::model::{AssetType, DatabaseError, ReactionCreate};
-use authbeam::model::NotificationCreate;
+use authbeam::model::{NotificationCreate, RelationshipStatus};
 use databeam::DefaultReturn;
 
 use axum::response::IntoResponse;
@@ -93,6 +93,21 @@ pub async fn create_request(
                 }
             };
 
+            // check relationship
+            let relationship = database
+                .auth
+                .get_user_relationship(asset.author.id.clone(), auth_user.id.clone())
+                .await
+                .0;
+
+            if relationship == RelationshipStatus::Blocked {
+                return Json(DefaultReturn {
+                    success: false,
+                    message: DatabaseError::NotAllowed.to_string(),
+                    payload: None,
+                });
+            }
+
             // create notification
             if let Err(_) = database
                 .auth
@@ -128,6 +143,21 @@ pub async fn create_request(
                     })
                 }
             };
+
+            // check relationship
+            let relationship = database
+                .auth
+                .get_user_relationship(asset.author.id.clone(), auth_user.id.clone())
+                .await
+                .0;
+
+            if relationship == RelationshipStatus::Blocked {
+                return Json(DefaultReturn {
+                    success: false,
+                    message: DatabaseError::NotAllowed.to_string(),
+                    payload: None,
+                });
+            }
 
             // create notification
             if let Err(_) = database
