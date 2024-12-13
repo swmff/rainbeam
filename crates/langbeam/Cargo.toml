@@ -2,6 +2,11 @@
 name = "langbeam"
 version = "0.1.0"
 edition = "2021"
+description = "Rainbeam language file manager"
+authors = ["trisuaso", "swmff"]
+homepage = "https://rainbeam.net"
+repository = "https://github.com/swmff/rainbeam"
+license = "MIT"
 
 [dependencies]
 serde = { version = "1.0.215", features = ["serde_derive"] }
