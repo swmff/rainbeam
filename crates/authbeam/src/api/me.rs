@@ -78,7 +78,7 @@ pub async fn delete_request(
     };
 
     // get profile
-    let hashed = shared::hash::hash_salted(req.password, auth_user.salt);
+    let hashed = rainbeam_shared::hash::hash_salted(req.password, auth_user.salt);
 
     if hashed != auth_user.password {
         return Json(DefaultReturn {

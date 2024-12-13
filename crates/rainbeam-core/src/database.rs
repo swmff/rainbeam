@@ -213,7 +213,7 @@ impl Database {
     /// # Returns
     /// `("anonymous#" + tag, tag)`
     pub fn create_anonymous(&self) -> (String, String) {
-        let tag = shared::hash::random_id();
+        let tag = rainbeam_shared::hash::random_id();
         (format!("anonymous#{tag}"), tag)
     }
 
@@ -1415,7 +1415,7 @@ impl Database {
         }
 
         // check markdown content
-        let markdown = shared::ui::render_markdown(&props.content);
+        let markdown = rainbeam_shared::ui::render_markdown(&props.content);
 
         if markdown.trim().len() == 0 {
             return Err(DatabaseError::ContentTooShort);
@@ -2464,7 +2464,7 @@ impl Database {
         };
 
         // check markdown content
-        let markdown = shared::ui::render_markdown(&props.content);
+        let markdown = rainbeam_shared::ui::render_markdown(&props.content);
 
         if markdown.trim().len() == 0 {
             return Err(DatabaseError::ContentTooShort);
@@ -2702,7 +2702,7 @@ impl Database {
         }
 
         // check markdown content
-        let markdown = shared::ui::render_markdown(&content);
+        let markdown = rainbeam_shared::ui::render_markdown(&content);
 
         if markdown.trim().len() == 0 {
             return Err(DatabaseError::ContentTooShort);
@@ -3692,7 +3692,7 @@ impl Database {
         }
 
         // check markdown content
-        let markdown = shared::ui::render_markdown(&props.content);
+        let markdown = rainbeam_shared::ui::render_markdown(&props.content);
 
         if markdown.trim().len() == 0 {
             return Err(DatabaseError::ContentTooShort);
@@ -3888,7 +3888,7 @@ impl Database {
         }
 
         // check markdown content
-        let markdown = shared::ui::render_markdown(&content);
+        let markdown = rainbeam_shared::ui::render_markdown(&content);
 
         if markdown.trim().len() == 0 {
             return Err(DatabaseError::ContentTooShort);
@@ -4647,7 +4647,7 @@ impl Database {
                     .bind::<&String>(&user)
                     .bind::<&String>(&circle)
                     .bind::<&String>(&serde_json::to_string(&status).unwrap())
-                    .bind::<&String>(&shared::unix_epoch_timestamp().to_string())
+                    .bind::<&String>(&rainbeam_shared::unix_epoch_timestamp().to_string())
                     .execute(c)
                     .await
                 {
@@ -5957,7 +5957,7 @@ impl Database {
         }
 
         // check markdown content
-        let markdown = shared::ui::render_markdown(&props.content);
+        let markdown = rainbeam_shared::ui::render_markdown(&props.content);
 
         if markdown.trim().len() == 0 {
             return Err(DatabaseError::ContentTooShort);
@@ -6090,7 +6090,7 @@ impl Database {
         }
 
         // check markdown content
-        let markdown = shared::ui::render_markdown(&content);
+        let markdown = rainbeam_shared::ui::render_markdown(&content);
 
         if markdown.trim().len() == 0 {
             return Err(DatabaseError::ContentTooShort);

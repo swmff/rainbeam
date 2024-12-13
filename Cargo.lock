@@ -210,11 +210,11 @@ dependencies = [
  "dotenv",
  "hcaptcha",
  "mime_guess",
+ "rainbeam-shared",
  "regex",
  "reqwest",
  "serde",
  "serde_json",
- "shared",
  "tokio",
 ]
 
@@ -668,10 +668,10 @@ dependencies = [
 name = "databeam"
 version = "0.1.1"
 dependencies = [
+ "rainbeam-shared",
  "redis",
  "serde",
  "serde_json",
- "shared",
  "sqlx",
  "toml",
 ]
@@ -1331,9 +1331,9 @@ dependencies = [
 name = "langbeam"
 version = "0.1.0"
 dependencies = [
+ "rainbeam-shared",
  "serde",
  "serde_json",
- "shared",
 ]
 
 [[package]]
@@ -1944,12 +1944,12 @@ dependencies = [
  "langbeam",
  "mimalloc",
  "mime_guess",
+ "rainbeam-shared",
  "rb",
  "regex",
  "reqwest",
  "serde",
  "serde_json",
- "shared",
  "tokio",
  "toml",
  "tower-http",
@@ -1972,14 +1972,27 @@ dependencies = [
  "hcaptcha",
  "langbeam",
  "mime_guess",
+ "rainbeam-shared",
  "regex",
  "reqwest",
  "serde",
  "serde_json",
- "shared",
  "tokio",
  "toml",
  "tracing",
+]
+
+[[package]]
+name = "rainbeam-shared"
+version = "0.1.2"
+dependencies = [
+ "ammonia",
+ "comrak",
+ "hex_fmt",
+ "rand",
+ "serde",
+ "sha2",
+ "uuid",
 ]
 
 [[package]]
@@ -2031,11 +2044,11 @@ dependencies = [
  "mimalloc",
  "mime_guess",
  "rainbeam-core",
+ "rainbeam-shared",
  "regex",
  "reqwest",
  "serde",
  "serde_json",
- "shared",
  "tokio",
  "toml",
  "tower-http",
@@ -2407,19 +2420,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f40ca3c46823713e0d4209592e8d6e826aa57e928f09752619fc696c499637f6"
 dependencies = [
  "lazy_static",
-]
-
-[[package]]
-name = "shared"
-version = "0.1.2"
-dependencies = [
- "ammonia",
- "comrak",
- "hex_fmt",
- "rand",
- "serde",
- "sha2",
- "uuid",
 ]
 
 [[package]]

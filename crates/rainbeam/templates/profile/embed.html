@@ -95,7 +95,7 @@
                 <div class="motivational_header">
                     <!-- prettier-ignore -->
                     {% if let Some(header) = other.metadata.kv.get("sparkler:motivational_header") %}
-                        {{ shared::ui::render_markdown(header)|safe }}
+                        {{ rainbeam_shared::ui::render_markdown(header)|safe }}
                     {% else %}
                         Ask a question
                     {% endif %}

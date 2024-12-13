@@ -138,7 +138,7 @@ pub async fn login_request(
     };
 
     // check password
-    let input_password = shared::hash::hash_salted(props.password.clone(), ua.salt);
+    let input_password = rainbeam_shared::hash::hash_salted(props.password.clone(), ua.salt);
 
     if input_password != ua.password {
         return (

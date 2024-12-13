@@ -123,7 +123,7 @@
         <!-- prettier-ignore -->
         <span class="question_content" hook="long" hook-arg="lowered">
             <p style="display: none">{{ question.context.media }}</p>
-            {{ shared::ui::render_markdown(question.content)|safe }}
+            {{ rainbeam_shared::ui::render_markdown(question.content)|safe }}
 
             {% if !response.reply.is_empty() && response.context.is_post == false && do_render_nested == true %}
             <include-partial
@@ -145,7 +145,7 @@
 
         <!-- prettier-ignore -->
         <span class="response_content {% if !response.context.warning.is_empty() %}hidden{% endif %}" hook="long">
-            {{ shared::ui::render_markdown(response.content)|safe }}
+            {{ rainbeam_shared::ui::render_markdown(response.content)|safe }}
 
             {% if !response.reply.is_empty() && response.context.is_post == true && do_render_nested == true %}
             <include-partial

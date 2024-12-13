@@ -1,6 +1,6 @@
 //! Application config manager
 use serde::{Deserialize, Serialize};
-use shared::fs;
+use rainbeam_shared::fs;
 use std::io::Result;
 
 /// Configuration file

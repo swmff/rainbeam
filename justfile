@@ -26,3 +26,21 @@ test:
 # ...
 doc:
     cargo doc --no-deps --document-private-items --workspace --exclude neospring-desktop
+
+publish-shared:
+    cargo publish --package rainbeam-shared
+
+publish-databeam:
+    cargo publish --package databeam
+
+publish-langbeam:
+    cargo publish --package langbeam
+
+publish-citrus:
+    cargo publish --package citrus
+
+publish:
+    just publish-shared
+    just publish-databeam
+    just publish-langbeam
+    just publish-citrus

@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::io::Result;
 
 use authbeam::database::HCaptchaConfig;
-use shared::fs;
+use rainbeam_shared::fs;
 
 /// Premium features
 #[derive(Clone, Serialize, Deserialize, Debug)]

@@ -21,7 +21,7 @@
         hook="long"
         id="msg_content:{{ message.0.id }}"
     >
-        {{ shared::ui::render_markdown(message.0.content)|safe }}
+        {{ rainbeam_shared::ui::render_markdown(message.0.content)|safe }}
     </span>
 
     <div class="dropdown">

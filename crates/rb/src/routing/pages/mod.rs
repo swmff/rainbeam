@@ -382,7 +382,7 @@ pub async fn about_request(jar: CookieJar, State(database): State<Database>) -> 
             }),
             profile: auth_user,
             title: "About".to_string(),
-            text: shared::fs::read(format!(
+            text: rainbeam_shared::fs::read(format!(
                 "{}/site/about.md",
                 database.server_options.static_dir
             ))

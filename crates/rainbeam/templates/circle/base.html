@@ -121,7 +121,7 @@
                             <!-- prettier-ignore -->
                             <div id="biography">
                                 {% if let Some(biography) = circle.metadata.kv.get("sparkler:biography") %}
-                                    {{ shared::ui::render_markdown(biography)|safe }}
+                                    {{ rainbeam_shared::ui::render_markdown(biography)|safe }}
                                 {% endif %}
                             </div>
                         </div>
@@ -356,7 +356,7 @@
 
         <hr />
         <div class="profile_warning">
-            {{ shared::ui::render_markdown(warning)|safe }}
+            {{ rainbeam_shared::ui::render_markdown(warning)|safe }}
         </div>
 
         <hr />
@@ -375,7 +375,7 @@
 
 <!-- prettier-ignore -->
 {% if !is_member %}
-{% let warning_hash = shared::hash::hash(warning.to_string()) %}
+{% let warning_hash = rainbeam_shared::hash::hash(warning.to_string()) %}
 <script>
     setTimeout(() => {
         const dialogs = ns("dialogs");

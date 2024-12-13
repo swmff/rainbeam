@@ -89,7 +89,7 @@ note = user.metadata.soft_get("sparkler:status_note") %} {% if !note.is_empty()
         </div>
 
         <hr class="flipped" />
-        <span>{{ shared::ui::render_markdown(note)|safe }}</span>
+        <span>{{ rainbeam_shared::ui::render_markdown(note)|safe }}</span>
     </div>
 </dialog>
 {% endif %} {% endif %} {% endif %}

@@ -1,5 +1,5 @@
 [package]
-name = "shared"
+name = "rainbeam-shared"
 version = "0.1.2"
 edition = "2021"
 authors = ["trisuaso", "swmff"]

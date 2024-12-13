@@ -265,7 +265,7 @@ pub async fn sessions_settings(
             profile: Some(auth_user),
             unread,
             notifs,
-            current_session: shared::hash::hash(
+            current_session: rainbeam_shared::hash::hash(
                 jar.get("__Secure-Token")
                     .unwrap()
                     .value_trimmed()

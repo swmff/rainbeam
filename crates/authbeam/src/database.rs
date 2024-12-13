@@ -824,7 +824,7 @@ impl Database {
 
         let user_token_unhashed: String = databeam::utility::uuid();
         let user_token_hashed: String = databeam::utility::hash(user_token_unhashed.clone());
-        let salt: String = shared::hash::salt();
+        let salt: String = rainbeam_shared::hash::salt();
 
         let timestamp = utility::unix_epoch_timestamp().to_string();
 
@@ -832,7 +832,7 @@ impl Database {
         match sqlquery(query)
             .bind::<&String>(&databeam::utility::uuid())
             .bind::<&String>(&username.to_lowercase())
-            .bind::<&String>(&shared::hash::hash_salted(password, salt.clone()))
+            .bind::<&String>(&rainbeam_shared::hash::hash_salted(password, salt.clone()))
             .bind::<&String>(
                 &serde_json::to_string::<Vec<String>>(&vec![user_token_hashed]).unwrap(),
             )
@@ -1196,7 +1196,7 @@ impl Database {
 
         // check password
         if do_password_check {
-            let password_hashed = shared::hash::hash_salted(password, ua.salt);
+            let password_hashed = rainbeam_shared::hash::hash_salted(password, ua.salt);
 
             if password_hashed != ua.password {
                 return Err(DatabaseError::NotAllowed);
@@ -1210,11 +1210,14 @@ impl Database {
             "UPDATE \"xprofiles\" SET (\"password\", \"salt\") = ($1, $2) WHERE \"id\" = $3"
         };
 
-        let new_salt = shared::hash::salt();
+        let new_salt = rainbeam_shared::hash::salt();
 
         let c = &self.base.db.client;
         match sqlquery(query)
-            .bind::<&String>(&shared::hash::hash_salted(new_password, new_salt.clone()))
+            .bind::<&String>(&rainbeam_shared::hash::hash_salted(
+                new_password,
+                new_salt.clone(),
+            ))
             .bind::<&String>(&new_salt)
             .bind::<&String>(&id)
             .execute(c)
@@ -1263,7 +1266,7 @@ impl Database {
         }
 
         // check password
-        let password_hashed = shared::hash::hash_salted(password, ua.salt);
+        let password_hashed = rainbeam_shared::hash::hash_salted(password, ua.salt);
 
         if password_hashed != ua.password {
             return Err(DatabaseError::NotAllowed);
@@ -3174,7 +3177,7 @@ impl Database {
                         .bind::<&String>(&uone.id)
                         .bind::<&String>(&utwo.id)
                         .bind::<&String>(&serde_json::to_string(&status).unwrap())
-                        .bind::<&String>(&shared::unix_epoch_timestamp().to_string())
+                        .bind::<&String>(&rainbeam_shared::unix_epoch_timestamp().to_string())
                         .execute(c)
                         .await
                     {
@@ -3205,7 +3208,7 @@ impl Database {
                     .bind::<&String>(&uone.id)
                     .bind::<&String>(&utwo.id)
                     .bind::<&String>(&serde_json::to_string(&status).unwrap())
-                    .bind::<&String>(&shared::unix_epoch_timestamp().to_string())
+                    .bind::<&String>(&rainbeam_shared::unix_epoch_timestamp().to_string())
                     .execute(c)
                     .await
                 {
@@ -4029,7 +4032,7 @@ impl Database {
         }
 
         // check markdown content
-        let markdown = shared::ui::render_markdown(&props.content);
+        let markdown = rainbeam_shared::ui::render_markdown(&props.content);
 
         if markdown.trim().len() == 0 {
             return Err(DatabaseError::Other);

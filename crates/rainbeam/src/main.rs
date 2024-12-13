@@ -11,7 +11,7 @@ use tracing::{info, Level};
 
 use authbeam::{api as AuthApi, Database as AuthDatabase};
 use databeam::config::Config as DataConf;
-use shared::fs;
+use rainbeam_shared::fs;
 
 pub use rb::database;
 pub use rb::config;

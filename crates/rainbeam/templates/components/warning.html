@@ -44,8 +44,7 @@
                             onclick="trigger('account_warnings:delete', ['{{ warning.id }}'])"
                             class="red"
                         >
-                            {{ icon "trash" }}
-                            Delete
+                            {{ icon "trash" }} Delete
                         </a>
                         {% endif %} {% endif %}
                         <!-- actions for everybody -->
@@ -54,8 +53,7 @@
                             href="#"
                             onclick="trigger('app:copy_text', ['{{ warning.id }}'])"
                         >
-                            {{ icon "copy" }}
-                            Copy ID
+                            {{ icon "copy" }} Copy ID
                         </a>
                     </div>
                 </div>
@@ -64,6 +62,6 @@
     </div>
 
     <div class="card" class="warning_content">
-        {{ shared::ui::render_markdown(warning.content)|safe }}
+        {{ rainbeam_shared::ui::render_markdown(warning.content)|safe }}
     </div>
 </div>

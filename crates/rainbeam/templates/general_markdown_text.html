@@ -4,7 +4,9 @@ endblock %} {% block head %}
 {% endblock %} {% block content %}
 <article>
     <main>
-        <div class="card">{{ shared::ui::render_markdown(text)|safe }}</div>
+        <div class="card">
+            {{ rainbeam_shared::ui::render_markdown(text)|safe }}
+        </div>
     </main>
 </article>
 {% call super() %} {% endblock %}

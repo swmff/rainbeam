@@ -1,7 +1,7 @@
 {% extends "../base.html" %} {% block title %}{{ other.username }} - {{
 config.name }}{% endblock %} {% block content %} {% if let Some(warning) =
 other.metadata.kv.get("sparkler:warning") %} {% if !warning.is_empty() %} {% let
-warning_hash = shared::hash::hash(warning.to_string()) %}
+warning_hash = rainbeam_shared::hash::hash(warning.to_string()) %}
 <article>
     <main class="flex flex-col gap-4">
         <div class="card-nest">
@@ -12,7 +12,7 @@ warning_hash = shared::hash::hash(warning.to_string()) %}
             </div>
 
             <div class="card profile_warning">
-                {{ shared::ui::render_markdown(warning)|safe }}
+                {{ rainbeam_shared::ui::render_markdown(warning)|safe }}
             </div>
         </div>
 

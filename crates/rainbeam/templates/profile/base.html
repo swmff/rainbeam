@@ -201,7 +201,7 @@ config.name }}{% endblock %} {% block head %}
                         <!-- prettier-ignore -->
                         <div id="biography">
                             {% if let Some(biography) = other.metadata.kv.get("sparkler:biography") %}
-                                {{ shared::ui::render_markdown(biography)|safe }}
+                                {{ rainbeam_shared::ui::render_markdown(biography)|safe }}
                             {% endif %}
                         </div>
 
@@ -209,7 +209,7 @@ config.name }}{% endblock %} {% block head %}
                         {% if let Some(sidebar) = other.metadata.kv.get("sparkler:sidebar") %}
                         {% if !sidebar.is_empty() %}
                         <div id="sidebar" class="card secondary shadow w-full">
-                            {{ shared::ui::render_markdown(sidebar)|safe }}
+                            {{ rainbeam_shared::ui::render_markdown(sidebar)|safe }}
                         </div>
                         {% endif %} {% endif %}
 
@@ -518,7 +518,7 @@ config.name }}{% endblock %} {% block head %}
                 <!-- prettier-ignore -->
                 <div class="card motivational_header">
                     {% if let Some(header) = other.metadata.kv.get("sparkler:motivational_header") %}
-                        {{ shared::ui::render_markdown(header)|safe }}
+                        {{ rainbeam_shared::ui::render_markdown(header)|safe }}
                     {% else %}
                         Ask a question
                     {% endif %}
@@ -681,7 +681,7 @@ config.name }}{% endblock %} {% block head %}
 %} {% if !warning.is_empty() %}
 <!-- prettier-ignore -->
 {% if !is_self %}
-{% let warning_hash = shared::hash::hash(warning.to_string()) %}
+{% let warning_hash = rainbeam_shared::hash::hash(warning.to_string()) %}
 <script>
     setTimeout(() => {
         const dialogs = ns("dialogs");
