@@ -210,7 +210,7 @@ dependencies = [
  "dotenv",
  "hcaptcha",
  "mime_guess",
- "rainbeam-shared",
+ "rainbeam-shared 0.1.2",
  "regex",
  "reqwest",
  "serde",
@@ -668,7 +668,7 @@ dependencies = [
 name = "databeam"
 version = "0.1.1"
 dependencies = [
- "rainbeam-shared",
+ "rainbeam-shared 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "redis",
  "serde",
  "serde_json",
@@ -1331,7 +1331,7 @@ dependencies = [
 name = "langbeam"
 version = "0.1.0"
 dependencies = [
- "rainbeam-shared",
+ "rainbeam-shared 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde",
  "serde_json",
 ]
@@ -1944,7 +1944,7 @@ dependencies = [
  "langbeam",
  "mimalloc",
  "mime_guess",
- "rainbeam-shared",
+ "rainbeam-shared 0.1.2",
  "rb",
  "regex",
  "reqwest",
@@ -1972,7 +1972,7 @@ dependencies = [
  "hcaptcha",
  "langbeam",
  "mime_guess",
- "rainbeam-shared",
+ "rainbeam-shared 0.1.2",
  "regex",
  "reqwest",
  "serde",
@@ -1985,6 +1985,21 @@ dependencies = [
 [[package]]
 name = "rainbeam-shared"
 version = "0.1.2"
+dependencies = [
+ "ammonia",
+ "comrak",
+ "hex_fmt",
+ "rand",
+ "serde",
+ "sha2",
+ "uuid",
+]
+
+[[package]]
+name = "rainbeam-shared"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "94bcf4e5d9fc198347bf8c6d2e34d2667dd5d7b890d9e0fb7a6f31dda87acc49"
 dependencies = [
  "ammonia",
  "comrak",
@@ -2044,7 +2059,7 @@ dependencies = [
  "mimalloc",
  "mime_guess",
  "rainbeam-core",
- "rainbeam-shared",
+ "rainbeam-shared 0.1.2",
  "regex",
  "reqwest",
  "serde",

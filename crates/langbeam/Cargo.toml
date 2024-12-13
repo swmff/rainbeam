@@ -6,4 +6,4 @@ edition = "2021"
 [dependencies]
 serde = { version = "1.0.215", features = ["serde_derive"] }
 serde_json = "1.0.133"
-rainbeam-shared = { path = "../shared" }
+rainbeam-shared = "0.1.2"
