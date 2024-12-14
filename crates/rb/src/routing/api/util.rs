@@ -31,22 +31,22 @@ pub async fn external_image_request(
 ) -> impl IntoResponse {
     let image_url = &props.img;
 
-    if image_url.starts_with(&database.server_options.host) {
+    if image_url.starts_with(&database.config.host) {
         return (
             [("Content-Type", "image/svg+xml")],
             Body::from(read_image(
-                database.server_options.static_dir,
+                database.config.static_dir,
                 "default-banner.svg".to_string(),
             )),
         );
     }
 
-    for host in database.server_options.blocked_hosts {
+    for host in database.config.blocked_hosts {
         if image_url.starts_with(&host) {
             return (
                 [("Content-Type", "image/svg+xml")],
                 Body::from(read_image(
-                    database.server_options.static_dir,
+                    database.config.static_dir,
                     "default-banner.svg".to_string(),
                 )),
             );
@@ -58,7 +58,7 @@ pub async fn external_image_request(
         return (
             [("Content-Type", "image/svg+xml")],
             Body::from(read_image(
-                database.server_options.static_dir,
+                database.config.static_dir,
                 "default-banner.svg".to_string(),
             )),
         );
@@ -77,7 +77,7 @@ pub async fn external_image_request(
                     return (
                         [("Content-Type", "image/svg+xml")],
                         Body::from(read_image(
-                            database.server_options.static_dir,
+                            database.config.static_dir,
                             "default-banner.svg".to_string(),
                         )),
                     );
@@ -99,7 +99,7 @@ pub async fn external_image_request(
         Err(_) => (
             [("Content-Type", "image/svg+xml")],
             Body::from(read_image(
-                database.server_options.static_dir,
+                database.config.static_dir,
                 "default-banner.svg".to_string(),
             )),
         ),

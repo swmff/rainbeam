@@ -22,7 +22,7 @@ pub type Result<T> = std::result::Result<T, DatabaseError>;
 pub struct Database {
     pub base: databeam::StarterDatabase,
     pub auth: authbeam::Database,
-    pub server_options: Config,
+    pub config: Config,
     langs: HashMap<String, LangFile>,
 }
 
@@ -30,12 +30,12 @@ impl Database {
     pub async fn new(
         opts: databeam::DatabaseOpts,
         auth: authbeam::Database,
-        server_options: Config,
+        config: Config,
     ) -> Self {
         Self {
             base: databeam::StarterDatabase::new(opts).await,
             auth,
-            server_options,
+            config,
             langs: langbeam::read_langs(),
         }
     }
@@ -1352,8 +1352,8 @@ impl Database {
             }
 
             // we get upgraded limit if we have the minimum tier OR if the recipient has it
-            if (author.tier >= self.server_options.tiers.double_limits)
-                | (use_tier >= self.server_options.tiers.double_limits)
+            if (author.tier >= self.config.tiers.double_limits)
+                | (use_tier >= self.config.tiers.double_limits)
             {
                 if props.content.len() > (64 * 64) {
                     return Err(DatabaseError::ContentTooLong);
@@ -1385,8 +1385,8 @@ impl Database {
                     return Err(DatabaseError::ContentTooShort);
                 }
 
-                if (author.tier >= self.server_options.tiers.double_limits)
-                    | (use_tier >= self.server_options.tiers.double_limits)
+                if (author.tier >= self.config.tiers.double_limits)
+                    | (use_tier >= self.config.tiers.double_limits)
                 {
                     if props.content.len() > (64 * 64) {
                         return Err(DatabaseError::ContentTooLong);
@@ -1402,7 +1402,7 @@ impl Database {
                     return Err(DatabaseError::ContentTooShort);
                 }
 
-                if use_tier >= self.server_options.tiers.double_limits {
+                if use_tier >= self.config.tiers.double_limits {
                     if props.content.len() > (64 * 64) {
                         return Err(DatabaseError::ContentTooLong);
                     }
@@ -2385,7 +2385,7 @@ impl Database {
             return Err(DatabaseError::ContentTooShort);
         }
 
-        if author.tier >= self.server_options.tiers.double_limits {
+        if author.tier >= self.config.tiers.double_limits {
             if props.content.len() > (64 * 128) {
                 return Err(DatabaseError::ContentTooLong);
             }
@@ -3681,7 +3681,7 @@ impl Database {
             return Err(DatabaseError::ContentTooShort);
         }
 
-        if author.tier >= self.server_options.tiers.double_limits {
+        if author.tier >= self.config.tiers.double_limits {
             if props.content.len() > (64 * 64) {
                 return Err(DatabaseError::ContentTooLong);
             }

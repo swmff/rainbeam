@@ -18,7 +18,7 @@ pub(crate) trait ToHtml {
 impl ToHtml for model::DatabaseError {
     fn to_html(&self, database: database::Database) -> String {
         crate::routing::pages::ErrorTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang("net.rainbeam.langs:en-US"),
             profile: None,
             message: self.to_string(),

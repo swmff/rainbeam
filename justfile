@@ -34,7 +34,7 @@ publish-databeam:
     cargo publish --package databeam
 
 publish-authbeam:
-    cargo publish --package authbeam
+    cargo publish --package authbeam --no-verify
 
 publish-langbeam:
     cargo publish --package langbeam

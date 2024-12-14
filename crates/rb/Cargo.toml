@@ -35,7 +35,7 @@ async-recursion = "1.1.1"
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 rainbeam-shared = { path = "../shared" }
-databeam = { path = "../databeam", default-features = false }
+databeam = { version = "0.1.1", default-features = false }
 authbeam = { path = "../authbeam", default-features = false }
 langbeam = { path = "../langbeam" }
 rainbeam-core = { path = "../rainbeam-core", default-features = false }

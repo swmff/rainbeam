@@ -73,7 +73,7 @@ pub async fn get_request(
             success: true,
             message: String::new(),
             payload: {
-                r.1.id = CitrusID::new(&database.server_options.citrus_id, &r.1.id).0;
+                r.1.id = CitrusID::new(&database.config.citrus_id, &r.1.id).0;
 
                 // hide anonymous author id
                 if r.0.author.id.starts_with("anonymous#") {
@@ -258,7 +258,7 @@ pub async fn report_request(
 ) -> impl IntoResponse {
     // check hcaptcha
     if let Err(e) = req
-        .valid_response(&database.server_options.captcha.secret, None)
+        .valid_response(&database.config.captcha.secret, None)
         .await
     {
         return Json(DefaultReturn {
@@ -278,7 +278,7 @@ pub async fn report_request(
     };
 
     // get real ip
-    let real_ip = if let Some(ref real_ip_header) = database.server_options.real_ip_header {
+    let real_ip = if let Some(ref real_ip_header) = database.config.real_ip_header {
         headers
             .get(real_ip_header.to_owned())
             .unwrap_or(&HeaderValue::from_static(""))

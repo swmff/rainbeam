@@ -60,7 +60,7 @@ pub async fn create_request(
     };
 
     // get real ip
-    let real_ip = if let Some(ref real_ip_header) = database.server_options.real_ip_header {
+    let real_ip = if let Some(ref real_ip_header) = database.config.real_ip_header {
         headers
             .get(real_ip_header.to_owned())
             .unwrap_or(&HeaderValue::from_static(""))
@@ -313,7 +313,7 @@ pub async fn report_request(
 ) -> impl IntoResponse {
     // check hcaptcha
     if let Err(e) = req
-        .valid_response(&database.server_options.captcha.secret, None)
+        .valid_response(&database.config.captcha.secret, None)
         .await
     {
         return Json(DefaultReturn {
@@ -333,7 +333,7 @@ pub async fn report_request(
     };
 
     // get real ip
-    let real_ip = if let Some(ref real_ip_header) = database.server_options.real_ip_header {
+    let real_ip = if let Some(ref real_ip_header) = database.config.real_ip_header {
         headers
             .get(real_ip_header.to_owned())
             .unwrap_or(&HeaderValue::from_static(""))

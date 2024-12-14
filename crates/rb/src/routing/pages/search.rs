@@ -64,7 +64,7 @@ pub async fn search_homepage_request(
 
     Html(
         HomepageTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -206,7 +206,7 @@ pub async fn search_responses_request(
     // render
     Html(
         ResponsesTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -344,7 +344,7 @@ pub async fn search_posts_request(
     // render
     Html(
         PostsTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -443,7 +443,7 @@ pub async fn search_questions_request(
     // render
     Html(
         QuestionsTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -527,7 +527,7 @@ pub async fn search_users_request(
     // render
     Html(
         UsersTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {

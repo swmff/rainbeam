@@ -97,7 +97,7 @@ pub async fn inbox_request(
 
     Html(
         InboxTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -202,7 +202,7 @@ pub async fn outbox_request(
 
     Html(
         OutboxTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -268,7 +268,7 @@ pub async fn compose_request(
 
     Html(
         ComposeTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -363,7 +363,7 @@ pub async fn view_request(
     // ...
     Html(
         ViewTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {

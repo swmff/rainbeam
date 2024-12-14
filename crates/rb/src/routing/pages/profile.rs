@@ -96,7 +96,7 @@ pub async fn profile_request(
     if other.id == "0" {
         return Html(
             MarkdownTemplate {
-                config: database.server_options.clone(),
+                config: database.config.clone(),
                 lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                     c.value_trimmed()
                 } else {
@@ -330,7 +330,7 @@ All mail sent to this account can be viewed by any staff member with access.
     // ...
     Html(
         ProfileTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -569,7 +569,7 @@ pub async fn partial_profile_request(
     // ...
     Html(
         PartialProfileTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -744,7 +744,7 @@ pub async fn comments_request(
     // ...
     Html(
         CommentsTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -905,7 +905,7 @@ pub async fn partial_comments_request(
     // ...
     Html(
         PartialCommentsTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -1103,7 +1103,7 @@ pub async fn profile_embed_request(
     // ...
     Html(
         ProfileEmbedTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -1243,7 +1243,7 @@ pub async fn followers_request(
 
     Html(
         FollowersTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -1392,7 +1392,7 @@ pub async fn following_request(
 
     Html(
         FollowingTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -1541,7 +1541,7 @@ pub async fn friends_request(
 
     Html(
         FriendsTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -1653,7 +1653,7 @@ pub async fn friend_requests_request(
 
     Html(
         FriendRequestsTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -1769,7 +1769,7 @@ pub async fn blocks_request(
 
     Html(
         BlocksTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -1973,7 +1973,7 @@ pub async fn questions_request(
 
     Html(
         ProfileQuestionsTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -2176,7 +2176,7 @@ pub async fn mod_request(
 
     Html(
         ModTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -2378,7 +2378,7 @@ pub async fn inbox_request(
 
     Html(
         ProfileQuestionsInboxTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -2578,7 +2578,7 @@ pub async fn outbox_request(
 
     Html(
         ProfileQuestionsOutboxTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -2710,7 +2710,7 @@ pub async fn friend_request(
 
     Html(
         FriendRequestTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -2808,7 +2808,7 @@ pub async fn warning_request(
 
     Html(
         WarningTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {

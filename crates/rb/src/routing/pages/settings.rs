@@ -71,7 +71,7 @@ pub async fn account_settings(
 
     Html(
         AccountSettingsTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -132,7 +132,7 @@ pub async fn profile_settings(
 
     Html(
         ProfileSettingsTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -191,7 +191,7 @@ pub async fn privacy_settings(
 
     Html(
         PrivacySettingsTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -253,7 +253,7 @@ pub async fn sessions_settings(
 
     Html(
         SessionsSettingsTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {

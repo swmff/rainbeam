@@ -63,7 +63,7 @@ pub async fn chats_homepage_request(
 
     Html(
         HomepageTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -157,7 +157,7 @@ pub async fn chat_request(
 
     Html(
         ChatTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {

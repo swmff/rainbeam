@@ -204,7 +204,7 @@ pub async fn homepage_request(
         // ...
         return Html(
             TimelineTemplate {
-                config: database.server_options.clone(),
+                config: database.config.clone(),
                 lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                     c.value_trimmed()
                 } else {
@@ -234,7 +234,7 @@ pub async fn homepage_request(
     // homepage
     Html(
         HomepageTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -331,7 +331,7 @@ pub async fn partial_timeline_request(
     // ...
     return Html(
         PartialTimelineTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -374,7 +374,7 @@ pub async fn about_request(jar: CookieJar, State(database): State<Database>) -> 
 
     Html(
         MarkdownTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -384,9 +384,9 @@ pub async fn about_request(jar: CookieJar, State(database): State<Database>) -> 
             title: "About".to_string(),
             text: rainbeam_shared::fs::read(format!(
                 "{}/site/about.md",
-                database.server_options.static_dir
+                database.config.static_dir
             ))
-            .unwrap_or(database.server_options.description),
+            .unwrap_or(database.config.description),
         }
         .render()
         .unwrap(),
@@ -426,7 +426,7 @@ pub async fn login_request(jar: CookieJar, State(database): State<Database>) -> 
 
     Html(
         LoginTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -452,7 +452,7 @@ pub async fn sign_up_request(
     jar: CookieJar,
     State(database): State<Database>,
 ) -> impl IntoResponse {
-    if database.server_options.registration_enabled == false {
+    if database.config.registration_enabled == false {
         return Html(DatabaseError::NotAllowed.to_html(database));
     }
 
@@ -471,7 +471,7 @@ pub async fn sign_up_request(
 
     Html(
         SignUpTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -686,7 +686,7 @@ pub async fn question_request(
     // ...
     Html(
         QuestionTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -852,7 +852,7 @@ pub async fn public_posts_timeline_request(
     // ...
     Html(
         PublicPostsTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -991,7 +991,7 @@ pub async fn partial_posts_request(
     // ...
     return Html(
         PartialPostsTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -1104,7 +1104,7 @@ pub async fn following_posts_timeline_request(
     // ...
     Html(
         FollowingPostsTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -1232,7 +1232,7 @@ pub async fn response_request(
     // ...
     Html(
         ResponseTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -1321,7 +1321,7 @@ pub async fn partial_response_request(
     // ...
     Html(
         PartialResponseTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -1440,7 +1440,7 @@ pub async fn comment_request(
 
     Html(
         CommentTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -1517,7 +1517,7 @@ pub async fn inbox_request(jar: CookieJar, State(database): State<Database>) -> 
 
     Html(
         InboxTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -1644,7 +1644,7 @@ pub async fn global_timeline_request(
     // ...
     Html(
         GlobalTimelineTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -1785,7 +1785,7 @@ pub async fn public_global_timeline_request(
 
     Html(
         PublicGlobalTimelineTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -1831,7 +1831,7 @@ pub async fn compose_request(
 
     Html(
         ComposeTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -1910,7 +1910,7 @@ pub async fn notifications_request(
 
     Html(
         NotificationsTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -1985,7 +1985,7 @@ pub async fn reports_request(
 
     Html(
         ReportsTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -2060,7 +2060,7 @@ pub async fn audit_log_request(
 
     Html(
         AuditTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -2127,7 +2127,7 @@ pub async fn ipbans_request(jar: CookieJar, State(database): State<Database>) ->
 
     Html(
         IpbansTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
@@ -2166,7 +2166,7 @@ pub async fn report_request(jar: CookieJar, State(database): State<Database>) ->
 
     Html(
         ReportTemplate {
-            config: database.server_options.clone(),
+            config: database.config.clone(),
             lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
                 c.value_trimmed()
             } else {
