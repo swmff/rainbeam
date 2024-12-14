@@ -5,7 +5,7 @@ use axum::routing::put;
 use hcaptcha::Hcaptcha;
 use authbeam::model::NotificationCreate;
 use databeam::DefaultReturn;
-use citrus::model::CitrusID;
+use citrus_client::model::CitrusID;
 
 use axum::response::{IntoResponse, Redirect};
 use axum::{

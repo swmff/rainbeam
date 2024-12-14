@@ -8,8 +8,10 @@ use crate::model::{
 };
 use crate::model::{Group, Notification, NotificationCreate, Permission, UserFollow};
 
-use citrus::model::{CitrusID, HttpProtocol};
-use citrus::{CitrusClient, TemplateBuilder};
+use citrus_client::{
+    CitrusClient, TemplateBuilder,
+    model::{CitrusID, HttpProtocol},
+};
 use hcaptcha::Hcaptcha;
 use reqwest::Client as HttpClient;
 use serde::{Deserialize, Serialize};

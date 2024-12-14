@@ -205,10 +205,12 @@ dependencies = [
  "axum",
  "axum-extra",
  "axum-macros",
- "databeam",
+ "citrus-client 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "databeam 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "dotenv",
  "hcaptcha",
  "mime_guess",
+ "rainbeam-shared 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex",
  "reqwest",
  "serde",
@@ -450,6 +452,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "citrus-client"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9c5780a85d06f64129cc3e0c9598f94624170e730913632abcee1f237821112e"
+dependencies = [
+ "reqwest",
+ "serde",
+ "serde_json",
+ "toml",
+]
+
+[[package]]
 name = "clap"
 version = "4.5.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -665,6 +679,20 @@ dependencies = [
 [[package]]
 name = "databeam"
 version = "0.1.1"
+dependencies = [
+ "rainbeam-shared 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "redis",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "toml",
+]
+
+[[package]]
+name = "databeam"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ac95217ce65a20d64c06fb52a9b7a02df87bf778a49b1605223a980134290347"
 dependencies = [
  "rainbeam-shared 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "redis",
@@ -1936,7 +1964,7 @@ dependencies = [
  "authbeam",
  "axum",
  "axum-extra",
- "databeam",
+ "databeam 0.1.1",
  "futures-util",
  "hcaptcha",
  "langbeam",
@@ -1964,8 +1992,8 @@ dependencies = [
  "authbeam",
  "axum",
  "axum-extra",
- "citrus-client",
- "databeam",
+ "citrus-client 0.1.0",
+ "databeam 0.1.1",
  "futures-util",
  "hcaptcha",
  "langbeam",
@@ -2049,7 +2077,8 @@ dependencies = [
  "authbeam",
  "axum",
  "axum-extra",
- "databeam",
+ "citrus-client 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "databeam 0.1.1",
  "futures-util",
  "hcaptcha",
  "langbeam",

@@ -33,14 +33,18 @@ publish-shared:
 publish-databeam:
     cargo publish --package databeam
 
+publish-authbeam:
+    cargo publish --package authbeam
+
 publish-langbeam:
     cargo publish --package langbeam
 
 publish-citrus:
-    cargo publish --package citrus-client
+    cargo publish --package citrus-client --no-verify
 
 publish:
     just publish-shared
     just publish-databeam
+    just publish-authbeam
     just publish-langbeam
     just publish-citrus
