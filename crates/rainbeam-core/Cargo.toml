@@ -33,7 +33,7 @@ rainbeam-shared = { path = "../shared" }
 databeam = { path = "../databeam", default-features = false }
 authbeam = { path = "../authbeam", default-features = false }
 langbeam = { path = "../langbeam" }
-citrus = { path = "../citrus" }
+citrus-client = { path = "../citrus-client" }
 mime_guess = "2.0.5"
 
 [lib]

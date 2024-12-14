@@ -9,7 +9,7 @@ use crate::model::{
     QuestionResponse, Reaction, RefQuestion, ResponseComment, ResponseContext, ResponseCreate,
 };
 use crate::model::{DatabaseError, Question};
-use citrus::model::CitrusID;
+use citrus_client::model::CitrusID;
 
 use authbeam::model::{NotificationCreate, Permission, Profile, RelationshipStatus};
 use databeam::{utility, query as sqlquery};

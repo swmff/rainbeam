@@ -39,7 +39,6 @@ databeam = { path = "../databeam", default-features = false }
 authbeam = { path = "../authbeam", default-features = false }
 langbeam = { path = "../langbeam" }
 rainbeam-core = { path = "../rainbeam-core", default-features = false }
-citrus = { path = "../citrus" }
 mimalloc = "0.1.43"
 mime_guess = "2.0.5"
 

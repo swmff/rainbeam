@@ -37,7 +37,7 @@ publish-langbeam:
     cargo publish --package langbeam
 
 publish-citrus:
-    cargo publish --package citrus
+    cargo publish --package citrus-client
 
 publish:
     just publish-shared

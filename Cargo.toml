@@ -7,7 +7,7 @@ members = [
     "crates/authbeam",
     "crates/databeam",
     "crates/shared",
-    "crates/citrus",
+    "crates/citrus-client",
     "crates/langbeam",
 ]
 
