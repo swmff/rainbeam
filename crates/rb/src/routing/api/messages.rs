@@ -1,7 +1,7 @@
 use crate::database::Database;
 use crate::model::{DatabaseError, MessageCreate, ResponseEdit};
 use axum::http::{HeaderMap, HeaderValue};
-use hcaptcha::Hcaptcha;
+use hcaptcha_no_wasm::Hcaptcha;
 use authbeam::model::NotificationCreate;
 use databeam::DefaultReturn;
 

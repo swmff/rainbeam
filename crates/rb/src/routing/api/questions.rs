@@ -10,7 +10,7 @@ use axum::{
     routing::{delete, get, post},
     Json, Router,
 };
-use hcaptcha::Hcaptcha;
+use hcaptcha_no_wasm::Hcaptcha;
 
 use axum_extra::extract::cookie::CookieJar;
 

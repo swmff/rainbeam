@@ -6,7 +6,7 @@ use axum::{
     Json,
 };
 
-use hcaptcha::Hcaptcha;
+use hcaptcha_no_wasm::Hcaptcha;
 use serde::{Deserialize, Serialize};
 
 use authbeam::model::{IpBlock, Profile, UserFollow};

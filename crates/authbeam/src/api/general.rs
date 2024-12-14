@@ -1,7 +1,7 @@
 use crate::database::Database;
 use crate::model::{DatabaseError, ProfileCreate, ProfileLogin, TokenContext};
 use axum::http::{HeaderMap, HeaderValue};
-use hcaptcha::Hcaptcha;
+use hcaptcha_no_wasm::Hcaptcha;
 use databeam::DefaultReturn;
 
 use axum::response::IntoResponse;

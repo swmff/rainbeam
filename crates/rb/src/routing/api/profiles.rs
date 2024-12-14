@@ -3,7 +3,7 @@ use crate::model::{DataExportOptions, DatabaseError};
 use axum::extract::Query;
 use axum::http::{HeaderMap, HeaderValue};
 use axum_extra::extract::CookieJar;
-use hcaptcha::Hcaptcha;
+use hcaptcha_no_wasm::Hcaptcha;
 
 use authbeam::model::{NotificationCreate, Permission};
 use databeam::DefaultReturn;

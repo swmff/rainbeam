@@ -1,4 +1,4 @@
-use hcaptcha::Hcaptcha;
+use hcaptcha_no_wasm::Hcaptcha;
 use std::collections::HashMap;
 
 use axum::{

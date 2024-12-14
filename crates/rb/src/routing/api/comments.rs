@@ -1,7 +1,7 @@
 use crate::database::Database;
 use crate::model::{anonymous_profile, CommentCreate, DatabaseError, ResponseEdit};
 use axum::http::{HeaderMap, HeaderValue};
-use hcaptcha::Hcaptcha;
+use hcaptcha_no_wasm::Hcaptcha;
 use authbeam::model::{IpBlockCreate, NotificationCreate};
 use databeam::DefaultReturn;
 

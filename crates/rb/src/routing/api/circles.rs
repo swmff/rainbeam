@@ -1,7 +1,7 @@
 use crate::database::Database;
 use crate::model::{CircleCreate, DatabaseError, EditCircleMetadata, MembershipStatus};
 use axum::http::{HeaderMap, HeaderValue};
-use hcaptcha::Hcaptcha;
+use hcaptcha_no_wasm::Hcaptcha;
 use authbeam::model::NotificationCreate;
 use databeam::DefaultReturn;
 

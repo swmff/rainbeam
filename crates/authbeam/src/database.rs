@@ -12,7 +12,7 @@ use citrus_client::{
     CitrusClient, TemplateBuilder,
     model::{CitrusID, HttpProtocol},
 };
-use hcaptcha::Hcaptcha;
+use hcaptcha_no_wasm::Hcaptcha;
 use reqwest::Client as HttpClient;
 use serde::{Deserialize, Serialize};
 

@@ -10,7 +10,7 @@ pub mod util;
 
 use crate::database::Database;
 use axum::Router;
-use hcaptcha::Hcaptcha;
+use hcaptcha_no_wasm::Hcaptcha;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Hcaptcha)]

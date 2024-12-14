@@ -2,7 +2,7 @@ use crate::database::Database;
 use crate::model::{DatabaseError, ResponseCreate, ResponseEdit, ResponseEditTags};
 use axum::http::{HeaderMap, HeaderValue};
 use axum::routing::put;
-use hcaptcha::Hcaptcha;
+use hcaptcha_no_wasm::Hcaptcha;
 use authbeam::model::NotificationCreate;
 use databeam::DefaultReturn;
 use citrus_client::model::CitrusID;
