@@ -28,6 +28,9 @@ pub fn render_markdown(input: &str) -> String {
     allowed_attributes.insert("title");
     allowed_attributes.insert("align");
 
+    allowed_attributes.insert("data-color");
+    allowed_attributes.insert("data-font-family");
+
     Builder::default()
         .generic_attributes(allowed_attributes)
         .clean(&html)

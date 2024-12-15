@@ -210,7 +210,7 @@ dependencies = [
  "dotenv",
  "hcaptcha-no-wasm",
  "mime_guess",
- "rainbeam-shared 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rainbeam-shared 0.1.2",
  "regex",
  "reqwest",
  "serde",
@@ -686,7 +686,7 @@ dependencies = [
 name = "databeam"
 version = "0.1.1"
 dependencies = [
- "rainbeam-shared 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rainbeam-shared 0.1.2",
  "redis",
  "serde",
  "serde_json",
@@ -700,7 +700,7 @@ version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ac95217ce65a20d64c06fb52a9b7a02df87bf778a49b1605223a980134290347"
 dependencies = [
- "rainbeam-shared 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rainbeam-shared 0.1.2",
  "redis",
  "serde",
  "serde_json",
@@ -1537,7 +1537,7 @@ dependencies = [
 name = "langbeam"
 version = "0.1.0"
 dependencies = [
- "rainbeam-shared 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rainbeam-shared 0.1.2",
  "serde",
  "serde_json",
 ]
@@ -2208,7 +2208,7 @@ dependencies = [
  "langbeam",
  "mimalloc",
  "mime_guess",
- "rainbeam-shared 0.1.2",
+ "rainbeam-shared 0.1.3",
  "rb",
  "regex",
  "reqwest",
@@ -2236,7 +2236,7 @@ dependencies = [
  "hcaptcha-no-wasm",
  "langbeam",
  "mime_guess",
- "rainbeam-shared 0.1.2",
+ "rainbeam-shared 0.1.3",
  "regex",
  "reqwest",
  "serde",
@@ -2249,6 +2249,8 @@ dependencies = [
 [[package]]
 name = "rainbeam-shared"
 version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "94bcf4e5d9fc198347bf8c6d2e34d2667dd5d7b890d9e0fb7a6f31dda87acc49"
 dependencies = [
  "ammonia",
  "comrak",
@@ -2261,9 +2263,7 @@ dependencies = [
 
 [[package]]
 name = "rainbeam-shared"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "94bcf4e5d9fc198347bf8c6d2e34d2667dd5d7b890d9e0fb7a6f31dda87acc49"
+version = "0.1.3"
 dependencies = [
  "ammonia",
  "comrak",
@@ -2323,7 +2323,7 @@ dependencies = [
  "mimalloc",
  "mime_guess",
  "rainbeam-core",
- "rainbeam-shared 0.1.2",
+ "rainbeam-shared 0.1.3",
  "regex",
  "reqwest",
  "serde",
