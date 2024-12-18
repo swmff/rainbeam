@@ -248,8 +248,7 @@ dialog::backdrop {
     color: black;
     background: white;
     padding: 0.05rem 0.3rem;
-    font-family: monospace;
-    font-size: 10px;
+    font-size: 12px;
     border-radius: var(--radius);
     height: max-content;
 }
@@ -259,6 +258,13 @@ dialog::backdrop {
     top: 6px;
     right: 0;
 } */
+
+.notification.tr {
+    /* background: var(--color-primary) !important;
+    color: var(--color-text-primary) !important; */
+    padding: 0.05rem 0.3rem !important;
+    border-radius: var(--radius);
+}
 
 .notification.camo {
     background: transparent;
