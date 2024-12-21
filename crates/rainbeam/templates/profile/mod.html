@@ -44,7 +44,7 @@
                 <li>Tier: <a href="javascript:change_tier()">{{ other.tier }}</a></li>
 
                 {% if other.metadata.exists("rainbeam:verify_url") && other.metadata.exists("rainbeam:verify_code") %}
-                <li>Verify URL: <a href="javascript:change_verify()">{{ other.metadata.soft_get("rainbeam:verify_url") }}</a></li>
+                <li>Verify URL: <a href='{{ other.metadata.soft_get("rainbeam:verify_url") }}'>{{ other.metadata.soft_get("rainbeam:verify_url") }}</a></li>
                 <li>Verify code: <a href="javascript:change_verify()">{{ other.metadata.soft_get("rainbeam:verify_code") }}</a></li>
                 {% else %}
                 <li><a href="javascript:change_verify()">Set verify</a></li>

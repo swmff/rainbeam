@@ -1,12 +1,11 @@
-html:not(.legacy),
-body:not(.legacy *) {
+html,
+body {
     font-family: "Inter", "Poppins", "Roboto", ui-sans-serif, system-ui,
         sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
         "Noto Color Emoji";
 }
 
-html:not(.legacy),
-:not(.legacy *) {
+html {
     --color-surface: hsl(0, 0%, 95%);
     --color-lowered: hsl(0, 0%, 93%);
     --color-raised: hsl(0, 0%, 98%);
@@ -23,8 +22,8 @@ html:not(.legacy),
     --radius: 4px;
 }
 
-html.dark:not(.legacy),
-.dark:not(.legacy) * {
+html.dark,
+.dark * {
     --hue: 0;
     --sat: 0%;
     --lit: 10%;
@@ -36,7 +35,7 @@ html.dark:not(.legacy),
     --color-primary-raised: hsl(341, 59%, 64%);
 }
 
-nav:not(.legacy *) {
+nav {
     padding: 0.5rem 0.25rem;
 }
 
@@ -45,8 +44,8 @@ nav:not(.legacy *) {
     border-bottom: solid 1px var(--color-super-lowered);
 }
 
-nav:not(.legacy *) button,
-nav:not(.legacy *) a.button {
+nav button,
+nav a.button {
     padding: 0 0.75rem;
     font-size: 14px;
     color: var(--color-text-primary);
@@ -57,8 +56,8 @@ nav:not(.legacy *) a.button {
     color: var(--color-text);
 }
 
-nav:not(.legacy *) a.button.title,
-nav:not(.legacy *) a.button.title .title-content {
+nav a.button.title,
+nav a.button.title .title-content {
     position: relative;
     transition:
         color 0.25s,
@@ -66,70 +65,66 @@ nav:not(.legacy *) a.button.title .title-content {
         transform 0.15s;
 }
 
-nav:not(.legacy *) a.button.title:hover {
+nav a.button.title:hover {
     color: var(--color-primary) !important;
 }
 
-nav:not(.legacy *)
-    a.button.title:hover:has(.title-content)
-    .title-content:is(img) {
+nav a.button.title:hover:has(.title-content) .title-content:is(img) {
     opacity: 100%;
     box-shadow: 0 0 8px 2px hsla(var(--color-primary-hsl), 25%);
     transform: scale(1.05);
 }
 
-nav:not(.legacy *)
-    a.button.title:hover:has(.title-content)
-    .title-content:not(img) {
+nav a.button.title:hover:has(.title-content) .title-content:not(img) {
     opacity: 100%;
     text-shadow: 0 0 8px hsla(var(--color-primary-hsl), 25%);
     transform: scale(1.05);
 }
 
-.dropdown:not(.legacy *) .inner {
+.dropdown .inner {
     padding: 0.25rem;
 }
 
 @media screen and (min-width: 901px) {
-    nav:not(.legacy *) button:not(:is(.dropdown *)):not(:is(.title)),
-    nav:not(.legacy *) a:not(:is(.dropdown *)):not(:is(.title)) {
+    nav button:not(:is(.dropdown *)):not(:is(.title)),
+    nav a:not(:is(.dropdown *)):not(:is(.title)) {
         opacity: 60%;
         transition: opacity 0.15s;
     }
 
-    nav:not(.legacy *) button:hover,
-    nav:not(.legacy *) a:hover,
-    nav:not(.legacy *) button.active,
-    nav:not(.legacy *) a.active {
+    nav button:hover,
+    nav a:hover,
+    nav button.active,
+    nav a.active {
         opacity: 100% !important;
     }
 
-    nav:not(.legacy *) button::before,
-    nav:not(.legacy *) a::before {
+    nav button::before,
+    nav a::before {
         content: unset;
     }
 
-    body:has(#is_chat_page) article:not(.legacy *) {
+    body:has(#is_chat_page) article {
         padding-bottom: 1rem !important;
         height: calc(100dvh - 48px - 1rem) !important;
     }
 }
 
 @media screen and (max-width: 900px) {
-    nav:not(.legacy *) {
+    nav {
         padding: 0.5rem 0.25rem;
         margin-bottom: 0;
         backdrop-filter: none;
         border-bottom: solid 1px var(--color-super-lowered);
     }
 
-    nav:not(.legacy *):not([data-scroll="0"] *),
-    nav:not(.legacy *):is(html:not([data-scroll]) *) {
+    nav:not([data-scroll="0"] *),
+    nav:is(html:not([data-scroll]) *) {
         background: var(--color-raised);
     }
 
-    nav:not(.legacy *) button,
-    nav:not(.legacy *) a.button {
+    nav button,
+    nav a.button {
         font-size: 12px;
         flex-direction: column;
         width: 60px;
@@ -138,42 +133,42 @@ nav:not(.legacy *)
         transform: scale(0.9);
     }
 
-    nav:not(.legacy *) button.active,
-    nav:not(.legacy *) a.button.active {
+    nav button.active,
+    nav a.button.active {
         color: var(--color-primary-raised);
         border: solid 1px var(--color-super-lowered);
         animation: grow 1 0.25s 0.1s forwards running;
     }
 
-    nav:not(.legacy *) button .notification.tr,
-    nav:not(.legacy *) a.button .notification.tr {
+    nav button .notification.tr,
+    nav a.button .notification.tr {
         font-size: 12px;
     }
 
-    nav:not(.legacy *) button::before,
-    nav:not(.legacy *) a::before {
+    nav button::before,
+    nav a::before {
         content: unset;
     }
 
-    nav:not(.legacy *) .nav_side {
+    nav .nav_side {
         display: contents;
     }
 
     /* chat page fixes */
-    body:has(#is_chat_page) article:not(.legacy *) {
+    body:has(#is_chat_page) article {
         margin-top: 0 !important;
     }
 
     /* seamless sides */
-    article:not(.legacy *) {
+    article {
         padding: 0;
     }
 
-    .card:not(.legacy *):not(.card *):not(include-partial *),
-    .card-nest:not(.legacy *):not(include-partial *),
-    .sidenav:not(.legacy *),
-    .pillmenu:not(.legacy *),
-    .response:not(.legacy *):not(include-partial *)
+    .card:not(.card *):not(include-partial *),
+    .card-nest:not(include-partial *),
+    .sidenav,
+    .pillmenu,
+    .response:not(include-partial *)
         .card:first-child[style="display: none"]:not(.response .response *)
         + .card:nth-child(n-1) {
         border-radius: 0 !important;
@@ -181,12 +176,12 @@ nav:not(.legacy *)
         border-right: none;
     }
 
-    .banner:not(.legacy *) {
+    .banner {
         border-radius: 0 !important;
     }
 
-    .sidenav:not(.legacy *) *,
-    .pillmenu:not(.legacy *) * {
+    .sidenav *,
+    .pillmenu * {
         border-radius: 0 !important;
     }
 
@@ -194,7 +189,7 @@ nav:not(.legacy *)
         z-index: 0;
     }
 
-    .pillmenu:not(.legacy *):not(.true) {
+    .pillmenu:not(.true) {
         top: 65px;
         position: sticky;
         z-index: 1;
@@ -202,22 +197,22 @@ nav:not(.legacy *)
     }
 
     /* toast to snackbar */
-    .toast:not(.legacy *) {
+    .toast {
         width: 100% !important;
     }
 
-    #toast_zone:not(.legacy *) {
+    #toast_zone {
         top: 0.5rem !important;
         bottom: unset;
     }
 
     /* profile */
-    #profile_box:not(.legacy *) {
+    #profile_box {
         flex-direction: column;
         position: relative;
     }
 
-    #profile_box:not(.legacy *) #profile_card {
+    #profile_box #profile_card {
         padding: 0.75rem !important;
         flex-direction: column;
         justify-content: space-between;
@@ -226,7 +221,7 @@ nav:not(.legacy *)
         min-width: 50%;
     }
 
-    #profile_box:not(.legacy *) .profile_card_section_2 {
+    #profile_box .profile_card_section_2 {
         width: 100% !important;
 
         & button,
@@ -236,28 +231,25 @@ nav:not(.legacy *)
         }
     }
 
-    #profile_box:not(.legacy *)
+    #profile_box
         #profile_card
         .profile_card_section_1
         .profile_avatar_container {
         margin: -140px 0 0;
     }
 
-    #profile_box:not(.legacy *)
-        #profile_card
-        .profile_card_section_1
-        .profile_social {
+    #profile_box #profile_card .profile_card_section_1 .profile_social {
         justify-content: flex-start;
     }
 
-    #profile_box:not(.legacy *)
+    #profile_box
         #profile_card
         .profile_card_section_1
         .profile_card_section_1_1 {
         flex-direction: column-reverse;
     }
 
-    #profile_box:not(.legacy *) #profile_card .profile_card_section_2 {
+    #profile_box #profile_card .profile_card_section_2 {
         flex-direction: row;
         height: max-content;
         width: max-content;
@@ -266,42 +258,39 @@ nav:not(.legacy *)
         right: 0.5rem;
     }
 
-    #profile_box:not(.legacy *)
-        #profile_card
-        .profile_card_section_2
-        div:nth-child(1) {
+    #profile_box #profile_card .profile_card_section_2 div:nth-child(1) {
         display: contents;
     }
 
-    #profile_box:not(.legacy *) #profile_card .profile_card_section_2 .icon {
+    #profile_box #profile_card .profile_card_section_2 .icon {
         display: block !important;
     }
 
-    #profile_box:not(.legacy *) .profile_card_section_3:not(:has(*)) {
+    #profile_box .profile_card_section_3:not(:has(*)) {
         /* remove empty section */
         display: none;
     }
 
-    #profile_box:not(.legacy *) .profile_card_section_3 {
+    #profile_box .profile_card_section_3 {
         min-width: 25%;
     }
 
-    #profile_box:not(.legacy *) .profile_card_section_3 #sidebar {
+    #profile_box .profile_card_section_3 #sidebar {
         height: 100%;
     }
 
-    #profile_box:not(.legacy *) {
+    #profile_box {
         position: unset;
     }
 
-    #profile_box:not(.legacy *)
+    #profile_box
         #profile_card
         .profile_card_section_1
         .profile_avatar_container {
         margin: -100px 0 0;
     }
 
-    #profile_box:not(.legacy *)
+    #profile_box
         #profile_card
         .profile_card_section_2:has(
             button:not(.dropdown .inner *):nth-child(2)
@@ -313,43 +302,43 @@ nav:not(.legacy *)
         align-items: flex-end;
     }
 
-    #profile_box:not(.legacy *) #profile_card .profile_card_section_2 {
+    #profile_box #profile_card .profile_card_section_2 {
         position: unset;
     }
 
     /* sidenav */
-    .sidenav:not(.legacy *) {
+    .sidenav {
         flex-direction: row;
         font-size: 14px;
     }
 
-    .sidenav:not(.legacy *) a {
+    .sidenav a {
         display: flex;
         justify-content: center;
         align-items: center;
     }
 }
 
-.sidenav:not(.legacy *) {
+.sidenav {
     box-shadow: 0 0 4px var(--color-shadow);
     background: var(--color-raised) !important;
     padding: 0.5rem;
     gap: 0.5rem;
 }
 
-.sidenav:not(.legacy *) a {
+.sidenav a {
     position: relative;
     border-radius: var(--radius) !important;
     padding: 0.25rem 1rem;
     background: inherit !important;
 }
 
-.sidenav:not(.legacy *) a:hover {
+.sidenav a:hover {
     color: var(--color-text-lowered);
     background: var(--color-lowered) !important;
 }
 
-.sidenav:not(.legacy *) a.active {
+.sidenav a.active {
     color: var(--color-text-primary);
     background: var(--color-primary) !important;
     box-shadow: 0 0 4px hsla(var(--color-primary-hsl), 25%);
@@ -363,7 +352,7 @@ nav:not(.legacy *)
     flex-direction: row;
 }
 
-.notification:not(.legacy *):not(.marker) {
+.notification:not(.marker) {
     background: transparent;
     color: inherit;
     font-weight: 600;
@@ -379,9 +368,9 @@ nav:not(.legacy *)
     }
 }
 
-input:not(.legacy *),
-textarea:not(.legacy *),
-select:not(.legacy *) {
+input,
+textarea,
+select {
     background: transparent;
     border: solid 1px var(--color-super-lowered);
     padding: 0.25rem 0.75rem;
@@ -391,26 +380,26 @@ select:not(.legacy *) {
         border-color 0.15s; */
 }
 
-textarea:not(.legacy *) {
+textarea {
     padding: 0.5rem 0.75rem;
 }
 
-input:not(.legacy *):focus,
-textarea:not(.legacy *):focus,
-select:not(.legacy *):focus {
+input:focus,
+textarea:focus,
+select:focus {
     border-color: var(--color-primary);
     outline: none;
 }
 
-select:not(.legacy *) {
+select {
     cursor: pointer;
 }
 
-select:not(.legacy *):focus {
+select:focus {
     background: var(--color-super-lowered);
 }
 
-.toast:not(.legacy *) {
+.toast {
     font-size: 16px;
     padding: 0.5rem 1rem;
     min-width: 12rem;
@@ -425,7 +414,7 @@ select:not(.legacy *):focus {
     flex-wrap: wrap;
 }
 
-.toast:not(.legacy *) .timer {
+.toast .timer {
     font-size: 10px;
     width: 22px;
     height: 22px;
