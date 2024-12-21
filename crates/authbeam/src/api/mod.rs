@@ -1,6 +1,7 @@
 //! Responds to API requests
 use crate::database::Database;
 use crate::model::DatabaseError;
+use axum::routing::put;
 use databeam::DefaultReturn;
 
 use axum::response::IntoResponse;
@@ -66,6 +67,7 @@ pub fn routes(database: Database) -> Router {
             "/profile/:id/metadata",
             post(profile::update_metdata_request),
         )
+        .route("/profile/:id/metadata", put(profile::patch_metdata_request))
         .route("/profile/:id/badges", post(profile::update_badges_request))
         .route("/profile/:id/labels", post(profile::update_labels_request))
         .route("/profile/:id/banner", get(profile::banner_request))

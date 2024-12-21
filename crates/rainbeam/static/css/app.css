@@ -37,18 +37,24 @@ html.dark:not(.legacy),
 }
 
 nav:not(.legacy *) {
-    /* background: var(--color-raised); */
+    padding: 0.5rem 0.25rem;
+}
+
+.dark nav {
     background: var(--color-raised);
     border-bottom: solid 1px var(--color-super-lowered);
-    padding: 0.5rem 0.25rem;
 }
 
 nav:not(.legacy *) button,
 nav:not(.legacy *) a.button {
     padding: 0 0.75rem;
     font-size: 14px;
-    color: var(--color-text);
+    color: var(--color-text-primary);
     background-color: transparent !important;
+}
+
+.dark nav {
+    color: var(--color-text);
 }
 
 nav:not(.legacy *) a.button.title,
@@ -184,7 +190,11 @@ nav:not(.legacy *)
         border-radius: 0 !important;
     }
 
-    .pillmenu:not(.legacy *) {
+    .pillmenu {
+        z-index: 0;
+    }
+
+    .pillmenu:not(.legacy *):not(.true) {
         top: 65px;
         position: sticky;
         z-index: 1;
@@ -345,33 +355,12 @@ nav:not(.legacy *)
     box-shadow: 0 0 4px hsla(var(--color-primary-hsl), 25%);
 }
 
-.pillmenu.convertible:not(.true):not(.legacy *) {
-    flex-direction: row;
-}
-
-.pillmenu.convertible:not(.legacy *) {
+.pillmenu {
     font-size: 14px;
 }
 
-.pillmenu:not(.legacy *) a.active {
-    color: var(--color-text-raised);
-    background: var(--color-super-raised);
-    position: relative;
-}
-
-.pillmenu:not(.legacy *) a.active::before {
-    --height: 70%;
-    --target: 50%; /* middle */
-    width: 95%;
-    border-radius: var(--radius);
-    content: "";
-    z-index: 0;
-    background: var(--color-super-lowered);
-    height: var(--height);
-    transition: background 0.2s;
-    display: block;
-    position: absolute;
-    top: calc(var(--target) - var(--height) / 2);
+.pillmenu.convertible:not(.true) {
+    flex-direction: row;
 }
 
 .notification:not(.legacy *):not(.marker) {

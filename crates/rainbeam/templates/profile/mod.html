@@ -42,6 +42,14 @@
                 <li>Joined: <span class="date">{{ other.joined }}</span></li>
                 <li>Group: <a href="javascript:change_group()">{{ other.group }}</a></li>
                 <li>Tier: <a href="javascript:change_tier()">{{ other.tier }}</a></li>
+
+                {% if other.metadata.exists("rainbeam:verify_url") && other.metadata.exists("rainbeam:verify_code") %}
+                <li>Verify URL: <a href="javascript:change_verify()">{{ other.metadata.soft_get("rainbeam:verify_url") }}</a></li>
+                <li>Verify code: <a href="javascript:change_verify()">{{ other.metadata.soft_get("rainbeam:verify_code") }}</a></li>
+                {% else %}
+                <li><a href="javascript:change_verify()">Set verify</a></li>
+                {% endif %}
+
                 <li><a href="/inbox/mail?profile={{ other.id }}">View mail</a></li>
                 <li><a href="/inbox/notifications?profile={{ other.id }}">View notifications</a></li>
             </ul>
@@ -486,7 +494,7 @@
                 return;
             }
 
-            fetch("/api/v0/auth/profile/{{ other.username }}/tier", {
+            fetch("/api/v0/auth/profile/{{ other.id }}/tier", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -502,6 +510,44 @@
                         res.success ? "Tier updated!" : res.message,
                     ]);
                 });
+        };
+
+        globalThis.patch_metadata = async (metadata) => {
+            fetch("/api/v0/auth/profile/{{ other.id }}/metadata", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    metadata,
+                }),
+            })
+                .then((res) => res.json())
+                .then((res) => {
+                    trigger("app:toast", [
+                        res.success ? "success" : "error",
+                        res.success ? "Metadata updated!" : res.message,
+                    ]);
+                });
+        };
+
+        globalThis.change_verify = async (metadata) => {
+            const verify_url = await trigger("app:prompt", [
+                "Enter verify URL:",
+            ]);
+
+            if (!verify_url) {
+                return;
+            }
+
+            const verify_code = window.crypto.randomUUID();
+
+            await globalThis.patch_metadata({
+                kv: {
+                    "rainbeam:verify_url": verify_url,
+                    "rainbeam:verify_code": verify_code,
+                },
+            });
         };
     </script>
 </div>

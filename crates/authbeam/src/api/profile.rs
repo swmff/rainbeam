@@ -1223,6 +1223,143 @@ pub async fn update_metdata_request(
     }
 }
 
+/// Patch a user's metadata
+pub async fn patch_metdata_request(
+    jar: CookieJar,
+    Path(id): Path<String>,
+    State(database): State<Database>,
+    Json(props): Json<SetProfileMetadata>,
+) -> impl IntoResponse {
+    // get user from token
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => {
+            let token = c.value_trimmed().to_string();
+
+            match database.get_profile_by_unhashed(token.clone()).await {
+                Ok(ua) => {
+                    // check token permission
+                    if !ua
+                        .token_context_from_token(&token)
+                        .can_do(TokenPermission::ManageProfile)
+                    {
+                        return Json(DefaultReturn {
+                            success: false,
+                            message: DatabaseError::NotAllowed.to_string(),
+                            payload: (),
+                        });
+                    }
+
+                    // return
+                    ua
+                }
+                Err(e) => {
+                    return Json(DefaultReturn {
+                        success: false,
+                        message: e.to_string(),
+                        payload: (),
+                    });
+                }
+            }
+        }
+        None => {
+            return Json(DefaultReturn {
+                success: false,
+                message: DatabaseError::NotAllowed.to_string(),
+                payload: (),
+            });
+        }
+    };
+
+    // get other user
+    let other_user = match database.get_profile(id.clone()).await {
+        Ok(ua) => ua,
+        Err(e) => {
+            return Json(DefaultReturn {
+                success: false,
+                message: e.to_string(),
+                payload: (),
+            });
+        }
+    };
+
+    // check permission
+    if auth_user.id != id && auth_user.username != id {
+        let group = match database.get_group_by_id(auth_user.group).await {
+            Ok(g) => g,
+            Err(e) => {
+                return Json(DefaultReturn {
+                    success: false,
+                    message: e.to_string(),
+                    payload: (),
+                })
+            }
+        };
+
+        if !group.permissions.contains(&Permission::Manager) {
+            // we must have the "Manager" permission to edit other users
+            return Json(DefaultReturn {
+                success: false,
+                message: DatabaseError::NotAllowed.to_string(),
+                payload: (),
+            });
+        }
+
+        // check permission
+        let group = match database.get_group_by_id(other_user.group).await {
+            Ok(g) => g,
+            Err(e) => {
+                return Json(DefaultReturn {
+                    success: false,
+                    message: e.to_string(),
+                    payload: (),
+                })
+            }
+        };
+
+        if group.permissions.contains(&Permission::Manager) {
+            // we cannot manager other managers
+            return Json(DefaultReturn {
+                success: false,
+                message: DatabaseError::NotAllowed.to_string(),
+                payload: (),
+            });
+        }
+    }
+
+    // check user permissions
+    // returning NotAllowed here will block them from editing their profile
+    // we don't want to waste resources on rule breakers
+    if auth_user.group == -1 {
+        // group -1 (even if it exists) is for marking users as banned
+        return Json(DefaultReturn {
+            success: false,
+            message: DatabaseError::NotAllowed.to_string(),
+            payload: (),
+        });
+    }
+
+    // patch metadata
+    let mut metadata = other_user.metadata.clone();
+
+    for kv in props.metadata.kv {
+        metadata.kv.insert(kv.0, kv.1);
+    }
+
+    // return
+    match database.update_profile_metadata(id, metadata).await {
+        Ok(_) => Json(DefaultReturn {
+            success: true,
+            message: "Acceptable".to_string(),
+            payload: (),
+        }),
+        Err(e) => Json(DefaultReturn {
+            success: false,
+            message: e.to_string(),
+            payload: (),
+        }),
+    }
+}
+
 /// Update a user's badges
 pub async fn update_badges_request(
     jar: CookieJar,

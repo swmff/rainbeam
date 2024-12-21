@@ -906,6 +906,8 @@ impl Database {
             "sparkler:private_comments",
             "sparkler:filter",
             "sparkler:mail_signature",
+            "rainbeam:verify_url",
+            "rainbeam:verify_code",
         ]
     }
 
