@@ -13,8 +13,7 @@
 {% if is_helper %}
 <a href="/@{{ other.username }}/mod">
     <span
-        >{{ text "profile:link.manage" }}
-        <b class="notification">Mod</b></span
+        >{{ text "profile:link.manage" }} <b class="notification">Mod</b></span
     >
 </a>
 {% endif %} {% endblock %} {% block search %}
@@ -57,9 +56,7 @@
     <a href="/@{{ other.username }}/questions/outbox">
         <span
             >{{ text "profile:link.outbox" }}
-            <b class="notification"
-                >{{ text "profile:label.private" }}</b
-            ></span
+            <b class="notification">{{ text "profile:label.private" }}</b></span
         >
     </a>
 </div>
@@ -69,7 +66,8 @@
 <div id="questions" class="flex flex-col items-center gap-4">
     <!-- prettier-ignore -->
     {% for question in questions %}
-        {% include "../components/global_question.html" %}
+        {% let show_responses = true %}
+        {% include "components/global_question.html" %}
     {% endfor %}
 
     <!-- pagination buttons -->

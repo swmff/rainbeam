@@ -69,116 +69,128 @@ block head %}
 
         {% if (relationship == crate::model::RelationshipStatus::Friends)
             | !response.author.metadata.is_true("sparkler:private_profile") %}
+        <!-- tabs -->
         <hr />
-        <h5 id="reactions">{{ text "views:text.reactions" }}</h5>
-        <div id="reactions" class="flex gap-2 flex-wrap w-full">
-            {% for reaction in reactions %}
-            <a href="/@{{ reaction.user.username }}">
-                <img
-                    title="{{ reaction.user.username }}'s avatar"
-                    src="/api/v0/auth/profile/{{ reaction.user.id }}/avatar"
-                    alt="@{{ reaction.user.username }}"
-                    class="avatar"
-                    loading="lazy"
-                    style="--size: 20px"
-                />
-            </a>
-            {% endfor %}
+        <div class="pillmenu convertible">
+            <a href="#/comments" class="active" data-tab-button="comments"
+                ><span>{{ text "views:text.comments" }}</span></a
+            >
+            <a href="#/reactions" data-tab-button="reactions"
+                ><span>{{ text "views:text.reactions" }}</span></a
+            >
         </div>
 
-        <hr />
-        <h5 id="comments">{{ text "views:text.comments" }}</h5>
-        <div class="card-nest w-full shadow" id="comment_field">
-            <div class="card flex flex-col gap-1">Leave a comment</div>
+        <div data-tab="comments" class="flex flex-col gap-4">
+            <div class="card-nest w-full shadow" id="comment_field">
+                <div class="card flex flex-col gap-1">Leave a comment</div>
 
-            <div class="card">
-                <form
-                    class="flex flex-col gap-2"
-                    onsubmit="comment(event, '{{ response.id }}')"
-                >
-                    {% if let Some(profile) = profile %}
-                    <textarea
-                        class="w-full"
-                        placeholder="Type your reply!"
-                        minlength="1"
-                        maxlength="{% if profile.tier >= config.tiers.double_limits %}4096{% else %}2048{% endif %}"
-                        required
-                        name="content"
-                        id="content"
-                        hook="counter"
-                    ></textarea>
-                    {% else %}
-                    <textarea
-                        class="w-full"
-                        placeholder="Type your reply!"
-                        minlength="1"
-                        maxlength="2048"
-                        required
-                        name="content"
-                        id="content"
-                        hook="counter"
-                    ></textarea>
-                    {% endif %}
+                <div class="card">
+                    <form
+                        class="flex flex-col gap-2"
+                        onsubmit="comment(event, '{{ response.id }}')"
+                    >
+                        {% if let Some(profile) = profile %}
+                        <textarea
+                            class="w-full"
+                            placeholder="Type your reply!"
+                            minlength="1"
+                            maxlength="{% if profile.tier >= config.tiers.double_limits %}4096{% else %}2048{% endif %}"
+                            required
+                            name="content"
+                            id="content"
+                            hook="counter"
+                        ></textarea>
+                        {% else %}
+                        <textarea
+                            class="w-full"
+                            placeholder="Type your reply!"
+                            minlength="1"
+                            maxlength="2048"
+                            required
+                            name="content"
+                            id="content"
+                            hook="counter"
+                        ></textarea>
+                        {% endif %}
 
-                    <div class="flex justify-between w-full gap-1">
-                        <div class="flex gap-2 items-center">
-                            <span
-                                id="content:counter"
-                                class="notification item"
-                            ></span>
+                        <div class="flex justify-between w-full gap-1">
+                            <div class="flex gap-2 items-center">
+                                <span
+                                    id="content:counter"
+                                    class="notification item"
+                                ></span>
 
-                            <div class="checkbox_container item">
-                                <input
-                                    type="checkbox"
-                                    name="anonymous"
-                                    id="anonymous"
-                                />
+                                <div class="checkbox_container item">
+                                    <input
+                                        type="checkbox"
+                                        name="anonymous"
+                                        id="anonymous"
+                                    />
 
-                                <label for="anonymous" class="normal">
-                                    {{ text "general:action.hide_your_name" }}
-                                </label>
+                                    <label for="anonymous" class="normal">
+                                        {{ text "general:action.hide_your_name" }}
+                                    </label>
+                                </div>
+
+                                <script>
+                                    function ls_anon_check() {
+                                        if (
+                                            window.localStorage.getItem(
+                                                "always_anon",
+                                            ) === "true"
+                                        ) {
+                                            document.getElementById(
+                                                "anonymous",
+                                            ).checked = true;
+                                        }
+                                    }
+
+                                    ls_anon_check();
+                                </script>
                             </div>
 
-                            <script>
-                                function ls_anon_check() {
-                                    if (
-                                        window.localStorage.getItem(
-                                            "always_anon",
-                                        ) === "true"
-                                    ) {
-                                        document.getElementById(
-                                            "anonymous",
-                                        ).checked = true;
-                                    }
-                                }
-
-                                ls_anon_check();
-                            </script>
+                            <button class="primary bold">{{ text "general:form.submit" }}</button>
                         </div>
-
-                        <button class="primary bold">{{ text "general:form.submit" }}</button>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
-        </div>
 
-        <!-- prettier-ignore -->
-        {% for comment in comments %}
-            {% let show_replies = true %}
-            {% include "components/comment.html" %}
-        {% endfor %}
+            <!-- prettier-ignore -->
+            {% for comment in comments %}
+                {% let show_replies = true %}
+                {% include "components/comment.html" %}
+            {% endfor %}
 
-        <!-- pagination buttons -->
-        <div class="flex justify-between gap-2 w-full">
-            {% if page > 0 %}
-            <a class="button secondary" href="?page={{ page - 1 }}">{{ text "general:link.previous" }}</a>
-            {% else %}
-            <div></div>
-            {% endif %} {% if comments.len() != 0 %}
-            <a class="button secondary" href="?page={{ page + 1 }}">{{ text "general:link.next" }}</a>
+            <!-- pagination buttons -->
+            <div class="flex justify-between gap-2 w-full">
+                {% if page > 0 %}
+                <a class="button secondary" href="?page={{ page - 1 }}">{{ text "general:link.previous" }}</a>
+                {% else %}
+                <div></div>
+                {% endif %} {% if comments.len() != 0 %}
+                <a class="button secondary" href="?page={{ page + 1 }}">{{ text "general:link.next" }}</a>
+                {% endif %}
+            </div>
             {% endif %}
         </div>
-        {% endif %}
+
+        <!-- reactions -->
+        <div data-tab="reactions" class="hidden">
+            <div id="reactions" class="flex gap-2 flex-wrap w-full">
+                {% for reaction in reactions %}
+                <a href="/@{{ reaction.user.username }}">
+                    <img
+                        title="{{ reaction.user.username }}'s avatar"
+                        src="/api/v0/auth/profile/{{ reaction.user.id }}/avatar"
+                        alt="@{{ reaction.user.username }}"
+                        class="avatar"
+                        loading="lazy"
+                        style="--size: 20px"
+                    />
+                </a>
+                {% endfor %}
+            </div>
+        </div>
     </main>
 </article>
 

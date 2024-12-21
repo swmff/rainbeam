@@ -1,6 +1,7 @@
 {% extends "base.html" %} {% block results %}
 <!-- prettier-ignore -->
 {% for question in results %}
+    {% let show_responses = true %}
     {% include "components/global_question.html" %}
 {% endfor %}
 {% call super() %} {% endblock %}

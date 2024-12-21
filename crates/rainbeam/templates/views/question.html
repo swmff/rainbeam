@@ -27,161 +27,76 @@ block head %}
 <article>
     <main class="flex flex-col gap-2">
         <!-- question -->
-        <div
-            class="{% if !already_responded %}card-nest{% endif %} w-full shadow"
-            id="question:{{ question.id }}"
-        >
-            <div
-                class="{% if already_responded %}secondary{% endif %} card flex flex-col gap-1"
-            >
-                <div
-                    class="flex items-center justify-between gap-1 question_title"
-                >
-                    <div class="footernav">
-                        <b class="flex items-center gap-2 item">
-                            <img
-                                title="{{ question.author.username }}'s avatar"
-                                src="/api/v0/auth/profile/{{ question.author.id }}/avatar"
-                                alt=""
-                                class="avatar"
-                                loading="lazy"
-                                style="--size: 20px"
-                            />
-
-                            <!-- prettier-ignore -->
-                            {% let author_tag = crate::database::Database::anonymous_tag(question.author.username.as_ref()) %}
-                            {% if author_tag.0 == false %}
-                            <a
-                                href="/@{{ question.author.username }}"
-                                style="color: inherit"
-                            >
-                                {{ question.author.username }}
-                            </a>
-                            {% else %} {{ question.author.username }} {% endif
-                            %}
-                        </b>
-
-                        <span class="date item">{{ question.timestamp }}</span>
-                    </div>
-
-                    <!-- prettier-ignore -->
-                    {% if let Some(profile) = profile %}
-                    <!-- stuff for only the question author -->
-                    <div class="dropdown">
-                        <button
-                            onclick="trigger('app:hook.dropdown', [event])"
-                            exclude="dropdown"
-                            class="camo"
-                        >
-                            {{ icon "ellipsis" }}
-                        </button>
-
-                        <div
-                            class="inner shadow-md w-content"
-                            exclude="dropdown"
-                        >
-                            {% if profile.id == question.author.id %}
-                            <b class="title">Manage</b>
-                            <a
-                                href="#"
-                                onclick="trigger('questions:delete', ['{{ question.id }}'])"
-                                class="red"
-                            >
-                                {{ icon "trash" }} Delete
-                            </a>
-                            {% else if is_helper == true %}
-                            <b class="title">Mod</b>
-                            <a
-                                href="#"
-                                onclick="trigger('questions:delete', ['{{ question.id }}'])"
-                                class="red"
-                            >
-                                {{ icon "trash" }} Delete
-                            </a>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-
-                <!-- prettier-ignore -->
-                <span class="question_content">
-                    {{ rainbeam_shared::ui::render_markdown(question.content)|safe }}
-                </span>
-            </div>
-
-            {% if !already_responded %}
-            <div class="card">
-                <form
-                    class="flex flex-col gap-2"
-                    onsubmit="respond(event, '{{ question.id }}')"
-                >
-                    {% if let Some(profile) = profile %}
-                    <textarea
-                        class="w-full"
-                        placeholder="Type your response!"
-                        minlength="1"
-                        maxlength="{% if profile.tier >= config.tiers.double_limits %}8192{% else %}4096{% endif %}"
-                        required
-                        name="content"
-                        id="content"
-                        hook="counter"
-                    ></textarea>
-                    {% else %}
-                    <textarea
-                        class="w-full"
-                        placeholder="Type your response!"
-                        minlength="1"
-                        maxlength="4096"
-                        required
-                        name="content"
-                        id="content"
-                        hook="counter"
-                    ></textarea>
-                    {% endif %}
-
-                    <div class="flex justify-between w-full gap-1">
-                        <span
-                            id="content:counter"
-                            class="notification item"
-                        ></span>
-                        <button class="primary bold">
-                            {{ text "general:form.submit" }}
-                        </button>
-                    </div>
-                </form>
-            </div>
-            {% endif %}
+        {% let show_responses = false %}
+        <div>
+            <!-- prettier-ignore -->
+            {% let show_responses = false %}
+            {% let question = (question.clone(), 0, reactions.len()) %}
+            {% include "components/global_question.html" %}
         </div>
 
+        <!-- ... -->
         {% if is_powerful %}
         <div class="question_ip card shadow round">
             <a href="/+i/{{ question.ip }}">{{ question.ip }}</a>
         </div>
         {% endif %} {% if already_responded %}
         <p class="fade">You've already responded to this question!</p>
+        {% else %}
+        <div class="card-nest w-full">
+            <div class="card flex flex-col gap-1">Add a response</div>
+
+            <form
+                class="card flex flex-col gap-2"
+                onsubmit="respond(event, '{{ question.id }}')"
+            >
+                {% if let Some(profile) = profile %}
+                <textarea
+                    class="w-full"
+                    placeholder="Type your response!"
+                    minlength="1"
+                    maxlength="{% if profile.tier >= config.tiers.double_limits %}8192{% else %}4096{% endif %}"
+                    required
+                    name="content"
+                    id="content"
+                    hook="counter"
+                ></textarea>
+                {% else %}
+                <textarea
+                    class="w-full"
+                    placeholder="Type your response!"
+                    minlength="1"
+                    maxlength="4096"
+                    required
+                    name="content"
+                    id="content"
+                    hook="counter"
+                ></textarea>
+                {% endif %}
+
+                <div class="flex justify-between w-full gap-1">
+                    <span id="content:counter" class="notification item"></span>
+                    <button class="primary bold">
+                        {{ text "general:form.submit" }}
+                    </button>
+                </div>
+            </form>
+        </div>
         {% endif %}
 
+        <!-- tabs -->
         <hr />
-        <h5 id="reactions">{{ text "views:text.reactions" }}</h5>
-        <div id="reactions" class="flex gap-2 flex-wrap w-full">
-            {% for reaction in reactions %}
-            <a href="/@{{ reaction.user.username }}">
-                <img
-                    title="{{ reaction.user.username }}'s avatar"
-                    src="/api/v0/auth/profile/{{ reaction.user.id }}/avatar"
-                    alt="@{{ reaction.user.username }}"
-                    class="avatar"
-                    loading="lazy"
-                    style="--size: 20px"
-                />
-            </a>
-            {% endfor %}
+        <div class="pillmenu convertible">
+            <a href="#/responses" class="active" data-tab-button="responses"
+                ><span>{{ text "views:text.responses" }}</span></a
+            >
+            <a href="#/reactions" data-tab-button="reactions"
+                ><span>{{ text "views:text.reactions" }}</span></a
+            >
         </div>
 
-        <hr />
-        <h5 id="responses">{{ text "views:text.responses" }}</h5>
-        <div id="feed" class="flex flex-col gap-2">
+        <!-- responses -->
+        <div data-tab="responses" class="flex flex-col gap-4">
             <!-- prettier-ignore -->
             {% for response in responses %}
                 {% let is_pinned = false %}
@@ -193,6 +108,24 @@ block head %}
                 {% let do_render_nested = true %}
                 {% include "components/response.html" %}
             {% endfor %}
+        </div>
+
+        <!-- reactions -->
+        <div data-tab="reactions" class="hidden">
+            <div id="reactions" class="flex gap-2 flex-wrap w-full">
+                {% for reaction in reactions %}
+                <a href="/@{{ reaction.user.username }}">
+                    <img
+                        title="{{ reaction.user.username }}'s avatar"
+                        src="/api/v0/auth/profile/{{ reaction.user.id }}/avatar"
+                        alt="@{{ reaction.user.username }}"
+                        class="avatar"
+                        loading="lazy"
+                        style="--size: 20px"
+                    />
+                </a>
+                {% endfor %}
+            </div>
         </div>
     </main>
 </article>

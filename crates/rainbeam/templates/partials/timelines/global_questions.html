@@ -7,6 +7,7 @@
         | (relationship == crate::model::RelationshipStatus::Blocked) %}
         {% include "components/private_question.html" %}
     {% else %}
+        {% let show_responses = true %}
         {% include "components/global_question.html" %}
     {% endif %}
 {% endfor %}
