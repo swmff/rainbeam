@@ -23,7 +23,7 @@ class PartialComponent extends HTMLElement {
 
     constructor() {
         const self = super();
-        self.innerHTML = '<div class="spinner">🎣</div>';
+        self.innerHTML = '<div class="spinner">🧶</div>';
     }
 
     error() {

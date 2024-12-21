@@ -52,7 +52,8 @@ nav a.button {
     background-color: transparent !important;
 }
 
-.dark nav {
+.dark nav button,
+.dark nav a.button {
     color: var(--color-text);
 }
 

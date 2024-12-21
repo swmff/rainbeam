@@ -45,6 +45,7 @@
     --color-red: hsl(0, 94%, 82%);
 }
 
+/* fun themes */
 .dark.midnight,
 .dark.midnight * {
     --lit: 6% !important;
@@ -55,6 +56,23 @@
     --color-super-raised: hsl(0, 0%, 20%);
 }
 
+.retro {
+    --color-primary: hsl(260, 54%, 45%);
+    --color-primary-lowered: hsl(260, 54%, 40%);
+    --color-primary-raised: hsl(260, 54%, 50%);
+    --color-primary-hsl: 260, 54%, 45%;
+    --radius: 6px;
+}
+
+.curious {
+    --color-primary: hsl(33, 99%, 44%);
+    --color-primary-lowered: hsl(33, 99%, 39%);
+    --color-primary-raised: hsl(33, 99%, 49%);
+    --color-primary-hsl: 33, 99%, 44%;
+    --color-text-primary: black;
+}
+
+/* ... */
 html,
 body {
     line-height: 1.5;
@@ -347,7 +365,7 @@ img.emoji {
     width: max-content;
     cursor: progress;
     user-select: none;
-    animation: loading_spin_y 1s 0.5s running forwards infinite;
+    animation: loading_spin_z 1s 0.5s running forwards infinite;
 }
 
 .spinner.small {
