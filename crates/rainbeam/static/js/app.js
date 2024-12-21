@@ -446,7 +446,10 @@
                         .then(async (res) => {
                             const text = await res.text();
 
-                            if (text.length < 100) {
+                            if (
+                                text.length < 100 ||
+                                text.includes('data-marker="no-results"')
+                            ) {
                                 // pretty much blank content, no more pages
                                 wrapper.removeEventListener("scroll", event);
 

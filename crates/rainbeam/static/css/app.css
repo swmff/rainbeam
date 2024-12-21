@@ -345,8 +345,11 @@ nav:not(.legacy *)
     box-shadow: 0 0 4px hsla(var(--color-primary-hsl), 25%);
 }
 
-.pillmenu.convertible:not(.legacy *) {
+.pillmenu.convertible:not(.true):not(.legacy *) {
     flex-direction: row;
+}
+
+.pillmenu.convertible:not(.legacy *) {
     font-size: 14px;
 }
 

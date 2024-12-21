@@ -82,17 +82,15 @@ struct TimelineTemplate {
     profile: Option<Box<Profile>>,
     unread: usize,
     notifs: usize,
-    responses: Vec<FullResponse>,
-    relationships: HashMap<String, RelationshipStatus>,
     friends: Vec<(Box<Profile>, Box<Profile>)>,
-    is_powerful: bool,
-    is_helper: bool,
+    page: i32,
 }
 
 /// GET /
 pub async fn homepage_request(
     jar: CookieJar,
     State(database): State<Database>,
+    Query(props): Query<PaginatedQuery>,
 ) -> impl IntoResponse {
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
@@ -147,61 +145,6 @@ pub async fn homepage_request(
         }
 
         // ...
-        let mut is_helper: bool = false;
-        let is_powerful = if let Some(ref ua) = auth_user {
-            let group = match database.auth.get_group_by_id(ua.group).await {
-                Ok(g) => g,
-                Err(_) => return Html(DatabaseError::Other.to_html(database)),
-            };
-
-            is_helper = group.permissions.contains(&Permission::Helper);
-            group.permissions.contains(&Permission::Manager)
-        } else {
-            false
-        };
-
-        // build relationships list
-        let mut relationships: HashMap<String, RelationshipStatus> = HashMap::new();
-
-        if let Some(ref ua) = auth_user {
-            for response in &responses {
-                if relationships.contains_key(&response.1.author.id) {
-                    continue;
-                }
-
-                if is_helper {
-                    // make sure staff can view your responses
-                    relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
-                    continue;
-                }
-
-                if response.1.author.id == ua.id {
-                    // make sure we can view our own responses
-                    relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
-                    continue;
-                };
-
-                relationships.insert(
-                    response.1.author.id.clone(),
-                    database
-                        .auth
-                        .get_user_relationship(response.1.author.id.clone(), ua.id.clone())
-                        .await
-                        .0,
-                );
-            }
-        } else {
-            for response in &responses {
-                // no user, no relationships
-                if relationships.contains_key(&response.1.author.id) {
-                    continue;
-                }
-
-                relationships.insert(response.1.author.id.clone(), RelationshipStatus::Unknown);
-            }
-        }
-
-        // ...
         return Html(
             TimelineTemplate {
                 config: database.config.clone(),
@@ -213,8 +156,6 @@ pub async fn homepage_request(
                 profile: auth_user.clone(),
                 unread,
                 notifs,
-                responses,
-                relationships,
                 friends: database
                     .auth
                     .get_user_participating_relationships_of_status(
@@ -223,8 +164,7 @@ pub async fn homepage_request(
                     )
                     .await
                     .unwrap(),
-                is_powerful,
-                is_helper,
+                page: props.page,
             }
             .render()
             .unwrap(),
@@ -723,10 +663,6 @@ struct PublicPostsTemplate {
     unread: usize,
     notifs: usize,
     page: i32,
-    responses: Vec<FullResponse>,
-    relationships: HashMap<String, RelationshipStatus>,
-    is_powerful: bool,
-    is_helper: bool,
 }
 
 /// GET /inbox/posts
@@ -795,60 +731,6 @@ pub async fn public_posts_timeline_request(
         }
     }
 
-    let mut is_helper: bool = false;
-    let is_powerful = if let Some(ref ua) = auth_user {
-        let group = match database.auth.get_group_by_id(ua.group).await {
-            Ok(g) => g,
-            Err(_) => return Html(DatabaseError::Other.to_html(database)),
-        };
-
-        is_helper = group.permissions.contains(&Permission::Helper);
-        group.permissions.contains(&Permission::Manager)
-    } else {
-        false
-    };
-
-    // build relationships list
-    let mut relationships: HashMap<String, RelationshipStatus> = HashMap::new();
-
-    if let Some(ref ua) = auth_user {
-        for response in &responses {
-            if relationships.contains_key(&response.1.author.id) {
-                continue;
-            }
-
-            if is_helper {
-                // make sure staff can view your responses
-                relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
-                continue;
-            }
-
-            if response.1.author.id == ua.id {
-                // make sure we can view our own responses
-                relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
-                continue;
-            };
-
-            relationships.insert(
-                response.1.author.id.clone(),
-                database
-                    .auth
-                    .get_user_relationship(response.1.author.id.clone(), ua.id.clone())
-                    .await
-                    .0,
-            );
-        }
-    } else {
-        for response in &responses {
-            // no user, no relationships
-            if relationships.contains_key(&response.1.author.id) {
-                continue;
-            }
-
-            relationships.insert(response.1.author.id.clone(), RelationshipStatus::Unknown);
-        }
-    }
-
     // ...
     Html(
         PublicPostsTemplate {
@@ -862,10 +744,6 @@ pub async fn public_posts_timeline_request(
             unread,
             notifs,
             page: query.page,
-            responses,
-            relationships,
-            is_powerful,
-            is_helper,
         }
         .render()
         .unwrap(),

@@ -1,4 +1,11 @@
 <!-- prettier-ignore -->
+{% if responses.len() == 0 %}
+<div class="markdown-alert-warning" data-marker="no-results">
+    <span>{{ text "general:text.no_results" }}</span>
+</div>
+{% endif %}
+
+<!-- prettier-ignore -->
 {% for response in responses %}
     {% let relationship = relationships.get(response.1.author.id).unwrap().to_owned() %}
     {% if (relationship != crate::model::RelationshipStatus::Friends

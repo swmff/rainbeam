@@ -38,12 +38,6 @@ block head %}
             >
         </div>
 
-        {% if responses.len() == 0 %}
-        <div class="markdown-alert-warning">
-            <span>{{ text "general:text.no_results" }}</span>
-        </div>
-        {% endif %}
-
         <h5 id="friends">My Friends</h5>
         <!-- prettier-ignore -->
         <div class="flex flex-wrap w-full">
@@ -73,7 +67,7 @@ block head %}
 
         <div class="flex flex-col gap-4">
             <include-partial
-                src="/_app/timelines/timeline.html"
+                src="/_app/timelines/timeline.html?page={{ page }}"
                 uses="app:clean_date_codes,app:link_filter,app:hook.alt,app:hook.partial_embeds,app:hook.check_reactions"
                 data-outerhtml="true"
             ></include-partial>
