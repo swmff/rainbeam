@@ -131,7 +131,10 @@
             id="annc_banner"
         >
             {{ icon "megaphone" }}
-            <span>{{ rainbeam_shared::ui::render_markdown(config.alert)|safe }}</span>
+            <span
+                >{{ rainbeam_shared::ui::render_markdown(config.alert)|safe
+                }}</span
+            >
         </div>
 
         <script>
@@ -218,6 +221,7 @@
                 app["hook.ips"]();
                 app["hook.partial_embeds"]();
                 app["hook.check_reactions"]();
+                app["hook.tabs"]();
 
                 twemoji.parse(document.body);
             })();

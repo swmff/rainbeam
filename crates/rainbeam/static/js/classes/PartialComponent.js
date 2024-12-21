@@ -41,7 +41,17 @@ class PartialComponent extends HTMLElement {
                     return;
                 }
 
-                this.innerHTML = `<div style="animation: grow 1 0.25s forwards running">${res}</div>`;
+                if (!this.getAttribute("data-outerhtml")) {
+                    this.innerHTML = `<div style="animation: grow 1 0.25s forwards running">${res}</div>`;
+                } else {
+                    // "complete" replace
+                    const dom = new DOMParser().parseFromString(
+                        res,
+                        "text/html",
+                    );
+
+                    this.replaceWith(...dom.body.children);
+                }
 
                 if (globalThis[`lib:${value}`]) {
                     // load finished

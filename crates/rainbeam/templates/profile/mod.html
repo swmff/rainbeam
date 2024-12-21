@@ -20,175 +20,184 @@
     >
 </a>
 {% endif %} {% endblock %} {% block panel %}
+<div class="pillmenu convertible true">
+    <a href="#/info" class="active" data-tab-button="info"><span>Info</span></a>
+
+    {% if is_powerful %}
+    <a href="#/badges" data-tab-button="badges"><span>Badges</span></a>
+    <a href="#/password" data-tab-button="password"><span>Password</span></a>
+    {% endif %}
+
+    <a href="#/sessions" data-tab-button="sessions"><span>Sessions</span></a>
+    <a href="#/chats" data-tab-button="chats"><span>Chats</span></a>
+    <a href="#/warnings" data-tab-button="warnings"><span>Warnings</span></a>
+</div>
+
 <!-- info -->
-<hr />
-<div id="info" class="flex flex-col gap-4">
-    <h3>Info</h3>
+<div data-tab="info">
+    <div id="info" class="flex flex-col gap-4">
+        <div class="card w-full shadow">
+            <!-- prettier-ignore -->
+            <ul style="margin-bottom: 0">
+                <li>Joined: <span class="date">{{ other.joined }}</span></li>
+                <li>Group: <a href="javascript:change_group()">{{ other.group }}</a></li>
+                <li>Tier: <a href="javascript:change_tier()">{{ other.tier }}</a></li>
+                <li><a href="/inbox/mail?profile={{ other.id }}">View mail</a></li>
+                <li><a href="/inbox/notifications?profile={{ other.id }}">View notifications</a></li>
+            </ul>
 
-    <div class="card w-full shadow">
-        <!-- prettier-ignore -->
-        <ul style="margin-bottom: 0">
-            <li>Joined: <span class="date">{{ other.joined }}</span></li>
-            <li>Group: <a href="javascript:change_group()">{{ other.group }}</a></li>
-            <li>Tier: <a href="javascript:change_tier()">{{ other.tier }}</a></li>
-            <li><a href="/inbox/mail?profile={{ other.id }}">View mail</a></li>
-            <li><a href="/inbox/notifications?profile={{ other.id }}">View notifications</a></li>
-        </ul>
-
-        <hr />
-
-        <div class="flex gap-2 flex-wrap">
-            {% for kv in other.metadata.kv %}
-            <details>
-                <summary class="flex items-center gap-2">
-                    {{ icon "ellipsis" }}
-                    <code style="background: transparent">{{ kv.0 }}</code>
-                </summary>
-                <pre><code>{{ kv.1 }}</code></pre>
-            </details>
-            {% endfor %}
+            <div class="flex gap-2 flex-wrap">
+                {% for kv in other.metadata.kv %}
+                <details>
+                    <summary class="flex items-center gap-2">
+                        {{ icon "ellipsis" }}
+                        <code style="background: transparent">{{ kv.0 }}</code>
+                    </summary>
+                    <pre><code>{{ kv.1 }}</code></pre>
+                </details>
+                {% endfor %}
+            </div>
         </div>
     </div>
 </div>
 
 {% if is_powerful %}
 <!-- badges -->
-<hr />
-<div id="badges" class="flex flex-col gap-4">
-    <h3>Badges</h3>
+<div data-tab="badges" class="hidden">
+    <div id="badges" class="flex flex-col gap-4">
+        <div class="card w-full shadow">
+            <form class="flex flex-col gap-1" id="badges_form">
+                <label for="badges_data">Badges data</label>
 
-    <div class="card w-full shadow">
-        <form class="flex flex-col gap-1" id="badges_form">
-            <label for="badges_data">Badges data</label>
-
-            <textarea type="text" name="badges" id="badges_data" required>
+                <textarea type="text" name="badges" id="badges_data" required>
 {{ badges }}</textarea
-            >
+                >
 
-            <button>{{ text "general:form.submit" }}</button>
-        </form>
+                <button>{{ text "general:form.submit" }}</button>
+            </form>
+        </div>
+
+        <script>
+            (() => {
+                document
+                    .getElementById("badges_form")
+                    .addEventListener("submit", async (e) => {
+                        e.preventDefault();
+
+                        if (
+                            !(await trigger("app:confirm", [
+                                "Are you sure you want to do this?",
+                            ]))
+                        ) {
+                            return;
+                        }
+
+                        fetch("/api/v0/auth/profile/{{ other.id }}/badges", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                badges: JSON.parse(e.target.badges.value),
+                            }),
+                        })
+                            .then((res) => res.json())
+                            .then((res) => {
+                                trigger("app:toast", [
+                                    res.success ? "success" : "error",
+                                    res.message || "Badges updated!",
+                                ]);
+
+                                e.target.reset();
+                            });
+                    });
+            })();
+        </script>
     </div>
-
-    <script>
-        (() => {
-            document
-                .getElementById("badges_form")
-                .addEventListener("submit", async (e) => {
-                    e.preventDefault();
-
-                    if (
-                        !(await trigger("app:confirm", [
-                            "Are you sure you want to do this?",
-                        ]))
-                    ) {
-                        return;
-                    }
-
-                    fetch("/api/v0/auth/profile/{{ other.id }}/badges", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({
-                            badges: JSON.parse(e.target.badges.value),
-                        }),
-                    })
-                        .then((res) => res.json())
-                        .then((res) => {
-                            trigger("app:toast", [
-                                res.success ? "success" : "error",
-                                res.message || "Badges updated!",
-                            ]);
-
-                            e.target.reset();
-                        });
-                });
-        })();
-    </script>
 </div>
 
 <!-- change password -->
-<hr />
-<div class="flex flex-col gap-4">
-    <h3>Change password</h3>
+<div data-tab="password" class="hidden">
+    <div class="flex flex-col gap-4">
+        <h3>Change password</h3>
 
-    <form class="card flex flex-col gap-1" id="change_password">
-        <label for="new_password">New password</label>
-        <input
-            type="password"
-            name="new_password"
-            id="new_password"
-            minlength="6"
-        />
+        <form class="card shadow flex flex-col gap-1" id="change_password">
+            <label for="new_password">New password</label>
+            <input
+                type="password"
+                name="new_password"
+                id="new_password"
+                minlength="6"
+            />
 
-        <button>{{ text "general:form.submit" }}</button>
-    </form>
+            <button>{{ text "general:form.submit" }}</button>
+        </form>
 
-    <script>
-        (() => {
-            document
-                .getElementById("change_password")
-                .addEventListener("submit", async (e) => {
-                    e.preventDefault();
+        <script>
+            (() => {
+                document
+                    .getElementById("change_password")
+                    .addEventListener("submit", async (e) => {
+                        e.preventDefault();
 
-                    if (
-                        !(await trigger("app:confirm", [
-                            "Are you sure you want to do this?",
-                        ]))
-                    ) {
-                        return;
-                    }
+                        if (
+                            !(await trigger("app:confirm", [
+                                "Are you sure you want to do this?",
+                            ]))
+                        ) {
+                            return;
+                        }
 
-                    fetch("/api/v0/auth/profile/{{ other.id }}/password", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({
-                            password: "",
-                            new_password: e.target.new_password.value,
-                        }),
-                    })
-                        .then((res) => res.json())
-                        .then((res) => {
-                            trigger("app:shout", [
-                                res.success ? "tip" : "caution",
-                                res.message || "Password changed!",
-                            ]);
+                        fetch("/api/v0/auth/profile/{{ other.id }}/password", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                password: "",
+                                new_password: e.target.new_password.value,
+                            }),
+                        })
+                            .then((res) => res.json())
+                            .then((res) => {
+                                trigger("app:shout", [
+                                    res.success ? "tip" : "caution",
+                                    res.message || "Password changed!",
+                                ]);
 
-                            window.location.href = "#top";
-                            e.target.reset();
-                        });
-                });
-        })();
-    </script>
+                                window.location.href = "#top";
+                                e.target.reset();
+                            });
+                    });
+            })();
+        </script>
+    </div>
 </div>
 {% endif %}
 
 <!-- sessions -->
-<hr />
-<div id="sessions" class="flex flex-col gap-4">
-    <div class="flex w-full gap-2 justify-between items-center">
-        <h3>Sessions</h3>
+<div data-tab="sessions" class="hidden">
+    <div id="sessions" class="flex flex-col gap-4">
+        <div class="flex w-full gap-2 justify-between items-center">
+            <div></div>
+            <a href="javascript:create_token()" class="button primary bold">
+                {{ icon "plus" }} New
+            </a>
+        </div>
 
-        <a href="javascript:create_token()" class="button primary bold">
-            {{ icon "plus" }} New
-        </a>
-    </div>
+        <div class="card w-full shadow" style="overflow: auto">
+            <table class="w-full">
+                <thead>
+                    <tr>
+                        <th>IP</th>
+                        <th>App</th>
+                        <th>Permissions</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
 
-    <div class="card w-full shadow" style="overflow: auto">
-        <table class="w-full">
-            <thead>
-                <tr>
-                    <th>IP</th>
-                    <th>App</th>
-                    <th>Permissions</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-
-            <!-- prettier-ignore -->
-            <tbody>
+                <!-- prettier-ignore -->
+                <tbody>
                 {% for (i, session) in tokens_src.iter().enumerate() %}
                 <tr id="session:{{ session }}" title="{{ session[..10] }}">
                     {% if let Some(ip) = other.ips.get(i.to_owned()) %}
@@ -251,243 +260,249 @@
                 </tr>
                 {% endfor %}
             </tbody>
-        </table>
+            </table>
+        </div>
     </div>
-</div>
 
-<script type="application/json" id="tokens">
-    {{ tokens|safe }}
-</script>
+    <script type="application/json" id="tokens">
+        {{ tokens|safe }}
+    </script>
 
-<script>
-    (() => {
-        const tokens = JSON.parse(document.getElementById("tokens").innerText);
+    <script>
+        (() => {
+            const tokens = JSON.parse(
+                document.getElementById("tokens").innerText,
+            );
 
-        globalThis.remove_session = async (id) => {
-            if (
-                !(await trigger("app:confirm", [
-                    "Are you sure you want to do this?",
-                ]))
-            ) {
-                return;
-            }
+            globalThis.remove_session = async (id) => {
+                if (
+                    !(await trigger("app:confirm", [
+                        "Are you sure you want to do this?",
+                    ]))
+                ) {
+                    return;
+                }
 
-            tokens.splice(tokens.indexOf(id), 1);
-            document.getElementById(`session:${id}`).remove();
-            globalThis.save_sessions();
-        };
+                tokens.splice(tokens.indexOf(id), 1);
+                document.getElementById(`session:${id}`).remove();
+                globalThis.save_sessions();
+            };
 
-        globalThis.save_sessions = async () => {
-            const res = await (
-                await fetch("/api/v0/auth/profile/{{ other.id }}/tokens", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        tokens,
-                    }),
-                })
-            ).json();
-
-            trigger("app:toast", [
-                res.success ? "success" : "error",
-                res.success ? "Sessions saved!" : res.message,
-            ]);
-        };
-
-        globalThis.create_token = async () => {
-            const app_name = await trigger("app:prompt", ["App identifier:"]);
-            if (!app_name) {
-                return;
-            }
-
-            const permissions = await trigger("app:prompt", [
-                "Permissions (comma separated):",
-            ]);
-
-            const res = await (
-                await fetch(
-                    "/api/v0/auth/profile/{{ other.id }}/tokens/generate",
-                    {
+            globalThis.save_sessions = async () => {
+                const res = await (
+                    await fetch("/api/v0/auth/profile/{{ other.id }}/tokens", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
                         },
                         body: JSON.stringify({
-                            app: app_name,
-                            permissions: permissions
-                                ? permissions.split(",")
-                                : [],
+                            tokens,
                         }),
-                    },
-                )
-            ).json();
+                    })
+                ).json();
 
-            trigger("app:toast", [
-                res.success ? "success" : "error",
-                res.success ? "Token generated!" : res.message,
-            ]);
+                trigger("app:toast", [
+                    res.success ? "success" : "error",
+                    res.success ? "Sessions saved!" : res.message,
+                ]);
+            };
 
-            if (res.success) {
-                alert(res.payload);
-            }
-        };
-    })();
-</script>
+            globalThis.create_token = async () => {
+                const app_name = await trigger("app:prompt", [
+                    "App identifier:",
+                ]);
+                if (!app_name) {
+                    return;
+                }
+
+                const permissions = await trigger("app:prompt", [
+                    "Permissions (comma separated):",
+                ]);
+
+                const res = await (
+                    await fetch(
+                        "/api/v0/auth/profile/{{ other.id }}/tokens/generate",
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                app: app_name,
+                                permissions: permissions
+                                    ? permissions.split(",")
+                                    : [],
+                            }),
+                        },
+                    )
+                ).json();
+
+                trigger("app:toast", [
+                    res.success ? "success" : "error",
+                    res.success ? "Token generated!" : res.message,
+                ]);
+
+                if (res.success) {
+                    alert(res.payload);
+                }
+            };
+        })();
+    </script>
+</div>
 
 <!-- chats -->
-<hr />
-<div id="chats" class="flex flex-col gap-4">
-    <h3>Chats</h3>
-    {% for chat in chats %} {% include "chats/components/listing.html" %} {%
-    endfor %}
+<div data-tab="chats" class="hidden">
+    <div id="chats" class="card shadow flex flex-col gap-4">
+        {% for chat in chats %} {% include "chats/components/listing.html" %} {%
+        endfor %}
+    </div>
 </div>
 
 <!-- warnings -->
-<hr />
-<div id="warnings" class="flex flex-col gap-4">
-    <h3>Warnings</h3>
+<div data-tab="warnings" class="hidden">
+    <div class="flex flex-col gap-4">
+        <div class="card-nest shadow w-full" id="warning_field">
+            <div class="card shadow flex flex-col gap-1">Create a warning</div>
 
-    <div class="card-nest w-full shadow" id="warning_field">
-        <div class="card flex flex-col gap-1">Create a warning</div>
+            <div class="card shadow">
+                <form
+                    class="flex flex-col gap-2"
+                    onsubmit="warn_user(event, '{{ other.id }}')"
+                >
+                    <textarea
+                        class="w-full"
+                        placeholder="Type your warning!"
+                        minlength="1"
+                        required
+                        name="content"
+                        id="content"
+                    ></textarea>
 
-        <div class="card">
-            <form
-                class="flex flex-col gap-2"
-                onsubmit="warn_user(event, '{{ other.id }}')"
-            >
-                <textarea
-                    class="w-full"
-                    placeholder="Type your warning!"
-                    minlength="1"
-                    required
-                    name="content"
-                    id="content"
-                ></textarea>
-
-                <div class="flex justify-between w-full gap-1">
-                    <div></div>
-                    <button class="primary bold">
-                        {{ text "general:form.submit" }}
-                    </button>
-                </div>
-            </form>
+                    <div class="flex justify-between w-full gap-1">
+                        <div></div>
+                        <button class="primary bold">
+                            {{ text "general:form.submit" }}
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
 
-    <!-- prettier-ignore -->
-    {% for warning in warnings %}
+        <!-- prettier-ignore -->
+        {% for warning in warnings %}
         {% include "../components/warning.html" %}
     {% endfor %}
+    </div>
+
+    <script>
+        function warn_user(e, user) {
+            e.preventDefault();
+            fetch("/api/v0/auth/warnings", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    recipient: user,
+                    content: e.target.content.value,
+                }),
+            })
+                .then((res) => res.json())
+                .then((res) => {
+                    trigger("app:toast", [
+                        res.success ? "success" : "error",
+                        res.success ? "User warned!" : res.message,
+                    ]);
+
+                    if (res.success === true) {
+                        e.target.reset();
+                    }
+                });
+        }
+
+        globalThis.ban_ip = function (ip) {
+            const reason = prompt(
+                "Please explain your reason for banning this IP below:",
+            );
+
+            if (!reason) {
+                return;
+            }
+
+            fetch("/api/v0/auth/ipbans", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    ip,
+                    reason,
+                }),
+            })
+                .then((res) => res.json())
+                .then((res) => {
+                    trigger("app:toast", [
+                        res.success ? "success" : "error",
+                        res.success ? "IP banned!" : res.message,
+                    ]);
+                });
+        };
+
+        globalThis.change_group = async () => {
+            const group = await trigger("app:prompt", ["Enter group number:"]);
+
+            if (!group) {
+                return;
+            }
+
+            if (group !== "-1" && group !== "0") {
+                return alert(
+                    "Cannot grant moderator permissions to other users.",
+                );
+            }
+
+            fetch("/api/v0/auth/profile/{{ other.id }}/group", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    group: parseInt(group),
+                }),
+            })
+                .then((res) => res.json())
+                .then((res) => {
+                    trigger("app:toast", [
+                        res.success ? "success" : "error",
+                        res.success ? "Group updated!" : res.message,
+                    ]);
+                });
+        };
+
+        globalThis.change_tier = async () => {
+            const tier = await trigger("app:prompt", ["Enter tier number:"]);
+
+            if (!tier) {
+                return;
+            }
+
+            fetch("/api/v0/auth/profile/{{ other.username }}/tier", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    tier: parseInt(tier),
+                }),
+            })
+                .then((res) => res.json())
+                .then((res) => {
+                    trigger("app:toast", [
+                        res.success ? "success" : "error",
+                        res.success ? "Tier updated!" : res.message,
+                    ]);
+                });
+        };
+    </script>
 </div>
-
-<script>
-    function warn_user(e, user) {
-        e.preventDefault();
-        fetch("/api/v0/auth/warnings", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                recipient: user,
-                content: e.target.content.value,
-            }),
-        })
-            .then((res) => res.json())
-            .then((res) => {
-                trigger("app:toast", [
-                    res.success ? "success" : "error",
-                    res.success ? "User warned!" : res.message,
-                ]);
-
-                if (res.success === true) {
-                    e.target.reset();
-                }
-            });
-    }
-
-    globalThis.ban_ip = function (ip) {
-        const reason = prompt(
-            "Please explain your reason for banning this IP below:",
-        );
-
-        if (!reason) {
-            return;
-        }
-
-        fetch("/api/v0/auth/ipbans", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                ip,
-                reason,
-            }),
-        })
-            .then((res) => res.json())
-            .then((res) => {
-                trigger("app:toast", [
-                    res.success ? "success" : "error",
-                    res.success ? "IP banned!" : res.message,
-                ]);
-            });
-    };
-
-    globalThis.change_group = async () => {
-        const group = await trigger("app:prompt", ["Enter group number:"]);
-
-        if (!group) {
-            return;
-        }
-
-        if (group !== "-1" && group !== "0") {
-            return alert("Cannot grant moderator permissions to other users.");
-        }
-
-        fetch("/api/v0/auth/profile/{{ other.id }}/group", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                group: parseInt(group),
-            }),
-        })
-            .then((res) => res.json())
-            .then((res) => {
-                trigger("app:toast", [
-                    res.success ? "success" : "error",
-                    res.success ? "Group updated!" : res.message,
-                ]);
-            });
-    };
-
-    globalThis.change_tier = async () => {
-        const tier = await trigger("app:prompt", ["Enter tier number:"]);
-
-        if (!tier) {
-            return;
-        }
-
-        fetch("/api/v0/auth/profile/{{ other.username }}/tier", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                tier: parseInt(tier),
-            }),
-        })
-            .then((res) => res.json())
-            .then((res) => {
-                trigger("app:toast", [
-                    res.success ? "success" : "error",
-                    res.success ? "Tier updated!" : res.message,
-                ]);
-            });
-    };
-</script>
 {% call super() %} {% endblock %}

@@ -96,7 +96,11 @@ block head %}
 
         <!-- feed -->
         <div class="flex flex-col gap-4" id="feed">
-            {% include "partials/timelines/posts.html" %}
+            <include-partial
+                src="/_app/timelines/posts.html"
+                uses="app:clean_date_codes,app:link_filter,app:hook.alt,app:hook.partial_embeds,app:hook.check_reactions"
+                data-outerhtml="true"
+            ></include-partial>
         </div>
     </main>
 </article>

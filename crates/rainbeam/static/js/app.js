@@ -565,6 +565,43 @@
         }
     });
 
+    app.define("hook.tabs:switch", function (_, tab) {
+        for (const element of Array.from(
+            document.querySelectorAll("[data-tab]"),
+        )) {
+            element.classList.add("hidden");
+        }
+
+        for (const element of Array.from(
+            document.querySelectorAll("[data-tab-button]"),
+        )) {
+            element.classList.remove("active");
+        }
+
+        document
+            .querySelector(`[data-tab="${tab}"]`)
+            .classList.remove("hidden");
+
+        document
+            .querySelector(`[data-tab-button="${tab}"]`)
+            .classList.add("active");
+    });
+
+    app.define("hook.tabs:check", function ({ $ }, hash) {
+        if (!hash || !hash.startsWith("#/")) {
+            return;
+        }
+
+        $["hook.tabs:switch"](hash.replace("#/", ""));
+    });
+
+    app.define("hook.tabs", function ({ $ }) {
+        $["hook.tabs:check"](window.location.hash); // initial check
+        window.addEventListener("hashchange", (event) =>
+            $["hook.tabs:check"](new URL(event.newURL).hash),
+        );
+    });
+
     // web api replacements
     app.define("prompt", function (_, msg) {
         const dialog = document.getElementById("web_api_prompt");

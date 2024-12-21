@@ -173,6 +173,8 @@ pub struct TokenContext {
     pub app: Option<String>,
     #[serde(default)]
     pub permissions: Option<Vec<TokenPermission>>,
+    #[serde(default)]
+    pub timestamp: u128,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
@@ -222,12 +224,15 @@ impl Default for TokenContext {
         Self {
             app: None,
             permissions: None,
+            timestamp: databeam::utility::unix_epoch_timestamp(),
         }
     }
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ProfileMetadata {
+    #[serde(default)]
+    pub email: String,
     /// Extra key-value pairs
     #[serde(default)]
     pub kv: HashMap<String, String>,
@@ -290,9 +295,21 @@ impl ProfileMetadata {
     }
 }
 
+impl ProfileMetadata {
+    pub fn from_email(email: String) -> Self {
+        Self {
+            email,
+            kv: HashMap::new(),
+        }
+    }
+}
+
 impl Default for ProfileMetadata {
     fn default() -> Self {
-        Self { kv: HashMap::new() }
+        Self {
+            email: String::new(),
+            kv: HashMap::new(),
+        }
     }
 }
 
