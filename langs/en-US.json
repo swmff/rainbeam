@@ -48,7 +48,7 @@
         "general:action.edit": "Edit",
         "general:action.clear": "Clear",
 
-        "general:text.no_results": "No results matching this query yet!",
+        "general:text.no_results": "nothing yet :(",
         "general:text.view_full_feed": "View full feed",
 
         "base.html:text.account_banned": "Your account has been banned and is currently unusable. Please do not register another account while banned.",

@@ -1,7 +1,9 @@
 use crate::database::Database;
 use crate::model::{DataExportOptions, DatabaseError};
+use crate::ToHtml;
+use axum::body::Body;
 use axum::extract::Query;
-use axum::http::{HeaderMap, HeaderValue};
+use axum::http::{HeaderMap, HeaderValue, Response};
 use axum_extra::extract::CookieJar;
 use hcaptcha_no_wasm::Hcaptcha;
 
@@ -29,10 +31,15 @@ pub fn routes(database: Database) -> Router {
 pub async fn expand_request(
     Path(id): Path<String>,
     State(database): State<Database>,
-) -> impl IntoResponse {
+) -> Response<Body> {
     match database.get_profile(id).await {
-        Ok(r) => Redirect::to(&format!("/@{}", r.username)),
-        Err(_) => Redirect::to("/"),
+        Ok(r) => Redirect::to(&format!("/@{}", r.username)).into_response(),
+        Err(_) => (
+            axum::http::StatusCode::NOT_FOUND,
+            [(axum::http::header::CONTENT_TYPE, "text/html")],
+            DatabaseError::NotFound.to_html(database),
+        )
+            .into_response(),
     }
 }
 

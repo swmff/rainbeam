@@ -2115,6 +2115,7 @@ pub async fn routes(database: Database) -> Router {
             get(profile::partial_comments_request),
         )
         .route("/@:username", get(profile::profile_request))
+        .route("/:id", get(api::profiles::expand_request))
         // circles
         .route("/circles", get(circles::circles_request))
         .route("/circles/new", get(circles::new_circle_request))
