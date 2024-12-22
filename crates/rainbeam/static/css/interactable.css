@@ -21,7 +21,8 @@ a.button {
         transform 0.1s; */
     transition:
         transform 0.1s,
-        opacity 0.15s;
+        opacity 0.15s,
+        backgound 0.15s;
     user-select: none;
     display: flex;
     justify-content: center;

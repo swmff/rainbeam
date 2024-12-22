@@ -45,12 +45,6 @@ block head %}
             >
         </div>
 
-        {% if questions.len() == 0 %}
-        <div class="markdown-alert-warning">
-            <span>{{ text "general:text.no_results" }}</span>
-        </div>
-        {% endif %}
-
         <!-- compose -->
         <div class="card-nest w-full shadow">
             <!-- prettier-ignore -->
@@ -85,7 +79,11 @@ block head %}
 
         <!-- feed -->
         <div class="flex flex-col gap-4" id="feed">
-            {% include "partials/timelines/global_questions.html" %}
+            {% if questions.len() == 0 %}
+            <div class="markdown-alert-warning">
+                <span>{{ text "general:text.no_results" }}</span>
+            </div>
+            {% endif %} {% include "partials/timelines/global_questions.html" %}
         </div>
 
         <!-- pagination buttons -->

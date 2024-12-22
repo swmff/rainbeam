@@ -93,6 +93,7 @@
     {% include "partials/profile/feed.html" %}
 </div>
 
+{% if tag.is_empty() %}
 <script>
     use("app", (app) => {
         app["hook.attach_to_partial"](
@@ -117,4 +118,4 @@
         });
     });
 </script>
-{% call super() %} {% endblock %}
+{% endif %} {% call super() %} {% endblock %}

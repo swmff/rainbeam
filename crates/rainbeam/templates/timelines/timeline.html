@@ -69,7 +69,8 @@ block head %}
             <include-partial
                 src="/_app/timelines/timeline.html?page={{ page }}"
                 uses="app:clean_date_codes,app:link_filter,app:hook.alt,app:hook.partial_embeds,app:hook.check_reactions"
-                data-outerhtml="true"
+                instant="true"
+                outerhtml="true"
             ></include-partial>
         </div>
     </main>

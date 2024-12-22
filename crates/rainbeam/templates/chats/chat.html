@@ -53,7 +53,12 @@ endblock %} {% block nav_left %}
             "
         >
             <div class="flex items-center gap-2">
-                <a href="/chats" class="camo button icon-only" title="Back">
+                <a
+                    href="/chats"
+                    class="camo button icon-only"
+                    title="Back"
+                    data-turbo="false"
+                >
                     {{ icon "chevron-left" }}
                 </a>
 

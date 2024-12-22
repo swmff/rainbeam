@@ -4,6 +4,7 @@
     // env
     app.USE_TENNIS_LOADER = true;
     app.DEBOUNCE = [];
+    app.OBSERVERS = [];
 
     // ...
     app.define("try_use", function (_, ns_name, callback) {
@@ -208,6 +209,14 @@
                     res.message || "IP banned!",
                 ]);
             });
+    });
+
+    app.define("disconnect_observers", function ({ $ }) {
+        for (const observer of $.OBSERVERS) {
+            observer.disconnect();
+        }
+
+        $.OBSERVERS = [];
     });
 
     app.define(
@@ -566,6 +575,8 @@
         )) {
             observer.observe(element);
         }
+
+        $.OBSERVERS.push(observer);
     });
 
     app.define("hook.tabs:switch", function (_, tab) {

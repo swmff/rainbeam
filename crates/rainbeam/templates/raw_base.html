@@ -30,12 +30,12 @@
 
         <!-- shared js -->
         <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
-        <!-- <script
+        <script
             src="https://unpkg.com/@hotwired/turbo@8.0.5/dist/turbo.es2017-esm.js"
             type="module"
             async
             defer
-        ></script> -->
+        ></script>
 
         <script>
             globalThis.ns_verbose = false;
@@ -186,9 +186,10 @@
             require("PartialComponent", () => {});
         </script>
 
-        <script>
-            (() => {
+        <script data-turbo-permanent="true" id="init-script">
+            document.documentElement.addEventListener("turbo:load", () => {
                 const app = ns("app");
+                app.disconnect_observers();
                 app.clean_date_codes();
                 app.link_filter();
 
@@ -217,10 +218,10 @@
                 app["hook.long_text.init"]();
                 app["hook.alt"]();
                 app["hook.ips"]();
-                app["hook.partial_embeds"]();
                 app["hook.check_reactions"]();
                 app["hook.tabs"]();
-            })();
+                app["hook.partial_embeds"]();
+            });
         </script>
 
         <!-- dialogs -->

@@ -1,21 +1,28 @@
-const observer = new IntersectionObserver(
-    (entries) => {
-        for (const entry of entries) {
-            if (!entry.isIntersecting) {
-                continue;
-            }
+let observer;
+document.documentElement.addEventListener("turbo:load", () => {
+    if (observer) {
+        observer.disconnect();
+    }
 
-            if (!entry.target.loaded) {
-                entry.target.fetch_src(entry.target.getAttribute("src"));
+    observer = new IntersectionObserver(
+        (entries) => {
+            for (const entry of entries) {
+                if (!entry.isIntersecting) {
+                    continue;
+                }
+
+                if (!entry.target.loaded) {
+                    entry.target.fetch_src(entry.target.getAttribute("src"));
+                }
             }
-        }
-    },
-    {
-        root: document.body,
-        rootMargin: "0px",
-        threshold: 1.0,
-    },
-);
+        },
+        {
+            root: document.body,
+            rootMargin: "0px",
+            threshold: 1.0,
+        },
+    );
+});
 
 class PartialComponent extends HTMLElement {
     static observedAttributes = ["src", "uses"];
@@ -41,7 +48,7 @@ class PartialComponent extends HTMLElement {
                     return;
                 }
 
-                if (!this.getAttribute("data-outerhtml")) {
+                if (!this.getAttribute("outerhtml")) {
                     this.innerHTML = `<div style="animation: grow 1 0.25s forwards running">${res}</div>`;
                 } else {
                     // "complete" replace
