@@ -112,7 +112,7 @@ You can use the button below to send mail to the **system** account.
 All mail sent to this account can be viewed by any staff member with access.
 <br />
 <br />
-<a href='/inbox/mail/compose?to=0' class='button primary'>Send mail</a>"
+<a href='/inbox/mail/compose?to=0' class='button primary' data-turbo='false'>Send mail</a>"
                     .to_string(),
             }
             .render()

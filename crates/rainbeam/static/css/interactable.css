@@ -49,11 +49,6 @@ a.button:active {
     transform: scale(0.95);
 }
 
-button.circle,
-a.button.circle {
-    border-radius: var(--circle);
-}
-
 .icon-only,
 button.icon-only,
 a.button.icon-only {

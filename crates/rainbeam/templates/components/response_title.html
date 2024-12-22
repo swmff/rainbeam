@@ -76,7 +76,7 @@
         <!-- reactions -->
         <button
             title="{{ reaction_count }} reactions"
-            class="camo circle"
+            class="camo"
             onclick="trigger('reactions:toggle', ['{{ response.id }}', 'Response', event.target])"
             hook="check_reaction"
             hook-arg:id="{{ response.id }}"
@@ -91,7 +91,7 @@
         <a
             href="/response/{{ response.id }}"
             title="{{ comment_count }} comments"
-            class="button camo circle"
+            class="button camo"
         >
             {{ icon "message-circle" }} {% if comment_count > 0 %}
             <span class="notification camo">{{ comment_count }}</span>
@@ -102,7 +102,7 @@
         <!-- quote -->
         <div class="dropdown">
             <button
-                class="w-full camo circle"
+                class="w-full camo"
                 onclick="trigger('app:hook.dropdown', [event])"
                 exclude="dropdown"
                 title="Quote"
@@ -144,7 +144,7 @@
         <!-- options -->
         <div class="dropdown">
             <button
-                class="w-full camo circle"
+                class="w-full camo"
                 onclick="trigger('app:hook.dropdown', [event])"
                 exclude="dropdown"
                 title="More"

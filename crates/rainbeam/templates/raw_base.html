@@ -26,7 +26,12 @@
         <meta name="turbo-refresh-method" content="morph" />
         <meta name="turbo-refresh-scroll" content="preserve" />
 
-        <link rel="stylesheet" href="/static/build/css/style.css" />
+        <link
+            rel="stylesheet"
+            href="/static/build/css/style.css"
+            id="style.css"
+            data-turbo-permanent="true"
+        />
 
         <!-- shared js -->
         <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
@@ -77,6 +82,8 @@
 
         <script>
             function media_theme_pref() {
+                document.documentElement.removeAttribute("class");
+
                 if (
                     window.matchMedia("(prefers-color-scheme: dark)").matches &&
                     !window.localStorage.getItem("theme")
@@ -277,7 +284,7 @@
                             </button>
 
                             <button
-                                class="bold red camo circle"
+                                class="bold red camo"
                                 onclick="globalThis.web_api_prompt_submit('')"
                                 type="button"
                                 title="Close"
@@ -314,7 +321,7 @@
                             </button>
 
                             <button
-                                class="bold red camo circle"
+                                class="bold red camo"
                                 onclick="globalThis.web_api_confirm_submit(false)"
                                 type="button"
                                 title="Close"

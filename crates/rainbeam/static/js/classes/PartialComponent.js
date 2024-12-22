@@ -1,10 +1,7 @@
 let observer;
-document.documentElement.addEventListener("turbo:load", () => {
-    if (observer) {
-        observer.disconnect();
-    }
 
-    observer = new IntersectionObserver(
+function create_observer() {
+    return new IntersectionObserver(
         (entries) => {
             for (const entry of entries) {
                 if (!entry.isIntersecting) {
@@ -22,6 +19,14 @@ document.documentElement.addEventListener("turbo:load", () => {
             threshold: 1.0,
         },
     );
+}
+
+document.documentElement.addEventListener("turbo:load", () => {
+    if (observer) {
+        observer.disconnect();
+    }
+
+    observer = create_observer();
 });
 
 class PartialComponent extends HTMLElement {
@@ -99,6 +104,11 @@ class PartialComponent extends HTMLElement {
                 this.setAttribute("loaded", this.loaded);
 
                 if (!this.getAttribute("instant")) {
+                    if (!observer) {
+                        // turbo event failed to fire
+                        observer = create_observer();
+                    }
+
                     // load when in view
                     observer.observe(this);
                 } else {
