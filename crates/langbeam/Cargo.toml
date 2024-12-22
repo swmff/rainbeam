@@ -9,6 +9,6 @@ repository = "https://github.com/swmff/rainbeam"
 license = "MIT"
 
 [dependencies]
-serde = { version = "1.0.215", features = ["serde_derive"] }
-serde_json = "1.0.133"
-rainbeam-shared = "0.1.2"
+serde = { version = "1.0.216", features = ["serde_derive"] }
+serde_json = "1.0.134"
+rainbeam-shared = "0.1.3"

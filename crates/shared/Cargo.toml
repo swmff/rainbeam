@@ -10,12 +10,12 @@ license = "MIT"
 
 [dependencies]
 ammonia = "4.0.0"
-comrak = "0.28.0"
+comrak = "0.32.0"
 hex_fmt = "0.3.0"
 rand = "0.8.5"
-serde = { version = "1.0.204", features = ["derive"] }
+serde = { version = "1.0.216", features = ["derive"] }
 sha2 = "0.10.8"
-uuid = { version = "1.10.0", features = ["v4"] }
+uuid = { version = "1.11.0", features = ["v4"] }
 
 [lib]
 doctest = false

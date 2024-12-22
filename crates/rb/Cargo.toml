@@ -19,21 +19,21 @@ mimalloc = []
 [dependencies]
 askama = { version = "0.12.1", features = ["with-axum"] }
 askama_axum = "0.4.0"
-axum = { version = "0.7.5", features = ["macros", "form"] }
-axum-extra = { version = "0.9.3", features = ["cookie"] }
-reqwest = { version = "0.12.5", features = ["json", "stream"] }
-serde = { version = "1.0.203", features = ["derive"] }
-tokio = { version = "1.38.0", features = ["macros", "rt-multi-thread"] }
-toml = "0.8.14"
-tower-http = { version = "0.5.2", features = ["fs", "trace"] }
-serde_json = "1.0.120"
-regex = "1.10.5"
+axum = { version = "0.7.9", features = ["macros", "form"] }
+axum-extra = { version = "0.9.6", features = ["cookie"] }
+reqwest = { version = "0.12.9", features = ["json", "stream"] }
+serde = { version = "1.0.216", features = ["derive"] }
+tokio = { version = "1.42.0", features = ["macros", "rt-multi-thread"] }
+toml = "0.8.19"
+tower-http = { version = "0.6.2", features = ["fs", "trace"] }
+serde_json = "1.0.134"
+regex = "1.11.1"
 hcaptcha-no-wasm = { version = "3.0.1" }
 ammonia = "4.0.0"
-futures-util = "0.3.30"
+futures-util = "0.3.31"
 async-recursion = "1.1.1"
-tracing = "0.1.40"
-tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
 rainbeam-shared = { path = "../shared" }
 databeam = { version = "0.1.1", default-features = false }
 authbeam = { path = "../authbeam", default-features = false }
