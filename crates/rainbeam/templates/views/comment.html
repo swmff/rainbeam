@@ -179,9 +179,9 @@ block head %}
 
         <!-- reactions -->
         <div data-tab="reactions" class="hidden">
-            <div id="reactions" class="flex gap-2 flex-wrap w-full">
+            <div id="reactions" class="card shadow flex gap-2 flex-col w-full">
                 {% for reaction in reactions %}
-                <a href="/@{{ reaction.user.username }}">
+                <a href="/@{{ reaction.user.username }}" class="card w-full flex items-center gap-2">
                     <img
                         title="{{ reaction.user.username }}'s avatar"
                         src="/api/v0/auth/profile/{{ reaction.user.id }}/avatar"
@@ -190,6 +190,7 @@ block head %}
                     loading="lazy"
                         style="--size: 20px"
                     />
+                    {{ reaction.user.username }}
                 </a>
                 {% endfor %}
             </div>

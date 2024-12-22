@@ -89,5 +89,3 @@ You can view security information [here](https://github.com/swmff/rainbeam/blob/
 ## Attribution
 
 Rainbeam is a faithful recreation of the amazing Q&A site [Retrospring](https://github.com/Retrospring/retrospring). Rainbeam uses many Retrospring's core concepts, ideas, and designs, however it is built from the ground up and uses none of Retrospring's original code or assets.
-
-Rainbeam uses [Twemoji](https://github.com/jdecked/twemoji) on its HTML pages for uniform emojis.

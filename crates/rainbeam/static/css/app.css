@@ -19,7 +19,7 @@ html {
     --color-primary-hsl: 341, 59%, 49%;
     --color-primary-lowered: hsl(341, 59%, 44%);
     --color-primary-raised: var(--color-primary);
-    --radius: 4px;
+    --radius: 6px;
 }
 
 html.dark,

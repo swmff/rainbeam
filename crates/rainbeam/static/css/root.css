@@ -28,7 +28,7 @@
     --color-text-primary: hsl(0, 0%, 100%);
     --color-shadow: rgba(0, 0, 0, 0.15);
     --color-red: hsl(0, 84%, 60%);
-    --radius: 0.25rem;
+    --radius: 6px;
     --circle: 360px;
 }
 
@@ -61,7 +61,6 @@
     --color-primary-lowered: hsl(260, 54%, 40%);
     --color-primary-raised: hsl(260, 54%, 50%);
     --color-primary-hsl: 260, 54%, 45%;
-    --radius: 6px;
 }
 
 .curious {
@@ -70,6 +69,7 @@
     --color-primary-raised: hsl(33, 99%, 49%);
     --color-primary-hsl: 33, 99%, 44%;
     --color-text-primary: black;
+    --radius: 4px;
 }
 
 /* ... */

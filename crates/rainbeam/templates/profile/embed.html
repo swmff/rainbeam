@@ -234,7 +234,6 @@
             </footer>
         </div>
 
-        <script src="https://unpkg.com/@twemoji/api@15.1.0/dist/twemoji.min.js"></script>
         <script src="https://unpkg.com/lucide@latest"></script>
 
         <script>
@@ -252,8 +251,6 @@
                 app["hook.dropdown.init"](window);
                 app["hook.character_counter.init"]();
                 app["hook.long_text.init"]();
-
-                twemoji.parse(document.body);
 
                 // anchors
                 for (const anchor of Array.from(

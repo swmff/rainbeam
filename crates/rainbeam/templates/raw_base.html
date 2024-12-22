@@ -186,8 +186,6 @@
             require("PartialComponent", () => {});
         </script>
 
-        <script src="https://unpkg.com/@twemoji/api@15.1.0/dist/twemoji.min.js"></script>
-
         <script>
             (() => {
                 const app = ns("app");
@@ -222,8 +220,6 @@
                 app["hook.partial_embeds"]();
                 app["hook.check_reactions"]();
                 app["hook.tabs"]();
-
-                twemoji.parse(document.body);
             })();
         </script>
 
