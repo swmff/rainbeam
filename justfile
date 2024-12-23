@@ -27,6 +27,10 @@ test:
 doc:
     cargo doc --no-deps --document-private-items --workspace --exclude neospring-desktop
 
+clean-deps:
+    cargo upgrade -i
+    cargo machete
+
 publish-shared:
     cargo publish --package rainbeam-shared
 

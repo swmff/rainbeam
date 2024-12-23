@@ -64,7 +64,7 @@ impl Question {
             author: anonymous_profile(author),
             recipient: anonymous_profile(recipient),
             content,
-            id: String::new(),
+            id: "76f75e6129fe30135bd44d80ab7cc46fdba81907758dc808f3e2517beef2b1e9".to_string(), // lost
             ip: String::new(),
             timestamp,
             context: QuestionContext::default(),

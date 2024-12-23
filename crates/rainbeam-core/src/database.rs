@@ -1239,7 +1239,7 @@ impl Database {
         mut props: QuestionCreate,
         author: String,
         ip: String,
-    ) -> Result<()> {
+    ) -> Result<String> {
         // check media
         if props.media.len() > (64 * 512) {
             return Err(DatabaseError::ContentTooLong);
@@ -1324,7 +1324,7 @@ impl Database {
 
                 if props.content.contains(filter_string) {
                     // return ok so the client thinks it worked, but really we lied
-                    return Ok(());
+                    return Ok(String::new());
                 }
             }
         } else {
@@ -1472,7 +1472,7 @@ impl Database {
                 }
 
                 // ...
-                return Ok(());
+                return Ok(question.id.clone());
             }
             Err(_) => return Err(DatabaseError::Other),
         };

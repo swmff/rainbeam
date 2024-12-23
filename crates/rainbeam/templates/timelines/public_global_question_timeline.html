@@ -130,13 +130,14 @@ block head %}
         })
             .then((res) => res.json())
             .then((res) => {
-                trigger("app:shout", [
-                    res.success ? "tip" : "caution",
+                trigger("app:toast", [
+                    res.success ? "success" : "error",
                     res.message || "Question asked!",
                 ]);
 
                 if (res.success === true) {
                     e.target.reset();
+                    window.location.href = `/question/${res.payload}`;
                 }
             });
     });
