@@ -84,7 +84,7 @@
 
             <!-- prettier-ignore -->
             <tbody>
-                {% for (transaction, customer, merchant) in transactions %}
+                {% for ((transaction, _), customer, merchant) in transactions %}
                 <tr id="transaction:{{ transaction.id }}">
                     <td>{{ transaction.amount }}</td>
                     <td><a href="/@{{ customer.username }}">{{ customer.username }}</a></td>

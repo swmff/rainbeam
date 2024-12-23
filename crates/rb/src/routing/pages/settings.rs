@@ -6,7 +6,7 @@ use axum::{
 };
 use axum_extra::extract::CookieJar;
 
-use authbeam::model::{IpBlock, Profile, Transaction};
+use authbeam::model::{IpBlock, Item, Profile, Transaction};
 
 use crate::config::Config;
 use crate::database::Database;
@@ -289,7 +289,7 @@ struct CoinsSettingsTemplate {
     unread: usize,
     notifs: usize,
     metadata: String,
-    transactions: Vec<(Transaction, Box<Profile>, Box<Profile>)>,
+    transactions: Vec<((Transaction, Option<Item>), Box<Profile>, Box<Profile>)>,
     page: i32,
 }
 

@@ -518,18 +518,37 @@ pub enum ItemType {
     UserTheme,
 }
 
+/// A marketplace item status
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub enum ItemStatus {
+    /// The item has been reviewed by a site moderator and rejected
+    Rejected,
+    /// The item has not been approved by a site moderator
+    Pending,
+    /// The item has been approved by a site moderator
+    Approved,
+}
+
 /// A marketplace item (for [`Transaction`]s)
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Item {
     /// The ID of the item (unique)
     pub id: String,
+    /// The name of this item
+    pub name: String,
+    /// The description of this item
+    pub description: String,
     /// The number of user coins this item costs
     ///
     /// 0: free
     /// -1: off-sale
     pub cost: i32,
+    /// The content of this item
+    pub content: String,
     /// The type of this item
     pub r#type: ItemType,
+    /// The status of this item
+    pub status: ItemStatus,
     /// The timestamp of when the item was created
     pub timestamp: u128,
     /// The ID of the item creator
@@ -641,9 +660,24 @@ pub struct TransactionCreate {
     pub amount: i32,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ItemCreate {
+    pub name: String,
+    pub description: String,
+    pub content: String,
+    pub cost: i32,
+    pub r#type: ItemType,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SetItemStatus {
+    pub status: ItemStatus,
+}
+
 /// General API errors
 #[derive(Debug)]
 pub enum DatabaseError {
+    TooExpensive,
     MustBeUnique,
     OutOfScope,
     NotAllowed,
@@ -657,6 +691,7 @@ impl DatabaseError {
     pub fn to_string(&self) -> String {
         use DatabaseError::*;
         match self {
+            TooExpensive => String::from("You cannot afford to do this. (TooExpensive)"),
             MustBeUnique => String::from("One of the given values must be unique. (MustBeUnique)"),
             OutOfScope => String::from(
                 "Cannot generate tokens with permissions the provided token doesn't have. (OutOfScope)",

@@ -13,6 +13,7 @@ use axum::{
 pub mod general;
 pub mod ipbans;
 pub mod ipblocks;
+pub mod items;
 pub mod mail;
 pub mod me;
 pub mod notifications;
@@ -79,6 +80,11 @@ pub fn routes(database: Database) -> Router {
         .route("/mail", post(mail::create_request))
         .route("/mail/:id/state", post(mail::update_state_request))
         .route("/mail/:id", delete(mail::delete_request))
+        // items
+        .route("/item", post(items::create_request))
+        .route("/item/:id/buy", post(items::buy_request))
+        .route("/item/:id/status", post(items::update_status_request))
+        .route("/item/:id", delete(items::delete_request))
         // notifications
         .route("/notifications/:id", delete(notifications::delete_request))
         .route(

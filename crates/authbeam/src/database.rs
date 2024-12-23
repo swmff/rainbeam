@@ -2,9 +2,9 @@ use std::collections::HashMap;
 use std::str::Split;
 
 use crate::model::{
-    DatabaseError, IpBan, IpBanCreate, IpBlock, IpBlockCreate, Mail, MailCreate, MailState,
-    Profile, ProfileCreate, ProfileMetadata, RelationshipStatus, TokenContext, Transaction,
-    TransactionCreate, UserLabel, Warning, WarningCreate,
+    DatabaseError, IpBan, IpBanCreate, IpBlock, IpBlockCreate, Item, ItemCreate, ItemStatus, Mail,
+    MailCreate, MailState, Profile, ProfileCreate, ProfileMetadata, RelationshipStatus,
+    TokenContext, Transaction, TransactionCreate, UserLabel, Warning, WarningCreate,
 };
 use crate::model::{Group, Notification, NotificationCreate, Permission, UserFollow};
 
@@ -278,6 +278,22 @@ impl Database {
                 timestamp TEXT,
                 customer  TEXT,
                 merchant  TEXT
+            )",
+        )
+        .execute(c)
+        .await;
+
+        let _ = sqlquery(
+            "CREATE TABLE IF NOT EXISTS \"xugc_items\" (
+                id          TEXT,
+                name        TEXT,
+                description TEXT,
+                cost        TEXT,
+                content     TEXT,
+                type        TEXT,
+                status      TEXT,
+                timestamp   TEXT,
+                creator     TEXT
             )",
         )
         .execute(c)
@@ -1068,6 +1084,9 @@ impl Database {
     }
 
     /// Update a [`Profile`]'s coins by its ID
+    ///
+    /// # Arguments
+    /// * `coins` - the amount to ADD to the existing coins value
     pub async fn update_profile_coins(&self, id: String, coins: i32) -> Result<()> {
         // make sure user exists
         let ua = match self.get_profile(id.clone()).await {
@@ -1084,7 +1103,7 @@ impl Database {
 
         let c = &self.base.db.client;
         match sqlquery(query)
-            .bind::<&String>(&coins.to_string())
+            .bind::<&String>(&(ua.coins + coins).to_string())
             .bind::<&String>(&id)
             .execute(c)
             .await
@@ -4354,16 +4373,27 @@ impl Database {
 
     // ugc transactions
 
-    // Get profile given the `row` data
-    pub fn gimme_transaction(&self, row: HashMap<String, String>) -> Result<Transaction> {
-        Ok(Transaction {
-            id: row.get("id").unwrap().to_string(),
-            amount: row.get("amount").unwrap().parse::<i32>().unwrap_or(0),
-            item: row.get("item").unwrap().to_string(),
-            timestamp: row.get("timestamp").unwrap().parse::<u128>().unwrap(),
-            customer: row.get("customer").unwrap().to_string(),
-            merchant: row.get("merchant").unwrap().to_string(),
-        })
+    // Get item given the `row` data
+    pub async fn gimme_transaction(
+        &self,
+        row: HashMap<String, String>,
+    ) -> Result<(Transaction, Option<Item>)> {
+        let item = row.get("item").unwrap().to_string();
+
+        Ok((
+            Transaction {
+                id: row.get("id").unwrap().to_string(),
+                amount: row.get("amount").unwrap().parse::<i32>().unwrap_or(0),
+                item: item.clone(),
+                timestamp: row.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                customer: row.get("customer").unwrap().to_string(),
+                merchant: row.get("merchant").unwrap().to_string(),
+            },
+            match self.get_item(item).await {
+                Ok(i) => Some(i),
+                Err(_) => None,
+            },
+        ))
     }
 
     // GET
@@ -4371,7 +4401,7 @@ impl Database {
     ///
     /// ## Arguments:
     /// * `id`
-    pub async fn get_transaction(&self, id: String) -> Result<Transaction> {
+    pub async fn get_transaction(&self, id: String) -> Result<(Transaction, Option<Item>)> {
         // check in cache
         match self
             .base
@@ -4379,8 +4409,13 @@ impl Database {
             .get(format!("rbeam.auth.econ.transaction:{}", id))
             .await
         {
-            Some(c) => match serde_json::from_str::<Transaction>(c.as_str()) {
-                Ok(c) => return Ok(c),
+            Some(c) => match serde_json::from_str::<HashMap<String, String>>(c.as_str()) {
+                Ok(c) => {
+                    return Ok(match self.gimme_transaction(c).await {
+                        Ok(t) => t,
+                        Err(e) => return Err(e),
+                    })
+                }
                 Err(_) => {
                     self.base
                         .cachedb
@@ -4407,7 +4442,7 @@ impl Database {
         };
 
         // return
-        let transaction = match self.gimme_transaction(res) {
+        let transaction = match self.gimme_transaction(res).await {
             Ok(t) => t,
             Err(e) => return Err(e),
         };
@@ -4417,7 +4452,7 @@ impl Database {
             .cachedb
             .set(
                 format!("rbeam.auth.econ.transaction:{}", id),
-                serde_json::to_string::<Transaction>(&transaction).unwrap(),
+                serde_json::to_string::<Transaction>(&transaction.0).unwrap(),
             )
             .await;
 
@@ -4425,19 +4460,19 @@ impl Database {
         Ok(transaction)
     }
 
-    /// Get all mail by their recipient, 50 at a time
+    /// Get all transactions by the given user ID, 25 at a time
     ///
     /// ## Arguments:
     /// * `user`
     /// * `page`
     ///
     /// ## Returns:
-    /// `(Transaction, Customer, Merchant)`
+    /// `Vec<(Transaction, Customer, Merchant)>`
     pub async fn get_participating_transactions_paginated(
         &self,
         user: String,
         page: i32,
-    ) -> Result<Vec<(Transaction, Box<Profile>, Box<Profile>)>> {
+    ) -> Result<Vec<((Transaction, Option<Item>), Box<Profile>, Box<Profile>)>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -4458,13 +4493,13 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row, Vec::new()).0;
-                    let transaction = match self.gimme_transaction(res) {
+                    let transaction = match self.gimme_transaction(res).await {
                         Ok(t) => t,
                         Err(e) => return Err(e),
                     };
 
-                    let customer = transaction.customer.clone();
-                    let merchant = transaction.merchant.clone();
+                    let customer = transaction.0.customer.clone();
+                    let merchant = transaction.0.merchant.clone();
 
                     out.push((
                         transaction,
@@ -4510,6 +4545,13 @@ impl Database {
             Err(e) => return Err(e),
         };
 
+        // make sure customer can afford this
+        if props.amount.is_negative() {
+            if customer.coins < props.amount {
+                return Err(DatabaseError::TooExpensive);
+            }
+        }
+
         // ...
         let transaction = Transaction {
             id: utility::random_id(),
@@ -4520,7 +4562,7 @@ impl Database {
             merchant: merchant.id.clone(),
         };
 
-        // create mail
+        // create transaction
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
             "INSERT INTO \"xugc_transactions\" VALUES (?, ?, ?, ?, ?, ?)"
@@ -4558,6 +4600,391 @@ impl Database {
 
                 // ...
                 return Ok(transaction);
+            }
+            Err(_) => return Err(DatabaseError::Other),
+        };
+    }
+
+    // ugc items
+
+    // Get transaction given the `row` data
+    pub fn gimme_item(&self, row: HashMap<String, String>) -> Result<Item> {
+        Ok(Item {
+            id: row.get("id").unwrap().to_string(),
+            name: row.get("name").unwrap().to_string(),
+            description: row.get("description").unwrap().to_string(),
+            cost: row.get("cost").unwrap().parse::<i32>().unwrap_or(0),
+            content: row.get("content").unwrap().to_string(),
+            r#type: match serde_json::from_str(row.get("type").unwrap()) {
+                Ok(v) => v,
+                Err(_) => return Err(DatabaseError::ValueError),
+            },
+            status: match serde_json::from_str(row.get("status").unwrap()) {
+                Ok(v) => v,
+                Err(_) => return Err(DatabaseError::ValueError),
+            },
+            timestamp: row.get("timestamp").unwrap().parse::<u128>().unwrap(),
+            creator: row.get("creator").unwrap().to_string(),
+        })
+    }
+
+    // GET
+    /// Get an existing item
+    ///
+    /// ## Arguments:
+    /// * `id`
+    pub async fn get_item(&self, id: String) -> Result<Item> {
+        // check in cache
+        match self
+            .base
+            .cachedb
+            .get(format!("rbeam.auth.econ.item:{}", id))
+            .await
+        {
+            Some(c) => match serde_json::from_str::<Item>(c.as_str()) {
+                Ok(c) => return Ok(c),
+                Err(_) => {
+                    self.base
+                        .cachedb
+                        .remove(format!("rbeam.auth.econ.item:{}", id))
+                        .await;
+                }
+            },
+            None => (),
+        };
+
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "SELECT * FROM \"xugc_items\" WHERE \"id\" = ?"
+        } else {
+            "SELECT * FROM \"xugc_items\" WHERE \"id\" = $1"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
+            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        let item = match self.gimme_item(res) {
+            Ok(t) => t,
+            Err(e) => return Err(e),
+        };
+
+        // store in cache
+        self.base
+            .cachedb
+            .set(
+                format!("rbeam.auth.econ.item:{}", id),
+                serde_json::to_string::<Item>(&item).unwrap(),
+            )
+            .await;
+
+        // return
+        Ok(item)
+    }
+
+    /// Get all items by their creator, 25 at a time
+    ///
+    /// ## Arguments:
+    /// * `user`
+    /// * `page`
+    ///
+    /// ## Returns:
+    /// `Vec<(Item, Box<Profile>)>`
+    pub async fn get_items_by_creator_paginated(
+        &self,
+        user: String,
+        page: i32,
+    ) -> Result<Vec<(Item, Box<Profile>)>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            format!("SELECT * FROM \"xugc_items\" WHERE \"creator\" = ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        } else {
+            format!("SELECT * FROM \"xugc_items\" WHERE \"creator\" = $1 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        };
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query).bind::<&String>(&user).fetch_all(c).await {
+            Ok(p) => {
+                let mut out = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let item = match self.gimme_item(res) {
+                        Ok(t) => t,
+                        Err(e) => return Err(e),
+                    };
+
+                    let creator = item.creator.clone();
+
+                    out.push((
+                        item,
+                        match self.get_profile(creator.to_string()).await {
+                            Ok(ua) => ua,
+                            Err(_) => continue,
+                        },
+                    ));
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::Other),
+        };
+
+        // return
+        Ok(res)
+    }
+
+    /// Get all items by their status, 25 at a time
+    ///
+    /// ## Arguments:
+    /// * `user`
+    /// * `page`
+    ///
+    /// ## Returns:
+    /// `Vec<(Item, Box<Profile>)>`
+    pub async fn get_items_by_status_paginated(
+        &self,
+        status: ItemStatus,
+        page: i32,
+    ) -> Result<Vec<(Item, Box<Profile>)>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            format!("SELECT * FROM \"xugc_items\" WHERE \"status\" = ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        } else {
+            format!("SELECT * FROM \"xugc_items\" WHERE \"status\" = $1 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        };
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query)
+            .bind::<&String>(&serde_json::to_string(&status).unwrap())
+            .fetch_all(c)
+            .await
+        {
+            Ok(p) => {
+                let mut out = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let item = match self.gimme_item(res) {
+                        Ok(t) => t,
+                        Err(e) => return Err(e),
+                    };
+
+                    let creator = item.creator.clone();
+
+                    out.push((
+                        item,
+                        match self.get_profile(creator.to_string()).await {
+                            Ok(ua) => ua,
+                            Err(_) => continue,
+                        },
+                    ));
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::Other),
+        };
+
+        // return
+        Ok(res)
+    }
+
+    // SET
+    /// Create a new item
+    ///
+    /// ## Arguments:
+    /// * `props` - [`ItemCreate`]
+    /// * `creator` - the user in the `creator` field of the item
+    pub async fn create_item(&self, props: ItemCreate, creator: String) -> Result<Item> {
+        // check values
+        if props.content.len() > (64 * 128 * 2) {
+            return Err(DatabaseError::TooLong);
+        }
+
+        if props.content.len() < 64 {
+            return Err(DatabaseError::ValueError);
+        }
+
+        if props.name.len() > (64 * 2) {
+            return Err(DatabaseError::TooLong);
+        }
+
+        if props.name.len() < 2 {
+            return Err(DatabaseError::ValueError);
+        }
+
+        if props.description.len() > (64 * 128) {
+            return Err(DatabaseError::TooLong);
+        }
+
+        // ...
+        let item = Item {
+            id: utility::random_id(),
+            name: props.name,
+            description: props.description,
+            cost: props.cost,
+            content: props.content,
+            r#type: props.r#type,
+            status: ItemStatus::Pending,
+            timestamp: utility::unix_epoch_timestamp(),
+            creator: creator.clone(),
+        };
+
+        // subtract creation cost from creator
+        if let Err(e) = self
+            .create_transaction(
+                TransactionCreate {
+                    merchant: "0".to_string(),
+                    item: item.id.clone(),
+                    amount: -50,
+                },
+                creator.clone(),
+            )
+            .await
+        {
+            return Err(e);
+        };
+
+        // create item
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "INSERT INTO \"xugc_items\" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        } else {
+            "INSERT INTO \"xugc_items\" VALEUS ($1, $2, $3, $4, $5, $6, $7, $8, $9)"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query)
+            .bind::<&String>(&item.id)
+            .bind::<&String>(&item.name)
+            .bind::<&String>(&item.description)
+            .bind::<&String>(&item.cost.to_string())
+            .bind::<&String>(&item.content)
+            .bind::<&String>(&serde_json::to_string(&item.r#type).unwrap())
+            .bind::<&String>(&serde_json::to_string(&item.status).unwrap())
+            .bind::<&String>(&item.timestamp.to_string())
+            .bind::<&String>(&item.creator)
+            .execute(c)
+            .await
+        {
+            Ok(_) => return Ok(item),
+            Err(_) => return Err(DatabaseError::Other),
+        };
+    }
+
+    /// Update item status
+    ///
+    /// ## Arguments:
+    /// * `id`
+    /// * `status` - [`ItemStatus`]
+    /// * `user`
+    pub async fn update_item_status(
+        &self,
+        id: String,
+        status: ItemStatus,
+        user: Box<Profile>,
+    ) -> Result<()> {
+        // make sure item exists and check permission
+        if let Err(e) = self.get_item(id.clone()).await {
+            return Err(e);
+        };
+
+        // check permission
+        let group = match self.get_group_by_id(user.group).await {
+            Ok(g) => g,
+            Err(_) => return Err(DatabaseError::Other),
+        };
+
+        if !group.permissions.contains(&Permission::Helper) {
+            return Err(DatabaseError::NotAllowed);
+        }
+
+        // update item
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "UPDATE \"xugc_items\" SET \"status\" = ? WHERE \"id\" = ?"
+        } else {
+            "UPDATE \"xugc_items\" SET (\"status\") = ($1) WHERE \"id\" = $2"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query)
+            .bind::<&String>(&serde_json::to_string(&status).unwrap())
+            .bind::<&String>(&id)
+            .execute(c)
+            .await
+        {
+            Ok(_) => {
+                // remove from cache
+                self.base
+                    .cachedb
+                    .remove(format!("rbeam.auth.econ.item:{}", id))
+                    .await;
+
+                // ...
+                return Ok(());
+            }
+            Err(_) => return Err(DatabaseError::Other),
+        };
+    }
+
+    /// Delete an existing item
+    ///
+    /// Items can only be deleted by their creator.
+    ///
+    /// ## Arguments:
+    /// * `id` - the ID of the item
+    /// * `user` - the user doing this
+    pub async fn delete_item(&self, id: String, user: Box<Profile>) -> Result<()> {
+        // make sure item exists
+        let item = match self.get_item(id.clone()).await {
+            Ok(n) => n,
+            Err(e) => return Err(e),
+        };
+
+        // check username
+        if item.creator != user.id {
+            // check permission
+            let group = match self.get_group_by_id(user.group).await {
+                Ok(g) => g,
+                Err(_) => return Err(DatabaseError::Other),
+            };
+
+            if !group.permissions.contains(&Permission::Helper) {
+                return Err(DatabaseError::NotAllowed);
+            }
+        }
+
+        // delete mail
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "DELETE FROM \"xugc_items\" WHERE \"id\" = ?"
+        } else {
+            "DELETE FROM \"xugc_items\" WHERE \"id\" = $1"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query).bind::<&String>(&id).execute(c).await {
+            Ok(_) => {
+                // remove from cache
+                self.base
+                    .cachedb
+                    .remove(format!("rbeam.auth.econ.item:{}", id))
+                    .await;
+
+                // return
+                return Ok(());
             }
             Err(_) => return Err(DatabaseError::Other),
         };
