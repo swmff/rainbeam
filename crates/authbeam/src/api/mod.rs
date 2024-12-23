@@ -55,6 +55,7 @@ pub fn routes(database: Database) -> Router {
         .route("/profile/:id/tokens", post(profile::update_tokens_request))
         .route("/profile/:id/tier", post(profile::update_tier_request))
         .route("/profile/:id/group", post(profile::update_group_request))
+        .route("/profile/:id/coins", post(profile::update_coins_request))
         .route(
             "/profile/:id/password",
             post(profile::update_password_request),

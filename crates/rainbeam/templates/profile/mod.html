@@ -42,6 +42,7 @@
                 <li>Joined: <span class="date">{{ other.joined }}</span></li>
                 <li>Group: <a href="javascript:change_group()">{{ other.group }}</a></li>
                 <li>Tier: <a href="javascript:change_tier()">{{ other.tier }}</a></li>
+                <li>Coins: <a href="javascript:change_coins()">{{ other.coins }}</a></li>
 
                 {% if other.metadata.exists("rainbeam:verify_url") && other.metadata.exists("rainbeam:verify_code") %}
                 <li>Verify URL: <a href='{{ other.metadata.soft_get("rainbeam:verify_url") }}'>{{ other.metadata.soft_get("rainbeam:verify_url") }}</a></li>
@@ -508,6 +509,31 @@
                     trigger("app:toast", [
                         res.success ? "success" : "error",
                         res.success ? "Tier updated!" : res.message,
+                    ]);
+                });
+        };
+
+        globalThis.change_coins = async () => {
+            const coins = await trigger("app:prompt", ["Enter coin amount:"]);
+
+            if (!coins) {
+                return;
+            }
+
+            fetch("/api/v0/auth/profile/{{ other.id }}/coins", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    coins: parseInt(coins),
+                }),
+            })
+                .then((res) => res.json())
+                .then((res) => {
+                    trigger("app:toast", [
+                        res.success ? "success" : "error",
+                        res.success ? "Coins updated!" : res.message,
                     ]);
                 });
         };

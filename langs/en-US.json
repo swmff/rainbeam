@@ -49,6 +49,7 @@
         "general:action.clear": "Clear",
 
         "general:text.no_results": "nothing yet :(",
+        "general:text.coming_soon": "coming soon 😸",
         "general:text.view_full_feed": "View full feed",
 
         "base.html:text.account_banned": "Your account has been banned and is currently unusable. Please do not register another account while banned.",
@@ -135,6 +136,7 @@
         "settings:link.sessions": "Sessions",
         "settings:link.profile": "Profile",
         "settings:link.privacy": "Privacy",
+        "settings:link.coins": "Coins",
 
         "settings:text.light": "Light",
         "settings:text.dark": "Dark",
@@ -223,6 +225,14 @@
         "settings:sessions.html:text.active": "Active",
         "settings:sessions.html:text.none": "None",
         "settings:sessions.html:text.all": "All",
+
+        "settings:coins.html:title.balance": "Balance",
+        "settings:coins.html:title.transactions": "Transactions",
+        "settings:coins.html:label.amount": "Amount",
+        "settings:coins.html:label.customer": "Customer",
+        "settings:coins.html:label.merchant": "Merchant",
+        "settings:coins.html:text.browse_market": "Browse market",
+        "settings:coins.html:text.publish_theme": "Publish theme",
 
         "chats:chat.html:action.change_name": "Change name",
         "chats:chat.html:action.add_friend": "Add friend",

@@ -3,8 +3,8 @@ use std::str::Split;
 
 use crate::model::{
     DatabaseError, IpBan, IpBanCreate, IpBlock, IpBlockCreate, Mail, MailCreate, MailState,
-    Profile, ProfileCreate, ProfileMetadata, RelationshipStatus, TokenContext, UserLabel, Warning,
-    WarningCreate,
+    Profile, ProfileCreate, ProfileMetadata, RelationshipStatus, TokenContext, Transaction,
+    TransactionCreate, UserLabel, Warning, WarningCreate,
 };
 use crate::model::{Group, Notification, NotificationCreate, Permission, UserFollow};
 
@@ -158,7 +158,8 @@ impl Database {
                 badges        TEXT,
                 tier          TEXT,
                 token_context TEXT,
-                labels        TEXT
+                labels        TEXT,
+                coins         TEXT DEFAULT '100'
             )",
         )
         .execute(c)
@@ -267,6 +268,20 @@ impl Database {
         )
         .execute(c)
         .await;
+
+        let _ = sqlquery(
+            // "xugc_transactions" to not interfere with real money transactions
+            "CREATE TABLE IF NOT EXISTS \"xugc_transactions\" (
+                id        TEXT,
+                amount    TEXT,
+                item      TEXT,
+                timestamp TEXT,
+                customer  TEXT,
+                merchant  TEXT
+            )",
+        )
+        .execute(c)
+        .await;
     }
 
     // util
@@ -302,6 +317,43 @@ impl Database {
     }
 
     // profiles
+
+    /// Get profile given the `row` data
+    pub fn gimme_profile(&self, row: HashMap<String, String>) -> Result<Box<Profile>> {
+        Ok(Box::new(Profile {
+            id: row.get("id").unwrap().to_string(),
+            username: row.get("username").unwrap().to_string(),
+            password: row.get("password").unwrap().to_string(),
+            salt: row.get("salt").unwrap_or(&"".to_string()).to_string(),
+            tokens: match serde_json::from_str(row.get("tokens").unwrap()) {
+                Ok(m) => m,
+                Err(_) => return Err(DatabaseError::ValueError),
+            },
+            ips: match serde_json::from_str(row.get("ips").unwrap()) {
+                Ok(m) => m,
+                Err(_) => return Err(DatabaseError::ValueError),
+            },
+            token_context: match serde_json::from_str(row.get("token_context").unwrap()) {
+                Ok(m) => m,
+                Err(_) => return Err(DatabaseError::ValueError),
+            },
+            metadata: match serde_json::from_str(row.get("metadata").unwrap()) {
+                Ok(m) => m,
+                Err(_) => return Err(DatabaseError::ValueError),
+            },
+            badges: match serde_json::from_str(row.get("badges").unwrap()) {
+                Ok(m) => m,
+                Err(_) => return Err(DatabaseError::ValueError),
+            },
+            group: row.get("gid").unwrap().parse::<i32>().unwrap_or(0),
+            joined: row.get("joined").unwrap().parse::<u128>().unwrap(),
+            tier: row.get("tier").unwrap().parse::<i32>().unwrap_or(0),
+            labels: Database::collect_split_without_stupid_reference(
+                row.get("labels").unwrap().split(","),
+            ),
+            coins: row.get("coins").unwrap().parse::<i32>().unwrap_or(0),
+        }))
+    }
 
     // GET
     /// Fetch a profile correctly
@@ -404,38 +456,10 @@ impl Database {
         };
 
         // return
-        Ok(Box::new(Profile {
-            id: row.get("id").unwrap().to_string(),
-            username: row.get("username").unwrap().to_string(),
-            password: row.get("password").unwrap().to_string(),
-            salt: row.get("salt").unwrap_or(&"".to_string()).to_string(),
-            tokens: match serde_json::from_str(row.get("tokens").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-            ips: match serde_json::from_str(row.get("ips").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-            token_context: match serde_json::from_str(row.get("token_context").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-            metadata: match serde_json::from_str(row.get("metadata").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-            badges: match serde_json::from_str(row.get("badges").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-            group: row.get("gid").unwrap().parse::<i32>().unwrap_or(0),
-            joined: row.get("joined").unwrap().parse::<u128>().unwrap(),
-            tier: row.get("tier").unwrap().parse::<i32>().unwrap_or(0),
-            labels: Database::collect_split_without_stupid_reference(
-                row.get("labels").unwrap().split(","),
-            ),
-        }))
+        Ok(match self.gimme_profile(row) {
+            Ok(ua) => ua,
+            Err(e) => return Err(e),
+        })
     }
 
     /// Get a user by their unhashed ID (hashes ID and then calls [`Database::get_profile_by_hashed()`])
@@ -470,101 +494,9 @@ impl Database {
         };
 
         // return
-        Ok(Box::new(Profile {
-            id: row.get("id").unwrap().to_string(),
-            username: row.get("username").unwrap().to_string(),
-            password: row.get("password").unwrap().to_string(),
-            salt: row.get("salt").unwrap_or(&"".to_string()).to_string(),
-            tokens: match serde_json::from_str(row.get("tokens").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-            ips: match serde_json::from_str(row.get("ips").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-            token_context: match serde_json::from_str(row.get("token_context").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-            metadata: match serde_json::from_str(row.get("metadata").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-            badges: match serde_json::from_str(row.get("badges").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-            group: row.get("gid").unwrap().parse::<i32>().unwrap_or(0),
-            joined: row.get("joined").unwrap().parse::<u128>().unwrap(),
-            tier: row.get("tier").unwrap().parse::<i32>().unwrap_or(0),
-            labels: Database::collect_split_without_stupid_reference(
-                row.get("labels").unwrap().split(","),
-            ),
-        }))
-    }
-
-    /// Get a user by their unhashed secondary token
-    ///
-    /// # Arguments:
-    /// * `unhashed` - `String` of the user's unhashed secondary token
-    pub async fn get_profile_by_username_password(
-        &self,
-        username: String,
-        mut password: String,
-    ) -> Result<Profile> {
-        password = databeam::utility::hash(password);
-
-        // fetch from database
-        let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
-            "SELECT * FROM \"xprofiles\" WHERE \"username\" = ? AND \"password\" = ?"
-        } else {
-            "SELECT * FROM \"xprofiles\" WHERE \"username\" = $1 AND \"password\" = $2"
-        };
-
-        let c = &self.base.db.client;
-        let row = match sqlquery(query)
-            .bind::<&String>(&username)
-            .bind::<&String>(&password)
-            .fetch_one(c)
-            .await
-        {
-            Ok(r) => self.base.textify_row(r, Vec::new()).0,
-            Err(_) => return Err(DatabaseError::Other),
-        };
-
-        // return
-        Ok(Profile {
-            id: row.get("id").unwrap().to_string(),
-            username: row.get("username").unwrap().to_string(),
-            password: row.get("password").unwrap().to_string(),
-            salt: row.get("salt").unwrap_or(&"".to_string()).to_string(),
-            tokens: match serde_json::from_str(row.get("tokens").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-            ips: match serde_json::from_str(row.get("ips").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-            token_context: match serde_json::from_str(row.get("token_context").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-            metadata: match serde_json::from_str(row.get("metadata").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-            badges: match serde_json::from_str(row.get("badges").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-            group: row.get("gid").unwrap().parse::<i32>().unwrap_or(0),
-            joined: row.get("joined").unwrap().parse::<u128>().unwrap(),
-            tier: row.get("tier").unwrap().parse::<i32>().unwrap_or(0),
-            labels: Database::collect_split_without_stupid_reference(
-                row.get("labels").unwrap().split(","),
-            ),
+        Ok(match self.gimme_profile(row) {
+            Ok(ua) => ua,
+            Err(e) => return Err(e),
         })
     }
 
@@ -612,37 +544,9 @@ impl Database {
         };
 
         // store in cache
-        let user = Profile {
-            id: row.get("id").unwrap().to_string(),
-            username: row.get("username").unwrap().to_string(),
-            password: row.get("password").unwrap().to_string(),
-            salt: row.get("salt").unwrap_or(&"".to_string()).to_string(),
-            tokens: match serde_json::from_str(row.get("tokens").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-            ips: match serde_json::from_str(row.get("ips").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-            token_context: match serde_json::from_str(row.get("token_context").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-            metadata: match serde_json::from_str(row.get("metadata").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-            badges: match serde_json::from_str(row.get("badges").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-            group: row.get("gid").unwrap().parse::<i32>().unwrap_or(0),
-            joined: row.get("joined").unwrap().parse::<u128>().unwrap(),
-            tier: row.get("tier").unwrap().parse::<i32>().unwrap_or(0),
-            labels: Database::collect_split_without_stupid_reference(
-                row.get("labels").unwrap().split(","),
-            ),
+        let user = match self.gimme_profile(row) {
+            Ok(ua) => ua,
+            Err(e) => return Err(e),
         };
 
         self.base
@@ -654,7 +558,7 @@ impl Database {
             .await;
 
         // return
-        Ok(Box::new(user))
+        Ok(user)
     }
 
     /// Get a user by their id
@@ -697,37 +601,9 @@ impl Database {
         };
 
         // store in cache
-        let user = Profile {
-            id: row.get("id").unwrap().to_string(),
-            username: row.get("username").unwrap().to_string(),
-            password: row.get("password").unwrap().to_string(),
-            salt: row.get("salt").unwrap_or(&"".to_string()).to_string(),
-            tokens: match serde_json::from_str(row.get("tokens").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-            ips: match serde_json::from_str(row.get("ips").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-            token_context: match serde_json::from_str(row.get("token_context").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-            metadata: match serde_json::from_str(row.get("metadata").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-            badges: match serde_json::from_str(row.get("badges").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-            group: row.get("gid").unwrap().parse::<i32>().unwrap_or(0),
-            joined: row.get("joined").unwrap().parse::<u128>().unwrap(),
-            tier: row.get("tier").unwrap().parse::<i32>().unwrap_or(0),
-            labels: Database::collect_split_without_stupid_reference(
-                row.get("labels").unwrap().split(","),
-            ),
+        let user = match self.gimme_profile(row) {
+            Ok(ua) => ua,
+            Err(e) => return Err(e),
         };
 
         self.base
@@ -739,7 +615,7 @@ impl Database {
             .await;
 
         // return
-        Ok(Box::new(user))
+        Ok(user)
     }
 
     /// Validate a username
@@ -759,9 +635,15 @@ impl Database {
             "responses",
             "questions",
             "comments",
+            "response",
+            "question",
+            "comment",
             "pages",
             "inbox",
             "system",
+            "market",
+            ".well-known",
+            "static",
         ];
 
         let regex = regex::RegexBuilder::new(r"[^\w_\-\.!]+")
@@ -819,9 +701,9 @@ impl Database {
 
         // ...
         let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
-            "INSERT INTO \"xprofiles\" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            "INSERT INTO \"xprofiles\" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xprofiles\" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)"
+            "INSERT INTO \"xprofiles\" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)"
         };
 
         let user_token_unhashed: String = databeam::utility::uuid();
@@ -849,6 +731,7 @@ impl Database {
             .bind::<i32>(0)
             .bind::<&str>("[]")
             .bind::<&str>("")
+            .bind::<i32>(100) // start with 100 coins
             .execute(c)
             .await
         {
@@ -1163,6 +1046,45 @@ impl Database {
         let c = &self.base.db.client;
         match sqlquery(query)
             .bind::<&i32>(&group)
+            .bind::<&String>(&id)
+            .execute(c)
+            .await
+        {
+            Ok(_) => {
+                self.base
+                    .cachedb
+                    .remove(format!("rbeam.auth.profile:{}", ua.username))
+                    .await;
+
+                self.base
+                    .cachedb
+                    .remove(format!("rbeam.auth.profile:{}", ua.id))
+                    .await;
+
+                Ok(())
+            }
+            Err(_) => Err(DatabaseError::Other),
+        }
+    }
+
+    /// Update a [`Profile`]'s coins by its ID
+    pub async fn update_profile_coins(&self, id: String, coins: i32) -> Result<()> {
+        // make sure user exists
+        let ua = match self.get_profile(id.clone()).await {
+            Ok(ua) => ua,
+            Err(e) => return Err(e),
+        };
+
+        // update user
+        let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+            "UPDATE \"xprofiles\" SET \"coins\" = ? WHERE \"id\" = ?"
+        } else {
+            "UPDATE \"xprofiles\" SET (\"coins\") = ($1) WHERE \"id\" = $2"
+        };
+
+        let c = &self.base.db.client;
+        match sqlquery(query)
+            .bind::<&String>(&coins.to_string())
             .bind::<&String>(&id)
             .execute(c)
             .await
@@ -4430,6 +4352,214 @@ impl Database {
         }
     }
 
-    // user labels **CANNOT** be deleted because that could possible affect THOUSANDS of users
-    // user labels should instead be versioned (if possible)
+    // ugc transactions
+
+    // Get profile given the `row` data
+    pub fn gimme_transaction(&self, row: HashMap<String, String>) -> Result<Transaction> {
+        Ok(Transaction {
+            id: row.get("id").unwrap().to_string(),
+            amount: row.get("amount").unwrap().parse::<i32>().unwrap_or(0),
+            item: row.get("item").unwrap().to_string(),
+            timestamp: row.get("timestamp").unwrap().parse::<u128>().unwrap(),
+            customer: row.get("customer").unwrap().to_string(),
+            merchant: row.get("merchant").unwrap().to_string(),
+        })
+    }
+
+    // GET
+    /// Get an existing transaction
+    ///
+    /// ## Arguments:
+    /// * `id`
+    pub async fn get_transaction(&self, id: String) -> Result<Transaction> {
+        // check in cache
+        match self
+            .base
+            .cachedb
+            .get(format!("rbeam.auth.econ.transaction:{}", id))
+            .await
+        {
+            Some(c) => match serde_json::from_str::<Transaction>(c.as_str()) {
+                Ok(c) => return Ok(c),
+                Err(_) => {
+                    self.base
+                        .cachedb
+                        .remove(format!("rbeam.auth.econ.transaction:{}", id))
+                        .await;
+                }
+            },
+            None => (),
+        };
+
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "SELECT * FROM \"xugc_transactions\" WHERE \"id\" = ?"
+        } else {
+            "SELECT * FROM \"xugc_transactions\" WHERE \"id\" = $1"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
+            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        let transaction = match self.gimme_transaction(res) {
+            Ok(t) => t,
+            Err(e) => return Err(e),
+        };
+
+        // store in cache
+        self.base
+            .cachedb
+            .set(
+                format!("rbeam.auth.econ.transaction:{}", id),
+                serde_json::to_string::<Transaction>(&transaction).unwrap(),
+            )
+            .await;
+
+        // return
+        Ok(transaction)
+    }
+
+    /// Get all mail by their recipient, 50 at a time
+    ///
+    /// ## Arguments:
+    /// * `user`
+    /// * `page`
+    ///
+    /// ## Returns:
+    /// `(Transaction, Customer, Merchant)`
+    pub async fn get_participating_transactions_paginated(
+        &self,
+        user: String,
+        page: i32,
+    ) -> Result<Vec<(Transaction, Box<Profile>, Box<Profile>)>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            format!("SELECT * FROM \"xugc_transactions\" WHERE \"customer\" = ? OR \"merchant\" = ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        } else {
+            format!("SELECT * FROM \"xugc_transactions\" WHERE \"customer\" = $1 OR \"merchant\" = $2 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        };
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query)
+            .bind::<&String>(&user)
+            .bind::<&String>(&user)
+            .fetch_all(c)
+            .await
+        {
+            Ok(p) => {
+                let mut out = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let transaction = match self.gimme_transaction(res) {
+                        Ok(t) => t,
+                        Err(e) => return Err(e),
+                    };
+
+                    let customer = transaction.customer.clone();
+                    let merchant = transaction.merchant.clone();
+
+                    out.push((
+                        transaction,
+                        match self.get_profile(customer.to_string()).await {
+                            Ok(ua) => ua,
+                            Err(_) => continue,
+                        },
+                        match self.get_profile(merchant.to_string()).await {
+                            Ok(ua) => ua,
+                            Err(_) => continue,
+                        },
+                    ));
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::Other),
+        };
+
+        // return
+        Ok(res)
+    }
+
+    // SET
+    /// Create a new transaction
+    ///
+    /// ## Arguments:
+    /// * `props` - [`TransactionCreate`]
+    /// * `customer` - the user in the `customer` field of the transaction
+    pub async fn create_transaction(
+        &self,
+        props: TransactionCreate,
+        customer: String,
+    ) -> Result<Transaction> {
+        // make sure customer and merchant exist
+        let customer = match self.get_profile(customer.clone()).await {
+            Ok(ua) => ua,
+            Err(e) => return Err(e),
+        };
+
+        let merchant = match self.get_profile(props.merchant.clone()).await {
+            Ok(ua) => ua,
+            Err(e) => return Err(e),
+        };
+
+        // ...
+        let transaction = Transaction {
+            id: utility::random_id(),
+            amount: props.amount,
+            item: props.item,
+            timestamp: utility::unix_epoch_timestamp(),
+            customer: customer.id.clone(),
+            merchant: merchant.id.clone(),
+        };
+
+        // create mail
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "INSERT INTO \"xugc_transactions\" VALUES (?, ?, ?, ?, ?, ?)"
+        } else {
+            "INSERT INTO \"xugc_transactions\" VALEUS ($1, $2, $3, $4, $5, $6)"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query)
+            .bind::<&String>(&transaction.id)
+            .bind::<&String>(&transaction.amount.to_string())
+            .bind::<&String>(&transaction.item)
+            .bind::<&String>(&transaction.timestamp.to_string())
+            .bind::<&String>(&transaction.customer)
+            .bind::<&String>(&transaction.merchant)
+            .execute(c)
+            .await
+        {
+            Ok(_) => {
+                // update balances
+                if let Err(e) = self
+                    .update_profile_coins(customer.id, -(transaction.amount.abs()))
+                    .await
+                {
+                    return Err(e);
+                };
+
+                if let Err(e) = self
+                    .update_profile_coins(merchant.id, transaction.amount.abs())
+                    .await
+                {
+                    return Err(e);
+                };
+
+                // ...
+                return Ok(transaction);
+            }
+            Err(_) => return Err(DatabaseError::Other),
+        };
+    }
 }

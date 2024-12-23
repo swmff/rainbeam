@@ -1,16 +1,19 @@
 use askama_axum::Template;
 use axum::response::IntoResponse;
-use axum::{extract::State, response::Html};
+use axum::{
+    extract::{State, Query},
+    response::Html,
+};
 use axum_extra::extract::CookieJar;
 
-use authbeam::model::{IpBlock, Profile};
+use authbeam::model::{IpBlock, Profile, Transaction};
 
 use crate::config::Config;
 use crate::database::Database;
 use crate::model::{DatabaseError, RelationshipStatus};
 use crate::ToHtml;
 
-use super::clean_metadata_short;
+use super::{clean_metadata_short, PaginatedQuery};
 
 #[derive(Template)]
 #[template(path = "settings/account.html")]
@@ -271,6 +274,79 @@ pub async fn sessions_settings(
                     .value_trimmed()
                     .to_string(),
             ),
+        }
+        .render()
+        .unwrap(),
+    )
+}
+
+#[derive(Template)]
+#[template(path = "settings/coins.html")]
+struct CoinsSettingsTemplate {
+    config: Config,
+    lang: langbeam::LangFile,
+    profile: Option<Box<Profile>>,
+    unread: usize,
+    notifs: usize,
+    metadata: String,
+    transactions: Vec<(Transaction, Box<Profile>, Box<Profile>)>,
+    page: i32,
+}
+
+/// GET /settings/coins
+pub async fn coins_settings(
+    jar: CookieJar,
+    State(database): State<Database>,
+    Query(props): Query<PaginatedQuery>,
+) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => return Html(DatabaseError::NotAllowed.to_html(database)),
+        },
+        None => return Html(DatabaseError::NotAllowed.to_html(database)),
+    };
+
+    let unread = match database
+        .get_questions_by_recipient(auth_user.id.to_owned())
+        .await
+    {
+        Ok(unread) => unread.len(),
+        Err(_) => 0,
+    };
+
+    let notifs = database
+        .auth
+        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .await;
+
+    let transactions = match database
+        .auth
+        .get_participating_transactions_paginated(auth_user.id.clone(), props.page)
+        .await
+    {
+        Ok(t) => t,
+        Err(e) => return Html(e.to_string()),
+    };
+
+    Html(
+        CoinsSettingsTemplate {
+            config: database.config.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
+            metadata: clean_metadata_short(&auth_user.metadata),
+            profile: Some(auth_user),
+            unread,
+            notifs,
+            transactions,
+            page: props.page,
         }
         .render()
         .unwrap(),

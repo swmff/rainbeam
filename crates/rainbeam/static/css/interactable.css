@@ -259,9 +259,12 @@ textarea:disabled,
 select:disabled,
 input[disabled],
 textarea[disabled],
-select[disabled] {
+select[disabled],
+a[disabled] {
+    position: relative;
     opacity: 75%;
     cursor: not-allowed;
+    user-select: none;
 }
 
 label:has(> input),

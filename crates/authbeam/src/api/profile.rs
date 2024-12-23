@@ -1,8 +1,8 @@
 use crate::database::Database;
 use crate::model::{
-    DatabaseError, NotificationCreate, Permission, SetProfileBadges, SetProfileGroup,
-    SetProfileLabels, SetProfileMetadata, SetProfilePassword, SetProfileTier, SetProfileUsername,
-    TokenContext, TokenPermission,
+    DatabaseError, NotificationCreate, Permission, SetProfileBadges, SetProfileCoins,
+    SetProfileGroup, SetProfileLabels, SetProfileMetadata, SetProfilePassword, SetProfileTier,
+    SetProfileUsername, TokenContext, TokenPermission,
 };
 use databeam::DefaultReturn;
 
@@ -499,6 +499,129 @@ pub async fn update_group_request(
         success: true,
         message: "Acceptable".to_string(),
         payload: Some(props.group),
+    })
+}
+
+/// Change a profile's coins
+pub async fn update_coins_request(
+    jar: CookieJar,
+    Path(id): Path<String>,
+    State(database): State<Database>,
+    Json(props): Json<SetProfileCoins>,
+) -> impl IntoResponse {
+    // get user from token
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(e) => {
+                return Json(DefaultReturn {
+                    success: false,
+                    message: e.to_string(),
+                    payload: None,
+                });
+            }
+        },
+        None => {
+            return Json(DefaultReturn {
+                success: false,
+                message: DatabaseError::NotAllowed.to_string(),
+                payload: None,
+            });
+        }
+    };
+
+    // check permission
+    let group = match database.get_group_by_id(auth_user.group).await {
+        Ok(g) => g,
+        Err(e) => {
+            return Json(DefaultReturn {
+                success: false,
+                message: e.to_string(),
+                payload: None,
+            })
+        }
+    };
+
+    if !group.permissions.contains(&Permission::Manager) {
+        // we must have the "Manager" permission to edit other users
+        return Json(DefaultReturn {
+            success: false,
+            message: DatabaseError::NotAllowed.to_string(),
+            payload: None,
+        });
+    }
+
+    // get other user
+    let other_user = match database.get_profile(id.clone()).await {
+        Ok(ua) => ua,
+        Err(e) => {
+            return Json(DefaultReturn {
+                success: false,
+                message: e.to_string(),
+                payload: None,
+            });
+        }
+    };
+
+    // check permission
+    let group = match database.get_group_by_id(other_user.group).await {
+        Ok(g) => g,
+        Err(e) => {
+            return Json(DefaultReturn {
+                success: false,
+                message: e.to_string(),
+                payload: None,
+            })
+        }
+    };
+
+    if group.permissions.contains(&Permission::Manager) {
+        // we cannot manager other managers
+        return Json(DefaultReturn {
+            success: false,
+            message: DatabaseError::NotAllowed.to_string(),
+            payload: None,
+        });
+    }
+
+    // push update
+    // TODO: try not to clone
+    if let Err(e) = database
+        .update_profile_coins(other_user.id.clone(), props.coins)
+        .await
+    {
+        return Json(DefaultReturn {
+            success: false,
+            message: e.to_string(),
+            payload: None,
+        });
+    }
+
+    // return
+    if let Err(e) = database
+        .audit(
+            auth_user.id,
+            format!(
+                "Updated user coin balance: [{}](/+u/{})",
+                other_user.id, other_user.id
+            ),
+        )
+        .await
+    {
+        return Json(DefaultReturn {
+            success: false,
+            message: e.to_string(),
+            payload: None,
+        });
+    };
+
+    Json(DefaultReturn {
+        success: true,
+        message: "Acceptable".to_string(),
+        payload: Some(props.coins),
     })
 }
 

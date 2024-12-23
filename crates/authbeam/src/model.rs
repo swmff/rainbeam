@@ -41,6 +41,8 @@ pub struct Profile {
     pub tier: i32,
     /// The labels applied to the user (comma separated when as string with 1 comma at the end which creates an empty label)
     pub labels: Vec<String>,
+    /// User coin balance
+    pub coins: i32,
 }
 
 impl Profile {
@@ -60,6 +62,7 @@ impl Profile {
             badges: Vec::new(),
             tier: 0,
             labels: Vec::new(),
+            coins: 0,
         }
     }
 
@@ -79,6 +82,7 @@ impl Profile {
             badges: Vec::new(),
             tier: 0,
             labels: Vec::new(),
+            coins: 0,
         }
     }
 
@@ -98,6 +102,7 @@ impl Profile {
             badges: Vec::new(),
             tier: 0,
             labels: Vec::new(),
+            coins: 0,
         }
     }
 
@@ -163,6 +168,7 @@ impl Default for Profile {
             joined: databeam::utility::unix_epoch_timestamp(),
             tier: 0,
             labels: Vec::new(),
+            coins: 0,
         }
     }
 }
@@ -489,6 +495,47 @@ pub struct UserLabel {
     pub creator: String,
 }
 
+/// A coin transaction between two users
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Transaction {
+    /// The ID of the transaction (unique)
+    pub id: String,
+    /// The amount of the transaction
+    pub amount: i32,
+    /// The ID of the item purchased
+    pub item: String,
+    /// The timestamp of when the transaction was created
+    pub timestamp: u128,
+    /// The ID of the customer (who bought the item)
+    pub customer: String,
+    /// The ID of the merchant (who sold the item)
+    pub merchant: String,
+}
+
+/// A marketplace item type
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub enum ItemType {
+    UserTheme,
+}
+
+/// A marketplace item (for [`Transaction`]s)
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Item {
+    /// The ID of the item (unique)
+    pub id: String,
+    /// The number of user coins this item costs
+    ///
+    /// 0: free
+    /// -1: off-sale
+    pub cost: i32,
+    /// The type of this item
+    pub r#type: ItemType,
+    /// The timestamp of when the item was created
+    pub timestamp: u128,
+    /// The ID of the item creator
+    pub creator: String,
+}
+
 // props
 #[derive(Serialize, Deserialize, Debug, Hcaptcha)]
 pub struct ProfileCreate {
@@ -529,6 +576,11 @@ pub struct SetProfileGroup {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SetProfileTier {
     pub tier: i32,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SetProfileCoins {
+    pub coins: i32,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -579,6 +631,14 @@ pub struct MailCreate {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SetMailState {
     pub state: MailState,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct TransactionCreate {
+    // pub customer: String,
+    pub merchant: String,
+    pub item: String,
+    pub amount: i32,
 }
 
 /// General API errors

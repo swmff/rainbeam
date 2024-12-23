@@ -67,7 +67,10 @@ crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
         <div class="sidenav shadow">{% block sidenav %}{% endblock %}</div>
     </div>
 
-    <section id="settings_content" class="card flex flex-col gap-2 w-full">
+    <section
+        id="settings_content"
+        class="card shadow flex flex-col gap-2 w-full"
+    >
         <div id="admonition_zone"></div>
         {% block panel %}{% endblock %}
     </section>

@@ -168,7 +168,7 @@ nav a.button.title:hover:has(.title-content) .title-content:not(img) {
     .card:not(.card *):not(include-partial *),
     .card-nest:not(include-partial *),
     .sidenav,
-    .pillmenu,
+    .pillmenu:not(.card *),
     .response:not(include-partial *)
         .card:first-child[style="display: none"]:not(.response .response *)
         + .card:nth-child(n-1) {

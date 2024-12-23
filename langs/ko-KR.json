@@ -49,6 +49,7 @@
         "general:action.clear": "초기화",
 
         "general:text.no_results": "이 쿼리와 일치하는 결과가 없습니다",
+        "general:text.coming_soon": "coming soon 😸",
         "general:text.view_full_feed": "전체 피드 보기",
 
         "base.html:text.account_banned": "당신의 계정이 정지되었으며 현재 사용할 수 없습니다. 정지기간 동안 다른 계정으로 가입하지 마세요.",
@@ -135,6 +136,7 @@
         "settings:link.sessions": "세션",
         "settings:link.profile": "프로필",
         "settings:link.privacy": "프라이버시",
+        "settings:link.coins": "Coins",
 
         "settings:text.light": "라이트",
         "settings:text.dark": "다크",
@@ -223,6 +225,12 @@
         "settings:sessions.html:text.active": "활성회",
         "settings:sessions.html:text.none": "None",
         "settings:sessions.html:text.all": "전체",
+
+        "settings:coins.html:title.balance": "Balance",
+        "settings:coins.html:title.transactions": "Transactions",
+        "settings:coins.html:label.amount": "Amount",
+        "settings:coins.html:label.customer": "Customer",
+        "settings:coins.html:label.merchant": "Merchant",
 
         "chats:chat.html:action.change_name": "이름 변경",
         "chats:chat.html:action.add_friend": "친구 추가",
