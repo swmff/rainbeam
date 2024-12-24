@@ -113,7 +113,9 @@
 
 <script type="text/plain" id="theme">
     {% if let Some(theme) = raw_metadata.kv.get("sparkler:profile_theme") %}
-        {{ theme }}
+        {% if !theme.is_empty() %}
+            {{ theme }}
+        {% endif %}
     {% endif %}
 </script>
 

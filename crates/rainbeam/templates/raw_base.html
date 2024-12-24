@@ -105,6 +105,17 @@
             }
 
             media_theme_pref();
+            document.documentElement.addEventListener("turbo:load", () => {
+                const profile_theme = document
+                    .getElementById("theme")
+                    .innerText.trim();
+
+                if (profile_theme) {
+                    return;
+                }
+
+                media_theme_pref();
+            });
         </script>
     </head>
 
