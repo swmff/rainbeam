@@ -1,6 +1,6 @@
 [package]
 name = "authbeam"
-version = "2.0.0"
+version = "2.0.1"
 edition = "2021"
 description = "Authentication manager"
 authors = ["trisuaso", "swmff"]
@@ -29,6 +29,7 @@ mime_guess = "2.0.5"
 citrus-client = { version = "0.1.0" }
 rainbeam-shared = { version = "0.1.3" }
 databeam = { version = "0.1.1", default-features = false }
+image = "0.25.5"
 
 [lib]
 doctest = false

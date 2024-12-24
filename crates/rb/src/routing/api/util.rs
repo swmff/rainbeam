@@ -35,7 +35,7 @@ pub async fn external_image_request(
         return (
             [("Content-Type", "image/svg+xml")],
             Body::from(read_image(
-                database.config.static_dir,
+                format!("{}/images", database.config.static_dir),
                 "default-banner.svg".to_string(),
             )),
         );
@@ -46,7 +46,7 @@ pub async fn external_image_request(
             return (
                 [("Content-Type", "image/svg+xml")],
                 Body::from(read_image(
-                    database.config.static_dir,
+                    format!("{}/images", database.config.static_dir),
                     "default-banner.svg".to_string(),
                 )),
             );
@@ -58,7 +58,7 @@ pub async fn external_image_request(
         return (
             [("Content-Type", "image/svg+xml")],
             Body::from(read_image(
-                database.config.static_dir,
+                format!("{}/images", database.config.static_dir),
                 "default-banner.svg".to_string(),
             )),
         );
@@ -77,7 +77,7 @@ pub async fn external_image_request(
                     return (
                         [("Content-Type", "image/svg+xml")],
                         Body::from(read_image(
-                            database.config.static_dir,
+                            format!("{}/images", database.config.static_dir),
                             "default-banner.svg".to_string(),
                         )),
                     );
@@ -99,7 +99,7 @@ pub async fn external_image_request(
         Err(_) => (
             [("Content-Type", "image/svg+xml")],
             Body::from(read_image(
-                database.config.static_dir,
+                format!("{}/images", database.config.static_dir),
                 "default-banner.svg".to_string(),
             )),
         ),

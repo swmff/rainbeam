@@ -2,6 +2,7 @@
 #![doc = include_str!("../README.md")]
 #![doc(issue_tracker_base_url = "https://github.com/swmff/rainbeam/issues/")]
 pub mod api;
+pub mod avif;
 pub mod database;
 pub mod model;
 

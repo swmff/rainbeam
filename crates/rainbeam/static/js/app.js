@@ -682,18 +682,34 @@
     });
 
     // shout from query params
-    const search = new URLSearchParams(window.location.search);
+    const annc_event = () => {
+        const search = new URLSearchParams(window.location.search);
 
-    if (search.get("ANNC")) {
-        // get defaults
-        // we'll always use the value given in a query param over the page-set value
-        const secret_type = search.get("ANNC_TYPE")
-            ? search.get("ANNC_TYPE")
-            : globalThis._app_base.annc.type;
+        if (search.get("ANNC")) {
+            // get defaults
+            // we'll always use the value given in a query param over the page-set value
+            const secret_type = search.get("ANNC_TYPE")
+                ? search.get("ANNC_TYPE")
+                : globalThis._app_base.annc.type;
 
-        // ...
-        app.shout(secret_type, search.get("ANNC"));
-    }
+            // ...
+            app.shout(secret_type, search.get("ANNC"));
+        }
+    };
+
+    globalThis.annc_event = annc_event;
+    document.documentElement.addEventListener("turbo:load", annc_event);
+    document.documentElement.addEventListener("turbo:submit-end", (event) => {
+        // navigate to html url if returned
+        if (
+            event.detail.fetchResponse.response.headers.get("Content-Type") ===
+            "text/html"
+        ) {
+            window.location.href = event.detail.fetchResponse.response.url;
+        }
+
+        annc_event();
+    });
 
     // toast
     app.define("toast", function ({ $ }, type, content, time_until_remove = 5) {

@@ -43,6 +43,13 @@ pub async fn main() {
         .compact()
         .init();
 
+    // make sure media dir is created
+    if !config.media_dir.is_empty() {
+        fs::mkdir(&config.media_dir).expect("failed to create media dir");
+        fs::mkdir(format!("{}/avatars", config.media_dir)).expect("failed to create avatars dir");
+        fs::mkdir(format!("{}/banners", config.media_dir)).expect("failed to create banners dir");
+    }
+
     // create databases
     let auth_database = AuthDatabase::new(
         DataConf::get_config().connection, // pull connection config from config file
@@ -51,6 +58,7 @@ pub async fn main() {
             registration_enabled: config.registration_enabled,
             real_ip_header: config.real_ip_header.clone(),
             static_dir: config.static_dir.clone(),
+            media_dir: config.media_dir.clone(),
             host: config.host.clone(),
             citrus_id: config.citrus_id.clone(),
             blocked_hosts: config.blocked_hosts.clone(),

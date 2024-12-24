@@ -3,7 +3,7 @@ use std::str::Split;
 
 use crate::model::{
     DatabaseError, IpBan, IpBanCreate, IpBlock, IpBlockCreate, Item, ItemCreate, ItemEdit,
-    ItemEditContent, ItemStatus, Mail, MailCreate, MailState, Profile, ProfileCreate,
+    ItemEditContent, ItemStatus, ItemType, Mail, MailCreate, MailState, Profile, ProfileCreate,
     ProfileMetadata, RelationshipStatus, TokenContext, Transaction, TransactionCreate, UserLabel,
     Warning, WarningCreate,
 };
@@ -56,6 +56,9 @@ pub struct ServerOptions {
     /// The directory to serve static assets from
     #[serde(default)]
     pub static_dir: String,
+    /// The location of media uploads on the file system
+    #[serde(default)]
+    pub media_dir: String,
     /// The origin of the public server (ex: "https://rainbeam.net")
     ///
     /// Used in embeds and links.
@@ -85,6 +88,7 @@ impl Default for ServerOptions {
             captcha: HCaptchaConfig::default(),
             real_ip_header: Option::None,
             static_dir: String::new(),
+            media_dir: String::new(),
             host: String::new(),
             citrus_id: String::new(),
             blocked_hosts: Vec::new(),
@@ -1481,6 +1485,24 @@ impl Database {
                     .remove(format!("rbeam.auth.notification_count:{}", id))
                     .await;
 
+                // delete images
+                if !self.config.media_dir.is_empty() {
+                    let avatar = format!("{}/avatars/{}.avif", self.config.media_dir, id);
+                    if let Ok(_) = rainbeam_shared::fs::fstat(&avatar) {
+                        if let Err(_) = rainbeam_shared::fs::remove_file(avatar) {
+                            return Err(DatabaseError::Other);
+                        }
+                    }
+
+                    let banner = format!("{}/banners/{}.avif", self.config.media_dir, id);
+                    if let Ok(_) = rainbeam_shared::fs::fstat(&banner) {
+                        if let Err(_) = rainbeam_shared::fs::remove_file(banner) {
+                            return Err(DatabaseError::Other);
+                        }
+                    }
+                }
+
+                // ...
                 Ok(())
             }
             Err(_) => Err(DatabaseError::Other),
@@ -4728,6 +4750,21 @@ impl Database {
     /// ## Arguments:
     /// * `id`
     pub async fn get_item(&self, id: String) -> Result<Item> {
+        if id == "0" {
+            // this item can be charged for things that don't relate to an item
+            return Ok(Item {
+                id: "0".to_string(),
+                name: "System cost".to_string(),
+                description: String::new(),
+                cost: -1,
+                content: String::new(),
+                r#type: ItemType::Text,
+                status: ItemStatus::Approved,
+                timestamp: 0,
+                creator: "0".to_string(),
+            });
+        }
+
         // check in cache
         match self
             .base

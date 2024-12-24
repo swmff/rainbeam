@@ -65,9 +65,30 @@
         />
 
         <p class="fade">
-            Hosting images is expensive and annoying, so instead you save a link
-            to your desired image and we'll proxy it and show it on your
-            profile!
+            Put a link to your avatar above. If you are unable to get a link,
+            you can alternatively upload the file directly. Uploaded files must
+            be less than 8MB and will be converted to AVIF.
+        </p>
+
+        <form
+            class="flex gap-2 flex-row items-center"
+            method="post"
+            enctype="multipart/form-data"
+            action="/api/v0/auth/me/upload_avatar"
+        >
+            <input
+                name="file"
+                type="file"
+                accept="image/png,image/jpeg,image/avif,image/webp"
+                class="w-content"
+            />
+            <button class="primary">{{ icon "check" }}</button>
+        </form>
+
+        <p class="fade">
+            Uploading an image will cost you
+            <a href="/settings/coins">C$25</a> every time after your first
+            upload.
         </p>
     </div>
 
@@ -85,7 +106,30 @@
 
         <p class="fade">
             Same deal as the avatar! This is the big thing at the top of your
-            profile.
+            profile. If you are unable to get a link, you can alternatively
+            upload the file directly. Uploaded files must be less than 8MB and
+            will be converted to AVIF.
+        </p>
+
+        <form
+            class="flex gap-2 flex-row items-center"
+            method="post"
+            enctype="multipart/form-data"
+            action="/api/v0/auth/me/upload_banner"
+        >
+            <input
+                name="file"
+                type="file"
+                accept="image/png,image/jpeg,image/avif,image/webp"
+                class="w-content"
+            />
+            <button class="primary">{{ icon "check" }}</button>
+        </form>
+
+        <p class="fade">
+            Uploading an image will cost you
+            <a href="/settings/coins">C$25</a> every time after your first
+            upload.
         </p>
     </div>
 

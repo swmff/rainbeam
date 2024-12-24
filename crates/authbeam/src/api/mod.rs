@@ -109,6 +109,8 @@ pub fn routes(database: Database) -> Router {
         .route("/me/tokens/generate", post(me::generate_token_request))
         .route("/me/tokens", post(me::update_tokens_request))
         .route("/me/delete", post(me::delete_request))
+        .route("/me/upload_avatar", post(me::upload_avatar_request))
+        .route("/me/upload_banner", post(me::upload_banner_request))
         .route("/me", get(me::get_request))
         // account
         .route("/register", post(general::create_request))

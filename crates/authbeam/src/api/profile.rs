@@ -20,10 +20,7 @@ use std::{fs::File, io::Read};
 pub fn read_image(static_dir: String, image: String) -> Vec<u8> {
     let mut bytes = Vec::new();
 
-    for byte in File::open(format!("{static_dir}/images/{image}",))
-        .unwrap()
-        .bytes()
-    {
+    for byte in File::open(format!("{static_dir}/{image}")).unwrap().bytes() {
         bytes.push(byte.unwrap())
     }
 
@@ -42,7 +39,7 @@ pub async fn avatar_request(
             return (
                 [("Content-Type", "image/svg+xml")],
                 Body::from(read_image(
-                    database.config.static_dir,
+                    format!("{}/images", database.config.static_dir),
                     "default-avatar.svg".to_string(),
                 )),
             );
@@ -55,11 +52,21 @@ pub async fn avatar_request(
         None => "",
     };
 
+    if (avatar_url == "rb://") && !database.config.media_dir.is_empty() {
+        return (
+            [("Content-Type", "image/avif")],
+            Body::from(read_image(
+                format!("{}/avatars", database.config.media_dir),
+                format!("{}.avif", auth_user.id.clone()),
+            )),
+        );
+    }
+
     if avatar_url.starts_with(&database.config.host) {
         return (
             [("Content-Type", "image/svg+xml")],
             Body::from(read_image(
-                database.config.static_dir,
+                format!("{}/images", database.config.static_dir),
                 "default-avatar.svg".to_string(),
             )),
         );
@@ -70,7 +77,7 @@ pub async fn avatar_request(
             return (
                 [("Content-Type", "image/svg+xml")],
                 Body::from(read_image(
-                    database.config.static_dir,
+                    format!("{}/images", database.config.static_dir),
                     "default-avatar.svg".to_string(),
                 )),
             );
@@ -82,7 +89,7 @@ pub async fn avatar_request(
         return (
             [("Content-Type", "image/svg+xml")],
             Body::from(read_image(
-                database.config.static_dir,
+                format!("{}/images", database.config.static_dir),
                 "default-avatar.svg".to_string(),
             )),
         );
@@ -102,7 +109,7 @@ pub async fn avatar_request(
                     return (
                         [("Content-Type", "image/svg+xml")],
                         Body::from(read_image(
-                            database.config.static_dir,
+                            format!("{}/images", database.config.static_dir),
                             "default-avatar.svg".to_string(),
                         )),
                     );
@@ -124,7 +131,7 @@ pub async fn avatar_request(
         Err(_) => (
             [("Content-Type", "image/svg+xml")],
             Body::from(read_image(
-                database.config.static_dir,
+                format!("{}/images", database.config.static_dir),
                 "default-avatar.svg".to_string(),
             )),
         ),
@@ -143,7 +150,7 @@ pub async fn banner_request(
             return (
                 [("Content-Type", "image/svg+xml")],
                 Body::from(read_image(
-                    database.config.static_dir,
+                    format!("{}/images", database.config.static_dir),
                     "default-banner.svg".to_string(),
                 )),
             );
@@ -156,11 +163,21 @@ pub async fn banner_request(
         None => "",
     };
 
+    if (banner_url == "rb://") && !database.config.media_dir.is_empty() {
+        return (
+            [("Content-Type", "image/avif")],
+            Body::from(read_image(
+                format!("{}/banners", database.config.media_dir),
+                format!("{}.avif", auth_user.id.clone()),
+            )),
+        );
+    }
+
     if banner_url.starts_with(&database.config.host) {
         return (
             [("Content-Type", "image/svg+xml")],
             Body::from(read_image(
-                database.config.static_dir,
+                format!("{}/images", database.config.static_dir),
                 "default-banner.svg".to_string(),
             )),
         );
@@ -171,7 +188,7 @@ pub async fn banner_request(
             return (
                 [("Content-Type", "image/svg+xml")],
                 Body::from(read_image(
-                    database.config.static_dir,
+                    format!("{}/images", database.config.static_dir),
                     "default-banner.svg".to_string(),
                 )),
             );
@@ -183,7 +200,7 @@ pub async fn banner_request(
         return (
             [("Content-Type", "image/svg+xml")],
             Body::from(read_image(
-                database.config.static_dir,
+                format!("{}/images", database.config.static_dir),
                 "default-banner.svg".to_string(),
             )),
         );
@@ -203,7 +220,7 @@ pub async fn banner_request(
                     return (
                         [("Content-Type", "image/svg+xml")],
                         Body::from(read_image(
-                            database.config.static_dir,
+                            format!("{}/images", database.config.static_dir),
                             "default-banner.svg".to_string(),
                         )),
                     );
@@ -225,7 +242,7 @@ pub async fn banner_request(
         Err(_) => (
             [("Content-Type", "image/svg+xml")],
             Body::from(read_image(
-                database.config.static_dir,
+                format!("{}/images", database.config.static_dir),
                 "default-banner.svg".to_string(),
             )),
         ),

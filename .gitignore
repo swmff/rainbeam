@@ -16,3 +16,4 @@ crates/rainbeam/templates_build/
 .config/config.toml
 .config/databeam/config.toml
 .config/.well-known/citrus/citrus.toml
+media/

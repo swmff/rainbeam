@@ -1,12 +1,14 @@
 use crate::database::Database;
-use crate::model::{DatabaseError, TokenContext, TokenPermission};
+use crate::model::{DatabaseError, TokenContext, TokenPermission, TransactionCreate};
 use serde::{Deserialize, Serialize};
 use databeam::DefaultReturn;
 
 use axum::http::{HeaderMap, HeaderValue};
-use axum::response::IntoResponse;
+use axum::response::{IntoResponse, Redirect};
 use axum::{extract::State, Json};
 use axum_extra::extract::cookie::CookieJar;
+
+use crate::avif::{save_avif_buffer, Image};
 
 /// Returns the current user's username
 pub async fn get_request(jar: CookieJar, State(database): State<Database>) -> impl IntoResponse {
@@ -334,4 +336,202 @@ pub async fn update_tokens_request(
         message: "Tokens updated!".to_string(),
         payload: (),
     })
+}
+
+static MAXIUMUM_FILE_SIZE: usize = 8388608;
+
+/// Upload avatar
+pub async fn upload_avatar_request(
+    jar: CookieJar,
+    State(database): State<Database>,
+    img: Image,
+) -> impl IntoResponse {
+    // get user from token
+    let mut auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(e) => {
+                return Redirect::to(&format!(
+                    "/settings/profile?ANNC={}&ANNC_TYPE=caution",
+                    e.to_string()
+                ));
+            }
+        },
+        None => {
+            return Redirect::to(&format!(
+                "/settings/profile?ANNC={}&ANNC_TYPE=caution",
+                DatabaseError::NotFound.to_string()
+            ));
+        }
+    };
+
+    // charge coins if this isn't our first upload
+    let path = format!(
+        "{}/avatars/{}.avif",
+        database.config.media_dir,
+        auth_user.id.clone()
+    );
+
+    if let Ok(_) = rainbeam_shared::fs::fstat(&path) {
+        if let Err(e) = database
+            .create_transaction(
+                TransactionCreate {
+                    merchant: "0".to_string(),
+                    item: "0".to_string(),
+                    amount: -25,
+                },
+                auth_user.id.clone(),
+            )
+            .await
+        {
+            return Redirect::to(&format!(
+                "/settings/profile?ANNC={}&ANNC_TYPE=caution",
+                e.to_string()
+            ));
+        }
+    }
+
+    // check file size
+    if img.0.len() > MAXIUMUM_FILE_SIZE {
+        return Redirect::to(&format!(
+            "/settings/profile?ANNC={}&ANNC_TYPE=caution",
+            DatabaseError::TooLong.to_string()
+        ));
+    }
+
+    // upload image
+    let mut bytes = Vec::new();
+
+    for byte in img.0 {
+        bytes.push(byte);
+    }
+
+    match save_avif_buffer(&path, bytes) {
+        Ok(_) => {
+            // update profile config
+            auth_user
+                .metadata
+                .kv
+                .insert("sparkler:avatar_url".to_string(), "rb://".to_string());
+
+            match database
+                .update_profile_metadata(auth_user.id.clone(), auth_user.metadata)
+                .await
+            {
+                Ok(_) => Redirect::to(&format!(
+                    "/settings/profile?ANNC={}&ANNC_TYPE=tip",
+                    "File uploaded"
+                )),
+                Err(e) => Redirect::to(&format!(
+                    "/settings/profile?ANNC={}&ANNC_TYPE=caution",
+                    e.to_string()
+                )),
+            }
+        }
+        Err(e) => Redirect::to(&format!(
+            "/settings/profile?ANNC={}&ANNC_TYPE=caution",
+            e.to_string()
+        )),
+    }
+}
+
+/// Upload banner
+pub async fn upload_banner_request(
+    jar: CookieJar,
+    State(database): State<Database>,
+    img: Image,
+) -> impl IntoResponse {
+    // get user from token
+    let mut auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(e) => {
+                return Redirect::to(&format!(
+                    "/settings/profile?ANNC={}&ANNC_TYPE=caution",
+                    e.to_string()
+                ));
+            }
+        },
+        None => {
+            return Redirect::to(&format!(
+                "/settings/profile?ANNC={}&ANNC_TYPE=caution",
+                DatabaseError::NotFound.to_string()
+            ));
+        }
+    };
+
+    // charge coins if this isn't our first upload
+    let path = format!(
+        "{}/banners/{}.avif",
+        database.config.media_dir,
+        auth_user.id.clone()
+    );
+
+    if let Ok(_) = rainbeam_shared::fs::fstat(&path) {
+        if let Err(e) = database
+            .create_transaction(
+                TransactionCreate {
+                    merchant: "0".to_string(),
+                    item: "0".to_string(),
+                    amount: -25,
+                },
+                auth_user.id.clone(),
+            )
+            .await
+        {
+            return Redirect::to(&format!(
+                "/settings/profile?ANNC={}&ANNC_TYPE=caution",
+                e.to_string()
+            ));
+        }
+    }
+
+    // check file size
+    if img.0.len() > MAXIUMUM_FILE_SIZE {
+        return Redirect::to(&format!(
+            "/settings/profile?ANNC={}&ANNC_TYPE=caution",
+            DatabaseError::TooLong.to_string()
+        ));
+    }
+
+    // upload image
+    let mut bytes = Vec::new();
+
+    for byte in img.0 {
+        bytes.push(byte);
+    }
+
+    match save_avif_buffer(&path, bytes) {
+        Ok(_) => {
+            // update profile config
+            auth_user
+                .metadata
+                .kv
+                .insert("sparkler:banner_url".to_string(), "rb://".to_string());
+
+            match database
+                .update_profile_metadata(auth_user.id.clone(), auth_user.metadata)
+                .await
+            {
+                Ok(_) => Redirect::to(&format!(
+                    "/settings/profile?ANNC={}&ANNC_TYPE=tip",
+                    "File uploaded"
+                )),
+                Err(e) => Redirect::to(&format!(
+                    "/settings/profile?ANNC={}&ANNC_TYPE=caution",
+                    e.to_string()
+                )),
+            }
+        }
+        Err(e) => Redirect::to(&format!(
+            "/settings/profile?ANNC={}&ANNC_TYPE=caution",
+            e.to_string()
+        )),
+    }
 }

@@ -52,6 +52,9 @@ pub struct Config {
     /// The location of the static directory, should not be supplied manually as it will be overwritten with `./.config/static`
     #[serde(default)]
     pub static_dir: String,
+    /// The location of media uploads on the file system
+    #[serde(default)]
+    pub media_dir: String,
     /// HCaptcha configuration
     pub captcha: HCaptchaConfig,
     /// The name of the header used for reading user IP address
@@ -93,6 +96,7 @@ impl Default for Config {
             name: "Rainbeam".to_string(),
             description: "Ask, share, socialize!".to_string(),
             static_dir: String::new(),
+            media_dir: String::new(),
             captcha: HCaptchaConfig::default(),
             real_ip_header: Option::None,
             registration_enabled: true,

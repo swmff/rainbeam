@@ -41,7 +41,7 @@
         if (type === "UserTheme") {
             if (
                 !(await app.confirm(
-                    "Are you sure you would like to create an item using your current profile theme? You can press no to input CSS directly instead.",
+                    "Are you sure you would like to create an item using your current profile theme?\n\nYou can press no to input CSS directly instead.",
                 ))
             ) {
                 const css = await app.prompt_long("Enter CSS manually:");
