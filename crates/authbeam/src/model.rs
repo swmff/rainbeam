@@ -513,13 +513,23 @@ pub struct Transaction {
 }
 
 /// A marketplace item type
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub enum ItemType {
+    Text,
     UserTheme,
 }
 
+impl ToString for ItemType {
+    fn to_string(&self) -> String {
+        match self {
+            ItemType::Text => "Text".to_string(),
+            ItemType::UserTheme => "UserTheme".to_string(),
+        }
+    }
+}
+
 /// A marketplace item status
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub enum ItemStatus {
     /// The item has been reviewed by a site moderator and rejected
     Rejected,
@@ -527,6 +537,25 @@ pub enum ItemStatus {
     Pending,
     /// The item has been approved by a site moderator
     Approved,
+    /// The item has been featured by a site moderator
+    Featured,
+}
+
+impl Default for ItemStatus {
+    fn default() -> Self {
+        Self::Approved
+    }
+}
+
+impl ToString for ItemStatus {
+    fn to_string(&self) -> String {
+        match self {
+            ItemStatus::Rejected => "Rejected".to_string(),
+            ItemStatus::Pending => "Pending".to_string(),
+            ItemStatus::Approved => "Approved".to_string(),
+            ItemStatus::Featured => "Featured".to_string(),
+        }
+    }
 }
 
 /// A marketplace item (for [`Transaction`]s)
@@ -667,6 +696,18 @@ pub struct ItemCreate {
     pub content: String,
     pub cost: i32,
     pub r#type: ItemType,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ItemEdit {
+    pub name: String,
+    pub description: String,
+    pub cost: i32,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ItemEditContent {
+    pub content: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

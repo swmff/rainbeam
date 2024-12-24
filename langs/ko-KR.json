@@ -231,6 +231,10 @@
         "settings:coins.html:label.amount": "Amount",
         "settings:coins.html:label.customer": "Customer",
         "settings:coins.html:label.merchant": "Merchant",
+        "settings:coins.html:label.type": "Type",
+        "settings:coins.html:label.item": "Item",
+        "settings:coins.html:text.browse_market": "Browse market",
+        "settings:coins.html:text.publish_item": "Publish item",
 
         "chats:chat.html:action.change_name": "이름 변경",
         "chats:chat.html:action.add_friend": "친구 추가",
@@ -248,6 +252,26 @@
         "mail:compose.html:label.content": "내용",
         "mail:mail.html:label.from": "From",
         "mail:mail.html:label.sent": "보냄",
-        "mail:mail.html:text.system": "이 메일은 시스템 계정으로 전송되었습니다. 액세스 권한이 있는 모든 직원이 보고 답장할 수 있습니다."
+        "mail:mail.html:text.system": "이 메일은 시스템 계정으로 전송되었습니다. 액세스 권한이 있는 모든 직원이 보고 답장할 수 있습니다.",
+
+        "market:label.name": "Name",
+        "market:label.description": "Description",
+        "market:label.cost": "Cost",
+        "market:label.select_an_item_type": "Select an item type",
+        "market:text.user_theme": "User theme",
+        "market:text.text": "Text",
+        "market:text.not_for_sale": "Not for sale",
+        "market:text.rejected": "Rejected",
+        "market:text.pending": "Pending",
+        "market:text.approved": "Approved",
+        "market:text.featured": "Featured",
+        "market:text.details": "Details",
+        "market:text.preview": "Preview",
+        "market:text.contents": "Contents",
+        "market:text.item_owned": "item already owned! 😸",
+        "market:text.item_not_owned": "purchase item to view! 😿",
+        "market:text.buy": "Buy",
+        "market:action.edit_content": "Edit content",
+        "market:action.use_theme": "Use theme base"
     }
 }

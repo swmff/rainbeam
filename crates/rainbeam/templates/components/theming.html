@@ -1,5 +1,10 @@
 <!-- prettier-ignore -->
 <div id="stylesheets">
+{% if let Some(css) = raw_metadata.kv.get("rainbeam:market_theme_template") %}
+    {% if !css.is_empty() %}
+        <style id="rainbeam:market_theme_template">{{ css|safe }}</style>
+    {% endif %}
+{% endif %}
 {% if let Some(color) = raw_metadata.kv.get("sparkler:color_surface") %}
     {% let color = crate::routing::pages::color_escape(color) %}
     {% if !color.is_empty() %}

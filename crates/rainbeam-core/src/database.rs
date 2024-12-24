@@ -2636,6 +2636,15 @@ impl Database {
                         .await;
                 }
 
+                // give us 2 coins :)
+                if let Err(_) = self
+                    .auth
+                    .update_profile_coins(response.author.id.clone(), 2)
+                    .await
+                {
+                    return Err(DatabaseError::Other);
+                }
+
                 // return
                 Ok(response)
             }

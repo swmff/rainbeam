@@ -81,9 +81,14 @@ pub fn routes(database: Database) -> Router {
         .route("/mail/:id/state", post(mail::update_state_request))
         .route("/mail/:id", delete(mail::delete_request))
         // items
-        .route("/item", post(items::create_request))
+        .route("/items", post(items::create_request))
         .route("/item/:id/buy", post(items::buy_request))
+        .route("/item/:id", post(items::update_item_request))
         .route("/item/:id/status", post(items::update_status_request))
+        .route(
+            "/item/:id/content",
+            post(items::update_item_content_request),
+        )
         .route("/item/:id", delete(items::delete_request))
         // notifications
         .route("/notifications/:id", delete(notifications::delete_request))

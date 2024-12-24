@@ -1,5 +1,8 @@
 use crate::database::Database;
-use crate::model::{DatabaseError, ItemCreate, SetItemStatus, TokenPermission, TransactionCreate};
+use crate::model::{
+    DatabaseError, ItemCreate, ItemEdit, ItemEditContent, SetItemStatus, TokenPermission,
+    TransactionCreate,
+};
 use databeam::DefaultReturn;
 
 use axum::response::IntoResponse;
@@ -170,6 +173,100 @@ pub async fn update_status_request(
     })
 }
 
+/// Update item fields
+pub async fn update_item_request(
+    jar: CookieJar,
+    Path(id): Path<String>,
+    State(database): State<Database>,
+    Json(props): Json<ItemEdit>,
+) -> impl IntoResponse {
+    // get user from token
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(e) => {
+                return Json(DefaultReturn {
+                    success: false,
+                    message: e.to_string(),
+                    payload: (),
+                });
+            }
+        },
+        None => {
+            return Json(DefaultReturn {
+                success: false,
+                message: DatabaseError::NotAllowed.to_string(),
+                payload: (),
+            });
+        }
+    };
+
+    // return
+    if let Err(e) = database.update_item(id, props, auth_user).await {
+        return Json(DefaultReturn {
+            success: false,
+            message: e.to_string(),
+            payload: (),
+        });
+    }
+
+    Json(DefaultReturn {
+        success: true,
+        message: "Item updated".to_string(),
+        payload: (),
+    })
+}
+
+/// Update item content
+pub async fn update_item_content_request(
+    jar: CookieJar,
+    Path(id): Path<String>,
+    State(database): State<Database>,
+    Json(props): Json<ItemEditContent>,
+) -> impl IntoResponse {
+    // get user from token
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(e) => {
+                return Json(DefaultReturn {
+                    success: false,
+                    message: e.to_string(),
+                    payload: (),
+                });
+            }
+        },
+        None => {
+            return Json(DefaultReturn {
+                success: false,
+                message: DatabaseError::NotAllowed.to_string(),
+                payload: (),
+            });
+        }
+    };
+
+    // return
+    if let Err(e) = database.update_item_content(id, props, auth_user).await {
+        return Json(DefaultReturn {
+            success: false,
+            message: e.to_string(),
+            payload: (),
+        });
+    }
+
+    Json(DefaultReturn {
+        success: true,
+        message: "Item updated".to_string(),
+        payload: (),
+    })
+}
+
 /// Buy an item
 pub async fn buy_request(
     jar: CookieJar,
@@ -211,6 +308,14 @@ pub async fn buy_request(
             })
         }
     };
+
+    if item.cost == -1 {
+        return Json(DefaultReturn {
+            success: false,
+            message: DatabaseError::TooExpensive.to_string(),
+            payload: (),
+        });
+    }
 
     if let Err(e) = database
         .create_transaction(

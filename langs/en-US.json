@@ -202,7 +202,7 @@
         "settings:profile_options.html:label.anonymous_username": "Anonymous username",
         "settings:profile_options.html:label.anonymous_avatar_url": "Anonymous avatar URL",
 
-        "settings:profile_options.html:title.feed": "feed",
+        "settings:profile_options.html:title.feed": "Feed",
         "settings:profile_options.html:label.pinned": "Pinned",
 
         "settings:privacy_options.html:title.general_privacy": "General privacy",
@@ -231,8 +231,10 @@
         "settings:coins.html:label.amount": "Amount",
         "settings:coins.html:label.customer": "Customer",
         "settings:coins.html:label.merchant": "Merchant",
+        "settings:coins.html:label.type": "Type",
+        "settings:coins.html:label.item": "Item",
         "settings:coins.html:text.browse_market": "Browse market",
-        "settings:coins.html:text.publish_theme": "Publish theme",
+        "settings:coins.html:text.publish_item": "Publish item",
 
         "chats:chat.html:action.change_name": "Change name",
         "chats:chat.html:action.add_friend": "Add friend",
@@ -250,6 +252,26 @@
         "mail:compose.html:label.content": "Content",
         "mail:mail.html:label.from": "From",
         "mail:mail.html:label.sent": "Sent",
-        "mail:mail.html:text.system": "This mail was sent to the system account. It may be seen and replied to by any staff member with access."
+        "mail:mail.html:text.system": "This mail was sent to the system account. It may be seen and replied to by any staff member with access.",
+
+        "market:label.name": "Name",
+        "market:label.description": "Description",
+        "market:label.cost": "Cost",
+        "market:label.select_an_item_type": "Select an item type",
+        "market:text.user_theme": "User theme",
+        "market:text.text": "Text",
+        "market:text.not_for_sale": "Not for sale",
+        "market:text.rejected": "Rejected",
+        "market:text.pending": "Pending",
+        "market:text.approved": "Approved",
+        "market:text.featured": "Featured",
+        "market:text.details": "Details",
+        "market:text.preview": "Preview",
+        "market:text.contents": "Contents",
+        "market:text.item_owned": "item already owned! 😸",
+        "market:text.item_not_owned": "purchase item to view! 😿",
+        "market:text.buy": "Buy",
+        "market:action.edit_content": "Edit content",
+        "market:action.use_theme": "Use theme base"
     }
 }

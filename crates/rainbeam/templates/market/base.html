@@ -1,0 +1,59 @@
+{% extends "../base.html" %} {% block title %}Market - {{ config.name }}{%
+endblock %} {% block nav_left %}
+<a class="button" href="/" title="Timeline">
+    {{ icon "house" }}
+    <span class="desktop">{{ text "general:link.timeline" }}</span>
+    <span class="mobile">{{ text "general:link.home" }}</span>
+</a>
+
+<a class="button" href="/inbox" title="My inbox">
+    {{ icon "inbox" }}
+    <span class="flex items-center gap-2">
+        <span>{{ text "general:link.inbox" }}</span>
+        {% if unread != 0 %}
+        <span class="notification tr">{{ unread }}</span>
+        {% endif %}
+    </span>
+</a>
+{% endblock %} {% block nav_right %}
+<a class="button" href="/inbox/notifications" title="My notifications">
+    {{ icon "bell" }} {% if notifs != 0 %}
+    <span class="notification tr">{{ notifs }}</span>
+    {% endif %}
+</a>
+{% endblock %} {% block content %} {% if let Some(profile) = profile %} {% let
+other = profile.clone() %} {% if profile.username == other.username %}
+<div id="is_self"></div>
+{% endif %} {% let raw_metadata =
+crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
+"components/theming.html" %} {% endif %} {% if let Some(user) = profile %}
+<article class="flex flex-col gap-4">
+    <div class="card w-full shadow flex justify-between flex-collapse gap-2">
+        <div class="flex gap-2 sm:w-full">
+            <a href="/market" class="button bold" title="Market home">
+                {{ icon "store" }}
+            </a>
+
+            <a href="/market/new" class="button bold" title="Create">
+                {{ icon "plus" }}
+            </a>
+
+            {% block m_nav_left %}{% endblock %}
+
+            <a
+                href="/settings/coins#/transactions"
+                class="button bold sm:w-full"
+                style="justify-content: flex-start"
+            >
+                {{ icon "wallet" }} <span>{{ user.coins }}</span>
+            </a>
+        </div>
+
+        <div class="flex gap-2 sm:w-full">
+            {% block m_nav_right %}{% endblock %}
+        </div>
+    </div>
+
+    {% block panel %}{% endblock %}
+</article>
+{% endif %} {% call super() %} {% endblock %}

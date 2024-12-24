@@ -28,11 +28,9 @@
         </div>
 
         <div class="card secondary flex flex-col gap-2">
-            <b>{{ text "general:text.coming_soon" }}</b>
             <a
                 href="/market"
                 class="card w-full flex justify-between items-center gap-2"
-                disabled
             >
                 <div class="flex gap-2 items-center">
                     {{ icon "store" }}
@@ -47,15 +45,14 @@
             </a>
 
             <a
-                href="/market/new?type=UserTheme"
+                href="/market/new"
                 class="card w-full flex justify-between items-center gap-2"
-                disabled
             >
                 <div class="flex gap-2 items-center">
                     {{ icon "badge-plus" }}
 
                     <span>
-                        {{ text "settings:coins.html:text.publish_theme" }}
+                        {{ text "settings:coins.html:text.publish_item" }}
                     </span>
                 </div>
 
@@ -79,16 +76,23 @@
                     <th>{{ text "settings:coins.html:label.amount" }}</th>
                     <th>{{ text "settings:coins.html:label.customer" }}</th>
                     <th>{{ text "settings:coins.html:label.merchant" }}</th>
+                    <th>{{ text "settings:coins.html:label.type" }}</th>
+                    <th>{{ text "settings:coins.html:label.item" }}</th>
                 </tr>
             </thead>
 
             <!-- prettier-ignore -->
             <tbody>
-                {% for ((transaction, _), customer, merchant) in transactions %}
+                {% for ((transaction, item), customer, merchant) in transactions %}
                 <tr id="transaction:{{ transaction.id }}">
                     <td>{{ transaction.amount }}</td>
                     <td><a href="/@{{ customer.username }}">{{ customer.username }}</a></td>
                     <td><a href="/@{{ merchant.username }}">{{ merchant.username }}</a></td>
+
+                    {% if let Some(item) = item %}
+                    <td>{{ item.type.to_string() }}</td>
+                    <td><a href="/market/item/{{ item.id }}" title="{{ item.name }}" class="flex items-center w-content">{{ icon "external-link" }}</a></td>
+                    {% endif %}
                 </tr>
                 {% endfor %}
             </tbody>

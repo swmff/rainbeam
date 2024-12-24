@@ -1,0 +1,7 @@
+{{ icon "tag" }} {% if item.cost == -1 %}
+<span>Off-sale</span>
+{% else if item.cost == 0 %}
+<span>Free</span>
+{% else %}
+<span>C${{ item.cost }}</span>
+{% endif %}

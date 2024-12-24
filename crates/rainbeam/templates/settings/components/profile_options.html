@@ -472,7 +472,7 @@
 
     <h4 class="title">Advanced</h4>
     <div class="flex flex-col gap-1">
-        <label for="sparkler:custom_css">Custom CSS </label>
+        <label for="sparkler:custom_css">Custom CSS</label>
 
         <textarea
             name="sparkler:custom_css"
@@ -486,6 +486,19 @@
 
         <p class="fade">
             Custom profile CSS that accepts more than just colors.
+        </p>
+    </div>
+
+    <div class="flex flex-col gap-1">
+        <label for="rainbeam:market_theme_template">Theme base</label>
+
+        <button onclick="update_kv('rainbeam:market_theme_template', '')">
+            Clear
+        </button>
+
+        <p class="fade">
+            Pressing "Clear" will reset the theme base applied from market
+            themes.
         </p>
     </div>
 </div>

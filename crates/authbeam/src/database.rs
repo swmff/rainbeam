@@ -2,9 +2,10 @@ use std::collections::HashMap;
 use std::str::Split;
 
 use crate::model::{
-    DatabaseError, IpBan, IpBanCreate, IpBlock, IpBlockCreate, Item, ItemCreate, ItemStatus, Mail,
-    MailCreate, MailState, Profile, ProfileCreate, ProfileMetadata, RelationshipStatus,
-    TokenContext, Transaction, TransactionCreate, UserLabel, Warning, WarningCreate,
+    DatabaseError, IpBan, IpBanCreate, IpBlock, IpBlockCreate, Item, ItemCreate, ItemEdit,
+    ItemEditContent, ItemStatus, Mail, MailCreate, MailState, Profile, ProfileCreate,
+    ProfileMetadata, RelationshipStatus, TokenContext, Transaction, TransactionCreate, UserLabel,
+    Warning, WarningCreate,
 };
 use crate::model::{Group, Notification, NotificationCreate, Permission, UserFollow};
 
@@ -807,6 +808,7 @@ impl Database {
             "sparkler:mail_signature",
             "rainbeam:verify_url",
             "rainbeam:verify_code",
+            "rainbeam:market_theme_template",
         ]
     }
 
@@ -1417,6 +1419,36 @@ impl Database {
                         "DELETE FROM \"xipblocks\" WHERE \"user\" = ?"
                     } else {
                         "DELETE FROM \"xipblocks\" WHERE \"user\" = $1"
+                    };
+
+                if let Err(_) = sqlquery(query).bind::<&String>(&id).execute(c).await {
+                    return Err(DatabaseError::Other);
+                };
+
+                // transactions with user
+                let query: &str = if (self.base.db.r#type == "sqlite")
+                    | (self.base.db.r#type == "mysql")
+                {
+                    "DELETE FROM \"xugc_transactions\" WHERE \"customer\" = ? OR \"merchant\" = ?"
+                } else {
+                    "DELETE FROM \"xugc_transactions\" WHERE \"customer\" = $1 OR \"merchant\" = $2"
+                };
+
+                if let Err(_) = sqlquery(query)
+                    .bind::<&String>(&id)
+                    .bind::<&String>(&id)
+                    .execute(c)
+                    .await
+                {
+                    return Err(DatabaseError::Other);
+                };
+
+                // items by user
+                let query: &str =
+                    if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+                        "DELETE FROM \"xugc_items\" WHERE \"creator\" = ?"
+                    } else {
+                        "DELETE FROM \"xugc_items\" WHERE \"creator\" = $1"
                     };
 
                 if let Err(_) = sqlquery(query).bind::<&String>(&id).execute(c).await {
@@ -4460,6 +4492,46 @@ impl Database {
         Ok(transaction)
     }
 
+    /// Get an existing transaction given the `customer` and the `item`
+    ///
+    /// ## Arguments:
+    /// * `user`
+    /// * `item`
+    pub async fn get_transaction_by_customer_item(
+        &self,
+        customer: String,
+        item: String,
+    ) -> Result<(Transaction, Option<Item>)> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "SELECT * FROM \"xugc_transactions\" WHERE \"customer\" = ? AND \"item\" = ?"
+        } else {
+            "SELECT * FROM \"xugc_transactions\" WHERE \"customer\" = $1 AND \"item\" = $2"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query)
+            .bind::<&String>(&customer)
+            .bind::<&String>(&item)
+            .fetch_one(c)
+            .await
+        {
+            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        let transaction = match self.gimme_transaction(res).await {
+            Ok(t) => t,
+            Err(e) => return Err(e),
+        };
+
+        // return
+        Ok(transaction)
+    }
+
     /// Get all transactions by the given user ID, 25 at a time
     ///
     /// ## Arguments:
@@ -4547,7 +4619,7 @@ impl Database {
 
         // make sure customer can afford this
         if props.amount.is_negative() {
-            if customer.coins < props.amount {
+            if (customer.coins + props.amount) < 0 {
                 return Err(DatabaseError::TooExpensive);
             }
         }
@@ -4585,18 +4657,40 @@ impl Database {
             Ok(_) => {
                 // update balances
                 if let Err(e) = self
-                    .update_profile_coins(customer.id, -(transaction.amount.abs()))
+                    .update_profile_coins(customer.id.clone(), transaction.amount)
                     .await
                 {
                     return Err(e);
                 };
 
                 if let Err(e) = self
-                    .update_profile_coins(merchant.id, transaction.amount.abs())
+                    .update_profile_coins(merchant.id.clone(), transaction.amount.abs())
                     .await
                 {
                     return Err(e);
                 };
+
+                // send notification
+                if (customer.id != merchant.id) && (merchant.id != "0".to_string()) {
+                    if let Err(e) = self
+                        .create_notification(
+                            NotificationCreate {
+                                title: "Purchased data now available!".to_string(),
+                                content: "Data from an item you purchased is now available."
+                                    .to_string(),
+                                address: format!(
+                                    "/market/item/{}#/preview",
+                                    transaction.item.clone()
+                                ),
+                                recipient: customer.id,
+                            },
+                            None,
+                        )
+                        .await
+                    {
+                        return Err(e);
+                    }
+                }
 
                 // ...
                 return Ok(transaction);
@@ -4748,22 +4842,24 @@ impl Database {
     ///
     /// ## Returns:
     /// `Vec<(Item, Box<Profile>)>`
-    pub async fn get_items_by_status_paginated(
+    pub async fn get_items_by_status_searched_paginated(
         &self,
         status: ItemStatus,
         page: i32,
+        search: String,
     ) -> Result<Vec<(Item, Box<Profile>)>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xugc_items\" WHERE \"status\" = ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+            format!("SELECT * FROM \"xugc_items\" WHERE \"status\" = ? AND \"name\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
         } else {
-            format!("SELECT * FROM \"xugc_items\" WHERE \"status\" = $1 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+            format!("SELECT * FROM \"xugc_items\" WHERE \"status\" = $1 AND \"name\" LIKE $2 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
         };
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query)
             .bind::<&String>(&serde_json::to_string(&status).unwrap())
+            .bind::<&String>(&format!("%{search}%"))
             .fetch_all(c)
             .await
         {
@@ -4809,7 +4905,7 @@ impl Database {
             return Err(DatabaseError::TooLong);
         }
 
-        if props.content.len() < 64 {
+        if props.content.len() < 2 {
             return Err(DatabaseError::ValueError);
         }
 
@@ -4844,7 +4940,7 @@ impl Database {
                 TransactionCreate {
                     merchant: "0".to_string(),
                     item: item.id.clone(),
-                    amount: -50,
+                    amount: -25,
                 },
                 creator.clone(),
             )
@@ -4876,7 +4972,25 @@ impl Database {
             .execute(c)
             .await
         {
-            Ok(_) => return Ok(item),
+            Ok(_) => {
+                // buy item (for free)
+                if let Err(e) = self
+                    .create_transaction(
+                        TransactionCreate {
+                            merchant: creator.clone(),
+                            item: item.id.clone(),
+                            amount: 0,
+                        },
+                        creator.clone(),
+                    )
+                    .await
+                {
+                    return Err(e);
+                };
+
+                // ...
+                return Ok(item);
+            }
             Err(_) => return Err(DatabaseError::Other),
         };
     }
@@ -4894,8 +5008,9 @@ impl Database {
         user: Box<Profile>,
     ) -> Result<()> {
         // make sure item exists and check permission
-        if let Err(e) = self.get_item(id.clone()).await {
-            return Err(e);
+        let item = match self.get_item(id.clone()).await {
+            Ok(i) => i,
+            Err(e) => return Err(e),
         };
 
         // check permission
@@ -4920,6 +5035,141 @@ impl Database {
         let c = &self.base.db.client;
         match sqlquery(&query)
             .bind::<&String>(&serde_json::to_string(&status).unwrap())
+            .bind::<&String>(&id)
+            .execute(c)
+            .await
+        {
+            Ok(_) => {
+                if let Err(e) = self
+                    .create_notification(
+                        NotificationCreate {
+                            title: "Item status updated!".to_string(),
+                            content: format!(
+                                "An item you created has been updated to the status of \"{}\"",
+                                status.to_string()
+                            ),
+                            address: format!("/market/item/{}", item.id.clone()),
+                            recipient: item.creator,
+                        },
+                        None,
+                    )
+                    .await
+                {
+                    return Err(e);
+                }
+
+                // remove from cache
+                self.base
+                    .cachedb
+                    .remove(format!("rbeam.auth.econ.item:{}", id))
+                    .await;
+
+                // ...
+                return Ok(());
+            }
+            Err(_) => return Err(DatabaseError::Other),
+        };
+    }
+
+    /// Update item fields
+    ///
+    /// ## Arguments:
+    /// * `id`
+    /// * `props` - [`ItemEdit`]
+    /// * `user`
+    pub async fn update_item(&self, id: String, props: ItemEdit, user: Box<Profile>) -> Result<()> {
+        // make sure item exists and check permission
+        let item = match self.get_item(id.clone()).await {
+            Ok(i) => i,
+            Err(e) => return Err(e),
+        };
+
+        // check permission
+        let group = match self.get_group_by_id(user.group).await {
+            Ok(g) => g,
+            Err(_) => return Err(DatabaseError::Other),
+        };
+
+        if user.id != item.creator {
+            if !group.permissions.contains(&Permission::Helper) {
+                return Err(DatabaseError::NotAllowed);
+            }
+        }
+
+        // update item
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "UPDATE \"xugc_items\" SET \"name\" = ?, \"description\" = ?, \"cost\" = ? WHERE \"id\" = ?"
+        } else {
+            "UPDATE \"xugc_items\" SET (\"name\", \"description\", \"cost\") = ($1, $2, $3) WHERE \"id\" = $4"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query)
+            .bind::<&String>(&props.name)
+            .bind::<&String>(&props.description)
+            .bind::<i32>(props.cost)
+            .bind::<&String>(&id)
+            .execute(c)
+            .await
+        {
+            Ok(_) => {
+                // remove from cache
+                self.base
+                    .cachedb
+                    .remove(format!("rbeam.auth.econ.item:{}", id))
+                    .await;
+
+                // ...
+                return Ok(());
+            }
+            Err(_) => return Err(DatabaseError::Other),
+        };
+    }
+
+    /// Update item content
+    ///
+    /// ## Arguments:
+    /// * `id`
+    /// * `props` - [`ItemEditContent`]
+    /// * `user`
+    pub async fn update_item_content(
+        &self,
+        id: String,
+        props: ItemEditContent,
+        user: Box<Profile>,
+    ) -> Result<()> {
+        // make sure item exists and check permission
+        let item = match self.get_item(id.clone()).await {
+            Ok(i) => i,
+            Err(e) => return Err(e),
+        };
+
+        // check permission
+        let group = match self.get_group_by_id(user.group).await {
+            Ok(g) => g,
+            Err(_) => return Err(DatabaseError::Other),
+        };
+
+        if user.id != item.creator {
+            if !group.permissions.contains(&Permission::Helper) {
+                return Err(DatabaseError::NotAllowed);
+            }
+        }
+
+        // update item
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "UPDATE \"xugc_items\" SET \"content\" = ? WHERE \"id\" = ?"
+        } else {
+            "UPDATE \"xugc_items\" SET (\"content\") = ($1) WHERE \"id\" = $2"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query)
+            .bind::<&String>(&props.content)
             .bind::<&String>(&id)
             .execute(c)
             .await

@@ -11,7 +11,9 @@ use axum_extra::extract::CookieJar;
 use ammonia::Builder;
 use langbeam::LangFile;
 use serde::{Deserialize, Serialize};
-use authbeam::model::{IpBan, Notification, Permission, Profile, ProfileMetadata, RelationshipStatus};
+use authbeam::model::{
+    IpBan, ItemStatus, Notification, Permission, Profile, ProfileMetadata, RelationshipStatus,
+};
 
 use crate::config::Config;
 use crate::database::Database;
@@ -23,6 +25,7 @@ use super::api;
 pub mod chats;
 pub mod circles;
 pub mod mail;
+pub mod market;
 pub mod profile;
 pub mod search;
 pub mod settings;
@@ -446,6 +449,16 @@ pub struct SearchQuery {
     q: String,
     #[serde(default)]
     tag: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct MarketQuery {
+    #[serde(default)]
+    page: i32,
+    #[serde(default)]
+    q: String,
+    #[serde(default)]
+    status: ItemStatus,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -2165,6 +2178,14 @@ pub async fn routes(database: Database) -> Router {
         .route(
             "/inbox/mail/_app/components/mail.html",
             get(mail::partial_mail_request),
+        )
+        // market
+        .route("/market", get(market::homepage_request))
+        .route("/market/new", get(market::create_request))
+        .route("/market/item/:id", get(market::item_request))
+        .route(
+            "/market/_app/theme_playground.html/:id",
+            get(market::theme_playground_request),
         )
         // auth
         .route("/login", get(login_request))

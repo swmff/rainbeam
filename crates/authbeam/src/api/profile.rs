@@ -566,27 +566,6 @@ pub async fn update_coins_request(
         }
     };
 
-    // check permission
-    let group = match database.get_group_by_id(other_user.group).await {
-        Ok(g) => g,
-        Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: None,
-            })
-        }
-    };
-
-    if group.permissions.contains(&Permission::Manager) {
-        // we cannot manager other managers
-        return Json(DefaultReturn {
-            success: false,
-            message: DatabaseError::NotAllowed.to_string(),
-            payload: None,
-        });
-    }
-
     // push update
     // TODO: try not to clone
     if let Err(e) = database

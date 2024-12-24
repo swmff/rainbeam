@@ -265,6 +265,15 @@ footer section {
     transform: all 0.15s;
 }
 
+.no-margin.markdown-alert-note,
+.no-margin.markdown-alert-tip,
+.no-margin.markdown-alert-important,
+.no-margin.markdown-alert-warning,
+.no-margin.markdown-alert-caution,
+.no-margin.markdown-alert-draft {
+    margin-bottom: 0;
+}
+
 .markdown-alert-note p,
 .markdown-alert-tip p,
 .markdown-alert-important p,

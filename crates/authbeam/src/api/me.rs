@@ -21,7 +21,7 @@ pub async fn get_request(jar: CookieJar, State(database): State<Database>) -> im
                 return Json(DefaultReturn {
                     success: false,
                     message: e.to_string(),
-                    payload: (),
+                    payload: None,
                 });
             }
         },
@@ -29,7 +29,7 @@ pub async fn get_request(jar: CookieJar, State(database): State<Database>) -> im
             return Json(DefaultReturn {
                 success: false,
                 message: DatabaseError::NotAllowed.to_string(),
-                payload: (),
+                payload: None,
             });
         }
     };
@@ -37,8 +37,8 @@ pub async fn get_request(jar: CookieJar, State(database): State<Database>) -> im
     // return
     Json(DefaultReturn {
         success: true,
-        message: auth_user.username,
-        payload: (),
+        message: auth_user.id.clone(),
+        payload: Some(auth_user),
     })
 }
 
