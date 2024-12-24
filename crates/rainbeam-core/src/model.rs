@@ -320,6 +320,8 @@ pub enum AssetType {
     Response,
     /// A [`ResponseComment`]
     Comment,
+    /// A market item
+    Item,
 }
 
 /// The status of a user's membership in a [`Circle`]

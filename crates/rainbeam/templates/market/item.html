@@ -1,5 +1,15 @@
-{% extends "base.html" %} {% block m_nav_right %} {% if !is_owned && (item.cost
-!= -1) %}
+{% extends "base.html" %} {% block m_nav_right %}
+<button
+    title="{{ reaction_count }} reactions"
+    onclick="trigger('reactions:toggle', ['{{ item.id }}', 'Item', event.target])"
+    hook="check_reaction"
+    hook-arg:id="{{ item.id }}"
+>
+    {{ icon "heart" }} {% if reaction_count > 0 %}
+    <span class="notification camo">{{ reaction_count }}</span>
+    {% endif %}
+</button>
+{% if !is_owned && (item.cost != -1) %}
 <button
     class="primary"
     onclick="trigger('items:purchase', ['{{ item.id }}', '{{ item.cost }}'])"

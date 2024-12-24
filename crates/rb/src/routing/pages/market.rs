@@ -193,6 +193,7 @@ struct ItemTemplate {
     creator: Box<Profile>,
     is_owned: bool,
     is_helper: bool,
+    reaction_count: usize,
 }
 
 /// GET /market/item/:id
@@ -269,6 +270,7 @@ pub async fn item_request(
             },
             item,
             is_helper,
+            reaction_count: database.get_reaction_count_by_asset(id).await,
         }
         .render()
         .unwrap(),

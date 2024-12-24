@@ -183,6 +183,57 @@ pub async fn create_request(
                 });
             }
         }
+        AssetType::Item => {
+            let asset = match database.auth.get_item(id.clone()).await {
+                Ok(i) => i,
+                Err(e) => {
+                    return Json(DefaultReturn {
+                        success: false,
+                        message: e.to_string(),
+                        payload: None,
+                    })
+                }
+            };
+
+            // check relationship
+            let relationship = database
+                .auth
+                .get_user_relationship(asset.creator.clone(), auth_user.id.clone())
+                .await
+                .0;
+
+            if relationship == RelationshipStatus::Blocked {
+                return Json(DefaultReturn {
+                    success: false,
+                    message: DatabaseError::NotAllowed.to_string(),
+                    payload: None,
+                });
+            }
+
+            // create notification
+            if let Err(_) = database
+                .auth
+                .create_notification(
+                    NotificationCreate {
+                        title: format!(
+                            "[@{}](/+u/{}) has reacted to an item you created!",
+                            auth_user.username, auth_user.id
+                        ),
+                        content: String::new(),
+                        address: format!("/market/item/{id}"),
+                        recipient: asset.creator,
+                    },
+                    None,
+                )
+                .await
+            {
+                return Json(DefaultReturn {
+                    success: false,
+                    message: DatabaseError::Other.to_string(),
+                    payload: None,
+                });
+            }
+        }
     };
 
     // ...
