@@ -64,7 +64,7 @@
                 }
 
                 if (field[0].startsWith("sparkler:color_")) {
-                    content_root += `--${field[0].replace("sparkler:", "").replaceAll("_", "-")}:${field[1]} !important;`;
+                    content_root += `/* ${field[0]} */\n--${field[0].replace("sparkler:", "").replaceAll("_", "-")}:${field[1]} !important;\n`;
                 } else if (field[0] === "sparkler:custom_css") {
                     content_custom = field[1];
                 } else {
@@ -72,7 +72,7 @@
                 }
             }
 
-            content = `${content_root}}${content_custom}`;
+            content = `${content_root}}\n/* sparkler:custom_css */\n${content_custom}`;
             console.log("content compiled");
         } else if (type === "Text") {
             content = await app.prompt("Item text:");

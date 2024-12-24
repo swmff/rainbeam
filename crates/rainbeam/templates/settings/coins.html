@@ -60,6 +60,23 @@
                     {{ icon "chevron-right" }}
                 </button>
             </a>
+
+            <a
+                href="/market?creator={{ user.id }}"
+                class="card w-full flex justify-between items-center gap-2"
+            >
+                <div class="flex gap-2 items-center">
+                    {{ icon "circle-user-round" }}
+
+                    <span>
+                        {{ text "settings:coins.html:text.my_items" }}
+                    </span>
+                </div>
+
+                <button class="primary icon-only small">
+                    {{ icon "chevron-right" }}
+                </button>
+            </a>
         </div>
     </div>
     {% endif %}

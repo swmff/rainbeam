@@ -56,22 +56,6 @@
     --color-super-raised: hsl(0, 0%, 20%);
 }
 
-.retro {
-    --color-primary: hsl(260, 54%, 45%);
-    --color-primary-lowered: hsl(260, 54%, 40%);
-    --color-primary-raised: hsl(260, 54%, 50%);
-    --color-primary-hsl: 260, 54%, 45%;
-}
-
-.curious {
-    --color-primary: hsl(33, 99%, 44%);
-    --color-primary-lowered: hsl(33, 99%, 39%);
-    --color-primary-raised: hsl(33, 99%, 49%);
-    --color-primary-hsl: 33, 99%, 44%;
-    --color-text-primary: black;
-    --radius: 4px;
-}
-
 /* ... */
 html,
 body {

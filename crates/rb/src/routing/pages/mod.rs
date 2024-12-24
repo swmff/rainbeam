@@ -459,6 +459,8 @@ pub struct MarketQuery {
     q: String,
     #[serde(default)]
     status: ItemStatus,
+    #[serde(default)]
+    creator: String,
 }
 
 #[derive(Serialize, Deserialize)]

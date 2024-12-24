@@ -78,13 +78,28 @@ pub async fn homepage_request(
     let is_helper = group.permissions.contains(&Permission::Helper);
 
     // data
-    let items = match database
-        .auth
-        .get_items_by_status_searched_paginated(props.status.clone(), props.page, props.q.clone())
-        .await
-    {
-        Ok(i) => i,
-        Err(e) => return Html(e.to_string()),
+    let items = if props.creator.is_empty() {
+        match database
+            .auth
+            .get_items_by_status_searched_paginated(
+                props.status.clone(),
+                props.page,
+                props.q.clone(),
+            )
+            .await
+        {
+            Ok(i) => i,
+            Err(e) => return Html(e.to_string()),
+        }
+    } else {
+        match database
+            .auth
+            .get_items_by_creator_paginated(props.creator.clone(), props.page)
+            .await
+        {
+            Ok(i) => i,
+            Err(e) => return Html(e.to_string()),
+        }
     };
 
     // ...

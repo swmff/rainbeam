@@ -45,38 +45,8 @@
 
     <!-- items -->
     <div class="flex w-full flex-col gap-2" id="items">
-        {% for (item, author) in items %}
-        <a
-            href="/market/item/{{ item.id }}"
-            class="card flex justify-between gap-2"
-        >
-            <div class="flex flex-col gap-2">
-                <b>{{ item.name }}</b>
-                <div class="footernav items-center fade">
-                    <span class="item">{{ item.type.to_string() }}</span>
-                    <span class="date item">{{ item.timestamp }}</span>
-                </div>
-            </div>
-
-            <div class="flex flex-col justify-right gap-2">
-                <span class="flex items-center justify-right gap-2">
-                    <img
-                        title="{{ author.username }}'s avatar"
-                        src="/api/v0/auth/profile/{{ author.id }}/avatar"
-                        alt="@{{ author.username }}"
-                        class="avatar"
-                        loading="lazy"
-                        style="--size: 20px"
-                    />
-                    <span>{{ author.username }}</span>
-                </span>
-
-                <b class="flex gap-2 items-center">
-                    {% include "components/price.html" %}
-                </b>
-            </div>
-        </a>
-        {% endfor %}
+        {% for (item, author) in items %} {% include "components/listing.html"
+        %} {% endfor %}
     </div>
 
     <!-- pagination buttons -->
