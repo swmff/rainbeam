@@ -26,6 +26,7 @@ struct HomepageTemplate {
     page: i32,
     query: String,
     status: ItemStatus,
+    creator: String,
     items: Vec<(Item, Box<Profile>)>,
     is_helper: bool,
 }
@@ -117,6 +118,7 @@ pub async fn homepage_request(
             page: props.page,
             query: props.q,
             status: props.status,
+            creator: props.creator,
             items,
             is_helper,
         }

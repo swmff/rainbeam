@@ -41,10 +41,16 @@
         if (type === "UserTheme") {
             if (
                 !(await app.confirm(
-                    "Are you sure you would like to create an item using your CURRENT profile theme?",
+                    "Are you sure you would like to create an item using your current profile theme? You can press no to input CSS directly instead.",
                 ))
             ) {
-                return;
+                const css = await app.prompt_long("Enter CSS manually:");
+
+                if (!css) {
+                    return;
+                }
+
+                return css;
             }
 
             // fetch current user profile
@@ -75,7 +81,7 @@
             content = `${content_root}}\n/* sparkler:custom_css */\n${content_custom}`;
             console.log("content compiled");
         } else if (type === "Text") {
-            content = await app.prompt("Item text:");
+            content = await app.prompt_long("Item text:");
 
             if (!content) {
                 return;

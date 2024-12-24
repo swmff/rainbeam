@@ -13,9 +13,15 @@
 </form>
 {% endblock %} {% block panel %}
 <div class="flex flex-col gap-4">
-    {% if is_helper %}
     <!-- status sorts -->
-    <div class="pillmenu convertible">
+    <div class="pillmenu convertible true">
+        <a
+            href="?status=Featured"
+            class="{% if status == authbeam::model::ItemStatus::Featured %}active{% endif %}"
+            title="Featured items"
+            >{{ icon "star" }} <span>{{ text "market:text.featured" }}</span></a
+        >
+
         <a
             href="?status=Approved"
             class="{% if status == authbeam::model::ItemStatus::Approved %}active{% endif %}"
@@ -23,6 +29,7 @@
             >{{ icon "circle-check" }}
             <span>{{ text "market:text.approved" }}</span></a
         >
+        {% if is_helper %}
         <a
             href="?status=Pending"
             class="{% if status == authbeam::model::ItemStatus::Pending %}active{% endif %}"
@@ -36,8 +43,10 @@
             title="Rejected items"
             >{{ icon "ban" }} <span>{{ text "market:text.rejected" }}</span></a
         >
+        {% endif %}
     </div>
-    {% endif %} {% if items.len() == 0 %}
+
+    {% if items.len() == 0 %}
     <div class="markdown-alert-warning">
         <span>{{ text "general:text.no_results" }}</span>
     </div>
@@ -54,7 +63,7 @@
         {% if page > 0 %}
         <a
             class="button secondary"
-            href="?page={{ page - 1 }}&q={{ query }}&status={{ status.to_string() }}"
+            href="?page={{ page - 1 }}&q={{ query }}&status={{ status.to_string() }}&creator={{ creator }}"
             >{{ text "general:link.previous" }}</a
         >
         {% else %}
@@ -62,7 +71,7 @@
         {% endif %} {% if items.len() != 0 %}
         <a
             class="button secondary"
-            href="?page={{ page + 1 }}&q={{ query }}&status={{ status.to_string() }}"
+            href="?page={{ page + 1 }}&q={{ query }}&status={{ status.to_string() }}&creator={{ creator }}"
             >{{ text "general:link.next" }}</a
         >
         {% endif %}

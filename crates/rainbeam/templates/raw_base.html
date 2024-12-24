@@ -298,6 +298,47 @@
             </div>
         </dialog>
 
+        <dialog id="web_api_prompt_long">
+            <div class="inner flex flex-col gap-2">
+                <form
+                    class="flex gap-2 flex-col"
+                    onsubmit="event.preventDefault()"
+                >
+                    <label
+                        for="prompt_long"
+                        id="web_api_prompt_long:msg"
+                    ></label>
+                    <textarea id="prompt_long" name="prompt_long"></textarea>
+
+                    <div class="flex justify-between">
+                        <div></div>
+
+                        <div class="flex gap-2">
+                            <button
+                                title="Search"
+                                class="primary bold circle"
+                                onclick="globalThis.web_api_prompt_long_submit(document.getElementById('prompt_long').value); document.getElementById('prompt_long').value = ''"
+                                type="buton"
+                            >
+                                {{ icon "check" }} {{ text "general:dialog.okay"
+                                }}
+                            </button>
+
+                            <button
+                                class="bold red camo"
+                                onclick="globalThis.web_api_prompt_long_submit('')"
+                                type="button"
+                                title="Close"
+                            >
+                                {{ icon "x" }} {{ text "general:dialog.cancel"
+                                }}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </dialog>
+
         <dialog id="web_api_confirm">
             <div class="inner flex flex-col gap-2">
                 <form

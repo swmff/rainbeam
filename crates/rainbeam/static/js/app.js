@@ -631,6 +631,20 @@
         });
     });
 
+    app.define("prompt_long", function (_, msg) {
+        const dialog = document.getElementById("web_api_prompt_long");
+        document.getElementById("web_api_prompt_long:msg").innerText = msg;
+
+        return new Promise((resolve, _) => {
+            globalThis.web_api_prompt_long_submit = (value) => {
+                dialog.close();
+                return resolve(value);
+            };
+
+            dialog.showModal();
+        });
+    });
+
     app.define("confirm", function (_, msg) {
         const dialog = document.getElementById("web_api_confirm");
         document.getElementById("web_api_confirm:msg").innerText = msg;

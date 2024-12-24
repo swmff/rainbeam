@@ -1,4 +1,5 @@
-{% extends "base.html" %} {% block m_nav_right %} {% if !is_owned %}
+{% extends "base.html" %} {% block m_nav_right %} {% if !is_owned && (item.cost
+!= -1) %}
 <button
     class="primary"
     onclick="trigger('items:purchase', ['{{ item.id }}', '{{ item.cost }}'])"
