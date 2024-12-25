@@ -1,5 +1,5 @@
 use async_recursion::async_recursion;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 use crate::config::Config;
 use crate::model::{
@@ -255,7 +255,7 @@ impl Database {
                 let mut out: Vec<Box<Profile>> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     let id = res.get("id").unwrap().to_string();
                     out.push(match self.get_profile(id).await {
                         Ok(p) => p,
@@ -500,7 +500,7 @@ impl Database {
             .fetch_one(c)
             .await
         {
-            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Ok(Question::unknown()),
         };
 
@@ -567,7 +567,7 @@ impl Database {
                 let mut out: Vec<Question> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     out.push(Question {
                         author: match self
                             .get_profile(res.get("author").unwrap().to_string())
@@ -629,7 +629,7 @@ impl Database {
                 let mut out: Vec<Question> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     out.push(Question {
                         author: match self
                             .get_profile(res.get("author").unwrap().to_string())
@@ -689,7 +689,7 @@ impl Database {
                 let mut out: Vec<(Question, usize, usize)> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     let id = res.get("id").unwrap().to_string();
                     out.push((
                         Question {
@@ -757,7 +757,7 @@ impl Database {
                 let mut out: Vec<(Question, usize, usize)> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     let id = res.get("id").unwrap().to_string();
                     out.push((
                         Question {
@@ -828,7 +828,7 @@ impl Database {
                 let mut out: Vec<(Question, usize, usize)> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     let id = res.get("id").unwrap().to_string();
                     out.push((
                         Question {
@@ -896,7 +896,7 @@ impl Database {
                 let mut out: Vec<(Question, usize, usize)> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     let id = res.get("id").unwrap().to_string();
                     out.push((
                         Question {
@@ -991,7 +991,7 @@ impl Database {
                 let mut out: Vec<(Question, usize, usize)> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     let id = res.get("id").unwrap().to_string();
                     out.push((
                         Question {
@@ -1054,7 +1054,7 @@ impl Database {
                 let mut out: Vec<(Question, usize, usize)> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     let id = res.get("id").unwrap().to_string();
                     out.push((
                         Question {
@@ -1155,7 +1155,7 @@ impl Database {
                 let mut out: Vec<(Question, usize, usize)> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     let id = res.get("id").unwrap().to_string();
                     out.push((
                         Question {
@@ -1623,7 +1623,7 @@ impl Database {
     // responses
 
     /// Get a response from a database result
-    pub async fn gimme_response(&self, res: HashMap<String, String>) -> Result<FullResponse> {
+    pub async fn gimme_response(&self, res: BTreeMap<String, String>) -> Result<FullResponse> {
         let question = res.get("question").unwrap().to_string();
         let id = res.get("id").unwrap().to_string();
         let author = res.get("author").unwrap().to_string();
@@ -1693,7 +1693,7 @@ impl Database {
             .await
         {
             Some(c) => {
-                match serde_json::from_str::<HashMap<String, String>>(c.as_str()) {
+                match serde_json::from_str::<BTreeMap<String, String>>(c.as_str()) {
                     Ok(res) => {
                         return Ok(match self.gimme_response(res).await {
                             Ok(r) => r,
@@ -1727,7 +1727,7 @@ impl Database {
             .fetch_one(c)
             .await
         {
-            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
 
@@ -1778,7 +1778,7 @@ impl Database {
             .fetch_one(c)
             .await
         {
-            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
 
@@ -1808,7 +1808,7 @@ impl Database {
                 let mut out: Vec<FullResponse> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     out.push(match self.gimme_response(res).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
@@ -1874,7 +1874,7 @@ impl Database {
                 let mut out: Vec<FullResponse> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     out.push(match self.gimme_response(res).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
@@ -1918,7 +1918,7 @@ impl Database {
                 let mut out: Vec<FullResponse> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     out.push(match self.gimme_response(res).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
@@ -1958,7 +1958,7 @@ impl Database {
                 let mut out: Vec<FullResponse> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     out.push(match self.gimme_response(res).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
@@ -2001,7 +2001,7 @@ impl Database {
                 let mut out: Vec<FullResponse> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     out.push(match self.gimme_response(res).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
@@ -2046,7 +2046,7 @@ impl Database {
                 let mut out: Vec<FullResponse> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     out.push(match self.gimme_response(res).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
@@ -2092,7 +2092,7 @@ impl Database {
                 let mut out: Vec<FullResponse> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     out.push(match self.gimme_response(res).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
@@ -2136,7 +2136,7 @@ impl Database {
                 let mut out: Vec<FullResponse> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     out.push(match self.gimme_response(res).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
@@ -2213,7 +2213,7 @@ impl Database {
                 let mut out: Vec<FullResponse> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     out.push(match self.gimme_response(res).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
@@ -2274,7 +2274,7 @@ impl Database {
                 let mut out: Vec<FullResponse> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     out.push(match self.gimme_response(res).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
@@ -2310,7 +2310,7 @@ impl Database {
                 let mut out: Vec<FullResponse> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     out.push(match self.gimme_response(res).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
@@ -3077,7 +3077,7 @@ impl Database {
             .fetch_one(c)
             .await
         {
-            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
 
@@ -3158,7 +3158,7 @@ impl Database {
                 let mut out: Vec<(ResponseComment, usize, usize)> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
 
                     let reply = res.get("reply").unwrap().to_string();
                     let id = res.get("id").unwrap().to_string();
@@ -3229,7 +3229,7 @@ impl Database {
                 let mut out: Vec<(ResponseComment, usize, usize)> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
 
                     let reply = res.get("reply").unwrap().to_string();
                     let id = res.get("id").unwrap().to_string();
@@ -3326,7 +3326,7 @@ impl Database {
                 let mut out: Vec<(ResponseComment, usize, usize)> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
 
                     let reply = res.get("reply").unwrap().to_string();
                     let id = res.get("id").unwrap().to_string();
@@ -3394,7 +3394,7 @@ impl Database {
                 let mut out: Vec<(ResponseComment, usize, usize)> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
 
                     let reply = res.get("reply").unwrap().to_string();
                     let id = res.get("id").unwrap().to_string();
@@ -3464,7 +3464,7 @@ impl Database {
                 let mut out: Vec<(ResponseComment, usize, usize)> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
 
                     let reply = res.get("reply").unwrap().to_string();
                     let id = res.get("id").unwrap().to_string();
@@ -3539,7 +3539,7 @@ impl Database {
                 let mut out: Vec<(ResponseComment, usize, usize)> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
 
                     let reply = res.get("reply").unwrap().to_string();
                     let id = res.get("id").unwrap().to_string();
@@ -4080,7 +4080,7 @@ impl Database {
             .fetch_one(c)
             .await
         {
-            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
 
@@ -4127,7 +4127,7 @@ impl Database {
                 let mut out: Vec<Reaction> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     out.push(Reaction {
                         user: match self.get_profile(res.get("user").unwrap().to_string()).await {
                             Ok(ua) => ua,
@@ -4393,7 +4393,7 @@ impl Database {
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
-            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
 
@@ -4441,7 +4441,7 @@ impl Database {
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query).bind::<&String>(&name).fetch_one(c).await {
-            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
 
@@ -4490,7 +4490,7 @@ impl Database {
             .fetch_one(c)
             .await
         {
-            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Ok(p) => self.base.textify_row(p).0,
             Err(_) => return MembershipStatus::Inactive,
         };
 
@@ -4518,7 +4518,7 @@ impl Database {
                 let mut out = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
 
                     // get circle
                     let circle = match self
@@ -4559,7 +4559,7 @@ impl Database {
                 let mut out = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
 
                     // get profile
                     let profile = match self.get_profile(res.get("user").unwrap().to_string()).await
@@ -5138,7 +5138,7 @@ impl Database {
                 let mut out: Vec<FullResponse> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     out.push(match self.gimme_response(res).await {
                         Ok(r) => r,
                         Err(e) => return Err(e),
@@ -5195,7 +5195,7 @@ impl Database {
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
-            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
 
@@ -5252,7 +5252,7 @@ impl Database {
             .fetch_one(c)
             .await
         {
-            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
 
@@ -5294,7 +5294,7 @@ impl Database {
                 // TODO: fetch latest message and order chats by that
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
 
                     let mut profiles_out = Vec::new();
                     let users: Vec<String> =
@@ -5706,7 +5706,7 @@ impl Database {
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
-            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
 
@@ -5749,7 +5749,7 @@ impl Database {
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
-            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
 
@@ -5796,7 +5796,7 @@ impl Database {
                 let mut out: Vec<(Message, Profile)> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     let author = res.get("author").unwrap().to_string();
 
                     out.push((
@@ -5844,7 +5844,7 @@ impl Database {
                 let mut out: Vec<(Message, Box<Profile>)> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     let author = res.get("author").unwrap().to_string();
 
                     out.push((
@@ -5897,7 +5897,7 @@ impl Database {
                 let mut out: Vec<(Message, Box<Profile>)> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     let author = res.get("author").unwrap().to_string();
 
                     out.push((

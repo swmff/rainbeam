@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::str::Split;
 
 use crate::model::{
@@ -340,7 +340,7 @@ impl Database {
     // profiles
 
     /// Get profile given the `row` data
-    pub fn gimme_profile(&self, row: HashMap<String, String>) -> Result<Box<Profile>> {
+    pub fn gimme_profile(&self, row: BTreeMap<String, String>) -> Result<Box<Profile>> {
         Ok(Box::new(Profile {
             id: row.get("id").unwrap().to_string(),
             username: row.get("username").unwrap().to_string(),
@@ -472,7 +472,7 @@ impl Database {
             .fetch_one(c)
             .await
         {
-            Ok(u) => self.base.textify_row(u, Vec::new()).0,
+            Ok(u) => self.base.textify_row(u).0,
             Err(_) => return Err(DatabaseError::Other),
         };
 
@@ -510,7 +510,7 @@ impl Database {
             .fetch_one(c)
             .await
         {
-            Ok(u) => self.base.textify_row(u, Vec::new()).0,
+            Ok(u) => self.base.textify_row(u).0,
             Err(_) => return Err(DatabaseError::Other),
         };
 
@@ -560,7 +560,7 @@ impl Database {
             .fetch_one(c)
             .await
         {
-            Ok(r) => self.base.textify_row(r, Vec::new()).0,
+            Ok(r) => self.base.textify_row(r).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
 
@@ -617,7 +617,7 @@ impl Database {
 
         let c = &self.base.db.client;
         let row = match sqlquery(query).bind::<&String>(&id).fetch_one(c).await {
-            Ok(r) => self.base.textify_row(r, Vec::new()).0,
+            Ok(r) => self.base.textify_row(r).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
 
@@ -1558,7 +1558,7 @@ impl Database {
 
         let c = &self.base.db.client;
         let row = match sqlquery(query).bind::<&i32>(&id).fetch_one(c).await {
-            Ok(r) => self.base.textify_row(r, Vec::new()).0,
+            Ok(r) => self.base.textify_row(r).0,
             Err(_) => return Ok(Group::default()),
         };
 
@@ -1607,7 +1607,7 @@ impl Database {
             .fetch_one(c)
             .await
         {
-            Ok(u) => self.base.textify_row(u, Vec::new()).0,
+            Ok(u) => self.base.textify_row(u).0,
             Err(_) => return Err(DatabaseError::Other),
         };
 
@@ -1639,7 +1639,7 @@ impl Database {
                 let mut out = Vec::new();
 
                 for row in u {
-                    let row = self.base.textify_row(row, Vec::new()).0;
+                    let row = self.base.textify_row(row).0;
 
                     let user = row.get("user").unwrap().to_string();
                     let following = row.get("following").unwrap().to_string();
@@ -1699,7 +1699,7 @@ impl Database {
                 let mut out = Vec::new();
 
                 for row in u {
-                    let row = self.base.textify_row(row, Vec::new()).0;
+                    let row = self.base.textify_row(row).0;
 
                     let user = row.get("user").unwrap().to_string();
                     let following = row.get("following").unwrap().to_string();
@@ -1791,7 +1791,7 @@ impl Database {
                 let mut out = Vec::new();
 
                 for row in u {
-                    let row = self.base.textify_row(row, Vec::new()).0;
+                    let row = self.base.textify_row(row).0;
 
                     let user = row.get("user").unwrap().to_string();
                     let following = row.get("following").unwrap().to_string();
@@ -1859,7 +1859,7 @@ impl Database {
                 let mut out = Vec::new();
 
                 for row in u {
-                    let row = self.base.textify_row(row, Vec::new()).0;
+                    let row = self.base.textify_row(row).0;
 
                     let user = row.get("user").unwrap().to_string();
                     let following = row.get("following").unwrap().to_string();
@@ -2130,7 +2130,7 @@ impl Database {
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
-            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
 
@@ -2184,7 +2184,7 @@ impl Database {
                 let mut out: Vec<Notification> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     out.push(Notification {
                         title: res.get("title").unwrap().to_string(),
                         content: res.get("content").unwrap().to_string(),
@@ -2265,7 +2265,7 @@ impl Database {
                 let mut out: Vec<Notification> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     out.push(Notification {
                         title: res.get("title").unwrap().to_string(),
                         content: res.get("content").unwrap().to_string(),
@@ -2503,7 +2503,7 @@ impl Database {
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
-            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
 
@@ -2574,7 +2574,7 @@ impl Database {
                 let mut out: Vec<Warning> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     out.push(Warning {
                         id: res.get("id").unwrap().to_string(),
                         content: res.get("content").unwrap().to_string(),
@@ -2750,7 +2750,7 @@ impl Database {
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
-            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
 
@@ -2798,7 +2798,7 @@ impl Database {
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query).bind::<&String>(&ip).fetch_one(c).await {
-            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
 
@@ -2851,7 +2851,7 @@ impl Database {
                 let mut out: Vec<IpBan> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     out.push(IpBan {
                         id: res.get("id").unwrap().to_string(),
                         ip: res.get("ip").unwrap().to_string(),
@@ -3043,7 +3043,7 @@ impl Database {
             .fetch_one(c)
             .await
         {
-            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Ok(p) => self.base.textify_row(p).0,
             Err(_) => return (RelationshipStatus::default(), user, other),
         };
 
@@ -3337,7 +3337,7 @@ impl Database {
                 let mut out = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
 
                     // get profile
                     let profile = match self.get_profile(res.get("two").unwrap().to_string()).await
@@ -3389,7 +3389,7 @@ impl Database {
                 let mut out = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
 
                     // get profile
                     let profile = match self.get_profile(res.get("two").unwrap().to_string()).await
@@ -3441,7 +3441,7 @@ impl Database {
                 let mut out = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
 
                     // get profiles
                     let profile = match self.get_profile(res.get("one").unwrap().to_string()).await
@@ -3498,7 +3498,7 @@ impl Database {
                 let mut out = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
 
                     // get profiles
                     let profile = match self.get_profile(res.get("one").unwrap().to_string()).await
@@ -3583,7 +3583,7 @@ impl Database {
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
-            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
 
@@ -3631,7 +3631,7 @@ impl Database {
             .fetch_one(c)
             .await
         {
-            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
 
@@ -3672,7 +3672,7 @@ impl Database {
                 let mut out: Vec<IpBlock> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     out.push(IpBlock {
                         id: res.get("id").unwrap().to_string(),
                         ip: res.get("ip").unwrap().to_string(),
@@ -3844,7 +3844,7 @@ impl Database {
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
-            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
 
@@ -3902,7 +3902,7 @@ impl Database {
                 let mut out: Vec<(Mail, Box<Profile>)> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
 
                     let author = res.get("author").unwrap();
                     let recipient = res.get("recipient").unwrap();
@@ -3963,7 +3963,7 @@ impl Database {
                 let mut out: Vec<(Mail, Box<Profile>)> = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
 
                     let author = res.get("author").unwrap();
                     let recipient = res.get("recipient").unwrap();
@@ -4297,7 +4297,7 @@ impl Database {
     // labels
 
     /// Get a [`UserLabel`] from a database result
-    pub async fn gimme_label(&self, res: HashMap<String, String>) -> Result<UserLabel> {
+    pub async fn gimme_label(&self, res: BTreeMap<String, String>) -> Result<UserLabel> {
         Ok(UserLabel {
             id: res.get("id").unwrap().to_string(),
             name: res.get("name").unwrap().to_string(),
@@ -4341,7 +4341,7 @@ impl Database {
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
-            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
 
@@ -4430,7 +4430,7 @@ impl Database {
     // Get item given the `row` data
     pub async fn gimme_transaction(
         &self,
-        row: HashMap<String, String>,
+        row: BTreeMap<String, String>,
     ) -> Result<(Transaction, Option<Item>)> {
         let item = row.get("item").unwrap().to_string();
 
@@ -4463,7 +4463,7 @@ impl Database {
             .get(format!("rbeam.auth.econ.transaction:{}", id))
             .await
         {
-            Some(c) => match serde_json::from_str::<HashMap<String, String>>(c.as_str()) {
+            Some(c) => match serde_json::from_str::<BTreeMap<String, String>>(c.as_str()) {
                 Ok(c) => {
                     return Ok(match self.gimme_transaction(c).await {
                         Ok(t) => t,
@@ -4491,7 +4491,7 @@ impl Database {
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
-            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
 
@@ -4540,7 +4540,7 @@ impl Database {
             .fetch_one(c)
             .await
         {
-            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
 
@@ -4586,7 +4586,7 @@ impl Database {
                 let mut out = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     let transaction = match self.gimme_transaction(res).await {
                         Ok(t) => t,
                         Err(e) => return Err(e),
@@ -4724,7 +4724,7 @@ impl Database {
     // ugc items
 
     // Get transaction given the `row` data
-    pub fn gimme_item(&self, row: HashMap<String, String>) -> Result<Item> {
+    pub fn gimme_item(&self, row: BTreeMap<String, String>) -> Result<Item> {
         Ok(Item {
             id: row.get("id").unwrap().to_string(),
             name: row.get("name").unwrap().to_string(),
@@ -4795,7 +4795,7 @@ impl Database {
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
-            Ok(p) => self.base.textify_row(p, Vec::new()).0,
+            Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
 
@@ -4845,7 +4845,7 @@ impl Database {
                 let mut out = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     let item = match self.gimme_item(res) {
                         Ok(t) => t,
                         Err(e) => return Err(e),
@@ -4905,7 +4905,7 @@ impl Database {
                 let mut out = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     let item = match self.gimme_item(res) {
                         Ok(t) => t,
                         Err(e) => return Err(e),
@@ -4964,7 +4964,7 @@ impl Database {
                 let mut out = Vec::new();
 
                 for row in p {
-                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let res = self.base.textify_row(row).0;
                     let item = match self.gimme_item(res) {
                         Ok(t) => t,
                         Err(e) => return Err(e),

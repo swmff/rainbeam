@@ -30,7 +30,8 @@ futures-util = "0.3.31"
 async-recursion = "1.1.1"
 tracing = "0.1.41"
 rainbeam-shared = { path = "../shared" }
-databeam = { version = "0.1.3", default-features = false }
+databeam = { version = "0.2.0", default-features = false }
+# databeam = { path = "../databeam", default-features = false }
 authbeam = { path = "../authbeam", default-features = false }
 langbeam = { path = "../langbeam" }
 citrus-client = { path = "../citrus-client" }

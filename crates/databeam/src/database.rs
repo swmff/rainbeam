@@ -6,7 +6,7 @@ use super::{
 
 use serde::{Deserialize, Serialize};
 use sqlx::{Column, Row};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 /// Default API return value
 #[allow(dead_code)]
@@ -19,7 +19,7 @@ pub struct DefaultReturn<T> {
 
 /// Basic return type for database output
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct DatabaseReturn(pub HashMap<String, String>, pub HashMap<String, Vec<u8>>);
+pub struct DatabaseReturn(pub BTreeMap<String, String>);
 
 /// Basic database
 #[derive(Clone)]
@@ -63,33 +63,21 @@ impl StarterDatabase {
     /// * `row`
     /// * `as_bytes` - a [`Vec`] containing all the columns that we want to read in their original `Vec<u8>` form
     #[cfg(feature = "sqlite")]
-    pub fn textify_row(
-        &self,
-        row: sqlx::sqlite::SqliteRow,
-        as_bytes: Vec<String>,
-    ) -> DatabaseReturn {
+    pub fn textify_row(&self, row: sqlx::sqlite::SqliteRow) -> DatabaseReturn {
         // get all columns
         let columns = row.columns();
 
         // create output
-        let mut out: HashMap<String, String> = HashMap::new();
-        let mut out_bytes: HashMap<String, Vec<u8>> = HashMap::new();
+        let mut out: BTreeMap<String, String> = BTreeMap::new();
 
         for column in columns {
             let name = column.name().to_string();
-
-            if as_bytes.contains(&name) {
-                let value = row.get(&name.as_str());
-                out_bytes.insert(name, value);
-                continue;
-            }
-
             let value = row.get(&name.as_str());
             out.insert(name, value);
         }
 
         // return
-        DatabaseReturn(out, out_bytes)
+        DatabaseReturn(out)
     }
 
     /// Convert all columns into a [`HashMap`].
@@ -103,24 +91,16 @@ impl StarterDatabase {
         let columns = row.columns();
 
         // create output
-        let mut out: HashMap<String, String> = HashMap::new();
-        let mut out_bytes: HashMap<String, Vec<u8>> = HashMap::new();
+        let mut out: BTreeMap<String, String> = BTreeMap::new();
 
         for column in columns {
             let name = column.name().to_string();
-
-            if as_bytes.contains(&name) {
-                let value = row.get(&name.as_str());
-                out_bytes.insert(name, value);
-                continue;
-            }
-
             let value = row.get(&name.as_str());
             out.insert(name, value);
         }
 
         // return
-        DatabaseReturn(out, out_bytes)
+        DatabaseReturn(out)
     }
 
     /// Convert all columns into a [`HashMap`].
@@ -134,20 +114,13 @@ impl StarterDatabase {
         let columns = row.columns();
 
         // create output
-        let mut out: HashMap<String, String> = HashMap::new();
-        let mut out_bytes: HashMap<String, Vec<u8>> = HashMap::new();
+        let mut out: BTreeMap<String, String> = BTreeMap::new();
 
         for column in columns {
             let name = column.name().to_string();
 
             match row.try_get::<Vec<u8>, _>(&name.as_str()) {
                 Ok(value) => {
-                    // returned bytes instead of text
-                    if as_bytes.contains(&name) {
-                        out_bytes.insert(name, value);
-                        continue;
-                    }
-
                     // we're going to convert this to a string and then add it to the output!
                     out.insert(
                         column.name().to_string(),
@@ -163,6 +136,6 @@ impl StarterDatabase {
         }
 
         // return
-        DatabaseReturn(out, out_bytes)
+        DatabaseReturn(out)
     }
 }
