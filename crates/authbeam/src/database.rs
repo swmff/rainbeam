@@ -18,6 +18,8 @@ use reqwest::Client as HttpClient;
 use serde::{Deserialize, Serialize};
 
 use databeam::{query as sqlquery, utility, DefaultReturn};
+use rainbeam_shared::path::PathBufD;
+
 pub type Result<T> = std::result::Result<T, DatabaseError>;
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
@@ -55,10 +57,10 @@ pub struct ServerOptions {
     pub real_ip_header: Option<String>,
     /// The directory to serve static assets from
     #[serde(default)]
-    pub static_dir: String,
+    pub static_dir: PathBufD,
     /// The location of media uploads on the file system
     #[serde(default)]
-    pub media_dir: String,
+    pub media_dir: PathBufD,
     /// The origin of the public server (ex: "https://rainbeam.net")
     ///
     /// Used in embeds and links.
@@ -87,8 +89,8 @@ impl Default for ServerOptions {
             registration_enabled: true,
             captcha: HCaptchaConfig::default(),
             real_ip_header: Option::None,
-            static_dir: String::new(),
-            media_dir: String::new(),
+            static_dir: PathBufD::default(),
+            media_dir: PathBufD::default(),
             host: String::new(),
             citrus_id: String::new(),
             blocked_hosts: Vec::new(),
@@ -1486,7 +1488,8 @@ impl Database {
                     .await;
 
                 // delete images
-                if !self.config.media_dir.is_empty() {
+                // TODO: Implement `.is_empty()` for `PathBufD`
+                if !self.config.media_dir.to_string().is_empty() {
                     let avatar = format!("{}/avatars/{}.avif", self.config.media_dir, id);
                     if let Ok(_) = rainbeam_shared::fs::fstat(&avatar) {
                         if let Err(_) = rainbeam_shared::fs::remove_file(avatar) {
