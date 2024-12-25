@@ -2,6 +2,7 @@
 use serde::{Deserialize, Serialize};
 use rainbeam_shared::fs;
 use std::io::Result;
+use std::env::current_dir;
 
 /// Configuration file
 #[derive(Clone, Serialize, Deserialize, Debug)]
@@ -25,10 +26,13 @@ impl Config {
 
     /// Pull configuration file
     pub fn get_config() -> Self {
-        let c = fs::canonicalize(".").unwrap();
-        let here = c.to_str().unwrap();
+        let mut path = current_dir().unwrap();
+        path.push(".config");
+        path.push("databeam");
+        path.push("config.toml");
+        println!("{:?}", path);
 
-        match fs::read(format!("{here}/.config/databeam/config.toml")) {
+        match fs::read(path) {
             Ok(c) => Config::read(c),
             Err(_) => {
                 Self::update_config(Self::default()).expect("failed to write default config");
