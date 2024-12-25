@@ -170,10 +170,19 @@
             >{{ text "market:text.item_owned" }}</span
         >
 
+         {% if (user.id == creator.id) %}
+         <!-- use decompiled -->
+        <button class="primary bold" onclick="copy_to_profile()">
+            {{ icon "paint-bucket" }}
+            <span>{{ text "market:action.copy_to_profile" }}</span>
+        </button>
+        {% else %}
+        <!-- use compiled -->
         <button class="primary bold" onclick="use_template()">
             {{ icon "paint-bucket" }}
             <span>{{ text "market:action.use_theme" }}</span>
         </button>
+        {% endif %}
 
         <script type="text/css" id="theme_content">{{ item.content }}</script>
         {% else %}
@@ -192,7 +201,7 @@
         data-tab="options"
         class="hidden card w-full shadow flex flex-col gap-2"
     >
-        <div class="card secondary flex gap-2">
+        <div class="card secondary flex gap-2 flex-wrap">
             <button
                 class="secondary"
                 onclick="trigger('items:edit_content', ['{{ item.id }}', '{{ item.type.to_string() }}'])"
@@ -347,10 +356,6 @@
         {% if item.type == authbeam::model::ItemType::UserTheme %}
         <div class="card w-full secondary flex flex-col gap-2">
             <pre><code id="item_css_inner">{{ item.content }}</code></pre>
-            <button class="primary bold" onclick="copy_to_profile()">
-                {{ icon "paint-bucket" }}
-                <span>{{ text "market:action.copy_to_profile" }}</span>
-            </button>
         </div>
         {% endif %}
     </div>
