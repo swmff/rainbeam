@@ -53,22 +53,9 @@
 
     <h4 class="title">Images</h4>
     <div class="flex flex-col gap-1">
-        <label for="sparkler:avatar_url">
-            {{ text "settings:profile_options.html:label.avatar_url" }}
+        <label for="avatar_file">
+            {{ text "settings:profile_options.html:label.avatar" }}
         </label>
-
-        <input
-            type="url"
-            name="sparkler:avatar_url"
-            id="sparkler:avatar_url"
-            onchange="update_kv('sparkler:avatar_url', event.target.value)"
-        />
-
-        <p class="fade">
-            Put a link to your avatar above. If you are unable to get a link,
-            you can alternatively upload the file directly. Uploaded files must
-            be less than 8MB and will be converted to AVIF.
-        </p>
 
         <form
             class="flex gap-2 flex-row items-center"
@@ -77,39 +64,52 @@
             action="/api/v0/auth/me/upload_avatar"
         >
             <input
+                id="avatar_file"
                 name="file"
                 type="file"
                 accept="image/png,image/jpeg,image/avif,image/webp"
                 class="w-content"
             />
+
             <button class="primary">{{ icon "check" }}</button>
         </form>
 
         <p class="fade">
+            Uploaded files must be less than 8 MB and will be converted to AVIF.
             Uploading an image will cost you
             <a href="/settings/coins">C$25</a> every time after your first
             upload.
         </p>
+
+        <details class="w-full">
+            <summary class="flex items-center gap-2">
+                {{ icon "ellipsis" }}
+                <span>
+                    {{ text "settings:profile_options.html:label.advanced" }}
+                </span>
+            </summary>
+
+            <div class="card secondary w-full flex flex-col gap-1">
+                <label for="sparkler:avatar_url">
+                    {{ text "settings:profile_options.html:label.avatar_url" }}
+                </label>
+
+                <input
+                    type="url"
+                    name="sparkler:avatar_url"
+                    id="sparkler:avatar_url"
+                    onchange="update_kv('sparkler:avatar_url', event.target.value)"
+                />
+
+                <p class="fade">Put a link to your avatar above.</p>
+            </div>
+        </details>
     </div>
 
-    <div class="flex flex-col gap-1">
-        <label for="sparkler:banner_url">
-            {{ text "settings:profile_options.html:label.banner_url" }}
+    <div class="flex flex-col gap-1 title">
+        <label for="banner_file">
+            {{ text "settings:profile_options.html:label.banner" }}
         </label>
-
-        <input
-            type="url"
-            name="sparkler:banner_url"
-            id="sparkler:banner_url"
-            onchange="update_kv('sparkler:banner_url', event.target.value)"
-        />
-
-        <p class="fade">
-            Same deal as the avatar! This is the big thing at the top of your
-            profile. If you are unable to get a link, you can alternatively
-            upload the file directly. Uploaded files must be less than 8MB and
-            will be converted to AVIF.
-        </p>
 
         <form
             class="flex gap-2 flex-row items-center"
@@ -118,22 +118,52 @@
             action="/api/v0/auth/me/upload_banner"
         >
             <input
+                id="banner_file"
                 name="file"
                 type="file"
                 accept="image/png,image/jpeg,image/avif,image/webp"
                 class="w-content"
             />
+
             <button class="primary">{{ icon "check" }}</button>
         </form>
 
         <p class="fade">
+            Uploaded files must be less than 8 MB and will be converted to AVIF.
             Uploading an image will cost you
             <a href="/settings/coins">C$25</a> every time after your first
             upload.
         </p>
+
+        <details class="w-full">
+            <summary class="flex items-center gap-2">
+                {{ icon "ellipsis" }}
+                <span>
+                    {{ text "settings:profile_options.html:label.advanced" }}
+                </span>
+            </summary>
+
+            <div class="card secondary w-full flex flex-col gap-1">
+                <label for="sparkler:banner_url">
+                    {{ text "settings:profile_options.html:label.banner_url" }}
+                </label>
+
+                <input
+                    type="url"
+                    name="sparkler:banner_url"
+                    id="sparkler:banner_url"
+                    onchange="update_kv('sparkler:banner_url', event.target.value)"
+                />
+
+                <p class="fade">
+                    Put a link to your banner above. This is the big thing at
+                    the top of your profile.
+                </p>
+            </div>
+        </details>
     </div>
 
-    <div class="flex flex-col gap-1">
+    <div class="flex flex-col gap-1 title">
         <label for="sparkler:banner_fit">
             {{ text "settings:profile_options.html:label.banner_fit" }}
         </label>
