@@ -109,7 +109,7 @@ impl StarterDatabase {
     /// * `row`
     /// * `as_bytes` - a [`Vec`] containing all the columns that we want to read in their original `Vec<u8>` form
     #[cfg(feature = "mysql")]
-    pub fn textify_row(&self, row: sqlx::mysql::MySqlRow, as_bytes: Vec<String>) -> DatabaseReturn {
+    pub fn textify_row(&self, row: sqlx::mysql::MySqlRow) -> DatabaseReturn {
         // get all columns
         let columns = row.columns();
 

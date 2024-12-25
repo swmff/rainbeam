@@ -247,7 +247,7 @@ dependencies = [
  "axum-extra",
  "axum-macros",
  "citrus-client 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "databeam 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "databeam 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "dotenv",
  "hcaptcha-no-wasm",
  "image",
@@ -869,7 +869,7 @@ dependencies = [
 
 [[package]]
 name = "databeam"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "rainbeam-shared 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "redis",
@@ -881,9 +881,9 @@ dependencies = [
 
 [[package]]
 name = "databeam"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "52da42832291f663b34ddd0572f4a1955013942257b782a54e96016a5626c895"
+checksum = "633e0264c766825cb114cefb1791c7a09438bd5cfa4f69b6549595bdfba4e244"
 dependencies = [
  "rainbeam-shared 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "redis",
@@ -2632,7 +2632,7 @@ dependencies = [
  "authbeam",
  "axum",
  "axum-extra",
- "databeam 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "databeam 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures-util",
  "langbeam",
  "mimalloc",
@@ -2660,7 +2660,7 @@ dependencies = [
  "axum",
  "axum-extra",
  "citrus-client 0.1.0",
- "databeam 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "databeam 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures-util",
  "hcaptcha-no-wasm",
  "langbeam",
@@ -2815,7 +2815,7 @@ dependencies = [
  "axum",
  "axum-extra",
  "citrus-client 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "databeam 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "databeam 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures-util",
  "hcaptcha-no-wasm",
  "langbeam",

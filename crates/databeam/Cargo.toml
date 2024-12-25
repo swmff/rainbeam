@@ -1,6 +1,6 @@
 [package]
 name = "databeam"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 description = "Database connection library"
 authors = ["trisuaso", "swmff"]
