@@ -4,15 +4,23 @@
     // create_editor
     self.define(
         "create_editor",
-        function (_, bind_to, value, placeholder, global = "editor") {
+        function (
+            _,
+            bind_to,
+            value,
+            placeholder,
+            global = "editor",
+            mode = "markdown",
+            inputStyle = "contenteditable",
+        ) {
             globalThis[global] = CodeMirror(bind_to, {
                 value: value || "",
-                mode: "markdown",
+                mode,
                 lineWrapping: true,
                 autoCloseBrackets: true,
                 autofocus: true,
                 viewportMargin: Number.POSITIVE_INFINITY,
-                inputStyle: "contenteditable",
+                inputStyle,
                 highlightFormatting: false,
                 fencedCodeBlockHighlighting: false,
                 xml: false,

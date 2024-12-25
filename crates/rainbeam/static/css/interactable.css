@@ -342,7 +342,8 @@ form {
 }
 
 [role="presentation"]::selection,
-[role="presentation"] *::selection {
+[role="presentation"] *::selection,
+.CodeMirror-selected {
     background-color: rgb(191, 219, 254) !important;
 }
 
@@ -352,7 +353,8 @@ form {
 }
 
 [role="presentation"]:is(.dark *)::selection,
-[role="presentation"] *:is(.dark *)::selection {
+[role="presentation"] *:is(.dark *)::selection,
+.CodeMirror-selected:is(.dark *) {
     background-color: rgb(64, 64, 64) !important;
 }
 
@@ -361,11 +363,18 @@ form {
 }
 
 .cm-variable-2,
-.cm-quote {
+.cm-quote,
+.cm-keyword,
+.cm-string,
+.cm-atom {
     color: rgb(63, 98, 18) !important;
 }
 
-.cm-variable-2:is(.dark *) {
+.cm-variable-2:is(.dark *),
+.cm-quote:is(.dark *),
+.cm-keyword:is(.dark *),
+.cm-string:is(.dark *),
+.cm-atom:is(.dark *) {
     color: rgb(217, 249, 157) !important;
 }
 
@@ -385,19 +394,31 @@ form {
     color: var(--color-link) !important;
 }
 
-.cm-url {
+.cm-url,
+.cm-property,
+.cm-qualifier {
     color: rgb(29, 78, 216) !important;
 }
 
-.cm-url:is(.dark *) {
+.cm-url:is(.dark *),
+.cm-property:is(.dark *),
+.cm-qualifier:is(.dark *) {
     color: rgb(191, 219, 254) !important;
 }
 
-.cm-variable-3 {
+.cm-variable-3,
+.cm-tag,
+.cm-def,
+.cm-attribute,
+.cm-number {
     color: rgb(91, 33, 182) !important;
 }
 
-.cm-variable-3:is(.dark *) {
+.cm-variable-3:is(.dark *),
+.cm-tag:is(.dark *),
+.cm-def:is(.dark *),
+.cm-attribute:is(.dark *),
+.cm-number:is(.dark *) {
     color: rgb(221, 214, 254) !important;
 }
 

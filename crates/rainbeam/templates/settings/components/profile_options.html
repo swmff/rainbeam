@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-4">
+<div class="flex flex-col gap-4" data-tab="settings">
     <h4 class="title">
         {{ text "settings:profile_options.html:title.about_me" }}
     </h4>
@@ -666,12 +666,16 @@
         <textarea
             name="sparkler:custom_css"
             id="sparkler:custom_css"
-            onchange="update_kv('sparkler:custom_css', event.target.value)"
             autocomplete="off"
             autocapitalize="off"
             spellcheck="off"
-            style="font-family: monospace"
+            class="hidden"
         ></textarea>
+
+        <a href="#/css" class="button">
+            {{ icon "pen" }}
+            <span>{{ text "general:action.edit" }}</span>
+        </a>
 
         <p class="fade">
             Custom profile CSS that accepts more than just colors.
@@ -682,7 +686,7 @@
         <label for="rainbeam:market_theme_template">Theme base</label>
 
         <button onclick="update_kv('rainbeam:market_theme_template', '')">
-            Clear
+            {{ text "general:action.clear" }}
         </button>
 
         <p class="fade">
@@ -690,4 +694,61 @@
             themes.
         </p>
     </div>
+</div>
+
+<div class="hidden flex flex-col gap-2" data-tab="css">
+    <script src="https://unpkg.com/codemirror@5.39.2/lib/codemirror.js"></script>
+    <script src="https://unpkg.com/codemirror@5.39.2/addon/display/placeholder.js"></script>
+    <script src="https://unpkg.com/codemirror@5.39.2/mode/css/css.js"></script>
+
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/codemirror@5.39.2/lib/codemirror.css"
+    />
+
+    <div class="flex w-full gap-2 justify-between">
+        <b>Custom CSS</b>
+
+        <div class="flex gap-2">
+            <button
+                class="primary bold"
+                onclick="update_kv('sparkler:custom_css', globalThis.css_editor_.getValue())"
+            >
+                {{ icon "check" }}
+                <span>{{ text "general:action.save" }}</span>
+            </button>
+
+            <a class="button red bold" href="#/settings">
+                {{ icon "x" }}
+                <span>{{ text "general:action.close" }}</span>
+            </a>
+        </div>
+    </div>
+
+    <div id="css_editor" class="css_editor card secondary"></div>
+
+    <script>
+        setTimeout(() => {
+            use("codemirror", (codemirror) => {
+                codemirror.create_editor(
+                    document.getElementById("css_editor"),
+                    document.getElementById("sparkler:custom_css").value,
+                    "/* enter custom CSS */",
+                    "css_editor_",
+                    "css",
+                    "textarea",
+                );
+            });
+        }, 500);
+    </script>
+
+    <style>
+        .CodeMirror {
+            height: max-content !important;
+        }
+
+        .CodeMirror-line {
+            font-family: ui-monospace, monospace !important;
+        }
+    </style>
 </div>

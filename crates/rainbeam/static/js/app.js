@@ -580,25 +580,29 @@
     });
 
     app.define("hook.tabs:switch", function (_, tab) {
+        // tab
         for (const element of Array.from(
             document.querySelectorAll("[data-tab]"),
         )) {
             element.classList.add("hidden");
         }
 
-        for (const element of Array.from(
-            document.querySelectorAll("[data-tab-button]"),
-        )) {
-            element.classList.remove("active");
-        }
-
         document
             .querySelector(`[data-tab="${tab}"]`)
             .classList.remove("hidden");
 
-        document
-            .querySelector(`[data-tab-button="${tab}"]`)
-            .classList.add("active");
+        // button
+        if (document.querySelector(`[data-tab-button="${tab}"]`)) {
+            for (const element of Array.from(
+                document.querySelectorAll("[data-tab-button]"),
+            )) {
+                element.classList.remove("active");
+            }
+
+            document
+                .querySelector(`[data-tab-button="${tab}"]`)
+                .classList.add("active");
+        }
     });
 
     app.define("hook.tabs:check", function ({ $ }, hash) {

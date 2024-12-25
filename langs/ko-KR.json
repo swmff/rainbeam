@@ -48,6 +48,8 @@
         "general:action.hide_your_name": "익명",
         "general:action.edit": "수정",
         "general:action.clear": "초기화",
+        "general:action.save": "Save",
+        "general:action.close": "Close",
 
         "general:text.no_results": "이 쿼리와 일치하는 결과가 없습니다",
         "general:text.coming_soon": "coming soon 😸",

@@ -49,6 +49,8 @@
         "general:action.hide_your_name": "Hide your name",
         "general:action.edit": "Edit",
         "general:action.clear": "Clear",
+        "general:action.save": "Save",
+        "general:action.close": "Close",
 
         "general:text.no_results": "nothing yet :(",
         "general:text.coming_soon": "coming soon 😸",
