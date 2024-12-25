@@ -52,7 +52,7 @@ pub async fn avatar_request(
         None => "",
     };
 
-    if (avatar_url == "rb://") && !database.config.media_dir.is_empty() {
+    if (avatar_url == "rb://") && !database.config.media_dir.to_string().is_empty() {
         return (
             [("Content-Type", "image/avif")],
             Body::from(read_image(
@@ -163,7 +163,7 @@ pub async fn banner_request(
         None => "",
     };
 
-    if (banner_url == "rb://") && !database.config.media_dir.is_empty() {
+    if (banner_url == "rb://") && !database.config.media_dir.to_string().is_empty() {
         return (
             [("Content-Type", "image/avif")],
             Body::from(read_image(

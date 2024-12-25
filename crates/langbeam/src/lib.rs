@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use serde::{Serialize, Deserialize};
-use rainbeam_shared::fs;
+use rainbeam_shared::{fs, path::current_dir};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LangFile {
@@ -47,11 +47,9 @@ impl LangFile {
 pub fn read_langs() -> HashMap<String, LangFile> {
     let mut out = HashMap::new();
 
-    // read directory
-    let c = fs::canonicalize(".").unwrap();
-    let here = c.to_str().unwrap();
+    let langs_dir = current_dir().unwrap().join("langs");
 
-    if let Ok(files) = fs::read_dir(format!("{here}/langs")) {
+    if let Ok(files) = fs::read_dir(langs_dir) {
         for file in files.into_iter() {
             if file.is_err() {
                 continue;
