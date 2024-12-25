@@ -63,9 +63,12 @@
 <hr />
 
 <div class="flex w-full gap-2 justify-right">
-    <button class="primary bold">{{ icon "check" }} Create for C$25</button>
-
-    <a href="javascript:history.back()" class="button red bold">Cancel</a>
+    <button class="primary bold">
+        {{ icon "check" }} <span>{{ text "general:dialog.create" }}</span>
+    </button>
+    <a href="javascript:history.back()" class="button red bold"
+        >{{ text "general:dialog.cancel" }}</a
+    >
 </div>
 
 <script>

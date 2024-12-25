@@ -32,6 +32,7 @@
         "general:title.account": "Account",
 
         "general:dialog.continue": "Continue",
+        "general:dialog.create": "Create",
         "general:dialog.cancel": "Cancel",
         "general:dialog.okay": "Ok",
         "general:dialog.yes": "Yes",

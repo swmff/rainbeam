@@ -344,6 +344,7 @@
             </script>
         </form>
 
+        {% if item.type == authbeam::model::ItemType::UserTheme %}
         <div class="card w-full secondary flex flex-col gap-2">
             <pre><code id="item_css_inner">{{ item.content }}</code></pre>
             <button class="primary bold" onclick="copy_to_profile()">
@@ -351,6 +352,7 @@
                 <span>{{ text "market:action.copy_to_profile" }}</span>
             </button>
         </div>
+        {% endif %}
     </div>
 
     <script>

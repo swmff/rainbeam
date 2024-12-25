@@ -1,2 +1,2 @@
 ALTER TABLE "xprofiles"
-ADD COLUMN "coins" TEXT DEFAULT '0';
+ADD COLUMN "coins" TEXT DEFAULT '100';

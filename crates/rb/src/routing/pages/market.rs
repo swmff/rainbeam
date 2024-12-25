@@ -93,6 +93,11 @@ pub async fn homepage_request(
             Err(e) => return Html(e.to_string()),
         }
     } else {
+        if (auth_user.id != props.creator) && !is_helper {
+            // we cannot sort by somebody that isnt us if we arent helper
+            return Html(DatabaseError::NotAllowed.to_html(database));
+        }
+
         if let Some(r#type) = props.r#type {
             // creator and type
             match database

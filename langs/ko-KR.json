@@ -31,6 +31,7 @@
         "general:title.account": "계정",
 
         "general:dialog.continue": "계속",
+        "general:dialog.create": "Create",
         "general:dialog.cancel": "취소",
         "general:dialog.okay": "확인",
         "general:dialog.yes": "네",

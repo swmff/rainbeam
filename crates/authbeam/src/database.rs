@@ -5032,7 +5032,7 @@ impl Database {
         };
 
         // subtract creation cost from creator
-        if let Err(e) = self
+        /* if let Err(e) = self
             .create_transaction(
                 TransactionCreate {
                     merchant: "0".to_string(),
@@ -5044,7 +5044,7 @@ impl Database {
             .await
         {
             return Err(e);
-        };
+        }; */
 
         // create item
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
