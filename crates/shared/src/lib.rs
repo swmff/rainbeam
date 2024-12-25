@@ -3,6 +3,7 @@
 #![doc(issue_tracker_base_url = "https://github.com/swmff/rainbeam/issues/")]
 pub mod fs;
 pub mod hash;
+pub mod path;
 pub mod process;
 pub mod ui;
 
