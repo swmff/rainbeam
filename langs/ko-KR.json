@@ -235,7 +235,9 @@
         "settings:coins.html:label.item": "Item",
         "settings:coins.html:text.browse_market": "Browse market",
         "settings:coins.html:text.publish_item": "Publish item",
+        "settings:coins.html:text.save_theme": "Save theme",
         "settings:coins.html:text.my_items": "My items",
+        "settings:coins.html:text.my_themes": "My themes",
 
         "chats:chat.html:action.change_name": "이름 변경",
         "chats:chat.html:action.add_friend": "친구 추가",

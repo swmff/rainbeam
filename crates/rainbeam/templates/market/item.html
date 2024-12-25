@@ -197,21 +197,24 @@
                 class="secondary"
                 onclick="trigger('items:edit_content', ['{{ item.id }}', '{{ item.type.to_string() }}'])"
             >
-                {{ text "market:action.edit_content" }}
+                {{ icon "pen" }}
+                <span>{{ text "market:action.edit_content" }}</span>
             </button>
 
             <button
                 class="secondary"
                 onclick="trigger('app:copy_text', ['{{ item.id }}'])"
             >
-                {{ text "general:action.copy_id" }}
+                {{ icon "copy" }}
+                <span>{{ text "general:action.copy_id" }}</span>
             </button>
 
             <button
                 class="red secondary"
                 onclick="trigger('items:delete', ['{{ item.id }}'])"
             >
-                {{ text "general:action.delete" }}
+                {{ icon "trash" }}
+                <span>{{ text "general:action.delete" }}</span>
             </button>
         </div>
 
@@ -341,10 +344,54 @@
             </script>
         </form>
 
-        <div class="card w-full secondary">
-            <pre><code>{{ item.content }}</code></pre>
+        <div class="card w-full secondary flex flex-col gap-2">
+            <pre><code id="item_css_inner">{{ item.content }}</code></pre>
+            <button class="primary" onclick="copy_to_profile()">
+                {{ icon "paint-bucket" }}
+                <span>{{ text "market:action.copy_to_profile" }}</span>
+            </button>
         </div>
     </div>
+
+    <script>
+        async function copy_to_profile() {
+            if (!document.getElementById("item_css_inner")) {
+                return;
+            }
+
+            const input = document.getElementById("item_css_inner").innerHTML;
+
+            const output = { "sparkler:custom_css": "" };
+            let is_custom_css = false;
+
+            for (const line of input.split("\n")) {
+                if (line === "/* sparkler:custom_css */") {
+                    is_custom_css = true;
+                    continue;
+                }
+
+                if (is_custom_css) {
+                    // push to custom css
+                    output["sparkler:custom_css"] += `${line}\n`;
+                    continue;
+                } else {
+                    // push specific value
+                    if (!line.startsWith("--")) {
+                        continue;
+                    }
+
+                    const name = `sparkler:${line.split(":")[0].replaceAll("-", "_").replace("__", "")}`;
+                    const value = line.split(":")[1].split(" !important")[0];
+                    output[name] = value;
+                }
+            }
+
+            // push to settings
+            await patch_metadata({
+                kv: output,
+            });
+        }
+    </script>
     {% endif %}
 </div>
 {% call super() %} {% endblock %}

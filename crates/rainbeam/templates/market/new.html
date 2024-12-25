@@ -7,6 +7,12 @@
 </form>
 
 <script>
+    const search = new URLSearchParams(window.location.search);
+
+    if (search.get("type")) {
+        document.getElementById("type").value = search.get("type");
+    }
+
     async function create_item(e) {
         const type = e.target.type.options[e.target.type.selectedIndex].value;
         const content = await trigger("items:content_input", [type]);

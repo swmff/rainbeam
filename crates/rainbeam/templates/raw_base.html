@@ -106,6 +106,10 @@
 
             media_theme_pref();
             document.documentElement.addEventListener("turbo:load", () => {
+                if (!document.getElementById("theme")) {
+                    return;
+                }
+
                 const profile_theme = document
                     .getElementById("theme")
                     .innerText.trim();

@@ -330,14 +330,55 @@
         </ol>
     </div>
 
+    {% if let Some(user) = profile %}
+    <div class="flex flex-col gap-2">
+        <a
+            href="/market/new?type=UserTheme"
+            class="card w-full flex justify-between items-center gap-2"
+        >
+            <div class="flex gap-2 items-center">
+                {{ icon "badge-plus" }}
+                <span> {{ text "settings:coins.html:text.save_theme" }} </span>
+            </div>
+
+            <button class="primary icon-only small">
+                {{ icon "chevron-right" }}
+            </button>
+        </a>
+
+        <a
+            href="/market?creator={{ user.id }}&type=UserTheme"
+            class="card w-full flex justify-between items-center gap-2"
+        >
+            <div class="flex gap-2 items-center">
+                {{ icon "paint-bucket" }}
+
+                <span> {{ text "settings:coins.html:text.my_themes" }} </span>
+            </div>
+
+            <button class="primary icon-only small">
+                {{ icon "chevron-right" }}
+            </button>
+        </a>
+    </div>
+    {% endif %}
+
     <div class="flex flex-col gap-1">
         <label for="sparkler:color_surface">Surface</label>
 
-        <input
-            name="sparkler:color_surface"
-            id="sparkler:color_surface"
-            onchange="update_kv('sparkler:color_surface', event.target.value)"
-        />
+        <div class="flex gap-2 flex-row">
+            <input
+                type="color"
+                onchange="link_color('sparkler:color_surface', event.target.value)"
+            />
+
+            <input
+                name="sparkler:color_surface"
+                id="sparkler:color_surface"
+                onchange="update_kv('sparkler:color_surface', event.target.value)"
+                class="w-full"
+            />
+        </div>
 
         <p class="fade">Page background.</p>
     </div>
@@ -345,11 +386,19 @@
     <div class="flex flex-col gap-1">
         <label for="sparkler:color_lowered">Lowered</label>
 
-        <input
-            name="sparkler:color_lowered"
-            id="sparkler:color_lowered"
-            onchange="update_kv('sparkler:color_lowered', event.target.value)"
-        />
+        <div class="flex gap-2 flex-row">
+            <input
+                type="color"
+                onchange="link_color('sparkler:color_lowered', event.target.value)"
+            />
+
+            <input
+                name="sparkler:color_lowered"
+                id="sparkler:color_lowered"
+                onchange="update_kv('sparkler:color_lowered', event.target.value)"
+                class="w-full"
+            />
+        </div>
 
         <p class="fade">
             Stuff that is darker than the page background. (questions,
@@ -360,11 +409,19 @@
     <div class="flex flex-col gap-1">
         <label for="sparkler:color_super_lowered">Super lowered</label>
 
-        <input
-            name="sparkler:color_super_lowered"
-            id="sparkler:color_super_lowered"
-            onchange="update_kv('sparkler:color_super_lowered', event.target.value)"
-        />
+        <div class="flex gap-2 flex-row">
+            <input
+                type="color"
+                onchange="link_color('sparkler:color_super_lowered', event.target.value)"
+            />
+
+            <input
+                name="sparkler:color_super_lowered"
+                id="sparkler:color_super_lowered"
+                onchange="update_kv('sparkler:color_super_lowered', event.target.value)"
+                class="w-full"
+            />
+        </div>
 
         <p class="fade">Even darker than that. (button hover, etc.)</p>
     </div>
@@ -372,11 +429,19 @@
     <div class="flex flex-col gap-1">
         <label for="sparkler:color_raised">Raised</label>
 
-        <input
-            name="sparkler:color_raised"
-            id="sparkler:color_raised"
-            onchange="update_kv('sparkler:color_raised', event.target.value)"
-        />
+        <div class="flex gap-2 flex-row">
+            <input
+                type="color"
+                onchange="link_color('sparkler:color_raised', event.target.value)"
+            />
+
+            <input
+                name="sparkler:color_raised"
+                id="sparkler:color_raised"
+                onchange="update_kv('sparkler:color_raised', event.target.value)"
+                class="w-full"
+            />
+        </div>
 
         <p class="fade">
             Stuff that is lighter than the page background. (profile card, pill
@@ -387,11 +452,19 @@
     <div class="flex flex-col gap-1">
         <label for="sparkler:color_super_raised">Super raised</label>
 
-        <input
-            name="sparkler:color_super_raised"
-            id="sparkler:color_super_raised"
-            onchange="update_kv('sparkler:color_super_raised', event.target.value)"
-        />
+        <div class="flex gap-2 flex-row">
+            <input
+                type="color"
+                onchange="link_color('sparkler:color_super_raised', event.target.value)"
+            />
+
+            <input
+                name="sparkler:color_super_raised"
+                id="sparkler:color_super_raised"
+                onchange="update_kv('sparkler:color_super_raised', event.target.value)"
+                class="w-full"
+            />
+        </div>
 
         <p class="fade">Even lighter than that. (pill menu buttons, etc.)</p>
     </div>
@@ -399,11 +472,19 @@
     <div class="flex flex-col gap-1">
         <label for="sparkler:color_text">Text</label>
 
-        <input
-            name="sparkler:color_text"
-            id="sparkler:color_text"
-            onchange="update_kv('sparkler:color_text', event.target.value)"
-        />
+        <div class="flex gap-2 flex-row">
+            <input
+                type="color"
+                onchange="link_color('sparkler:color_text', event.target.value)"
+            />
+
+            <input
+                name="sparkler:color_text"
+                id="sparkler:color_text"
+                onchange="update_kv('sparkler:color_text', event.target.value)"
+                class="w-full"
+            />
+        </div>
 
         <p class="fade">Text color used everywhere.</p>
     </div>
@@ -411,11 +492,19 @@
     <div class="flex flex-col gap-1">
         <label for="sparkler:color_text_raised">Text raised</label>
 
-        <input
-            name="sparkler:color_text_raised"
-            id="sparkler:color_text_raised"
-            onchange="update_kv('sparkler:color_text_raised', event.target.value)"
-        />
+        <div class="flex gap-2 flex-row">
+            <input
+                type="color"
+                onchange="link_color('sparkler:color_text_raised', event.target.value)"
+            />
+
+            <input
+                name="sparkler:color_text_raised"
+                id="sparkler:color_text_raised"
+                onchange="update_kv('sparkler:color_text_raised', event.target.value)"
+                class="w-full"
+            />
+        </div>
 
         <p class="fade">
             Text color used on raised elements (profile card, responses, etc.)
@@ -426,11 +515,19 @@
     <div class="flex flex-col gap-1">
         <label for="sparkler:color_text_lowered">Text lowered</label>
 
-        <input
-            name="sparkler:color_text_lowered"
-            id="sparkler:color_text_lowered"
-            onchange="update_kv('sparkler:color_text_lowered', event.target.value)"
-        />
+        <div class="flex gap-2 flex-row">
+            <input
+                type="color"
+                onchange="link_color('sparkler:color_text_lowered', event.target.value)"
+            />
+
+            <input
+                name="sparkler:color_text_lowered"
+                id="sparkler:color_text_lowered"
+                onchange="update_kv('sparkler:color_text_lowered', event.target.value)"
+                class="w-full"
+            />
+        </div>
 
         <p class="fade">
             Text color used on lowered elements (motivation header, questions,
@@ -441,11 +538,19 @@
     <div class="flex flex-col gap-1">
         <label for="sparkler:color_link">Link color</label>
 
-        <input
-            name="sparkler:color_link"
-            id="sparkler:color_link"
-            onchange="update_kv('sparkler:color_link', event.target.value)"
-        />
+        <div class="flex gap-2 flex-row">
+            <input
+                type="color"
+                onchange="link_color('sparkler:color_link', event.target.value)"
+            />
+
+            <input
+                name="sparkler:color_link"
+                id="sparkler:color_link"
+                onchange="update_kv('sparkler:color_link', event.target.value)"
+                class="w-full"
+            />
+        </div>
 
         <p class="fade">Text color used on links.</p>
     </div>
@@ -453,11 +558,19 @@
     <div class="flex flex-col gap-1">
         <label for="sparkler:color_primary">Primary</label>
 
-        <input
-            name="sparkler:color_primary"
-            id="sparkler:color_primary"
-            onchange="update_kv('sparkler:color_primary', event.target.value)"
-        />
+        <div class="flex gap-2 flex-row">
+            <input
+                type="color"
+                onchange="link_color('sparkler:color_primary', event.target.value)"
+            />
+
+            <input
+                name="sparkler:color_primary"
+                id="sparkler:color_primary"
+                onchange="update_kv('sparkler:color_primary', event.target.value)"
+                class="w-full"
+            />
+        </div>
 
         <p class="fade">That primary pink-ish color.</p>
     </div>
@@ -465,11 +578,19 @@
     <div class="flex flex-col gap-1">
         <label for="sparkler:color_primary_lowered">Primary lowered</label>
 
-        <input
-            name="sparkler:color_primary_lowered"
-            id="sparkler:color_primary_lowered"
-            onchange="update_kv('sparkler:color_primary_lowered', event.target.value)"
-        />
+        <div class="flex gap-2 flex-row">
+            <input
+                type="color"
+                onchange="link_color('sparkler:color_primary_lowered', event.target.value)"
+            />
+
+            <input
+                name="sparkler:color_primary_lowered"
+                id="sparkler:color_primary_lowered"
+                onchange="update_kv('sparkler:color_primary_lowered', event.target.value)"
+                class="w-full"
+            />
+        </div>
 
         <p class="fade">
             That primary pink-ish color when you hover over it (buttons).
@@ -479,11 +600,19 @@
     <div class="flex flex-col gap-1">
         <label for="sparkler:color_primary_raised">Primary raised</label>
 
-        <input
-            name="sparkler:color_primary_raised"
-            id="sparkler:color_primary_raised"
-            onchange="update_kv('sparkler:color_primary_raised', event.target.value)"
-        />
+        <div class="flex gap-2 flex-row">
+            <input
+                type="color"
+                onchange="link_color('sparkler:color_primary_raised', event.target.value)"
+            />
+
+            <input
+                name="sparkler:color_primary_raised"
+                id="sparkler:color_primary_raised"
+                onchange="update_kv('sparkler:color_primary_raised', event.target.value)"
+                class="w-full"
+            />
+        </div>
 
         <p class="fade">A lightly lighter version of your primary color.</p>
     </div>
@@ -491,11 +620,19 @@
     <div class="flex flex-col gap-1">
         <label for="sparkler:color_text_primary">Text primary</label>
 
-        <input
-            name="sparkler:color_text_primary"
-            id="sparkler:color_text_primary"
-            onchange="update_kv('sparkler:color_text_primary', event.target.value)"
-        />
+        <div class="flex gap-2 flex-row">
+            <input
+                type="color"
+                onchange="link_color('sparkler:color_text_primary', event.target.value)"
+            />
+
+            <input
+                name="sparkler:color_text_primary"
+                id="sparkler:color_text_primary"
+                onchange="update_kv('sparkler:color_text_primary', event.target.value)"
+                class="w-full"
+            />
+        </div>
 
         <p class="fade">
             Text color used on elements using the primary color as a background.
@@ -505,11 +642,19 @@
     <div class="flex flex-col gap-1">
         <label for="sparkler:color_shadow">Shadow</label>
 
-        <input
-            name="sparkler:color_shadow"
-            id="sparkler:color_shadow"
-            onchange="update_kv('sparkler:color_shadow', event.target.value)"
-        />
+        <div class="flex gap-2 flex-row">
+            <input
+                type="color"
+                onchange="link_color('sparkler:color_shadow', event.target.value)"
+            />
+
+            <input
+                name="sparkler:color_shadow"
+                id="sparkler:color_shadow"
+                onchange="update_kv('sparkler:color_shadow', event.target.value)"
+                class="w-full"
+            />
+        </div>
 
         <p class="fade">Color used for shadows.</p>
     </div>

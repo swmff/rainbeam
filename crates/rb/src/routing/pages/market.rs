@@ -93,13 +93,26 @@ pub async fn homepage_request(
             Err(e) => return Html(e.to_string()),
         }
     } else {
-        match database
-            .auth
-            .get_items_by_creator_paginated(props.creator.clone(), props.page)
-            .await
-        {
-            Ok(i) => i,
-            Err(e) => return Html(e.to_string()),
+        if let Some(r#type) = props.r#type {
+            // creator and type
+            match database
+                .auth
+                .get_items_by_creator_type_paginated(props.creator.clone(), r#type, props.page)
+                .await
+            {
+                Ok(i) => i,
+                Err(e) => return Html(e.to_string()),
+            }
+        } else {
+            // no type, just creator
+            match database
+                .auth
+                .get_items_by_creator_paginated(props.creator.clone(), props.page)
+                .await
+            {
+                Ok(i) => i,
+                Err(e) => return Html(e.to_string()),
+            }
         }
     };
 
@@ -241,7 +254,10 @@ pub async fn item_request(
         Err(e) => return Html(e.to_string()),
     };
 
-    if !is_helper && (item.status != ItemStatus::Approved) && (item.status != ItemStatus::Featured)
+    if !is_helper
+        && (item.status != ItemStatus::Approved)
+        && (item.status != ItemStatus::Featured)
+        && auth_user.id != item.creator
     {
         // users who aren't helpers cannot view unapproved items
         return Html(DatabaseError::NotAllowed.to_string());

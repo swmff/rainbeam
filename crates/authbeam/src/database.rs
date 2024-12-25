@@ -4871,6 +4871,66 @@ impl Database {
         Ok(res)
     }
 
+    /// Get all items by their creator and type, 25 at a time
+    ///
+    /// ## Arguments:
+    /// * `user`
+    /// * `type`
+    /// * `page`
+    ///
+    /// ## Returns:
+    /// `Vec<(Item, Box<Profile>)>`
+    pub async fn get_items_by_creator_type_paginated(
+        &self,
+        user: String,
+        r#type: ItemType,
+        page: i32,
+    ) -> Result<Vec<(Item, Box<Profile>)>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            format!("SELECT * FROM \"xugc_items\" WHERE \"creator\" = ? AND \"type\" = ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        } else {
+            format!("SELECT * FROM \"xugc_items\" WHERE \"creator\" = $1 AND \"type\" = $2 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+        };
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query)
+            .bind::<&String>(&user)
+            .bind::<&String>(&serde_json::to_string(&r#type).unwrap())
+            .fetch_all(c)
+            .await
+        {
+            Ok(p) => {
+                let mut out = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row, Vec::new()).0;
+                    let item = match self.gimme_item(res) {
+                        Ok(t) => t,
+                        Err(e) => return Err(e),
+                    };
+
+                    let creator = item.creator.clone();
+
+                    out.push((
+                        item,
+                        match self.get_profile(creator.to_string()).await {
+                            Ok(ua) => ua,
+                            Err(_) => continue,
+                        },
+                    ));
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::Other),
+        };
+
+        // return
+        Ok(res)
+    }
+
     /// Get all items by their status, 25 at a time
     ///
     /// ## Arguments:
@@ -4976,7 +5036,7 @@ impl Database {
             .create_transaction(
                 TransactionCreate {
                     merchant: "0".to_string(),
-                    item: item.id.clone(),
+                    item: "0".to_string(),
                     amount: -25,
                 },
                 creator.clone(),

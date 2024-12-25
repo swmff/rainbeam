@@ -519,6 +519,12 @@ pub enum ItemType {
     UserTheme,
 }
 
+impl Default for ItemType {
+    fn default() -> Self {
+        Self::Text
+    }
+}
+
 impl ToString for ItemType {
     fn to_string(&self) -> String {
         match self {

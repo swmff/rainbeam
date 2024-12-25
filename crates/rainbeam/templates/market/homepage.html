@@ -14,6 +14,7 @@
 {% endblock %} {% block panel %}
 <div class="flex flex-col gap-4">
     <!-- status sorts -->
+    {% if creator.is_empty() %}
     <div class="pillmenu convertible true">
         <a
             href="?status=Featured"
@@ -45,8 +46,7 @@
         >
         {% endif %}
     </div>
-
-    {% if items.len() == 0 %}
+    {% endif %} {% if items.len() == 0 %}
     <div class="markdown-alert-warning">
         <span>{{ text "general:text.no_results" }}</span>
     </div>

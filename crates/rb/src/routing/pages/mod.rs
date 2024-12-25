@@ -12,7 +12,8 @@ use ammonia::Builder;
 use langbeam::LangFile;
 use serde::{Deserialize, Serialize};
 use authbeam::model::{
-    IpBan, ItemStatus, Notification, Permission, Profile, ProfileMetadata, RelationshipStatus,
+    IpBan, ItemStatus, ItemType, Notification, Permission, Profile, ProfileMetadata,
+    RelationshipStatus,
 };
 
 use crate::config::Config;
@@ -461,6 +462,8 @@ pub struct MarketQuery {
     status: ItemStatus,
     #[serde(default)]
     creator: String,
+    #[serde(default)]
+    r#type: Option<ItemType>,
 }
 
 #[derive(Serialize, Deserialize)]

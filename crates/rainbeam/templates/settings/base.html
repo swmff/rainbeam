@@ -128,6 +128,12 @@ crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
             }
         };
 
+        // handle colors
+        globalThis.link_color = (id, color) => {
+            document.getElementById(id).value = color;
+            update_kv(id, color);
+        };
+
         // prefill
         setTimeout(() => {
             for (const [key, value] of Object.entries(metadata.kv)) {
