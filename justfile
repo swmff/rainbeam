@@ -1,3 +1,5 @@
+# set shell := ["pwsh.exe", "-c"] # For development on Windows, using PowerShell
+
 # build release
 build database="sqlite":
     just build-assets

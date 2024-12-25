@@ -1,6 +1,7 @@
 //! Application config manager
 use serde::{Deserialize, Serialize};
 use std::io::Result;
+use std::env::current_dir;
 
 use authbeam::database::HCaptchaConfig;
 use rainbeam_shared::fs;
@@ -119,10 +120,11 @@ impl Config {
 
     /// Pull configuration file
     pub fn get_config() -> Self {
-        let c = fs::canonicalize(".").unwrap();
-        let here = c.to_str().unwrap();
+        let mut path = current_dir().unwrap();
+        path.push(".config");
+        path.push("config.toml");
 
-        match fs::read(format!("{here}/.config/config.toml")) {
+        match fs::read(path) {
             Ok(c) => Config::read(c),
             Err(_) => {
                 Self::update_config(Self::default()).expect("failed to write default config");
