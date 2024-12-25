@@ -1,6 +1,6 @@
 //! Application config manager
 use serde::{Deserialize, Serialize};
-use rainbeam_shared::{fs, path::current_dir};
+use rainbeam_shared::{fs, path::PathBufD};
 use std::io::Result;
 
 /// Configuration file
@@ -25,11 +25,7 @@ impl Config {
 
     /// Pull configuration file
     pub fn get_config() -> Self {
-        let path = current_dir()
-            .unwrap()
-            .join(".config")
-            .join("databeam")
-            .join("config.toml");
+        let path = PathBufD::current().extend(&[".config", "databeam", "config.toml"]);
 
         match fs::read(path) {
             Ok(c) => Config::read(c),

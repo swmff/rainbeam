@@ -247,12 +247,13 @@ dependencies = [
  "axum-extra",
  "axum-macros",
  "citrus-client 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "databeam 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "databeam 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "dotenv",
  "hcaptcha-no-wasm",
  "image",
  "mime_guess",
- "rainbeam-shared 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pathbufd",
+ "rainbeam-shared 0.1.8",
  "regex",
  "reqwest",
  "serde",
@@ -848,9 +849,9 @@ dependencies = [
 
 [[package]]
 name = "databeam"
-version = "0.2.3"
+version = "0.2.5"
 dependencies = [
- "rainbeam-shared 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rainbeam-shared 0.1.8",
  "redis",
  "serde",
  "serde_json",
@@ -860,11 +861,11 @@ dependencies = [
 
 [[package]]
 name = "databeam"
-version = "0.2.3"
+version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b16d200d3028aad94bbff7daeeeec956136aa7dc0490df69c3a0ee19eff94129"
+checksum = "60c7d080218db6895c6d75b68073de8aa97f18d92103e50c3f941c95dbe71052"
 dependencies = [
- "rainbeam-shared 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rainbeam-shared 0.1.8",
  "redis",
  "serde",
  "serde_json",
@@ -1765,9 +1766,9 @@ dependencies = [
 
 [[package]]
 name = "langbeam"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
- "rainbeam-shared 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rainbeam-shared 0.1.8",
  "serde",
  "serde_json",
 ]
@@ -2267,6 +2268,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
+name = "pathbufd"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0773a3560fa9dcdde243904e89a621a986c059af65193b76fbcd084e081b7640"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "pem-rfc7468"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2580,12 +2590,13 @@ dependencies = [
  "authbeam",
  "axum",
  "axum-extra",
- "databeam 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "databeam 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures-util",
  "langbeam",
  "mimalloc",
  "mime_guess",
- "rainbeam-shared 0.1.6",
+ "pathbufd",
+ "rainbeam-shared 0.1.9",
  "rb",
  "regex",
  "reqwest",
@@ -2608,12 +2619,13 @@ dependencies = [
  "axum",
  "axum-extra",
  "citrus-client 0.1.0",
- "databeam 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "databeam 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures-util",
  "hcaptcha-no-wasm",
  "langbeam",
  "mime_guess",
- "rainbeam-shared 0.1.6",
+ "pathbufd",
+ "rainbeam-shared 0.1.9",
  "regex",
  "reqwest",
  "serde",
@@ -2625,11 +2637,14 @@ dependencies = [
 
 [[package]]
 name = "rainbeam-shared"
-version = "0.1.6"
+version = "0.1.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7eb507a7f8d74100178bfccaef131636ab77805b105e42d6d1d10cfb0751485a"
 dependencies = [
  "ammonia",
  "comrak",
  "hex_fmt",
+ "pathbufd",
  "rand",
  "serde",
  "sha2",
@@ -2638,9 +2653,7 @@ dependencies = [
 
 [[package]]
 name = "rainbeam-shared"
-version = "0.1.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "17b92fae8973b2533aaccadccfa4ad9f726f446e764aa28f691a26348893018d"
+version = "0.1.9"
 dependencies = [
  "ammonia",
  "comrak",
@@ -2763,14 +2776,15 @@ dependencies = [
  "axum",
  "axum-extra",
  "citrus-client 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "databeam 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "databeam 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures-util",
  "hcaptcha-no-wasm",
  "langbeam",
  "mimalloc",
  "mime_guess",
+ "pathbufd",
  "rainbeam-core",
- "rainbeam-shared 0.1.6",
+ "rainbeam-shared 0.1.9",
  "regex",
  "reqwest",
  "serde",
@@ -3534,9 +3548,9 @@ checksum = "13c2bddecc57b384dee18652358fb23172facb8a2c51ccc10d74c157bdea3292"
 
 [[package]]
 name = "syn"
-version = "2.0.90"
+version = "2.0.91"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "919d3b74a5dd0ccd15aeb8f93e7006bd9e14c295087c9896a110f490752bcf31"
+checksum = "d53cbcb5a243bd33b7858b1d7f4aca2153490815872d86d955d6ea29f743c035"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -4039,9 +4053,9 @@ checksum = "08f95100a766bf4f8f28f90d77e0a5461bbdb219042e7679bebe79004fed8d75"
 
 [[package]]
 name = "unicode-ident"
-version = "1.0.13"
+version = "1.0.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e91b56cd4cadaeb79bbf1a5645f6b4f8dc5bde8834ad5894a8db35fda9efa1fe"
+checksum = "adb9e6ca4f869e1180728b7950e35922a7fc6397f7b641499e8f3ef06e50dc83"
 
 [[package]]
 name = "unicode-normalization"

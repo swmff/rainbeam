@@ -9,6 +9,7 @@ use axum::{
     Json, Router,
 };
 use serde::{Deserialize, Serialize};
+use pathbufd::pathd;
 
 pub fn routes(database: Database) -> Router {
     Router::new()
@@ -35,7 +36,7 @@ pub async fn external_image_request(
         return (
             [("Content-Type", "image/svg+xml")],
             Body::from(read_image(
-                format!("{}/images", database.config.static_dir),
+                pathd!("{}/images", database.config.static_dir),
                 "default-banner.svg".to_string(),
             )),
         );
@@ -46,7 +47,7 @@ pub async fn external_image_request(
             return (
                 [("Content-Type", "image/svg+xml")],
                 Body::from(read_image(
-                    format!("{}/images", database.config.static_dir),
+                    pathd!("{}/images", database.config.static_dir),
                     "default-banner.svg".to_string(),
                 )),
             );
@@ -58,7 +59,7 @@ pub async fn external_image_request(
         return (
             [("Content-Type", "image/svg+xml")],
             Body::from(read_image(
-                format!("{}/images", database.config.static_dir),
+                pathd!("{}/images", database.config.static_dir),
                 "default-banner.svg".to_string(),
             )),
         );
@@ -77,7 +78,7 @@ pub async fn external_image_request(
                     return (
                         [("Content-Type", "image/svg+xml")],
                         Body::from(read_image(
-                            format!("{}/images", database.config.static_dir),
+                            pathd!("{}/images", database.config.static_dir),
                             "default-banner.svg".to_string(),
                         )),
                     );
@@ -99,7 +100,7 @@ pub async fn external_image_request(
         Err(_) => (
             [("Content-Type", "image/svg+xml")],
             Body::from(read_image(
-                format!("{}/images", database.config.static_dir),
+                pathd!("{}/images", database.config.static_dir),
                 "default-banner.svg".to_string(),
             )),
         ),

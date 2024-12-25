@@ -18,7 +18,7 @@ use reqwest::Client as HttpClient;
 use serde::{Deserialize, Serialize};
 
 use databeam::{query as sqlquery, utility, DefaultReturn};
-use rainbeam_shared::path::PathBufD;
+use pathbufd::{PathBufD, pathd};
 
 pub type Result<T> = std::result::Result<T, DatabaseError>;
 
@@ -1490,14 +1490,14 @@ impl Database {
                 // delete images
                 // TODO: Implement `.is_empty()` for `PathBufD`
                 if !self.config.media_dir.to_string().is_empty() {
-                    let avatar = format!("{}/avatars/{}.avif", self.config.media_dir, id);
+                    let avatar = pathd!("{}/avatars/{}.avif", self.config.media_dir, id);
                     if let Ok(_) = rainbeam_shared::fs::fstat(&avatar) {
                         if let Err(_) = rainbeam_shared::fs::remove_file(avatar) {
                             return Err(DatabaseError::Other);
                         }
                     }
 
-                    let banner = format!("{}/banners/{}.avif", self.config.media_dir, id);
+                    let banner = pathd!("{}/banners/{}.avif", self.config.media_dir, id);
                     if let Ok(_) = rainbeam_shared::fs::fstat(&banner) {
                         if let Err(_) = rainbeam_shared::fs::remove_file(banner) {
                             return Err(DatabaseError::Other);

@@ -11,10 +11,8 @@ use tracing::{info, Level};
 
 use authbeam::{api as AuthApi, Database as AuthDatabase};
 use databeam::config::Config as DataConf;
-use rainbeam_shared::{
-    fs,
-    path::{PathBufD, current_dir},
-};
+use rainbeam_shared::fs;
+use pathbufd::{PathBufD, pathd};
 
 pub use rb::database;
 pub use rb::config;
@@ -34,10 +32,7 @@ static GLOBAL: MiMalloc = MiMalloc;
 pub async fn main() {
     let mut config = config::Config::get_config();
 
-    // let c = fs::canonicalize(".").unwrap();
-    // let here = c.to_str().unwrap();
-    let here = current_dir().unwrap();
-
+    let here = PathBufD::current();
     let static_dir = here.join(".config").join("static");
     let well_known_dir = here.join(".config").join(".well-known");
     config.static_dir = static_dir.clone();
@@ -51,8 +46,8 @@ pub async fn main() {
     // TODO: implement `.is_empty()` on `PathBufD`
     if !config.media_dir.to_string().is_empty() {
         fs::mkdir(&config.media_dir).expect("failed to create media dir");
-        fs::mkdir(format!("{}/avatars", config.media_dir)).expect("failed to create avatars dir");
-        fs::mkdir(format!("{}/banners", config.media_dir)).expect("failed to create banners dir");
+        fs::mkdir(pathd!("{}/avatars", config.media_dir)).expect("failed to create avatars dir");
+        fs::mkdir(pathd!("{}/banners", config.media_dir)).expect("failed to create banners dir");
     }
 
     // create databases

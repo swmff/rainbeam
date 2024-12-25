@@ -1,4 +1,5 @@
 //! Application config manager
+use pathbufd::PathBufD;
 use serde::{Deserialize, Serialize};
 use std::io::Result;
 use std::env::current_dir;
@@ -52,10 +53,10 @@ pub struct Config {
     pub description: String,
     /// The location of the static directory, should not be supplied manually as it will be overwritten with `./.config/static`
     #[serde(default)]
-    pub static_dir: String,
+    pub static_dir: PathBufD,
     /// The location of media uploads on the file system
     #[serde(default)]
-    pub media_dir: String,
+    pub media_dir: PathBufD,
     /// HCaptcha configuration
     pub captcha: HCaptchaConfig,
     /// The name of the header used for reading user IP address
@@ -96,8 +97,8 @@ impl Default for Config {
             port: 8080,
             name: "Rainbeam".to_string(),
             description: "Ask, share, socialize!".to_string(),
-            static_dir: String::new(),
-            media_dir: String::new(),
+            static_dir: PathBufD::new(),
+            media_dir: PathBufD::new(),
             captcha: HCaptchaConfig::default(),
             real_ip_header: Option::None,
             registration_enabled: true,
