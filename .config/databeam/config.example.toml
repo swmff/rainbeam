@@ -1,6 +1,7 @@
+# example configuration for "main.db" sqlite file
 [connection]
-type = "mysql"
-host="localhost:3306"
-user="mysql"
-pass="mysql"
-name="mysql"
+type = "sqlite"
+host=""
+user=""
+pass=""
+name="main"
