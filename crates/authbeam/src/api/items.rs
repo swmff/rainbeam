@@ -317,6 +317,19 @@ pub async fn buy_request(
         });
     }
 
+    // make sure we don't already have this item
+    if let Ok(_) = database
+        .get_transaction_by_customer_item(auth_user.id.clone(), item.id.clone())
+        .await
+    {
+        return Json(DefaultReturn {
+            success: false,
+            message: DatabaseError::MustBeUnique.to_string(),
+            payload: (),
+        });
+    }
+
+    // ...
     if let Err(e) = database
         .create_transaction(
             TransactionCreate {
