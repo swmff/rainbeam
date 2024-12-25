@@ -1,5 +1,5 @@
 use crate::database::Database;
-use crate::model::{DatabaseError, TokenContext, TokenPermission, TransactionCreate};
+use crate::model::{DatabaseError, TokenContext, TokenPermission};
 use serde::{Deserialize, Serialize};
 use databeam::DefaultReturn;
 
@@ -7,6 +7,7 @@ use axum::http::{HeaderMap, HeaderValue};
 use axum::response::{IntoResponse, Redirect};
 use axum::{extract::State, Json};
 use axum_extra::extract::cookie::CookieJar;
+use pathbufd::pathd;
 
 use crate::avif::{save_avif_buffer, Image};
 
@@ -368,31 +369,11 @@ pub async fn upload_avatar_request(
         }
     };
 
-    // charge coins if this isn't our first upload
-    let path = format!(
+    let path = pathd!(
         "{}/avatars/{}.avif",
         database.config.media_dir,
         auth_user.id.clone()
     );
-
-    if let Ok(_) = rainbeam_shared::fs::fstat(&path) {
-        if let Err(e) = database
-            .create_transaction(
-                TransactionCreate {
-                    merchant: "0".to_string(),
-                    item: "0".to_string(),
-                    amount: -25,
-                },
-                auth_user.id.clone(),
-            )
-            .await
-        {
-            return Redirect::to(&format!(
-                "/settings/profile?ANNC={}&ANNC_TYPE=caution",
-                e.to_string()
-            ));
-        }
-    }
 
     // check file size
     if img.0.len() > MAXIUMUM_FILE_SIZE {
@@ -466,31 +447,11 @@ pub async fn upload_banner_request(
         }
     };
 
-    // charge coins if this isn't our first upload
-    let path = format!(
+    let path = pathd!(
         "{}/banners/{}.avif",
         database.config.media_dir,
         auth_user.id.clone()
     );
-
-    if let Ok(_) = rainbeam_shared::fs::fstat(&path) {
-        if let Err(e) = database
-            .create_transaction(
-                TransactionCreate {
-                    merchant: "0".to_string(),
-                    item: "0".to_string(),
-                    amount: -25,
-                },
-                auth_user.id.clone(),
-            )
-            .await
-        {
-            return Redirect::to(&format!(
-                "/settings/profile?ANNC={}&ANNC_TYPE=caution",
-                e.to_string()
-            ));
-        }
-    }
 
     // check file size
     if img.0.len() > MAXIUMUM_FILE_SIZE {
