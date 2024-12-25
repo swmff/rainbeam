@@ -30,7 +30,6 @@ impl Config {
         path.push(".config");
         path.push("databeam");
         path.push("config.toml");
-        println!("{:?}", path);
 
         match fs::read(path) {
             Ok(c) => Config::read(c),
