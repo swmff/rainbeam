@@ -107,7 +107,18 @@ class PartialComponent extends HTMLElement {
 
                 if (!this.getAttribute("instant")) {
                     // load when in view
+                    if (observer === undefined) {
+                        observer = create_observer();
+                    }
+
                     setTimeout(() => {
+                        if (!observer) {
+                            // how??
+                            console.log("???");
+                            window.location.reload();
+                            return;
+                        }
+
                         observer.observe(this);
                     }, 500);
                 } else {

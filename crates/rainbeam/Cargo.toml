@@ -7,7 +7,7 @@ description = "Ask, share, socialize!"
 homepage = "https://rainbeam.net"
 repository = "https://github.com/swmff/rainbeam"
 license = "MIT"
-rust-version = "1.81"
+rust-version = "1.83"
 
 [features]
 postgres = ["databeam/postgres", "authbeam/postgres", "rb/postgres"]
