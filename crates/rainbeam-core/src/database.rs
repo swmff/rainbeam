@@ -4941,7 +4941,8 @@ impl Database {
         // ...
         let circle = Circle {
             name: props.name,
-            id: utility::random_id(),
+            // id: utility::random_id(),
+            id: AlmostSnowflake::new(self.config.snowflake_server_id).to_string(),
             owner,
             metadata: CircleMetadata { kv: HashMap::new() },
             timestamp: utility::unix_epoch_timestamp(),
@@ -5502,7 +5503,8 @@ impl Database {
 
         // ...
         let chat = Chat {
-            id: utility::random_id(),
+            // id: utility::random_id(),
+            id: AlmostSnowflake::new(self.config.snowflake_server_id).to_string(),
             users: vec![user1, user2],
             context: ChatContext {},
             timestamp: utility::unix_epoch_timestamp(),
@@ -6088,7 +6090,8 @@ impl Database {
         // ...
         let timestamp = utility::unix_epoch_timestamp();
         let message = Message {
-            id: utility::random_id(),
+            // id: utility::random_id(),
+            id: AlmostSnowflake::new(self.config.snowflake_server_id).to_string(),
             chat: chat.id.clone(),
             author: author.id.clone(),
             content: props.content.trim().to_string(),

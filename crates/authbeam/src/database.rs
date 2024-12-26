@@ -2320,7 +2320,7 @@ impl Database {
             id: if let Some(id) = id {
                 id
             } else {
-                utility::random_id()
+                AlmostSnowflake::new(self.config.snowflake_server_id).to_string()
             },
             recipient: props.recipient,
         };
@@ -4142,7 +4142,8 @@ impl Database {
             title: props.title,
             content: props.content,
             timestamp: utility::unix_epoch_timestamp(),
-            id: utility::random_id(),
+            // id: utility::random_id(),
+            id: AlmostSnowflake::new(self.config.snowflake_server_id).to_string(),
             state: MailState::Unread,
             author: author.id.clone(),
             recipient: recipients.clone(),
@@ -4413,7 +4414,8 @@ impl Database {
 
         // ...
         let label = UserLabel {
-            id: utility::random_id(),
+            // id: utility::random_id(),
+            id: AlmostSnowflake::new(self.config.snowflake_server_id).to_string(),
             name,
             timestamp: utility::unix_epoch_timestamp(),
             creator: author.id,
@@ -4665,7 +4667,8 @@ impl Database {
 
         // ...
         let transaction = Transaction {
-            id: utility::random_id(),
+            // id: utility::random_id(),
+            id: AlmostSnowflake::new(self.config.snowflake_server_id).to_string(),
             amount: props.amount,
             item: props.item,
             timestamp: utility::unix_epoch_timestamp(),
@@ -5036,8 +5039,13 @@ impl Database {
         }
 
         // ...
+        if props.cost.is_negative() {
+            return Err(DatabaseError::NotAllowed);
+        }
+
         let item = Item {
-            id: utility::random_id(),
+            // id: utility::random_id(),
+            id: AlmostSnowflake::new(self.config.snowflake_server_id).to_string(),
             name: props.name,
             description: props.description,
             cost: props.cost,
