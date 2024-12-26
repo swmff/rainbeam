@@ -142,7 +142,7 @@ dialog::backdrop {
     transform: rotateZ(180deg);
 }
 
-@media screen and (max-width: 900px) {
+@media screen and (max-height: 900px) {
     /* stuff to make some components feel more mobile-native */
     body:has(.dropdown:not(dialog *) .inner[open]),
     body:has(dialog[open]) {
@@ -188,6 +188,16 @@ dialog::backdrop {
         box-shadow: 0 0 4px var(--color-shadow);
     }
 
+    .dropdown:not(dialog *) .inner[open].sm\:top {
+        top: 0 !important;
+        bottom: unset !important;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+        border-bottom-left-radius: calc(var(--radius) * 2);
+        border-bottom-right-radius: calc(var(--radius) * 2);
+        animation: from_top ease-in-out 1 0.05s running;
+    }
+
     .dropdown:not(dialog *):has(.inner[open])::before {
         opacity: 50%;
     }
@@ -220,6 +230,16 @@ dialog::backdrop {
 @keyframes from_bottom {
     from {
         transform: translateY(100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes from_top {
+    from {
+        transform: translateY(-100%);
     }
 
     to {
