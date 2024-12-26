@@ -66,6 +66,32 @@
         </p>
     </div>
 
+    <div class="flex flex-col gap-1">
+        <label for="sparkler:allow_profile_css"
+            >{{ text "settings:account.html:label.allow_profile_css" }}</label
+        >
+
+        <select
+            type="url"
+            name="sparkler:allow_profile_css"
+            id="sparkler:allow_profile_css"
+            onchange="update_css_preference(event.target.options[event.target.selectedIndex].value)"
+        >
+            <option value="yes" id="css-yes">
+                {{ text "general:dialog.yes" }}
+            </option>
+
+            <option value="no" id="css-no">
+                {{ text "general:dialog.no" }}
+            </option>
+        </select>
+
+        <p class="fade">
+            This is a local perference! Changing this to "No" will not show
+            custom profile CSS. Applied colors will still be rendered.
+        </p>
+    </div>
+
     <h4 class="title">
         {{ text "settings:account.html:title.local_behaviour" }}
     </h4>
@@ -608,6 +634,10 @@
             window.localStorage.setItem("theme-pref", pref);
         };
 
+        globalThis.update_css_preference = (pref) => {
+            window.localStorage.setItem("css-pref", pref);
+        };
+
         // fill current theme
         const current = window.localStorage.getItem("theme");
 
@@ -620,6 +650,15 @@
 
         if (document.getElementById(pref)) {
             document.getElementById(pref).setAttribute("selected", "true");
+        }
+
+        // fill current css preference
+        const css_pref = window.localStorage.getItem("css-pref");
+
+        if (document.getElementById(css_pref)) {
+            document
+                .getElementById(`css-${css_pref}`)
+                .setAttribute("selected", "true");
         }
 
         // fill extras

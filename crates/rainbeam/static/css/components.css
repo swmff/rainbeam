@@ -144,17 +144,17 @@ dialog::backdrop {
 
 @media screen and (max-width: 900px) {
     /* stuff to make some components feel more mobile-native */
-    body:has(.dropdown:not(dialog *):not(nav *) .inner[open]),
+    body:has(.dropdown:not(dialog *) .inner[open]),
     body:has(dialog[open]) {
         overflow: hidden;
     }
 
     /* dropdown to drawer */
-    .dropdown:not(dialog *):not(nav *) {
+    .dropdown:not(dialog *) {
         position: static;
     }
 
-    .dropdown:not(dialog *):not(nav *)::before {
+    .dropdown:not(dialog *)::before {
         content: "";
         opacity: 0%;
         transition: opacity 0.15s;
@@ -168,7 +168,7 @@ dialog::backdrop {
         background: #000000;
     }
 
-    .dropdown:not(dialog *):not(nav *) .inner[open] {
+    .dropdown:not(dialog *) .inner[open] {
         top: unset !important;
         left: 0 !important;
         bottom: 0 !important;
@@ -188,13 +188,17 @@ dialog::backdrop {
         box-shadow: 0 0 4px var(--color-shadow);
     }
 
-    .dropdown:not(dialog *):not(nav *):has(.inner[open])::before {
+    .dropdown:not(dialog *):has(.inner[open])::before {
         opacity: 50%;
     }
 
-    .dropdown:not(dialog *):not(nav *) .inner a,
-    .dropdown:not(dialog *):not(nav *) .inner button {
+    .dropdown:not(dialog *) .inner a,
+    .dropdown:not(dialog *) .inner button {
         min-height: 35px !important;
+    }
+
+    nav:has(.dropdown .inner[open]) {
+        position: static;
     }
 
     /* dialog to panel */

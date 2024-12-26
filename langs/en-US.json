@@ -150,6 +150,7 @@
         "settings:account.html:title.local_theming": "Local themeing",
         "settings:account.html:label.website_theme": "Website theme",
         "settings:account.html:label.allow_profile_themes": "Allow profile themes",
+        "settings:account.html:label.allow_profile_css": "Allow profile CSS",
 
         "settings:account.html:title.local_behaviour": "Local behavior",
         "settings:account.html:label.clear_notifs": "Clear notifications on view",

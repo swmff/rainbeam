@@ -130,6 +130,17 @@
             document.getElementById("stylesheets").remove(); // remove custom theme stuff
         }
 
+        // css preference
+        const css_pref = window.localStorage.getItem("css-pref") || "yes";
+
+        if (
+            css_pref === "no" &&
+            !is_self_theme &&
+            document.getElementById("sparkler_live:custom_css")
+        ) {
+            document.getElementById("sparkler_live:custom_css").remove(); // remove custom css stuff
+        }
+
         // profile theme
         const profile_theme = document.getElementById("theme").innerText.trim();
 

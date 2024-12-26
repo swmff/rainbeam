@@ -4,6 +4,7 @@
 pub mod fs;
 pub mod hash;
 pub mod process;
+pub mod snow;
 pub mod ui;
 
 // ...
