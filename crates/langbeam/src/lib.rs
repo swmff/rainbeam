@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use serde::{Serialize, Deserialize};
-use rainbeam_shared::{fs, path::PathBufD};
+use rainbeam_shared::fs;
+use pathbufd::PathBufD;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LangFile {

@@ -126,10 +126,8 @@ comment = comment.0.clone() %}
                 <b class="title">Sharing</b>
 
                 <!-- prettier-ignore -->
-                {% let short_id = comment.id[..10] %}
-
                 <button
-                    onclick="trigger('app:copy_text', ['{{ config.host }}/+c/{{ short_id }}'])"
+                    onclick="trigger('app:copy_text', ['{{ config.host }}/+c/{{ comment.id }}'])"
                 >
                     {{ icon "copy" }} {{ text "general:action.copy_link" }}
                 </button>

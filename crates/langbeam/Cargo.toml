@@ -1,6 +1,6 @@
 [package]
 name = "langbeam"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "Rainbeam language file manager"
 authors = ["trisuaso", "swmff"]
@@ -11,4 +11,5 @@ license = "MIT"
 [dependencies]
 serde = { version = "1.0.216", features = ["serde_derive"] }
 serde_json = "1.0.134"
-rainbeam-shared = "0.1.8"
+rainbeam-shared = "0.2.0"
+pathbufd = "0.1.3"

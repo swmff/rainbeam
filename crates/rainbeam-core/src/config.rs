@@ -19,9 +19,6 @@ pub struct Tiers {
     /// *\*Carpgraph drawings stay at 32kb maximum*
     #[serde(default)]
     pub double_limits: i32,
-    /// Styled profile card in the followers/following/friends section of other users
-    #[serde(default)]
-    pub stylish_card: i32,
     /// A small little crown shown on the user's profile avatar
     #[serde(default)]
     pub avatar_crown: i32,
@@ -35,7 +32,6 @@ impl Default for Tiers {
     fn default() -> Self {
         Self {
             double_limits: 1,
-            stylish_card: 1,
             avatar_crown: 1,
             profile_badge: 1,
         }
@@ -74,6 +70,8 @@ pub struct Config {
     /// Same as `host`, just without the protocol.
     #[serde(default)]
     pub citrus_id: String,
+    /// The server ID for ID generation
+    pub snowflake_server_id: usize,
     /// A list of image hosts that are blocked
     #[serde(default)]
     pub blocked_hosts: Vec<String>,
@@ -104,6 +102,7 @@ impl Default for Config {
             registration_enabled: true,
             host: String::new(),
             citrus_id: String::new(),
+            snowflake_server_id: 1234567890,
             blocked_hosts: Vec::new(),
             migration: false,
             tiers: Tiers::default(),

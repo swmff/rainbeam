@@ -10,7 +10,7 @@ license = "MIT"
 rust-version = "1.81"
 
 [dependencies]
-reqwest = "0.12.9"
+reqwest = "0.12.10"
 serde = "1.0.216"
 serde_json = "1.0.134"
 toml = "0.8.19"

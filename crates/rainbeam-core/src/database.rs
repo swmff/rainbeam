@@ -1,4 +1,5 @@
 use async_recursion::async_recursion;
+use rainbeam_shared::snow::AlmostSnowflake;
 use std::collections::{BTreeMap, HashMap};
 
 use crate::config::Config;
@@ -225,6 +226,49 @@ impl Database {
             Ok(p) => Ok(p),
             Err(e) => Err(e.into()),
         }
+    }
+
+    /// Parse user mentions in a given `input` String
+    pub fn parse_mentions(input: String) -> Vec<String> {
+        // state
+        let mut escape: bool = false;
+        let mut at: bool = false;
+        let mut buffer: String = String::new();
+        let mut out = Vec::new();
+
+        // parse
+        for char in input.chars() {
+            if (char == '\\') && !escape {
+                escape = true;
+            }
+
+            if (char == '@') && !escape {
+                at = true;
+                continue; // don't push @
+            }
+
+            if at {
+                if (char == ' ') && !escape {
+                    // reached space, end @
+                    at = false;
+
+                    if !out.contains(&buffer) {
+                        out.push(buffer);
+                    }
+
+                    buffer = String::new();
+                    continue;
+                }
+
+                // push mention text
+                buffer.push(char);
+            }
+
+            escape = false;
+        }
+
+        // return
+        out
     }
 
     /// Get all profiles by a search query, 12 at a time
@@ -1432,7 +1476,8 @@ impl Database {
                 Err(_) => anonymous_profile(format!("anonymous.{}", props.recipient)), // future note: this is anonymous because the recipient will be anonymous for cirles
             },
             content: props.content.trim().to_string(),
-            id: utility::random_id(),
+            // id: utility::random_id(),
+            id: AlmostSnowflake::new(self.config.snowflake_server_id).to_string(),
             timestamp: utility::unix_epoch_timestamp(),
             ip: ip.clone(),
             context: QuestionContext { media: props.media },
@@ -2479,10 +2524,11 @@ impl Database {
 
         // ...
         let timestamp = utility::unix_epoch_timestamp();
-        let response = QuestionResponse {
+        let mut response = QuestionResponse {
             author,
             content: props.content.trim().to_string(),
-            id: utility::random_id(),
+            // id: utility::random_id(),
+            id: AlmostSnowflake::new(self.config.snowflake_server_id).to_string(),
             timestamp,
             tags: Vec::new(),
             context: ResponseContext {
@@ -2500,6 +2546,39 @@ impl Database {
         if !response.reply.is_empty() {
             if let Err(e) = self.get_response(response.reply.clone()).await {
                 return Err(e);
+            }
+        }
+
+        // parse mentions
+        for mention in Database::parse_mentions(response.content.clone()) {
+            let profile = match self.auth.get_profile(mention.clone()).await {
+                Ok(p) => p,
+                Err(_) => continue,
+            };
+
+            if let Err(_) = self
+                .auth
+                .create_notification(
+                    NotificationCreate {
+                        title: format!(
+                            "[@{}]({}) mentioned you in a response!",
+                            profile.username, profile.id
+                        ),
+                        content: format!("You were mentioned in a response."),
+                        address: format!("/response/{}", response.id),
+                        recipient: profile.id.clone(),
+                    },
+                    None,
+                )
+                .await
+            {
+                continue;
+            } else {
+                // replace text with link to profile
+                response.content = response.content.replace(
+                    &format!("@{} ", mention),
+                    &format!("[@{}](/+u/{}) ", profile.username, profile.id),
+                )
             }
         }
 
@@ -3709,17 +3788,51 @@ impl Database {
 
         // ...
         let timestamp = utility::unix_epoch_timestamp();
-        let comment = ResponseComment {
+        let mut comment = ResponseComment {
             author,
             response: response.id.clone(),
             content: props.content.trim().to_string(),
-            id: utility::random_id(),
+            // id: utility::random_id(),
+            id: AlmostSnowflake::new(self.config.snowflake_server_id).to_string(),
             timestamp,
             reply: None,
             edited: timestamp,
             ip,
             context: CommentContext::default(),
         };
+
+        // parse mentions
+        for mention in Database::parse_mentions(comment.content.clone()) {
+            let profile = match self.auth.get_profile(mention.clone()).await {
+                Ok(p) => p,
+                Err(_) => continue,
+            };
+
+            if let Err(_) = self
+                .auth
+                .create_notification(
+                    NotificationCreate {
+                        title: format!(
+                            "[@{}]({}) mentioned you in a comment!",
+                            profile.username, profile.id
+                        ),
+                        content: format!("You were mentioned in a comment."),
+                        address: format!("/comment/{}", comment.id),
+                        recipient: profile.id.clone(),
+                    },
+                    None,
+                )
+                .await
+            {
+                continue;
+            } else {
+                // replace text with link to profile
+                comment.content = comment.content.replace(
+                    &format!("@{} ", mention),
+                    &format!("[@{}](/+u/{}) ", profile.username, profile.id),
+                )
+            }
+        }
 
         // create response
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")

@@ -34,7 +34,7 @@
     <!-- prettier-ignore -->
     {% for card in following %}
         {% let user = card.2.clone() %}
-        {% include "components/fetch_profile_card.html" %}
+        {% include "components/profile_card.html" %}
     {% endfor %}
 
     <!-- pagination buttons -->

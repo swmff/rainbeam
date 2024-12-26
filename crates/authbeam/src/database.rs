@@ -14,6 +14,7 @@ use citrus_client::{
     model::{CitrusID, HttpProtocol},
 };
 use hcaptcha_no_wasm::Hcaptcha;
+use rainbeam_shared::snow::AlmostSnowflake;
 use reqwest::Client as HttpClient;
 use serde::{Deserialize, Serialize};
 
@@ -71,6 +72,8 @@ pub struct ServerOptions {
     /// Same as `host`, just without the protocol.
     #[serde(default)]
     pub citrus_id: String,
+    /// The server ID for ID generation
+    pub snowflake_server_id: usize,
     /// A list of image hosts that are blocked
     #[serde(default)]
     pub blocked_hosts: Vec<String>,
@@ -93,6 +96,7 @@ impl Default for ServerOptions {
             media_dir: PathBufD::default(),
             host: String::new(),
             citrus_id: String::new(),
+            snowflake_server_id: 1234567890,
             blocked_hosts: Vec::new(),
             secure: true,
         }
@@ -379,6 +383,15 @@ impl Database {
     }
 
     // GET
+    fn is_digit(&self, input: &str) -> bool {
+        for char in input.chars() {
+            if !char.is_numeric() {
+                return false;
+            }
+        }
+
+        true
+    }
     /// Fetch a profile correctly
     pub async fn get_profile(&self, mut id: String) -> Result<Box<Profile>> {
         if id.starts_with("ANSWERED:") {
@@ -443,7 +456,7 @@ impl Database {
         }
 
         // handle legacy IDs (usernames)
-        if id.len() <= 32 {
+        if (id.len() <= 32) && !self.is_digit(&id) {
             return match self.get_profile_by_username(id).await {
                 Ok(ua) => Ok(ua),
                 Err(e) => return Err(e),
@@ -737,7 +750,8 @@ impl Database {
 
         let c = &self.base.db.client;
         match sqlquery(query)
-            .bind::<&String>(&databeam::utility::uuid())
+            // .bind::<&String>(&databeam::utility::uuid())
+            .bind::<&String>(&AlmostSnowflake::new(self.config.snowflake_server_id).to_string())
             .bind::<&String>(&username.to_lowercase())
             .bind::<&String>(&rainbeam_shared::hash::hash_salted(password, salt.clone()))
             .bind::<&String>(

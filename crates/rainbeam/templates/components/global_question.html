@@ -66,10 +66,8 @@ question = question.clone().0 %}
                     <b class="title">Sharing</b>
 
                     <!-- prettier-ignore -->
-                    {% let short_id = question.id[..10] %}
-
                     <button
-                        onclick="trigger('app:copy_text', ['{{ config.host }}/+q/{{ short_id }}'])"
+                        onclick="trigger('app:copy_text', ['{{ config.host }}/+q/{{ question.id }}'])"
                     >
                         {{ icon "copy" }} Copy link
                     </button>

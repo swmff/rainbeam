@@ -167,7 +167,7 @@
 
     self.define(
         "gen_share",
-        function (_, target, short_id, target_length, include_link) {
+        function (_, target, id, target_length, include_link) {
             // resolve target
             while (!target.classList.contains("response")) {
                 target = target.parentElement;
@@ -186,7 +186,7 @@
             // ...
             const link =
                 include_link !== false
-                    ? `${window.location.origin}/+r/${short_id}`
+                    ? `${window.location.origin}/+r/${id}`
                     : "";
 
             const link_size = link.length;

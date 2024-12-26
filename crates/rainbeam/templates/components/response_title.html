@@ -156,29 +156,27 @@
                 <b class="title">Sharing</b>
 
                 <!-- prettier-ignore -->
-                {% let short_id = response.id[..10] %}
-
                 <button
-                    onclick="trigger('app:copy_text', [trigger('responses:gen_share', [event.target, '{{ short_id }}', 280])])"
+                    onclick="trigger('app:copy_text', [trigger('responses:gen_share', [event.target, '{{ response.id }}', 280])])"
                 >
                     {{ icon "copy" }} {{ text
                     "response_title.html:action.copy_to_clipboard" }}
                 </button>
 
                 <button
-                    onclick="trigger('app:intent_twitter', [trigger('responses:gen_share', [event.target, '{{ short_id }}', 280, false]), '{{ config.host }}/+r/{{ short_id }}'])"
+                    onclick="trigger('app:intent_twitter', [trigger('responses:gen_share', [event.target, '{{ response.id }}', 280, false]), '{{ config.host }}/+r/{{ response.id }}'])"
                 >
                     {{ icon "twitter" }} Twitter
                 </button>
 
                 <button
-                    onclick="trigger('app:intent_bluesky', [trigger('responses:gen_share', [event.target, '{{ short_id }}', 280, false]), '{{ config.host }}/+r/{{ short_id }}'])"
+                    onclick="trigger('app:intent_bluesky', [trigger('responses:gen_share', [event.target, '{{ response.id }}', 280, false]), '{{ config.host }}/+r/{{ response.id }}'])"
                 >
                     {{ icon "external-link" }} Bluesky
                 </button>
 
                 <button
-                    onclick="trigger('app:copy_text', ['{{ config.host }}/+r/{{ short_id }}'])"
+                    onclick="trigger('app:copy_text', ['{{ config.host }}/+r/{{ response.id }}'])"
                 >
                     {{ icon "copy" }} {{ text "general:action.copy_link" }}
                 </button>

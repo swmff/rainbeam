@@ -66,6 +66,9 @@ endblock %} {% block nav_left %}
 
             globalThis.create_post = (e) => {
                 e.preventDefault();
+                e.target
+                    .querySelector("button")
+                    .setAttribute("disabled", "true");
 
                 trigger("responses:create", [
                     "0", // posts use "0" as their question ID
@@ -78,6 +81,9 @@ endblock %} {% block nav_left %}
                 ]).then((res) => {
                     // reset if successful
                     e.target.reset();
+                    e.target
+                        .querySelector("button")
+                        .removeAttribute("disabled");
 
                     globalThis.compose_editor_.setValue("");
                     globalThis.compose_editor_.clearHistory();

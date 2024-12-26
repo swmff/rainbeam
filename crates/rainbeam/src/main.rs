@@ -61,6 +61,7 @@ pub async fn main() {
             media_dir: config.media_dir.clone(),
             host: config.host.clone(),
             citrus_id: config.citrus_id.clone(),
+            snowflake_server_id: config.snowflake_server_id.clone(),
             blocked_hosts: config.blocked_hosts.clone(),
             secure: config.secure.clone(),
         },

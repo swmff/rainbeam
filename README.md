@@ -41,7 +41,6 @@ You can lock a given set of features behind the `tier` column of profiles using 
 ```toml
 [tiers]
 double_limits = 2
-stylish_card = 1
 avatar_crown = 1
 profile_badge = 1
 # ...

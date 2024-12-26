@@ -21,9 +21,11 @@ function create_observer() {
     );
 }
 
+observer = undefined;
 document.documentElement.addEventListener("turbo:load", () => {
     if (observer) {
         observer.disconnect();
+        observer = undefined;
     }
 
     observer = create_observer();
@@ -104,13 +106,10 @@ class PartialComponent extends HTMLElement {
                 this.setAttribute("loaded", this.loaded);
 
                 if (!this.getAttribute("instant")) {
-                    if (!observer) {
-                        // turbo event failed to fire
-                        observer = create_observer();
-                    }
-
                     // load when in view
-                    observer.observe(this);
+                    setTimeout(() => {
+                        observer.observe(this);
+                    }, 500);
                 } else {
                     // load after a second
                     setTimeout(() => {

@@ -213,6 +213,7 @@
 <script>
     function respond(e, question) {
         e.preventDefault();
+        e.target.querySelector("button").setAttribute("disabled", "true");
 
         trigger("responses:create", [
             question,
@@ -224,6 +225,7 @@
         ]).then((_) => {
             // reset if successful
             e.target.reset();
+            e.target.querySelector("button").removeAttribute("disabled");
         });
     }
 

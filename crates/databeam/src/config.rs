@@ -1,6 +1,7 @@
 //! Application config manager
 use serde::{Deserialize, Serialize};
-use rainbeam_shared::{fs, path::PathBufD};
+use rainbeam_shared::fs;
+use pathbufd::PathBufD;
 use std::io::Result;
 
 /// Configuration file

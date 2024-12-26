@@ -35,10 +35,10 @@
     {% for relationship in friends %}
         {% if other.id != relationship.0.id %}
             {% let user = relationship.0.clone () %}
-            {% include "components/fetch_profile_card.html" %}
+            {% include "components/profile_card.html" %}
         {% else %}
             {% let user = relationship.1.clone () %}
-            {% include "components/fetch_profile_card.html" %}
+            {% include "components/profile_card.html" %}
         {% endif %}
     {% endfor %}
 
