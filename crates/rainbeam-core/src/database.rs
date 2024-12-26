@@ -1366,7 +1366,11 @@ impl Database {
                     continue;
                 }
 
-                if props.content.contains(filter_string) {
+                if props
+                    .content
+                    .to_lowercase()
+                    .contains(&filter_string.to_lowercase())
+                {
                     // return ok so the client thinks it worked, but really we lied
                     return Ok(String::new());
                 }
