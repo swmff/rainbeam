@@ -15,7 +15,7 @@
 <div class="flex flex-col gap-4">
     <!-- status sorts -->
     {% if creator.is_empty() %}
-    <div class="pillmenu convertible true">
+    <div class="pillmenu convertible shadow true">
         <a
             href="?status=Featured"
             class="{% if status == authbeam::model::ItemStatus::Featured %}active{% endif %}"

@@ -43,7 +43,7 @@
 <!-- feed -->
 <div id="feed" class="flex flex-col gap-4">
     {% if !other.metadata.is_true("sparkler:private_comments") | is_helper %}
-    <div class="pillmenu convertible">
+    <div class="pillmenu convertible shadow">
         <a href="/@{{ other.username }}" class="active"
             ><span>{{ text "profile:link.posts" }}</span></a
         >

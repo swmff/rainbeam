@@ -99,7 +99,7 @@ pub async fn expand_request(
     State(database): State<Database>,
 ) -> impl IntoResponse {
     match database.get_response(id).await {
-        Ok(r) => Redirect::to(&format!("/response/{}", r.1.id)),
+        Ok(r) => Redirect::to(&format!("/@{}/r/{}", r.1.author.username, r.1.id)),
         Err(_) => Redirect::to("/"),
     }
 }

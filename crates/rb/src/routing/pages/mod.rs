@@ -577,10 +577,10 @@ struct QuestionTemplate {
     is_helper: bool,
 }
 
-/// GET /question/:id
+/// GET /@{}/q/:id
 pub async fn question_request(
     jar: CookieJar,
-    Path(id): Path<String>,
+    Path((_, id)): Path<(String, String)>,
     State(database): State<Database>,
 ) -> impl IntoResponse {
     let auth_user = match jar.get("__Secure-Token") {
@@ -1041,10 +1041,10 @@ struct ResponseTemplate {
     is_helper: bool,
 }
 
-/// GET /response/:id
+/// GET /@{}/r/:id
 pub async fn response_request(
     jar: CookieJar,
-    Path(id): Path<String>,
+    Path((_, id)): Path<(String, String)>,
     State(database): State<Database>,
     Query(query): Query<PaginatedQuery>,
 ) -> impl IntoResponse {
@@ -1261,10 +1261,10 @@ struct CommentTemplate {
     is_helper: bool,
 }
 
-/// GET /comment/:id
+/// GET /@:username/c/:id
 pub async fn comment_request(
     jar: CookieJar,
-    Path(id): Path<String>,
+    Path((_, id)): Path<(String, String)>,
     State(database): State<Database>,
     Query(props): Query<PaginatedQuery>,
 ) -> impl IntoResponse {
@@ -2097,9 +2097,9 @@ pub async fn routes(database: Database) -> Router {
         .route("/inbox/audit/ipbans", get(ipbans_request)) // staff
         .route("/intents/post", get(compose_request))
         // assets
-        .route("/question/:id", get(question_request))
-        .route("/response/:id", get(response_request))
-        .route("/comment/:id", get(comment_request))
+        .route("/@:username/q/:id", get(question_request))
+        .route("/@:username/r/:id", get(response_request))
+        .route("/@:username/c/:id", get(comment_request))
         // profiles
         .route("/@:username/_app/warning", get(profile::warning_request))
         .route("/@:username/comments", get(profile::comments_request))
@@ -2197,8 +2197,11 @@ pub async fn routes(database: Database) -> Router {
         .route("/sign_up", get(sign_up_request))
         // expanders
         .route("/+q/:id", get(api::questions::expand_request))
+        .route("/question/:id", get(api::questions::expand_request))
         .route("/+r/:id", get(api::responses::expand_request))
+        .route("/response/:id", get(api::responses::expand_request))
         .route("/+c/:id", get(api::comments::expand_request))
+        .route("/comment/:id", get(api::comments::expand_request))
         .route("/+u/:id", get(api::profiles::expand_request))
         .route("/+i/:ip", get(api::profiles::expand_ip_request))
         .route("/+g/:id", get(api::circles::expand_request))

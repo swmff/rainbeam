@@ -117,7 +117,7 @@ question = question.clone().0 %}
         <!-- responses -->
         {% if show_responses %}
         <a
-            href="/question/{{ question.id }}"
+            href="/@{{ question.author.username }}/q/{{ question.id }}"
             class="button item"
             title="{{ responses}} responses"
         >

@@ -77,9 +77,16 @@ block head %}
 
         <!-- tabs -->
         <hr />
-        <div class="pillmenu convertible">
+        <div class="pillmenu convertible shadow true">
             <a href="#/replies" class="active" data-tab-button="replies"><span>{{ text "views:text.replies" }}</span></a>
             <a href="#/reactions" data-tab-button="reactions"><span>{{ text "views:text.reactions" }}</span></a>
+            {% if let Some(profile) = profile %}
+            {% if profile.id == response.author.id %}
+            <a href="#/edit" data-tab-button="edit"
+                ><span>{{ text "general:action.edit" }}</span></a
+            >
+            {% endif %}
+            {% endif %}
         </div>
 
         <!-- replies -->
@@ -195,6 +202,62 @@ block head %}
                 {% endfor %}
             </div>
         </div>
+
+        {% if let Some(profile) = profile %}
+        {% if profile.id == response.author.id %}
+        <script src="https://unpkg.com/codemirror@5.39.2/lib/codemirror.js"></script>
+        <script src="https://unpkg.com/codemirror@5.39.2/addon/display/placeholder.js"></script>
+        <script src="https://unpkg.com/codemirror@5.39.2/mode/markdown/markdown.js"></script>
+
+        <link
+            rel="stylesheet"
+            href="https://unpkg.com/codemirror@5.39.2/lib/codemirror.css"
+        />
+
+        <div class="hidden card shadow" data-tab="edit">
+            <form
+                class="flex flex-col gap-2 w-full"
+                onsubmit="edit(event)"
+            >
+                <!-- prettier-ignore -->
+                <script type="text/markdown" id="existing_content">{{ comment.0.content.replace("</script>","</not-script>")|safe }}</script>
+
+                <label for="edit_content">New content</label>
+                <div id="comment_editor" class="post_editor"></div>
+
+                <script>
+                    setTimeout(() => {
+                        use("codemirror", (codemirror) => {
+                            codemirror.create_editor(
+                                document.getElementById("comment_editor"),
+                                document.getElementById("existing_content").innerText,
+                                "Type your comment...",
+                                "comment_editor_",
+                            );
+                        });
+                    }, 500);
+                </script>
+
+                <div class="flex gap-2 w-full justify-right">
+                    <button class="primary bold">
+                        {{ icon "check" }}
+                        <span>{{ text "general:action.save" }}</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <script>
+            function edit(e) {
+                e.preventDefault();
+                trigger("comments:edit", [
+                    "{{ comment.0.id }}",
+                    globalThis.comment_editor_.getValue(),
+                ])
+            }
+        </script>
+        {% endif %}
+        {% endif %}
     </main>
 </article>
 
@@ -217,86 +280,6 @@ block head %}
         });
     }
 </script>
-
-{% if let Some(profile) = profile %} {% let other = profile.clone() %} {% if
-profile.username == other.username %}
-<script src="https://unpkg.com/codemirror@5.39.2/lib/codemirror.js"></script>
-<script src="https://unpkg.com/codemirror@5.39.2/addon/display/placeholder.js"></script>
-<script src="https://unpkg.com/codemirror@5.39.2/mode/markdown/markdown.js"></script>
-
-<link
-    rel="stylesheet"
-    href="https://unpkg.com/codemirror@5.39.2/lib/codemirror.css"
-/>
-
-<div id="is_self"></div>
-<dialog id="edit_dialog">
-    <form
-        class="inner flex flex-col gap-2"
-        onsubmit="edit(event)"
-        style="width: 35rem"
-    >
-        <!-- prettier-ignore -->
-        <script type="text/markdown" id="existing_content">{{ comment.0.content.replace("</script>","</not-script>")|safe }}</script>
-
-        <label for="edit_content">New content</label>
-        <div id="comment_editor" class="post_editor"></div>
-
-        <script>
-            setTimeout(() => {
-                use("codemirror", (codemirror) => {
-                    codemirror.create_editor(
-                        document.getElementById("comment_editor"),
-                        document.getElementById("existing_content").innerText,
-                        "Type your comment...",
-                        "comment_editor_",
-                    );
-                });
-            }, 500);
-        </script>
-
-        <hr />
-        <div class="flex gap-2">
-            <button class="primary bold">Confirm</button>
-            <button
-                class="bold"
-                onclick="document.getElementById('edit_dialog').close(); window.close()"
-                type="button"
-            >
-                Cancel
-            </button>
-        </div>
-    </form>
-</dialog>
-
-<script>
-    setTimeout(() => {
-        const dialogs = ns("dialogs");
-        dialogs.add("edit_dialog");
-
-        if (window.location.search === "?edit") {
-            dialogs.get("edit_dialog").open();
-        }
-    }, 100);
-
-    function edit(e) {
-        e.preventDefault();
-        trigger("comments:edit", [
-            "{{ comment.0.id }}",
-            globalThis.comment_editor_.getValue(),
-        ]).then((res) => {
-            alert(res.message || "Comment edited!");
-
-            if (res.success === true) {
-                window.close();
-
-                setTimeout(() => {
-                    window.location.href = "?";
-                }, 100);
-            }
-        });
-    }
-</script>
-{% endif %} {% let raw_metadata =
+{% if let Some(profile) = profile %} {% let other = profile.clone() %} {% let raw_metadata =
 crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
 "components/theming.html" %} {% endif %} {% call super() %} {% endblock %}

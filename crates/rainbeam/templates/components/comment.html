@@ -101,7 +101,7 @@ comment = comment.0.clone() %}
             <!-- replies -->
             {% if show_replies != false %}
             <a
-                href="/comment/{{ comment.id }}"
+                href="/@{{ comment.author.username }}/c/{{ comment.id }}"
                 title="{{ reply_count }} replies"
                 class="circle button camo sm:w-full"
             >
@@ -137,34 +137,34 @@ comment = comment.0.clone() %}
                 <!-- actions for the comment author/response author only -->
                 <b class="title">Manage</b>
 
-                <a href="/comment/{{ comment.id }}?edit" target="_blank">
+                <a
+                    href="/@{{ comment.author.username }}/c/{{ comment.id }}#/edit"
+                >
                     {{ icon "pen" }} {{ text "general:action.edit" }}
                 </a>
 
-                <a
-                    href="#"
+                <button
                     onclick="trigger('comments:delete', ['{{ comment.id }}'])"
                     class="red"
                 >
                     {{ icon "trash" }} {{ text "general:action.delete" }}
-                </a>
+                </button>
 
-                <a
-                    href="javascript:trigger('comments:ipblock', ['{{ comment.id }}'])"
+                <button
+                    onclick="trigger('comments:ipblock', ['{{ comment.id }}'])"
                 >
                     {{ icon "shield" }} {{ text "general:action.ip_block" }}
-                </a>
+                </button>
                 {% endif %} {% endif %}
                 <!-- actions for everybody -->
                 <b class="title">Tools</b>
-                <a
-                    href="#"
+                <button
                     onclick="trigger('app:copy_text', ['{{ comment.id }}'])"
                 >
                     {{ icon "copy" }} {{ text "general:action.copy_id" }}
-                </a>
+                </button>
 
-                <a href="/comment/{{ comment.id }}">
+                <a href="/@{{ comment.author.username }}/c/{{ comment.id }}">
                     {{ icon "external-link" }} {{ text "general:link.open" }}
                 </a>
 

@@ -21,7 +21,7 @@
 <div class="flex flex-col gap-4">
     {% if is_helper %}
     <!-- status sorts -->
-    <div class="pillmenu convertible true">
+    <div class="pillmenu convertible shadow true">
         <a
             href="#"
             class="{% if item.status == authbeam::model::ItemStatus::Featured %}active{% endif %}"
@@ -69,7 +69,7 @@
     {% endif %}
 
     <!-- tabs -->
-    <div class="pillmenu convertible">
+    <div class="pillmenu convertible shadow">
         <a href="#/details" data-tab-button="details" class="active"
             >{{ text "market:text.details" }}</a
         >

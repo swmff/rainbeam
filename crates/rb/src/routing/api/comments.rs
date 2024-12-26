@@ -179,7 +179,7 @@ pub async fn expand_request(
     State(database): State<Database>,
 ) -> impl IntoResponse {
     match database.get_comment(id, false).await {
-        Ok(c) => Redirect::to(&format!("/comment/{}", c.0.id)),
+        Ok(c) => Redirect::to(&format!("/@{}/c/{}", c.0.author.username, c.0.id)),
         Err(_) => Redirect::to("/"),
     }
 }

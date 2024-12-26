@@ -89,7 +89,7 @@
         <!-- comments -->
         {% if show_comments != false %}
         <a
-            href="/response/{{ response.id }}"
+            href="/@{{ response.author.username }}/r/{{ response.id }}"
             title="{{ comment_count }} comments"
             class="button camo"
         >
@@ -199,11 +199,15 @@
                 {% endif %} {% endif %}
 
                 <!-- ... -->
-                <a href="/response/{{ response.id }}?edit" target="_blank">
+                <a
+                    href="/@{{ response.author.username }}/r/{{ response.id }}#/edit"
+                >
                     {{ icon "pen" }} {{ text "general:action.edit" }}
                 </a>
 
-                <a href="/response/{{ response.id }}?edit_tags" target="_blank">
+                <a
+                    href="/@{{ response.author.username }}/r/{{ response.id }}#/tags"
+                >
                     {{ icon "tag" }} {{ text
                     "response_title.html:action.edit_tags" }}
                 </a>
@@ -219,30 +223,28 @@
                 </a>
                 {% endif %}
 
-                <a
-                    href="#"
+                <button
                     onclick="trigger('responses:delete', ['{{ response.id }}'])"
                     class="red"
                 >
                     {{ icon "trash" }} {{ text
                     "response_title.html:action.delete_all" }}
-                </a>
+                </button>
                 {% endif %} {% endif %}
                 <!-- actions for everybody -->
                 <b class="title">Tools</b>
-                <a
-                    href="#"
+                <button
                     onclick="trigger('app:copy_text', ['{{ config.citrus_id}}:{{ response.id }}'])"
                 >
                     {{ icon "copy" }} {{ text "general:action.copy_id" }}
-                </a>
+                </button>
 
-                <a href="/response/{{ response.id }}">
+                <a href="/@{{ response.author.username }}/r/{{ response.id }}">
                     {{ icon "external-link" }} {{ text "general:link.open" }}
                 </a>
 
                 {% if is_helper %}
-                <a href="/question/{{ question.id }}">
+                <a href="/@{{ question.author.username }}/q/{{ question.id }}">
                     {{ icon "external-link" }} {{ text
                     "response_title.html:link.open_question" }}
                 </a>
