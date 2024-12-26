@@ -41,7 +41,7 @@ langbeam = { path = "../langbeam" }
 rb = { path = "../rb", default-features = false }
 mimalloc = "0.1.43"
 mime_guess = "2.0.5"
-pathbufd = "0.1.3"
+pathbufd = "0.1.4"
 # pathbufd = { path = "../../../pathbufd" }
 
 [[bin]]
