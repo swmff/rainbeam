@@ -1,9 +1,19 @@
 {% extends "base.html" %} {% block sidenav %}
-<a class="active" href="/settings">{{ text "settings:link.account" }}</a>
-<a href="/settings/sessions">{{ text "settings:link.sessions" }}</a>
-<a href="/settings/profile">{{ text "settings:link.profile" }}</a>
-<a href="/settings/privacy">{{ text "settings:link.privacy" }}</a>
-<a href="/settings/coins">{{ text "settings:link.coins" }}</a>
+<a class="active" href="/settings?profile={{ user.id }}"
+    >{{ text "settings:link.account" }}</a
+>
+<a href="/settings/sessions?profile={{ user.id }}"
+    >{{ text "settings:link.sessions" }}</a
+>
+<a href="/settings/profile?profile={{ user.id }}"
+    >{{ text "settings:link.profile" }}</a
+>
+<a href="/settings/privacy?profile={{ user.id }}"
+    >{{ text "settings:link.privacy" }}</a
+>
+<a href="/settings/coins?profile={{ user.id }}"
+    >{{ text "settings:link.coins" }}</a
+>
 {% endblock %} {% block panel %}
 
 <div class="flex flex-col gap-4">
@@ -621,8 +631,6 @@
     </div>
 </dialog>
 
-{% let profile = profile.as_ref().unwrap() %}
-
 <script>
     (() => {
         globalThis.update_theme = (theme) => {
@@ -679,7 +687,7 @@
             .getElementById("change_username")
             .addEventListener("submit", (e) => {
                 e.preventDefault();
-                fetch("/api/v0/auth/profile/{{ profile.id }}/username", {
+                fetch("/api/v0/auth/profile/{{ user.id }}/username", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -706,7 +714,7 @@
             .getElementById("change_password")
             .addEventListener("submit", (e) => {
                 e.preventDefault();
-                fetch("/api/v0/auth/profile/{{ profile.id }}/password", {
+                fetch("/api/v0/auth/profile/{{ user.id }}/password", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",

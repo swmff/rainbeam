@@ -1,11 +1,17 @@
 {% extends "base.html" %} {% block sidenav %}
-<a href="/settings">{{ text "settings:link.account" }}</a>
-<a class="active" href="/settings/sessions"
+<a href="/settings?profile={{ user.id }}">{{ text "settings:link.account" }}</a>
+<a class="active" href="/settings/sessions?profile={{ user.id }}"
     >{{ text "settings:link.sessions" }}</a
 >
-<a href="/settings/profile">{{ text "settings:link.profile" }}</a>
-<a href="/settings/privacy">{{ text "settings:link.privacy" }}</a>
-<a href="/settings/coins">{{ text "settings:link.coins" }}</a>
+<a href="/settings/profile?profile={{ user.id }}"
+    >{{ text "settings:link.profile" }}</a
+>
+<a href="/settings/privacy?profile={{ user.id }}"
+    >{{ text "settings:link.privacy" }}</a
+>
+<a href="/settings/coins?profile={{ user.id }}"
+    >{{ text "settings:link.coins" }}</a
+>
 {% endblock %} {% block panel %}
 <div class="flex flex-col gap-4">
     <div
@@ -42,8 +48,7 @@
                         {% endif %}
                     </td>
 
-                    {% if let Some(profile) = profile %}
-                    {% if let Some(ip) = profile.ips.get(i.to_owned()) %}
+                    {% if let Some(ip) = user.ips.get(i.to_owned()) %}
                     <td style="white-space: nowrap">
                         {% if ip.is_empty() %}
                         <span class="tag">{{ text "settings:sessions.html:text.none" }}</span>
@@ -55,7 +60,7 @@
                     <td></td>
                     {% endif %}
 
-                    {% if let Some(ctx) = profile.token_context.get(i.to_owned()) %}
+                    {% if let Some(ctx) = user.token_context.get(i.to_owned()) %}
                     <td style="white-space: nowrap">
                         {% let name = ctx.app_name() %}
                         {% if name.is_empty() %}
@@ -70,13 +75,7 @@
                     </td>
                     {% endif %}
 
-                    {% else %}
-                    <td></td>
-                    <td></td>
-                    {% endif %}
-
-                    {% if let Some(profile) = profile %}
-                    {% if let Some(ctx) = profile.token_context.get(i.to_owned()) %}
+                    {% if let Some(ctx) = user.token_context.get(i.to_owned()) %}
                     {% if let Some(permissions) = ctx.permissions %}
                     <td style="white-space: nowrap">
                         {% if permissions.is_empty() %}
@@ -95,10 +94,6 @@
                     <td style="white-space: nowrap">
                         <span class="tag">{{ text "settings:sessions.html:text.all" }}</span>
                     </td>
-                    {% endif %}
-
-                    {% else %}
-                    <td></td>
                     {% endif %}
 
                     {% else %}

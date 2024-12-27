@@ -1,9 +1,17 @@
 {% extends "base.html" %} {% block sidenav %}
-<a href="/settings">{{ text "settings:link.account" }}</a>
-<a href="/settings/sessions">{{ text "settings:link.sessions" }}</a>
-<a href="/settings/profile">{{ text "settings:link.profile" }}</a>
-<a href="/settings/privacy">{{ text "settings:link.privacy" }}</a>
-<a class="active" href="/settings/coins">{{ text "settings:link.coins" }}</a>
+<a href="/settings?profile={{ user.id }}">{{ text "settings:link.account" }}</a>
+<a href="/settings/sessions?profile={{ user.id }}"
+    >{{ text "settings:link.sessions" }}</a
+>
+<a href="/settings/profile?profile={{ user.id }}"
+    >{{ text "settings:link.profile" }}</a
+>
+<a href="/settings/privacy?profile={{ user.id }}"
+    >{{ text "settings:link.privacy" }}</a
+>
+<a class="active" href="/settings/coins?profile={{ user.id }}"
+    >{{ text "settings:link.coins" }}</a
+>
 {% endblock %} {% block panel %}
 <div class="flex flex-col gap-4">
     <div class="pillmenu convertible shadow true">
@@ -17,7 +25,6 @@
     </div>
 
     <!-- balance -->
-    {% if let Some(user) = profile %}
     <div data-tab="balance" class="flex flex-col gap-4">
         <div class="w-full flex justify-between gap-2">
             <div></div>
@@ -79,7 +86,6 @@
             </a>
         </div>
     </div>
-    {% endif %}
 
     <!-- transactions -->
     <div
@@ -118,13 +124,13 @@
         <!-- pagination buttons -->
         <div class="flex justify-between gap-2 w-full">
             {% if page > 0 %}
-            <a class="button" href="?page={{ page - 1 }}"
+            <a class="button" href="?page={{ page - 1 }}#/transactions"
                 >{{ text "general:link.previous" }}</a
             >
             {% else %}
             <div></div>
             {% endif %} {% if transactions.len() != 0 %}
-            <a class="button" href="?page={{ page + 1 }}"
+            <a class="button" href="?page={{ page + 1 }}#/transactions"
                 >{{ text "general:link.next" }}</a
             >
             {% endif %}

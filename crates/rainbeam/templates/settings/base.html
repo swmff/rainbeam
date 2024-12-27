@@ -22,7 +22,7 @@ endblock %} {% block nav_left %}
     {% endif %}
 </a>
 {% endblock %} {% block content %} {% if let Some(profile) = profile %} {% let
-other = profile.clone() %} {% if profile.username == other.username %}
+other = user.clone() %} {% if profile.username == other.username %}
 <div id="is_self"></div>
 {% endif %} {% let raw_metadata =
 crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
@@ -71,6 +71,18 @@ crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
         id="settings_content"
         class="card shadow flex flex-col gap-2 w-full"
     >
+        {% if viewing_other_profile %}
+        <div class="markdown-alert-warning">
+            <span>
+                These are not your user settings.
+                <b
+                    >Attempting to delete the account through this page will
+                    delete your account</b
+                >!
+            </span>
+        </div>
+        {% endif %}
+
         <div id="admonition_zone"></div>
         {% block panel %}{% endblock %}
     </section>
@@ -78,8 +90,6 @@ crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
 
 <!-- prettier-ignore -->
 <script type="application/json" id="my_metadata">{{ metadata|safe }}</script>
-
-{% let profile = profile.as_ref().unwrap() %}
 
 <script>
     (() => {
@@ -174,7 +184,7 @@ crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
         globalThis.save_settings = async () => {
             await app.debounce("settings:save_settings");
             const res = await (
-                await fetch("/api/v0/auth/profile/{{ profile.id }}/metadata", {
+                await fetch("/api/v0/auth/profile/{{ user.id }}/metadata", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",

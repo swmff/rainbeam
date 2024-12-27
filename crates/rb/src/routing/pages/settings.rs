@@ -6,14 +6,14 @@ use axum::{
 };
 use axum_extra::extract::CookieJar;
 
-use authbeam::model::{IpBlock, Item, Profile, Transaction};
+use authbeam::model::{IpBlock, Item, Permission, Profile, Transaction};
 
 use crate::config::Config;
 use crate::database::Database;
 use crate::model::{DatabaseError, RelationshipStatus};
 use crate::ToHtml;
 
-use super::{clean_metadata_short, PaginatedQuery};
+use super::{clean_metadata_short, NotificationsQuery};
 
 #[derive(Template)]
 #[template(path = "settings/account.html")]
@@ -26,12 +26,15 @@ struct AccountSettingsTemplate {
     metadata: String,
     relationships: Vec<(Box<Profile>, RelationshipStatus)>,
     ipblocks: Vec<IpBlock>,
+    user: Box<Profile>,
+    viewing_other_profile: bool,
 }
 
 /// GET /settings
 pub async fn account_settings(
     jar: CookieJar,
     State(database): State<Database>,
+    Query(props): Query<NotificationsQuery>,
 ) -> impl IntoResponse {
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
@@ -58,16 +61,42 @@ pub async fn account_settings(
         .get_notification_count_by_recipient(auth_user.id.to_owned())
         .await;
 
+    let user = if props.profile.is_empty() {
+        auth_user.clone()
+    } else {
+        match database.get_profile(props.profile.clone()).await {
+            Ok(ua) => ua,
+            Err(e) => return Html(e.to_html(database)),
+        }
+    };
+
+    let viewing_other_profile =
+        (props.profile.is_empty() == false) && (props.profile != auth_user.id);
+
+    let is_helper = {
+        let group = match database.auth.get_group_by_id(auth_user.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        group.permissions.contains(&Permission::Helper)
+    };
+
+    if viewing_other_profile && !is_helper {
+        // we cannot view the mail of other users if we are not a helper
+        return Html(DatabaseError::NotAllowed.to_html(database));
+    }
+
     let relationships = match database
         .auth
-        .get_user_relationships_of_status(auth_user.id.clone(), RelationshipStatus::Blocked)
+        .get_user_relationships_of_status(user.id.clone(), RelationshipStatus::Blocked)
         .await
     {
         Ok(r) => r,
         Err(_) => Vec::new(),
     };
 
-    let ipblocks = match database.auth.get_ipblocks(auth_user.id.clone()).await {
+    let ipblocks = match database.auth.get_ipblocks(user.id.clone()).await {
         Ok(r) => r,
         Err(_) => Vec::new(),
     };
@@ -80,12 +109,14 @@ pub async fn account_settings(
             } else {
                 ""
             }),
-            metadata: clean_metadata_short(&auth_user.metadata),
+            metadata: clean_metadata_short(&user.metadata),
             profile: Some(auth_user),
             unread,
             notifs,
             relationships,
             ipblocks,
+            user,
+            viewing_other_profile,
         }
         .render()
         .unwrap(),
@@ -101,12 +132,15 @@ struct ProfileSettingsTemplate {
     unread: usize,
     notifs: usize,
     metadata: String,
+    user: Box<Profile>,
+    viewing_other_profile: bool,
 }
 
 /// GET /settings/profile
 pub async fn profile_settings(
     jar: CookieJar,
     State(database): State<Database>,
+    Query(props): Query<NotificationsQuery>,
 ) -> impl IntoResponse {
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
@@ -133,6 +167,32 @@ pub async fn profile_settings(
         .get_notification_count_by_recipient(auth_user.id.to_owned())
         .await;
 
+    let user = if props.profile.is_empty() {
+        auth_user.clone()
+    } else {
+        match database.get_profile(props.profile.clone()).await {
+            Ok(ua) => ua,
+            Err(e) => return Html(e.to_html(database)),
+        }
+    };
+
+    let viewing_other_profile =
+        (props.profile.is_empty() == false) && (props.profile != auth_user.id);
+
+    let is_helper = {
+        let group = match database.auth.get_group_by_id(auth_user.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        group.permissions.contains(&Permission::Helper)
+    };
+
+    if viewing_other_profile && !is_helper {
+        // we cannot view the mail of other users if we are not a helper
+        return Html(DatabaseError::NotAllowed.to_html(database));
+    }
+
     Html(
         ProfileSettingsTemplate {
             config: database.config.clone(),
@@ -141,10 +201,12 @@ pub async fn profile_settings(
             } else {
                 ""
             }),
-            metadata: clean_metadata_short(&auth_user.metadata),
+            metadata: clean_metadata_short(&user.metadata),
             profile: Some(auth_user),
             unread,
             notifs,
+            user,
+            viewing_other_profile,
         }
         .render()
         .unwrap(),
@@ -160,12 +222,15 @@ struct PrivacySettingsTemplate {
     unread: usize,
     notifs: usize,
     metadata: String,
+    user: Box<Profile>,
+    viewing_other_profile: bool,
 }
 
 /// GET /settings/privacy
 pub async fn privacy_settings(
     jar: CookieJar,
     State(database): State<Database>,
+    Query(props): Query<NotificationsQuery>,
 ) -> impl IntoResponse {
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
@@ -192,6 +257,32 @@ pub async fn privacy_settings(
         .get_notification_count_by_recipient(auth_user.id.to_owned())
         .await;
 
+    let user = if props.profile.is_empty() {
+        auth_user.clone()
+    } else {
+        match database.get_profile(props.profile.clone()).await {
+            Ok(ua) => ua,
+            Err(e) => return Html(e.to_html(database)),
+        }
+    };
+
+    let viewing_other_profile =
+        (props.profile.is_empty() == false) && (props.profile != auth_user.id);
+
+    let is_helper = {
+        let group = match database.auth.get_group_by_id(auth_user.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        group.permissions.contains(&Permission::Helper)
+    };
+
+    if viewing_other_profile && !is_helper {
+        // we cannot view the mail of other users if we are not a helper
+        return Html(DatabaseError::NotAllowed.to_html(database));
+    }
+
     Html(
         PrivacySettingsTemplate {
             config: database.config.clone(),
@@ -200,10 +291,12 @@ pub async fn privacy_settings(
             } else {
                 ""
             }),
-            metadata: clean_metadata_short(&auth_user.metadata),
+            metadata: clean_metadata_short(&user.metadata),
             profile: Some(auth_user),
             unread,
             notifs,
+            user,
+            viewing_other_profile,
         }
         .render()
         .unwrap(),
@@ -222,12 +315,15 @@ struct SessionsSettingsTemplate {
     tokens: String,
     tokens_src: Vec<String>,
     current_session: String,
+    user: Box<Profile>,
+    viewing_other_profile: bool,
 }
 
 /// GET /settings/sessions
 pub async fn sessions_settings(
     jar: CookieJar,
     State(database): State<Database>,
+    Query(props): Query<NotificationsQuery>,
 ) -> impl IntoResponse {
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
@@ -254,6 +350,32 @@ pub async fn sessions_settings(
         .get_notification_count_by_recipient(auth_user.id.to_owned())
         .await;
 
+    let user = if props.profile.is_empty() {
+        auth_user.clone()
+    } else {
+        match database.get_profile(props.profile.clone()).await {
+            Ok(ua) => ua,
+            Err(e) => return Html(e.to_html(database)),
+        }
+    };
+
+    let viewing_other_profile =
+        (props.profile.is_empty() == false) && (props.profile != auth_user.id);
+
+    let is_helper = {
+        let group = match database.auth.get_group_by_id(auth_user.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        group.permissions.contains(&Permission::Helper)
+    };
+
+    if viewing_other_profile && !is_helper {
+        // we cannot view the mail of other users if we are not a helper
+        return Html(DatabaseError::NotAllowed.to_html(database));
+    }
+
     Html(
         SessionsSettingsTemplate {
             config: database.config.clone(),
@@ -262,18 +384,20 @@ pub async fn sessions_settings(
             } else {
                 ""
             }),
-            metadata: clean_metadata_short(&auth_user.metadata),
-            tokens: serde_json::to_string(&auth_user.tokens).unwrap(),
-            tokens_src: auth_user.tokens.clone(),
+            metadata: clean_metadata_short(&user.metadata),
+            tokens: serde_json::to_string(&user.tokens).unwrap(),
+            tokens_src: user.tokens.clone(),
             profile: Some(auth_user),
             unread,
             notifs,
+            user,
             current_session: rainbeam_shared::hash::hash(
                 jar.get("__Secure-Token")
                     .unwrap()
                     .value_trimmed()
                     .to_string(),
             ),
+            viewing_other_profile,
         }
         .render()
         .unwrap(),
@@ -291,13 +415,15 @@ struct CoinsSettingsTemplate {
     metadata: String,
     transactions: Vec<((Transaction, Option<Item>), Box<Profile>, Box<Profile>)>,
     page: i32,
+    user: Box<Profile>,
+    viewing_other_profile: bool,
 }
 
 /// GET /settings/coins
 pub async fn coins_settings(
     jar: CookieJar,
     State(database): State<Database>,
-    Query(props): Query<PaginatedQuery>,
+    Query(props): Query<NotificationsQuery>,
 ) -> impl IntoResponse {
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
@@ -324,9 +450,35 @@ pub async fn coins_settings(
         .get_notification_count_by_recipient(auth_user.id.to_owned())
         .await;
 
+    let user = if props.profile.is_empty() {
+        auth_user.clone()
+    } else {
+        match database.get_profile(props.profile.clone()).await {
+            Ok(ua) => ua,
+            Err(e) => return Html(e.to_html(database)),
+        }
+    };
+
+    let viewing_other_profile =
+        (props.profile.is_empty() == false) && (props.profile != auth_user.id);
+
+    let is_helper = {
+        let group = match database.auth.get_group_by_id(auth_user.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        group.permissions.contains(&Permission::Helper)
+    };
+
+    if viewing_other_profile && !is_helper {
+        // we cannot view the mail of other users if we are not a helper
+        return Html(DatabaseError::NotAllowed.to_html(database));
+    }
+
     let transactions = match database
         .auth
-        .get_participating_transactions_paginated(auth_user.id.clone(), props.page)
+        .get_participating_transactions_paginated(user.id.clone(), props.page)
         .await
     {
         Ok(t) => t,
@@ -341,12 +493,14 @@ pub async fn coins_settings(
             } else {
                 ""
             }),
-            metadata: clean_metadata_short(&auth_user.metadata),
+            metadata: clean_metadata_short(&user.metadata),
             profile: Some(auth_user),
             unread,
             notifs,
+            user,
             transactions,
             page: props.page,
+            viewing_other_profile,
         }
         .render()
         .unwrap(),
