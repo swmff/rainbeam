@@ -158,6 +158,7 @@
         "settings:account.html:title.profile_controls": "프로필 제어",
         "settings:account.html:label.limited_friend_requests": "내가 팔로우하는 사람의 친구 요청만 허용",
         "settings:account.html:label.private_profile": "비공개 프로필",
+        "settings:account.html:label.nsfw_profile": "Mark my profile as NSFW",
         "settings:account.html:label.limited_chats": "친구만 채팅에 나를 추가하도록 허용",
         "settings:account.html:label.allow_drawings": "그림 질문 허용",
 

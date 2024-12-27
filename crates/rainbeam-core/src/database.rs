@@ -284,9 +284,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xprofiles\" WHERE \"username\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
+            format!("SELECT \"id\" FROM \"xprofiles\" WHERE \"username\" LIKE ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
-            format!("SELECT * FROM \"xprofiles\" WHERE \"username\" LIKE $1 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
+            format!("SELECT \"id\" FROM \"xprofiles\" WHERE \"username\" LIKE $1 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         };
 
         let c = &self.base.db.client;
@@ -309,7 +309,7 @@ impl Database {
 
                 out
             }
-            Err(_) => return Err(DatabaseError::NotFound),
+            Err(_) => return Err(DatabaseError::Other),
         };
 
         // return

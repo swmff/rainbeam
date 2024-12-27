@@ -6,6 +6,7 @@ note = user.metadata.soft_get("sparkler:status_note") %} {% if !note.is_empty()
     class="status_note primary {% if use_static == true %}static{% endif %}"
     title="View note"
     onclick="document.getElementById('status:{{ user.id }}').showModal()"
+    style="border: solid 2px var(--color-surface) !important"
 >
     <!-- prettier-ignore -->
     {% if let Some(emoji) = user.metadata.kv.get("sparkler:status_emoji") %}

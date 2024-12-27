@@ -773,6 +773,7 @@ canvas {
     max-height: 26px !important;
     width: 26px !important;
     min-width: 26px !important;
+    z-index: 1;
 }
 
 .status_note.static {

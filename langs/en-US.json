@@ -159,6 +159,7 @@
         "settings:account.html:title.profile_controls": "Profile controls",
         "settings:account.html:label.limited_friend_requests": "Only allow friend requests from people you follow",
         "settings:account.html:label.private_profile": "Private profile",
+        "settings:account.html:label.nsfw_profile": "Mark my profile as NSFW",
         "settings:account.html:label.limited_chats": "Only allow friends to add you to chats",
         "settings:account.html:label.allow_drawings": "Allow drawings in your questions",
 

@@ -178,6 +178,19 @@
         </p>
     </div>
 
+    <div class="checkbox_container">
+        <input
+            type="checkbox"
+            name="rainbeam:nsfw_profile"
+            id="rainbeam:nsfw_profile"
+            onchange="update_kv('rainbeam:nsfw_profile', event.target.checked.toString())"
+        />
+
+        <label for="rainbeam:nsfw_profile" class="normal">
+            {{ text "settings:account.html:label.nsfw_profile" }}
+        </label>
+    </div>
+
     <div class="flex flex-col gap-1">
         <div class="checkbox_container">
             <input

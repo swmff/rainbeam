@@ -721,7 +721,7 @@ config.name }}{% endblock %} {% block head %}
         trigger("questions:create", [
             "{{ other.id }}",
             reply_intent
-                ? `${e.target.content.value}\n\n/+r/${reply_intent.substring(0, 10)}`
+                ? `${e.target.content.value}\n\n/+r/${reply_intent}`
                 : e.target.content.value,
             (e.target.anonymous || { checked: false }).checked,
             e.target.carp_content.value.length != 0

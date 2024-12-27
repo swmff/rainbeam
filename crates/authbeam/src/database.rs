@@ -829,6 +829,7 @@ impl Database {
             "rainbeam:verify_url",
             "rainbeam:verify_code",
             "rainbeam:market_theme_template",
+            "rainbeam:nsfw_profile",
         ]
     }
 
