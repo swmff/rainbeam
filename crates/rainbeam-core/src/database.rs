@@ -2529,7 +2529,7 @@ impl Database {
         // ...
         let timestamp = utility::unix_epoch_timestamp();
         let mut response = QuestionResponse {
-            author,
+            author: author.clone(),
             content: props.content.trim().to_string(),
             // id: utility::random_id(),
             id: AlmostSnowflake::new(self.config.snowflake_server_id).to_string(),
@@ -2566,7 +2566,7 @@ impl Database {
                     NotificationCreate {
                         title: format!(
                             "[@{}]({}) mentioned you in a response!",
-                            profile.username, profile.id
+                            author.username, author.id
                         ),
                         content: format!("You were mentioned in a response."),
                         address: format!("/response/{}", response.id),
@@ -3793,7 +3793,7 @@ impl Database {
         // ...
         let timestamp = utility::unix_epoch_timestamp();
         let mut comment = ResponseComment {
-            author,
+            author: author.clone(),
             response: response.id.clone(),
             content: props.content.trim().to_string(),
             // id: utility::random_id(),
@@ -3818,7 +3818,7 @@ impl Database {
                     NotificationCreate {
                         title: format!(
                             "[@{}]({}) mentioned you in a comment!",
-                            profile.username, profile.id
+                            author.username, author.id
                         ),
                         content: format!("You were mentioned in a comment."),
                         address: format!("/comment/{}", comment.id),

@@ -118,6 +118,22 @@ All mail sent to this account can be viewed by any staff member with access.
             .render()
             .unwrap(),
         );
+    } else if other.id == "@" {
+        return Html(
+            MarkdownTemplate {
+                config: database.config.clone(),
+                lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                    c.value_trimmed()
+                } else {
+                    ""
+                }),
+                profile: auth_user,
+                title: "Everybody".to_string(),
+                text: "Hello from everyone!".to_string(),
+            }
+            .render()
+            .unwrap(),
+        );
     }
 
     let is_following = if let Some(ref ua) = auth_user {
