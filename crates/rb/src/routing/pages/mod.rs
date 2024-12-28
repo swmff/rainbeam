@@ -337,6 +337,76 @@ pub async fn about_request(jar: CookieJar, State(database): State<Database>) -> 
     )
 }
 
+/// GET /site/terms-of-service
+pub async fn tos_request(jar: CookieJar, State(database): State<Database>) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => Some(ua),
+            Err(_) => None,
+        },
+        None => None,
+    };
+
+    Html(
+        MarkdownTemplate {
+            config: database.config.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
+            profile: auth_user,
+            title: "Terms of Service".to_string(),
+            text: rainbeam_shared::fs::read(format!("{}/site/tos.md", database.config.static_dir))
+                .unwrap_or(String::new()),
+        }
+        .render()
+        .unwrap(),
+    )
+}
+
+/// GET /site/privacy
+pub async fn privacy_request(
+    jar: CookieJar,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => Some(ua),
+            Err(_) => None,
+        },
+        None => None,
+    };
+
+    Html(
+        MarkdownTemplate {
+            config: database.config.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
+            profile: auth_user,
+            title: "Privacy Policy".to_string(),
+            text: rainbeam_shared::fs::read(format!(
+                "{}/site/privacy.md",
+                database.config.static_dir
+            ))
+            .unwrap_or(String::new()),
+        }
+        .render()
+        .unwrap(),
+    )
+}
+
 #[derive(Template)]
 #[template(path = "fun/carp.html")]
 struct CarpTemplate {}
@@ -2080,6 +2150,8 @@ pub async fn routes(database: Database) -> Router {
     Router::new()
         .route("/", get(homepage_request))
         .route("/site/about", get(about_request))
+        .route("/site/terms-of-service", get(tos_request))
+        .route("/site/privacy", get(privacy_request))
         .route("/intents/report", get(report_request))
         .route("/site/fun/carp", get(carp_request))
         // inbox

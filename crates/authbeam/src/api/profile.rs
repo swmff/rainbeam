@@ -1465,6 +1465,10 @@ pub async fn patch_metdata_request(
         metadata.kv.insert(kv.0, kv.1);
     }
 
+    if props.metadata.policy_consent != metadata.policy_consent {
+        metadata.policy_consent = props.metadata.policy_consent;
+    }
+
     // return
     match database.update_profile_metadata(id, metadata).await {
         Ok(_) => Json(DefaultReturn {

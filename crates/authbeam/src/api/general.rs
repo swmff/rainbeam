@@ -30,6 +30,18 @@ pub async fn create_request(
         );
     }
 
+    if !props.policy_consent {
+        return (
+            HeaderMap::new(),
+            serde_json::to_string(&DefaultReturn {
+                success: false,
+                message: DatabaseError::NotAllowed.to_string(),
+                payload: (),
+            })
+            .unwrap(),
+        );
+    }
+
     // get real ip
     let real_ip = if let Some(ref real_ip_header) = database.config.real_ip_header {
         headers

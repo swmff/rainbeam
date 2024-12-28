@@ -239,6 +239,8 @@ impl Default for TokenContext {
 pub struct ProfileMetadata {
     #[serde(default)]
     pub email: String,
+    #[serde(default)]
+    pub policy_consent: bool,
     /// Extra key-value pairs
     #[serde(default)]
     pub kv: HashMap<String, String>,
@@ -305,6 +307,7 @@ impl ProfileMetadata {
     pub fn from_email(email: String) -> Self {
         Self {
             email,
+            policy_consent: true,
             kv: HashMap::new(),
         }
     }
@@ -314,6 +317,7 @@ impl Default for ProfileMetadata {
     fn default() -> Self {
         Self {
             email: String::new(),
+            policy_consent: true, // we can mark this as true since it is required for sign up
             kv: HashMap::new(),
         }
     }
@@ -595,6 +599,7 @@ pub struct Item {
 pub struct ProfileCreate {
     pub username: String,
     pub password: String,
+    pub policy_consent: bool,
     #[captcha]
     pub token: String,
 }
