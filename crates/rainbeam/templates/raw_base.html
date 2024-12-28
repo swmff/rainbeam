@@ -66,6 +66,8 @@
                 ns_store: {},
                 classes: {},
             };
+
+            globalThis.no_policy = false;
         </script>
 
         <script
@@ -433,7 +435,9 @@
         </dialog>
 
         <script>
-            document.getElementById("policy_consent").showModal();
+            if (!globalThis.no_policy) {
+                document.getElementById("policy_consent").showModal();
+            }
 
             globalThis.patch_metadata = async (metadata) => {
                 fetch("/api/v0/auth/profile/{{ user.id }}/metadata", {
