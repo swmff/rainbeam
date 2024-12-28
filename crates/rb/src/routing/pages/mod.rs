@@ -891,6 +891,10 @@ pub async fn partial_posts_request(
                 .filter(|x| x.1.author.id == user.0.id)
                 .enumerate()
             {
+                if i > responses.len() {
+                    continue;
+                }
+
                 responses.remove(i);
             }
         }
