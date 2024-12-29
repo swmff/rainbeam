@@ -86,25 +86,25 @@ nav a.button.title:hover:has(.title-content) .title-content:not(img) {
     padding: 0.25rem;
 }
 
+nav button:not(:is(.dropdown *)):not(:is(.title)),
+nav a:not(:is(.dropdown *)):not(:is(.title)) {
+    opacity: 60%;
+    transition: opacity 0.15s;
+}
+
+nav button:hover,
+nav a:hover,
+nav button.active,
+nav a.active {
+    opacity: 100% !important;
+}
+
+nav button::before,
+nav a::before {
+    content: unset;
+}
+
 @media screen and (min-width: 901px) {
-    nav button:not(:is(.dropdown *)):not(:is(.title)),
-    nav a:not(:is(.dropdown *)):not(:is(.title)) {
-        opacity: 60%;
-        transition: opacity 0.15s;
-    }
-
-    nav button:hover,
-    nav a:hover,
-    nav button.active,
-    nav a.active {
-        opacity: 100% !important;
-    }
-
-    nav button::before,
-    nav a::before {
-        content: unset;
-    }
-
     body:has(#is_chat_page) article {
         padding-bottom: 1rem !important;
         height: calc(100dvh - 48px - 1rem) !important;
@@ -119,11 +119,6 @@ nav a.button.title:hover:has(.title-content) .title-content:not(img) {
         border-bottom: solid 1px var(--color-super-lowered);
     }
 
-    nav:not([data-scroll="0"] *),
-    nav:is(html:not([data-scroll]) *) {
-        background: var(--color-raised);
-    }
-
     nav button,
     nav a.button {
         font-size: 12px;
@@ -136,8 +131,6 @@ nav a.button.title:hover:has(.title-content) .title-content:not(img) {
 
     nav button.active,
     nav a.button.active {
-        color: var(--color-primary-raised);
-        border: solid 1px var(--color-super-lowered);
         animation: grow 1 0.25s 0.1s forwards running;
     }
 
