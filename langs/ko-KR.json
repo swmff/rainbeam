@@ -143,7 +143,7 @@
 
         "settings:text.light": "라이트",
         "settings:text.dark": "다크",
-        "settings:text.midnight": "미드나잇",
+        "settings:text.dim": "미드나잇",
 
         "settings:account.html:title.language": "언어",
         "settings:account.html:title.local_theming": "로컬 테마",

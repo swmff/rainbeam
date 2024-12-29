@@ -5040,7 +5040,7 @@ impl Database {
         }
 
         // ...
-        if props.cost.is_negative() {
+        if props.cost.is_negative() && props.cost != -1 {
             return Err(DatabaseError::NotAllowed);
         }
 
@@ -5207,6 +5207,24 @@ impl Database {
             Err(e) => return Err(e),
         };
 
+        // check values
+        if props.name.len() > (64 * 2) {
+            return Err(DatabaseError::TooLong);
+        }
+
+        if props.name.len() < 2 {
+            return Err(DatabaseError::ValueError);
+        }
+
+        if props.description.len() > (64 * 128) {
+            return Err(DatabaseError::TooLong);
+        }
+
+        // ...
+        if props.cost.is_negative() && props.cost != -1 {
+            return Err(DatabaseError::NotAllowed);
+        }
+
         // check permission
         let group = match self.get_group_by_id(user.group).await {
             Ok(g) => g,
@@ -5268,6 +5286,15 @@ impl Database {
             Ok(i) => i,
             Err(e) => return Err(e),
         };
+
+        // check values
+        if props.content.len() > (64 * 128 * 2) {
+            return Err(DatabaseError::TooLong);
+        }
+
+        if props.content.len() < 2 {
+            return Err(DatabaseError::ValueError);
+        }
 
         // check permission
         let group = match self.get_group_by_id(user.group).await {

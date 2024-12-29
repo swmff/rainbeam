@@ -144,7 +144,7 @@
 
         "settings:text.light": "Light",
         "settings:text.dark": "Dark",
-        "settings:text.midnight": "Midnight",
+        "settings:text.dim": "Dark (dim)",
 
         "settings:account.html:title.language": "Language",
         "settings:account.html:title.local_theming": "Local themeing",

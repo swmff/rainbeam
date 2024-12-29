@@ -12,15 +12,6 @@
 
 :root {
     color-scheme: light dark;
-    --color-surface: hsl(0, 0%, 95%);
-    --color-lowered: hsl(0, 0%, 94%);
-    --color-raised: hsl(0, 0%, 98%);
-    --color-super-lowered: hsl(0, 0%, 90%);
-    --color-super-raised: hsl(0, 0%, 100%);
-    --color-primary: hsl(341, 59%, 45%);
-    --color-primary-hsl: 341, 59%, 45%;
-    --color-primary-lowered: hsl(341, 59%, 40%);
-    --color-primary-raised: var(--color-primary);
     --color-text: hsl(0, 0%, 0%);
     --color-text-raised: var(--color-text);
     --color-text-lowered: var(--color-text);
@@ -34,11 +25,6 @@
 
 .dark,
 .dark * {
-    --color-surface: hsl(0, 0%, 18%);
-    --color-lowered: hsl(0, 0%, 24%);
-    --color-raised: hsl(0, 0%, 21%);
-    --color-super-lowered: hsl(0, 0%, 28%);
-    --color-super-raised: hsl(0, 0%, 26%);
     --color-text: hsl(0, 0%, 95%);
     --color-link: #93c5fd;
     --color-primary-raised: hsl(341, 59%, 55%);
@@ -46,8 +32,8 @@
 }
 
 /* fun themes */
-.dark.midnight,
-.dark.midnight * {
+.dark.dim,
+.dark.dim * {
     --lit: 6% !important;
     --color-surface: hsl(0, 0%, 12%);
     --color-lowered: hsl(0, 0%, 18%);
