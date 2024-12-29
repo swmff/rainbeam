@@ -1,7 +1,6 @@
 use crate::database::Database;
-use crate::model::{DatabaseError, ResponseCreate, ResponseEdit, ResponseEditTags};
+use crate::model::{DatabaseError, ResponseCreate, ResponseEdit, ResponseEditTags, ResponseEditContext};
 use axum::http::{HeaderMap, HeaderValue};
-use axum::routing::put;
 use hcaptcha_no_wasm::Hcaptcha;
 use authbeam::model::NotificationCreate;
 use databeam::DefaultReturn;
@@ -15,13 +14,16 @@ use axum::{
 };
 
 use axum_extra::extract::cookie::CookieJar;
+use rainbeam::model::ResponseEditWarning;
 
 pub fn routes(database: Database) -> Router {
     Router::new()
         .route("/", post(create_request))
         .route("/:id", get(get_request))
-        .route("/:id", put(edit_request))
-        .route("/:id/tags", put(edit_tags_request))
+        .route("/:id", post(edit_request))
+        .route("/:id/tags", post(edit_tags_request))
+        .route("/:id/context", post(edit_context_request))
+        .route("/:id/context/warning", post(edit_warning_request))
         .route("/:id", delete(delete_request))
         .route("/:id/unsend", post(unsend_request))
         .route("/:id/report", post(report_request))
@@ -171,6 +173,95 @@ pub async fn edit_tags_request(
     // ...
     Json(
         match database.update_response_tags(id, req.tags, auth_user).await {
+            Ok(r) => DefaultReturn {
+                success: true,
+                message: String::new(),
+                payload: Some(r),
+            },
+            Err(e) => e.into(),
+        },
+    )
+}
+
+/// [`Database::update_response_context`]
+pub async fn edit_context_request(
+    jar: CookieJar,
+    Path(id): Path<String>,
+    State(database): State<Database>,
+    Json(req): Json<ResponseEditContext>,
+) -> impl IntoResponse {
+    // get user from token
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => {
+                return Json(DatabaseError::NotAllowed.into());
+            }
+        },
+        None => {
+            return Json(DatabaseError::NotAllowed.into());
+        }
+    };
+
+    // ...
+    Json(
+        match database
+            .update_response_context(id, req.context, auth_user)
+            .await
+        {
+            Ok(r) => DefaultReturn {
+                success: true,
+                message: String::new(),
+                payload: Some(r),
+            },
+            Err(e) => e.into(),
+        },
+    )
+}
+
+/// [`Database::update_response_context`]
+pub async fn edit_warning_request(
+    jar: CookieJar,
+    Path(id): Path<String>,
+    State(database): State<Database>,
+    Json(req): Json<ResponseEditWarning>,
+) -> impl IntoResponse {
+    // get user from token
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => {
+                return Json(DatabaseError::NotAllowed.into());
+            }
+        },
+        None => {
+            return Json(DatabaseError::NotAllowed.into());
+        }
+    };
+
+    // make sure the response exists
+    let response = match database.get_response_short(id.clone()).await {
+        Ok(q) => q,
+        Err(e) => return Json(e.into()),
+    };
+
+    let mut context = response.context;
+    context.warning = req.warning;
+
+    // ...
+    Json(
+        match database
+            .update_response_context(id, context, auth_user)
+            .await
+        {
             Ok(r) => DefaultReturn {
                 success: true,
                 message: String::new(),

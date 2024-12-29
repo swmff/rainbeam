@@ -333,7 +333,7 @@ dialog::backdrop {
 .response .card:first-child[style="display: none"] + .card:nth-child(n-1),
 .response .card:first-child.hidden + .card:nth-child(n-1) {
     border-radius: var(--radius) !important;
-    border-top: solid 1px var(--color-super-lowered) !important;
+    /* border-top: solid 1px var(--color-super-lowered) !important; */
 }
 
 .thread_line {

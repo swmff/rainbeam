@@ -112,7 +112,7 @@ pub async fn main() {
                 .on_response(trace::DefaultOnResponse::new().level(Level::INFO)),
         );
 
-    let listener = tokio::net::TcpListener::bind(format!("127.0.0.1:{}", config.port))
+    let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", config.port))
         .await
         .unwrap();
 

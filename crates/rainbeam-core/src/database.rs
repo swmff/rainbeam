@@ -3,12 +3,7 @@ use rainbeam_shared::snow::AlmostSnowflake;
 use std::collections::{BTreeMap, HashMap};
 
 use crate::config::Config;
-use crate::model::{
-    anonymous_profile, Chat, ChatAdd, ChatContext, ChatNameEdit, Circle, CircleCreate,
-    CircleMetadata, CommentContext, CommentCreate, DataExport, DataExportOptions, FullResponse,
-    MembershipStatus, Message, MessageContext, MessageCreate, QuestionContext, QuestionCreate,
-    QuestionResponse, Reaction, RefQuestion, ResponseComment, ResponseContext, ResponseCreate,
-};
+use crate::model::*;
 use crate::model::{DatabaseError, Question};
 use citrus_client::model::CitrusID;
 
@@ -1726,11 +1721,55 @@ impl Database {
         ))
     }
 
+    /// Get a (short) response from a database result
+    pub async fn gimme_short_response(
+        &self,
+        res: BTreeMap<String, String>,
+    ) -> Result<QuestionResponse> {
+        let question = res.get("question").unwrap().to_string();
+        let id = res.get("id").unwrap().to_string();
+        let author = res.get("author").unwrap().to_string();
+        let ctx: ResponseContext =
+            match serde_json::from_str(res.get("context").unwrap_or(&"{}".to_string())) {
+                Ok(t) => t,
+                Err(_) => return Err(DatabaseError::ValueError),
+            };
+
+        Ok(QuestionResponse {
+            author: if author.starts_with("{") {
+                // likely serialized author struct
+                let de: Profile = serde_json::from_str(&author).unwrap();
+
+                match self.get_profile(de.id).await {
+                    Ok(ua) => ua,
+                    Err(_) => anonymous_profile("anonymous".to_string()),
+                }
+            } else {
+                // must just be id, fetch normally
+                match self.get_profile(author).await {
+                    Ok(ua) => ua,
+                    Err(_) => anonymous_profile("anonymous".to_string()),
+                }
+            },
+            question,
+            content: res.get("content").unwrap().to_string(),
+            // id: CitrusID::new(&self.server_options.host, &id).0,
+            id: id.to_owned(),
+            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+            tags: match serde_json::from_str(res.get("tags").unwrap()) {
+                Ok(t) => t,
+                Err(_) => return Err(DatabaseError::ValueError),
+            },
+            context: ctx,
+            reply: res.get("reply").unwrap_or(&String::new()).to_string(),
+            edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
+        })
+    }
+
     /// Get an existing response
     ///
     /// # Arguments
     /// * `id`
-    /// * `recurse`
     pub async fn get_response(&self, mut id: String) -> Result<FullResponse> {
         id = CitrusID(id).hash();
 
@@ -1793,6 +1832,82 @@ impl Database {
                 .set(
                     format!("rbeam.app.response:{}", id),
                     serde_json::to_string::<QuestionResponse>(&response.1).unwrap(),
+                )
+                .await;
+        }
+
+        // return
+        Ok(response)
+    }
+
+    /// Get an existing response (short)
+    ///
+    /// This method is only for when we need a response and not its question and extra information.
+    ///
+    /// # Arguments
+    /// * `id`
+    pub async fn get_response_short(&self, mut id: String) -> Result<QuestionResponse> {
+        id = CitrusID(id).hash();
+
+        // check in cache
+        match self
+            .base
+            .cachedb
+            .get(format!("rbeam.app.response:{}", id))
+            .await
+        {
+            Some(c) => {
+                match serde_json::from_str::<BTreeMap<String, String>>(c.as_str()) {
+                    Ok(res) => {
+                        return Ok(match self.gimme_short_response(res).await {
+                            Ok(r) => r,
+                            Err(e) => return Err(e),
+                        })
+                    }
+                    Err(_) => {
+                        // we're storing a bad version that couldn't deserialize, we don't need that...
+                        self.base
+                            .cachedb
+                            .remove(format!("rbeam.app.response:{}", id))
+                            .await
+                    }
+                };
+            }
+            None => (),
+        };
+
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "SELECT * FROM \"xresponses\" WHERE \"id\" LIKE ?"
+        } else {
+            "SELECT * FROM \"xresponses\" WHERE \"id\" LIKE $1"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query)
+            .bind::<&String>(&format!("{id}%"))
+            .fetch_one(c)
+            .await
+        {
+            Ok(p) => self.base.textify_row(p).0,
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        let response = match self.gimme_short_response(res).await {
+            Ok(r) => r,
+            Err(e) => return Err(e),
+        };
+
+        // store in cache
+        if id.len() == 64 {
+            self.base
+                .cachedb
+                .set(
+                    format!("rbeam.app.response:{}", id),
+                    serde_json::to_string::<QuestionResponse>(&response).unwrap(),
                 )
                 .await;
         }
@@ -2748,8 +2863,8 @@ impl Database {
         user: Box<Profile>,
     ) -> Result<()> {
         // make sure the response exists
-        let response = match self.get_response(id.clone()).await {
-            Ok(q) => q.1,
+        let response = match self.get_response_short(id.clone()).await {
+            Ok(q) => q,
             Err(e) => return Err(e),
         };
 
@@ -2844,8 +2959,8 @@ impl Database {
         user: Box<Profile>,
     ) -> Result<()> {
         // make sure the response exists
-        let response = match self.get_response(id.clone()).await {
-            Ok(q) => q.1,
+        let response = match self.get_response_short(id.clone()).await {
+            Ok(q) => q,
             Err(e) => return Err(e),
         };
 
@@ -2890,6 +3005,86 @@ impl Database {
         let c = &self.base.db.client;
         match sqlquery(&query)
             .bind::<&String>(&match serde_json::to_string(&tags) {
+                Ok(t) => t,
+                Err(_) => return Err(DatabaseError::ValueError),
+            })
+            .bind::<&String>(&id)
+            .execute(c)
+            .await
+        {
+            Ok(_) => {
+                let id = CitrusID(id).hash();
+
+                self.base
+                    .cachedb
+                    .remove(format!("rbeam.app.response:{id}"))
+                    .await;
+
+                Ok(())
+            }
+            Err(_) => Err(DatabaseError::Other),
+        }
+    }
+
+    /// Update an existing response's context
+    ///
+    /// # Arguments
+    /// * `id`
+    /// * `context`
+    /// * `user` - the user doing this
+    pub async fn update_response_context(
+        &self,
+        id: String,
+        context: ResponseContext,
+        user: Box<Profile>,
+    ) -> Result<()> {
+        // make sure the response exists
+        let response = match self.get_response_short(id.clone()).await {
+            Ok(q) => q,
+            Err(e) => return Err(e),
+        };
+
+        // check user permissions
+        if user.group == -1 {
+            // group -1 (even if it exists) is for marking users as banned
+            return Err(DatabaseError::NotAllowed);
+        }
+
+        if user.id != response.author.id {
+            // check permission
+            let group = match self.auth.get_group_by_id(user.group).await {
+                Ok(g) => g,
+                Err(_) => return Err(DatabaseError::Other),
+            };
+
+            if !group.permissions.contains(&Permission::Manager) {
+                return Err(DatabaseError::NotAllowed);
+            } else if let Err(e) = self
+                .audit(
+                    user.id,
+                    format!(
+                        "Edited a response's context: [{}](/response/{})",
+                        response.id, response.id
+                    ),
+                )
+                .await
+            {
+                return Err(e);
+            }
+        }
+
+        // update response
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "UPDATE \"xresponses\" SET \"context\" = ? WHERE \"id\" = ?"
+        } else {
+            "UPDATE \"xresponses\" SET (\"context\") = ($1) WHERE \"id\" = $2"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query)
+            .bind::<&String>(&match serde_json::to_string(&context) {
                 Ok(t) => t,
                 Err(_) => return Err(DatabaseError::ValueError),
             })
@@ -3711,8 +3906,8 @@ impl Database {
         ip: String,
     ) -> Result<()> {
         // make sure the response exists
-        let response = match self.get_response(props.response.clone()).await {
-            Ok(q) => q.1,
+        let response = match self.get_response_short(props.response.clone()).await {
+            Ok(q) => q,
             Err(e) => return Err(e),
         };
 
@@ -4063,8 +4258,8 @@ impl Database {
             Err(e) => return Err(e),
         };
 
-        let res = match self.get_response(comment.response.clone()).await {
-            Ok(q) => q.1,
+        let res = match self.get_response_short(comment.response.clone()).await {
+            Ok(q) => q,
             Err(e) => return Err(e),
         };
 

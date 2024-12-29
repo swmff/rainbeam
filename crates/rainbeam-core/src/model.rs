@@ -566,6 +566,16 @@ pub struct ResponseEditTags {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct ResponseEditContext {
+    pub context: ResponseContext,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ResponseEditWarning {
+    pub warning: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct CommentCreate {
     pub response: String,
     pub content: String,

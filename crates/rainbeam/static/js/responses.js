@@ -62,7 +62,7 @@
     self.define("edit", function ({ $, app }, id, content) {
         return new Promise((resolve, reject) => {
             fetch(`/api/v1/responses/${id}`, {
-                method: "PUT",
+                method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
@@ -89,12 +89,66 @@
     self.define("edit_tags", function ({ $, app }, id, tags) {
         return new Promise((resolve, reject) => {
             fetch(`/api/v1/responses/${id}/tags`, {
-                method: "PUT",
+                method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
                     tags,
+                }),
+            })
+                .then((res) => res.json())
+                .then((res) => {
+                    app.toast(
+                        res.success ? "success" : "error",
+                        res.success ? "Response edited!" : res.message,
+                    );
+
+                    if (res.success === true) {
+                        return resolve(res);
+                    }
+
+                    return reject(res);
+                });
+        });
+    });
+
+    self.define("edit_context", function ({ $, app }, id, context) {
+        return new Promise((resolve, reject) => {
+            fetch(`/api/v1/responses/${id}/context`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    context,
+                }),
+            })
+                .then((res) => res.json())
+                .then((res) => {
+                    app.toast(
+                        res.success ? "success" : "error",
+                        res.success ? "Response edited!" : res.message,
+                    );
+
+                    if (res.success === true) {
+                        return resolve(res);
+                    }
+
+                    return reject(res);
+                });
+        });
+    });
+
+    self.define("edit_context_warning", function ({ $, app }, id, warning) {
+        return new Promise((resolve, reject) => {
+            fetch(`/api/v1/responses/${id}/context/warning`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    warning,
                 }),
             })
                 .then((res) => res.json())

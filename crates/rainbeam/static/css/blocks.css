@@ -67,6 +67,15 @@
     border-right: solid 1px var(--color-super-lowered);
 }
 
+.card-nest.shadow:not(include-partial *) .card {
+    border: none !important;
+}
+
+include-partial .card-nest,
+include-partial .card-nest .card {
+    border: solid 1px var(--color-super-lowered) !important;
+}
+
 .card.secondary {
     background: var(--color-lowered);
     color: var(--color-text-lowered) !important;

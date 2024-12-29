@@ -214,9 +214,9 @@ block head %}
             href="https://unpkg.com/codemirror@5.39.2/lib/codemirror.css"
         />
 
-        <div class="hidden card shadow" data-tab="edit">
+        <div class="hidden flex flex-col gap-2" data-tab="edit">
             <form
-                class="flex flex-col gap-2 w-full"
+                class="flex flex-col gap-2 w-full card shadow"
                 onsubmit="edit(event)"
             >
                 <!-- prettier-ignore -->
@@ -237,6 +237,28 @@ block head %}
                         });
                     }, 500);
                 </script>
+
+                <div class="flex gap-2 w-full justify-right">
+                    <button class="primary bold">
+                        {{ icon "check" }}
+                        <span>{{ text "general:action.save" }}</span>
+                    </button>
+                </div>
+            </form>
+
+            <form class="flex flex-col gap-2 w-full card shadow" onsubmit="edit_context_warning(event)">
+                <!-- prettier-ignore -->
+                <label for="warning">Warning</label>
+
+                <textarea
+                    class="w-full"
+                    placeholder="Type your response warning!"
+                    minlength="1"
+                    maxlength="4096"
+                    required
+                    name="warning"
+                    id="warning"
+                >{{ response.context.warning }}</textarea>
 
                 <div class="flex gap-2 w-full justify-right">
                     <button class="primary bold">
@@ -300,6 +322,14 @@ block head %}
                 trigger("responses:edit_tags", [
                     "{{ response.id }}",
                     e.target.tags.value.toLowerCase().split(",").map((t) => t.trim()),
+                ])
+            }
+
+            function edit_context_warning(e) {
+                e.preventDefault();
+                trigger("responses:edit_context_warning", [
+                    "{{ response.id }}",
+                    e.target.warning.value,
                 ])
             }
         </script>

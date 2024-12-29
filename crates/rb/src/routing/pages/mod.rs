@@ -120,34 +120,6 @@ pub async fn homepage_request(
             .get_notification_count_by_recipient(ua.id.to_owned())
             .await;
 
-        let mut responses = match database.get_responses_by_following(ua.id.to_owned()).await {
-            Ok(responses) => responses,
-            Err(e) => return Html(e.to_html(database)),
-        };
-
-        // remove responses from users we've blocked
-        let blocked = match database
-            .auth
-            .get_user_relationships_of_status(ua.id.clone(), RelationshipStatus::Blocked)
-            .await
-        {
-            Ok(l) => l,
-            Err(_) => Vec::new(),
-        };
-
-        for user in blocked {
-            for (i, _) in responses
-                .clone()
-                .iter()
-                .filter(|x| (x.1.author.id == user.0.id) | (x.0.author.id == user.0.id))
-                .enumerate()
-            {
-                if responses.get(i).is_some() {
-                    responses.remove(i);
-                }
-            }
-        }
-
         // ...
         return Html(
             TimelineTemplate {
