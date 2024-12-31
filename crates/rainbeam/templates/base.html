@@ -145,39 +145,9 @@
 {% block under_nav %}{% endblock %}
 
 <div id="page">
-    <div
-        id="loader"
-        style="width: 100dvw; height: 100dvh; display: none"
-        class="flex justify-center items-center flex-col"
-    >
-        <img
-            src="/static/images/ui/logo.svg"
-            alt="{{ config.name }}"
-            width="64px"
-            height="64px"
-            class="spinner"
-        />
-    </div>
-
     <div class="content_container" id="page_content">
         {% block content %}{% endblock %}
     </div>
-
-    <script>
-        function show_loading() {
-            document.getElementById("page_content").style.display = "none";
-            document.getElementById("loader").style.display = "flex";
-            document.querySelector("nav").style.display = "none";
-            document.body.style.overflow = "hidden";
-        }
-
-        function show_page() {
-            document.getElementById("page_content").style.display = "block";
-            document.getElementById("loader").style.display = "none";
-            document.querySelector("nav").style.display = "flex";
-            document.body.style.overflow = "hidden auto";
-        }
-    </script>
 </div>
 
 <footer>

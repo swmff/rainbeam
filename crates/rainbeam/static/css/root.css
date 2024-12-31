@@ -338,6 +338,16 @@ img.emoji {
     animation: loading_spin_z 1s 0.5s running forwards infinite;
 }
 
+.spinner svg {
+    width: 1em;
+    height: 1em;
+    opacity: 75%;
+}
+
+.spinner.constant {
+    animation: loading_spin_z 1s 0s running forwards infinite linear;
+}
+
 .spinner.small {
     font-size: 1em;
     animation: loading_spin_z 2s 0.5s running forwards infinite;

@@ -498,6 +498,11 @@
                     ) {
                         app.debounce("app:partials")
                             .then(async () => {
+                                if (document.getElementById("initial_loader")) {
+                                    console.log("partial blocked");
+                                    return;
+                                }
+
                                 page += 1;
                                 await load_partial();
                                 await $["hook.partial_embeds"]();

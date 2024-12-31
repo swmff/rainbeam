@@ -103,6 +103,18 @@ endblock %} {% block nav_left %}
                     );
                 });
             }, 250);
+
+            async function are_you_sure() {
+                return await trigger("app:confirm", [
+                    "Are you sure you would like to leave this page?",
+                ]);
+            }
+
+            globalThis.go_back_confirm = async () => {
+                if (await are_you_sure()) {
+                    window.history.back();
+                }
+            };
         </script>
     </main>
 </article>

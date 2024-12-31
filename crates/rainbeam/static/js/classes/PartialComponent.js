@@ -37,7 +37,11 @@ class PartialComponent extends HTMLElement {
 
     constructor() {
         const self = super();
-        self.innerHTML = '<div class="spinner">🧶</div>';
+
+        (async () => {
+            const svg = await trigger("app:icon", ["loader-circle", "icon"]);
+            self.innerHTML = `<div class="spinner constant flex">${svg.outerHTML}</div>`;
+        })();
     }
 
     error() {
@@ -50,7 +54,7 @@ class PartialComponent extends HTMLElement {
             .then((res) => res.text())
             .then((res) => {
                 if (res.includes("<title>Uh oh!")) {
-                    // neospring error
+                    // bad request
                     this.error();
                     return;
                 }

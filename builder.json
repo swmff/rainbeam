@@ -12,5 +12,10 @@
         "preamble": "'https://github.com/swmff/rainbeam';"
     },
 
-    "extra_icon_imports": ["paint-bucket", "download", "upload"]
+    "extra_icon_imports": [
+        "paint-bucket",
+        "download",
+        "upload",
+        "loader-circle"
+    ]
 }
