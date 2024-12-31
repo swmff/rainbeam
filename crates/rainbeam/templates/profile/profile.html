@@ -71,10 +71,6 @@
     <hr class="small" />
     {% endif %} {% if !tag.is_empty() %}
     <h3>#{{ tag }}</h3>
-    {% endif %} {% if responses.len() == 0 %}
-    <div class="markdown-alert-warning">
-        <span>{{ text "general:text.no_results" }}</span>
-    </div>
     {% endif %}
 
     <!-- pagination buttons -->
@@ -90,10 +86,15 @@
     {% endif %}
 
     <!-- actual feed -->
-    {% include "partials/profile/feed.html" %}
+    <include-partial
+        src="/@{{ other.username }}/_app/feed.html?page={{ page }}{% if !tag.is_empty() %}&tag={{ tag }}{% endif %}&q={{ query }}"
+        uses="app:clean_date_codes,app:link_filter,app:hook.alt,app:hook.partial_embeds,app:hook.check_reactions"
+        instant="true"
+        outerhtml="true"
+    ></include-partial>
 </div>
 
-{% if tag.is_empty() %}
+{% if tag.is_empty() && query.is_empty() %}
 <script>
     use("app", (app) => {
         app["hook.attach_to_partial"](

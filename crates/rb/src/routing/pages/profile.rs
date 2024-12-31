@@ -25,8 +25,6 @@ struct ProfileTemplate {
     unread: usize,
     notifs: usize,
     other: Box<Profile>,
-    responses: Vec<FullResponse>,
-    relationships: HashMap<String, RelationshipStatus>,
     response_count: usize,
     questions_count: usize,
     followers_count: usize,
@@ -162,45 +160,6 @@ All mail sent to this account can be viewed by any staff member with access.
         false
     };
 
-    let mut responses = if let Some(ref tag) = query.tag {
-        // tagged
-        match database
-            .get_responses_by_author_tagged_paginated(
-                other.id.to_owned(),
-                tag.to_owned(),
-                query.page,
-            )
-            .await
-        {
-            Ok(responses) => responses,
-            Err(e) => return Html(e.to_html(database)),
-        }
-    } else {
-        if let Some(ref search) = query.q {
-            // search
-            match database
-                .get_responses_by_author_searched_paginated(
-                    other.id.to_owned(),
-                    search.to_owned(),
-                    query.page,
-                )
-                .await
-            {
-                Ok(responses) => responses,
-                Err(e) => return Html(e.to_html(database)),
-            }
-        } else {
-            // normal
-            match database
-                .get_responses_by_author_paginated(other.id.to_owned(), query.page)
-                .await
-            {
-                Ok(responses) => responses,
-                Err(e) => return Html(e.to_html(database)),
-            }
-        }
-    };
-
     // ...
     let pinned = if let Some(pinned) = other.metadata.kv.get("sparkler:pinned") {
         if pinned.is_empty() {
@@ -215,13 +174,6 @@ All mail sent to this account can be viewed by any staff member with access.
                             // don't allow us to pin responses from other users
                             continue;
                         }
-
-                        // remove from responses
-                        let in_responses = responses.iter().position(|r| r.1.id == response.1.id);
-
-                        if let Some(index) = in_responses {
-                            responses.remove(index);
-                        };
 
                         // push
                         out.push(response)
@@ -277,47 +229,6 @@ All mail sent to this account can be viewed by any staff member with access.
         return Html(DatabaseError::NotFound.to_html(database));
     }
 
-    // build relationships list
-    let mut relationships: HashMap<String, RelationshipStatus> = HashMap::new();
-
-    if let Some(ref ua) = auth_user {
-        for response in &responses {
-            if relationships.contains_key(&response.1.author.id) {
-                continue;
-            }
-
-            if is_helper {
-                // make sure staff can view your responses
-                relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
-                continue;
-            }
-
-            if response.1.author.id == ua.id {
-                // make sure we can view our own responses
-                relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
-                continue;
-            };
-
-            relationships.insert(
-                response.1.author.id.clone(),
-                database
-                    .auth
-                    .get_user_relationship(response.1.author.id.clone(), ua.id.clone())
-                    .await
-                    .0,
-            );
-        }
-    } else {
-        for response in &responses {
-            // no user, no relationships
-            if relationships.contains_key(&response.1.author.id) {
-                continue;
-            }
-
-            relationships.insert(response.1.author.id.clone(), RelationshipStatus::Unknown);
-        }
-    }
-
     // ...
     Html(
         ProfileTemplate {
@@ -331,8 +242,6 @@ All mail sent to this account can be viewed by any staff member with access.
             unread,
             notifs,
             other: other.clone(),
-            responses,
-            relationships,
             response_count: database
                 .get_response_count_by_author(other.id.clone())
                 .await,
