@@ -2098,6 +2098,41 @@ impl Database {
         Ok(res)
     }
 
+    /// Get all responses, 12 at a time
+    ///
+    /// # Arguments
+    /// * `page`
+    pub async fn get_responses_paginated(&self, page: i32) -> Result<Vec<FullResponse>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            format!("SELECT * FROM \"xresponses\" WHERE \"context\" NOT LIKE '%\"unlisted\":true%' ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
+        } else {
+            format!("SELECT * FROM \"xresponses\" WHERE \"context\" NOT LIKE '%\"unlisted\":true%' ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
+        };
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query).fetch_all(c).await {
+            Ok(p) => {
+                let mut out: Vec<FullResponse> = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row).0;
+                    out.push(match self.gimme_response(res).await {
+                        Ok(r) => r,
+                        Err(e) => return Err(e),
+                    });
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // return
+        Ok(res)
+    }
+
     /// Get all responses by their author
     ///
     /// # Arguments
@@ -6187,7 +6222,7 @@ impl Database {
         Ok(res)
     }
 
-    /// Get all messages by their chat, 50 at a time
+    /// Get all messages by their chat, 12 at a time
     ///
     /// # Arguments
     /// * `id`
@@ -6200,9 +6235,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xmessages\" WHERE \"chat\" = ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+            format!("SELECT * FROM \"xmessages\" WHERE \"chat\" = ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
-            format!("SELECT * FROM \"xmessages\" WHERE \"chat\" = $1 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+            format!("SELECT * FROM \"xmessages\" WHERE \"chat\" = $1 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         };
 
         let c = &self.base.db.client;

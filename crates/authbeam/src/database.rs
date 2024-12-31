@@ -1687,7 +1687,7 @@ impl Database {
         Ok(res)
     }
 
-    /// Get all existing [`UserFollow`]s where `following` is the value of `user`, 50 at a time
+    /// Get all existing [`UserFollow`]s where `following` is the value of `user`, 12 at a time
     ///
     /// # Arguments:
     /// * `user`
@@ -1701,12 +1701,12 @@ impl Database {
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
             format!(
-                "SELECT * FROM \"xfollows\" WHERE \"following\" = ? LIMIT 50 OFFSET {}",
+                "SELECT * FROM \"xfollows\" WHERE \"following\" = ? LIMIT 12 OFFSET {}",
                 page * 50
             )
         } else {
             format!(
-                "SELECT * FROM \"xfollows\" WHERE \"following\" = $1 LIMIT 50 OFFSET {}",
+                "SELECT * FROM \"xfollows\" WHERE \"following\" = $1 LIMIT 12 OFFSET {}",
                 page * 50
             )
         };
@@ -1847,7 +1847,7 @@ impl Database {
         Ok(res)
     }
 
-    /// Get all existing [`UserFollow`]s where `user` is the value of `user`, 50 at a time
+    /// Get all existing [`UserFollow`]s where `user` is the value of `user`, 12 at a time
     ///
     /// # Arguments:
     /// * `user`
@@ -1861,12 +1861,12 @@ impl Database {
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
             format!(
-                "SELECT * FROM \"xfollows\" WHERE \"user\" = ? LIMIT 50 OFFSET {}",
+                "SELECT * FROM \"xfollows\" WHERE \"user\" = ? LIMIT 12 OFFSET {}",
                 page * 50
             )
         } else {
             format!(
-                "SELECT * FROM \"xfollows\" WHERE \"user\" = $1 LIMIT 50 OFFSET {}",
+                "SELECT * FROM \"xfollows\" WHERE \"user\" = $1 LIMIT 12 OFFSET {}",
                 page * 50
             )
         };
@@ -2255,7 +2255,7 @@ impl Database {
         count
     }
 
-    /// Get all notifications by their recipient, 50 at a time
+    /// Get all notifications by their recipient, 12 at a time
     ///
     /// ## Arguments:
     /// * `recipient`
@@ -2268,9 +2268,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xnotifications\" WHERE \"recipient\" = ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+            format!("SELECT * FROM \"xnotifications\" WHERE \"recipient\" = ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
-            format!("SELECT * FROM \"xnotifications\" WHERE \"recipient\" = $1 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+            format!("SELECT * FROM \"xnotifications\" WHERE \"recipient\" = $1 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         };
 
         let c = &self.base.db.client;
@@ -3484,7 +3484,7 @@ impl Database {
         }
     }
 
-    /// Get all relationships where `user` is either `one` or `two` and the status is `status`, 50 at a time
+    /// Get all relationships where `user` is either `one` or `two` and the status is `status`, 12 at a time
     ///
     /// # Arguments
     /// * `user`
@@ -3499,9 +3499,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xrelationships\" WHERE (\"one\" = ? OR \"two\" = ?) AND \"status\" = ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+            format!("SELECT * FROM \"xrelationships\" WHERE (\"one\" = ? OR \"two\" = ?) AND \"status\" = ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
-            format!("SELECT * FROM \"xrelationships\" WHERE (\"one\" = $1 OR \"two\" = $2) AND \"status\" = $3 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+            format!("SELECT * FROM \"xrelationships\" WHERE (\"one\" = $1 OR \"two\" = $2) AND \"status\" = $3 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         };
 
         let c = &self.base.db.client;
@@ -3891,7 +3891,7 @@ impl Database {
         Ok(mail)
     }
 
-    /// Get all mail by their recipient, 50 at a time
+    /// Get all mail by their recipient, 12 at a time
     ///
     /// ## Arguments:
     /// * `recipient`
@@ -3904,9 +3904,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xmail\" WHERE \"recipient\" LIKE ? OR \"recipient\" = ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+            format!("SELECT * FROM \"xmail\" WHERE \"recipient\" LIKE ? OR \"recipient\" = ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
-            format!("SELECT * FROM \"xmail\" WHERE \"recipient\" LIKE $1 OR \"recipient\" = $2 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+            format!("SELECT * FROM \"xmail\" WHERE \"recipient\" LIKE $1 OR \"recipient\" = $2 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         };
 
         let c = &self.base.db.client;
@@ -3952,7 +3952,7 @@ impl Database {
         Ok(res)
     }
 
-    /// Get all mail by their recipient, 50 at a time
+    /// Get all mail by their recipient, 12 at a time
     ///
     /// ## Arguments:
     /// * `recipient`
@@ -3965,9 +3965,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xmail\" WHERE \"author\" LIKE ? OR \"author\" = ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+            format!("SELECT * FROM \"xmail\" WHERE \"author\" LIKE ? OR \"author\" = ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
-            format!("SELECT * FROM \"xmail\" WHERE \"author\" LIKE $1 OR \"author\" = $2 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+            format!("SELECT * FROM \"xmail\" WHERE \"author\" LIKE $1 OR \"author\" = $2 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         };
 
         let c = &self.base.db.client;
@@ -4574,7 +4574,7 @@ impl Database {
         Ok(transaction)
     }
 
-    /// Get all transactions by the given user ID, 25 at a time
+    /// Get all transactions by the given user ID, 12 at a time
     ///
     /// ## Arguments:
     /// * `user`
@@ -4590,9 +4590,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xugc_transactions\" WHERE \"customer\" = ? OR \"merchant\" = ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+            format!("SELECT * FROM \"xugc_transactions\" WHERE \"customer\" = ? OR \"merchant\" = ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
-            format!("SELECT * FROM \"xugc_transactions\" WHERE \"customer\" = $1 OR \"merchant\" = $2 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+            format!("SELECT * FROM \"xugc_transactions\" WHERE \"customer\" = $1 OR \"merchant\" = $2 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         };
 
         let c = &self.base.db.client;
@@ -4839,7 +4839,7 @@ impl Database {
         Ok(item)
     }
 
-    /// Get all items by their creator, 25 at a time
+    /// Get all items by their creator, 12 at a time
     ///
     /// ## Arguments:
     /// * `user`
@@ -4855,9 +4855,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xugc_items\" WHERE \"creator\" = ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+            format!("SELECT * FROM \"xugc_items\" WHERE \"creator\" = ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
-            format!("SELECT * FROM \"xugc_items\" WHERE \"creator\" = $1 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+            format!("SELECT * FROM \"xugc_items\" WHERE \"creator\" = $1 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         };
 
         let c = &self.base.db.client;
@@ -4892,7 +4892,7 @@ impl Database {
         Ok(res)
     }
 
-    /// Get all items by their creator and type, 25 at a time
+    /// Get all items by their creator and type, 12 at a time
     ///
     /// ## Arguments:
     /// * `user`
@@ -4910,9 +4910,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xugc_items\" WHERE \"creator\" = ? AND \"type\" = ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+            format!("SELECT * FROM \"xugc_items\" WHERE \"creator\" = ? AND \"type\" = ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
-            format!("SELECT * FROM \"xugc_items\" WHERE \"creator\" = $1 AND \"type\" = $2 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+            format!("SELECT * FROM \"xugc_items\" WHERE \"creator\" = $1 AND \"type\" = $2 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         };
 
         let c = &self.base.db.client;
@@ -4952,7 +4952,7 @@ impl Database {
         Ok(res)
     }
 
-    /// Get all items by their status, 25 at a time
+    /// Get all items by their status, 12 at a time
     ///
     /// ## Arguments:
     /// * `user`
@@ -4969,9 +4969,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xugc_items\" WHERE \"status\" = ? AND \"name\" LIKE ? AND \"cost\" != '-1' ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+            format!("SELECT * FROM \"xugc_items\" WHERE \"status\" = ? AND \"name\" LIKE ? AND \"cost\" != '-1' ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
-            format!("SELECT * FROM \"xugc_items\" WHERE \"status\" = $1 AND \"name\" LIKE $2 AND \"cost\" != '-1' ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+            format!("SELECT * FROM \"xugc_items\" WHERE \"status\" = $1 AND \"name\" LIKE $2 AND \"cost\" != '-1' ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         };
 
         let c = &self.base.db.client;

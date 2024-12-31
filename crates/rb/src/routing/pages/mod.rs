@@ -265,6 +265,167 @@ pub async fn partial_timeline_request(
 }
 
 #[derive(Template)]
+#[template(path = "timelines/public_timeline.html")]
+struct PublicTimelineTemplate {
+    config: Config,
+    lang: langbeam::LangFile,
+    profile: Option<Box<Profile>>,
+    unread: usize,
+    notifs: usize,
+    page: i32,
+}
+
+/// GET /public
+pub async fn public_timeline_request(
+    jar: CookieJar,
+    State(database): State<Database>,
+    Query(props): Query<PaginatedQuery>,
+) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => return Html(DatabaseError::NotAllowed.to_string()),
+        },
+        None => return Html(DatabaseError::NotAllowed.to_string()),
+    };
+
+    // timeline
+    let unread = match database
+        .get_questions_by_recipient(auth_user.id.to_owned())
+        .await
+    {
+        Ok(unread) => unread.len(),
+        Err(_) => 0,
+    };
+
+    let notifs = database
+        .auth
+        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .await;
+
+    // ...
+    return Html(
+        PublicTimelineTemplate {
+            config: database.config.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
+            profile: Some(auth_user),
+            unread,
+            notifs,
+            page: props.page,
+        }
+        .render()
+        .unwrap(),
+    );
+}
+
+#[derive(Template)]
+#[template(path = "partials/timelines/timeline.html")]
+struct PartialPublicTimelineTemplate {
+    config: Config,
+    lang: langbeam::LangFile,
+    profile: Option<Box<Profile>>,
+    responses: Vec<FullResponse>,
+    relationships: HashMap<String, RelationshipStatus>,
+    is_powerful: bool,
+    is_helper: bool,
+}
+
+/// GET /_app/timelines/public_timeline.html
+pub async fn partial_public_timeline_request(
+    jar: CookieJar,
+    State(database): State<Database>,
+    Query(props): Query<PaginatedQuery>,
+) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => return Html(DatabaseError::NotAllowed.to_html(database)),
+        },
+        None => return Html(DatabaseError::NotAllowed.to_html(database)),
+    };
+
+    let responses = match database.get_responses_paginated(props.page).await {
+        Ok(responses) => responses,
+        Err(e) => return Html(e.to_html(database)),
+    };
+
+    let mut is_helper: bool = false;
+    let is_powerful = {
+        let group = match database.auth.get_group_by_id(auth_user.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        if group.permissions.contains(&Permission::Helper) {
+            is_helper = true
+        }
+
+        group.permissions.contains(&Permission::Manager)
+    };
+
+    // build relationships list
+    let mut relationships: HashMap<String, RelationshipStatus> = HashMap::new();
+
+    for response in &responses {
+        if relationships.contains_key(&response.1.author.id) {
+            continue;
+        }
+
+        if is_helper {
+            // make sure staff can view your responses
+            relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
+            continue;
+        }
+
+        if response.1.author.id == auth_user.id {
+            // make sure we can view our own responses
+            relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
+            continue;
+        };
+
+        relationships.insert(
+            response.1.author.id.clone(),
+            database
+                .auth
+                .get_user_relationship(response.1.author.id.clone(), auth_user.id.clone())
+                .await
+                .0,
+        );
+    }
+
+    // ...
+    return Html(
+        PartialPublicTimelineTemplate {
+            config: database.config.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
+            profile: Some(auth_user.clone()),
+            responses,
+            relationships,
+            is_powerful,
+            is_helper,
+        }
+        .render()
+        .unwrap(),
+    );
+}
+
+#[derive(Template)]
 #[template(path = "general_markdown_text.html")]
 pub struct MarkdownTemplate {
     config: Config,
@@ -2125,6 +2286,7 @@ pub async fn report_request(jar: CookieJar, State(database): State<Database>) ->
 pub async fn routes(database: Database) -> Router {
     Router::new()
         .route("/", get(homepage_request))
+        .route("/public", get(public_timeline_request))
         .route("/site/about", get(about_request))
         .route("/site/terms-of-service", get(tos_request))
         .route("/site/privacy", get(privacy_request))
@@ -2261,6 +2423,10 @@ pub async fn routes(database: Database) -> Router {
         .route(
             "/_app/timelines/timeline.html",
             get(partial_timeline_request),
+        )
+        .route(
+            "/_app/timelines/public_timeline.html",
+            get(partial_public_timeline_request),
         )
         .route("/_app/timelines/posts.html", get(partial_posts_request))
         // ...

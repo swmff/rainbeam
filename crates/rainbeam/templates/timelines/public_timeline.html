@@ -39,33 +39,20 @@ block head %}
         </div>
 
         <div class="pillmenu convertible shadow">
-            <a href="/public"
+            <a href="/public" class="active"
                 ><span>{{ text "timelines:link.public" }}</span></a
             >
-            <a href="/" class="active"
-                ><span>{{ text "timelines:link.following" }}</span></a
-            >
-        </div>
-
-        <h5 id="friends">My Friends</h5>
-        <!-- prettier-ignore -->
-        <div class="flex flex-wrap w-full">
-            {% if let Some(other) = profile %}
-                <!-- show self -->
-                {% let user = other.clone() %}
-                {% include "components/big_friend.html" %}
-            {% for user in friends %} {% if
-            other.id != user.0.id %}
-                {% let user = user.0.clone() %}
-                {% include "components/big_friend.html" %}
-            {% else %}
-                {% let user = user.1.clone() %}
-                {% include "components/big_friend.html" %}
-            {% endif %} {% endfor %} {% endif %}
+            <a href="/"><span>{{ text "timelines:link.following" }}</span></a>
         </div>
 
         <div class="flex justify-between items-center gap-2">
             <h5>Feed</h5>
+            <div class="flex justify-between">
+                <div></div>
+                <a href="/search?driver=0" class="button secondary bold">
+                    {{ icon "search" }} {{ text "general:link.search" }}
+                </a>
+            </div>
         </div>
 
         <!-- pagination buttons -->
@@ -77,6 +64,7 @@ block head %}
         </div>
         {% endif %}
 
+        <!-- feed -->
         <div class="flex flex-col gap-4" id="feed">
             <include-partial
                 src="/_app/timelines/public_timeline.html?page={{ page }}"
@@ -95,7 +83,7 @@ block head %}
 
     use("app", (app) => {
         app["hook.attach_to_partial"](
-            "/_app/timelines/timeline.html",
+            "/_app/timelines/public_timeline.html",
             "/public",
             document.getElementById("feed"),
             document.body,
