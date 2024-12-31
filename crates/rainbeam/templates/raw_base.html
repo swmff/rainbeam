@@ -212,6 +212,14 @@
 
         <script data-turbo-permanent="true" id="init-script">
             document.documentElement.addEventListener("turbo:load", () => {
+                if (
+                    window.CHAT_ID &&
+                    window.location.pathname !== `/chats/${window.CHAT_ID}`
+                ) {
+                    console.log("page blocked by chat");
+                    window.location.reload();
+                }
+
                 const app = ns("app");
                 app.disconnect_observers();
                 app.clean_date_codes();
