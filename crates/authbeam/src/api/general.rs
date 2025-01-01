@@ -10,6 +10,7 @@ use axum::{
     Json,
 };
 use axum_extra::extract::cookie::CookieJar;
+use serde::{Deserialize, Serialize};
 
 /// [`Database::create_profile`]
 pub async fn create_request(
@@ -299,5 +300,34 @@ pub async fn remove_tag(jar: CookieJar) -> impl IntoResponse {
             ("Set-Cookie".to_string(), String::new()),
         ],
         "Failed to remove tag.",
+    )
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct SetTokenQuery {
+    #[serde(default)]
+    pub token: String,
+}
+
+/// Set the current session token
+pub async fn set_token_request(Query(props): Query<SetTokenQuery>) -> impl IntoResponse {
+    (
+        {
+            let mut headers = HeaderMap::new();
+
+            headers.insert(
+                "Set-Cookie",
+                format!(
+                    "__Secure-Token={}; SameSite=Lax; Secure; Path=/; HostOnly=true; HttpOnly=true; Max-Age={}",
+                    props.token,
+                    60* 60 * 24 * 365
+                )
+                .parse()
+                .unwrap(),
+            );
+
+            headers
+        },
+        "Token changed",
     )
 }

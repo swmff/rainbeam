@@ -113,6 +113,7 @@ pub fn routes(database: Database) -> Router {
         .route("/me/upload_banner", post(me::upload_banner_request))
         .route("/me", get(me::get_request))
         // account
+        .route("/switch", post(general::set_token_request))
         .route("/register", post(general::create_request))
         .route("/login", post(general::login_request))
         .route("/callback", get(general::callback_request))

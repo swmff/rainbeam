@@ -1,0 +1,3 @@
+[general]
+dirs = ["../rainbeam/templates_build"]
+whitespace = "minimize"
