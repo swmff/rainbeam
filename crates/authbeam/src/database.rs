@@ -456,7 +456,7 @@ impl Database {
         }
 
         // handle legacy IDs (usernames)
-        if (id.len() <= 32) && !self.is_digit(&id) {
+        if (id.len() <= 32) && (!self.is_digit(&id) | (id.len() < 18)) {
             return match self.get_profile_by_username(id).await {
                 Ok(ua) => Ok(ua),
                 Err(e) => return Err(e),
