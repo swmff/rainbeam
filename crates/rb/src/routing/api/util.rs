@@ -1,12 +1,12 @@
 use authbeam::api::profile::read_image;
 use crate::database::Database;
-use askama_axum::IntoResponse;
 use axum::{
     body::Body,
     extract::{Query, State},
     http::HeaderMap,
     routing::{get, post},
     Json, Router,
+    response::IntoResponse,
 };
 use serde::{Deserialize, Serialize};
 use pathbufd::pathd;

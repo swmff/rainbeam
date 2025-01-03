@@ -1,5 +1,4 @@
 use axum::{
-    async_trait,
     body::Bytes,
     extract::{FromRequest, Request},
     http::{header::CONTENT_TYPE, StatusCode},
@@ -15,7 +14,6 @@ use std::{fs::File, io::BufWriter};
 /// * `image/webp`
 pub struct Image(pub Bytes);
 
-#[async_trait]
 impl<S> FromRequest<S> for Image
 where
     Bytes: FromRequest<S>,

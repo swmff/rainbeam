@@ -16,7 +16,7 @@ default = ["sqlite"]
 
 [dependencies]
 redis = "0.27.6"
-serde = { version = "1.0.216", features = ["derive"] }
+serde = { version = "1.0.217", features = ["derive"] }
 serde_json = "1.0.134"
 toml = "0.8.19"
 rainbeam-shared = "0.2.0"

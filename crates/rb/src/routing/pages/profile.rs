@@ -49,7 +49,7 @@ struct ProfileTemplate {
     is_self: bool,
 }
 
-/// GET /@:username
+/// GET /@{username}
 pub async fn profile_request(
     jar: CookieJar,
     Path(username): Path<String>,
@@ -317,7 +317,7 @@ struct PartialProfileTemplate {
     is_helper: bool,   // at least "helper"
 }
 
-/// GET /@:username/_app/feed.html
+/// GET /@{username}/_app/feed.html
 pub async fn partial_profile_request(
     jar: CookieJar,
     Path(username): Path<String>,
@@ -519,7 +519,7 @@ struct CommentsTemplate {
     is_self: bool,
 }
 
-/// GET /@:username/comments
+/// GET /@{username}/comments
 pub async fn comments_request(
     jar: CookieJar,
     Path(username): Path<String>,
@@ -725,7 +725,7 @@ struct PartialCommentsTemplate {
     is_helper: bool,   // at least "helper"
 }
 
-/// GET /@:username/_app/comments.html
+/// GET /@{username}/_app/comments.html
 pub async fn partial_comments_request(
     jar: CookieJar,
     Path(username): Path<String>,
@@ -839,7 +839,7 @@ struct ProfileEmbedTemplate {
     require_account: bool,
 }
 
-/// GET /@:username/embed
+/// GET /@{username}/embed
 pub async fn profile_embed_request(
     jar: CookieJar,
     Path(username): Path<String>,
@@ -1044,7 +1044,7 @@ struct FollowersTemplate {
     is_helper: bool,
 }
 
-/// GET /@:username/followers
+/// GET /@{username}/followers
 pub async fn followers_request(
     jar: CookieJar,
     Path(username): Path<String>,
@@ -1193,7 +1193,7 @@ struct FollowingTemplate {
     is_helper: bool,
 }
 
-/// GET /@:username/following
+/// GET /@{username}/following
 pub async fn following_request(
     jar: CookieJar,
     Path(username): Path<String>,
@@ -1342,7 +1342,7 @@ struct FriendsTemplate {
     is_helper: bool,
 }
 
-/// GET /@:username/friends
+/// GET /@{username}/friends
 pub async fn friends_request(
     jar: CookieJar,
     Path(username): Path<String>,
@@ -1495,7 +1495,7 @@ struct FriendRequestsTemplate {
     is_helper: bool,
 }
 
-/// GET /@:username/friends/requests
+/// GET /@{username}/friends/requests
 pub async fn friend_requests_request(
     jar: CookieJar,
     Path(username): Path<String>,
@@ -1607,7 +1607,7 @@ struct BlocksTemplate {
     is_helper: bool,
 }
 
-/// GET /@:username/friends/blocks
+/// GET /@{username}/friends/blocks
 pub async fn blocks_request(
     jar: CookieJar,
     Path(username): Path<String>,
@@ -1736,7 +1736,7 @@ struct ProfileQuestionsTemplate {
     is_self: bool,
 }
 
-/// GET /@:username/questions
+/// GET /@{username}/questions
 pub async fn questions_request(
     jar: CookieJar,
     Path(username): Path<String>,
@@ -1977,7 +1977,7 @@ struct ModTemplate {
     is_self: bool,
 }
 
-/// GET /@:username/mod
+/// GET /@{username}/mod
 pub async fn mod_request(
     jar: CookieJar,
     Path(username): Path<String>,
@@ -2178,7 +2178,7 @@ struct ProfileQuestionsInboxTemplate {
     is_self: bool,
 }
 
-/// GET /@:username/questions/inbox
+/// GET /@{username}/questions/inbox
 pub async fn inbox_request(
     jar: CookieJar,
     Path(username): Path<String>,
@@ -2377,7 +2377,7 @@ struct ProfileQuestionsOutboxTemplate {
     is_self: bool,
 }
 
-/// GET /@:username/questions/outbox
+/// GET /@{username}/questions/outbox
 pub async fn outbox_request(
     jar: CookieJar,
     Path(username): Path<String>,
@@ -2558,7 +2558,7 @@ struct FriendRequestTemplate {
     other: Box<Profile>,
 }
 
-/// GET /@:username/relationship/friend_accept
+/// GET /@{username}/relationship/friend_accept
 pub async fn friend_request(
     jar: CookieJar,
     Path(username): Path<String>,
@@ -2634,7 +2634,7 @@ struct CardTemplate {
     user: Box<Profile>,
 }
 
-/// GET /@:username/_app/card.html
+/// GET /@{username}/_app/card.html
 pub async fn render_card_request(
     jar: CookieJar,
     Path(username): Path<String>,
@@ -2679,7 +2679,7 @@ struct WarningTemplate {
     other: Box<Profile>,
 }
 
-/// GET /@:username/_app/warning
+/// GET /@{username}/_app/warning
 pub async fn warning_request(
     jar: CookieJar,
     Path(username): Path<String>,

@@ -296,7 +296,7 @@ struct ViewTemplate {
     is_helper: bool,
 }
 
-/// GET /inbox/mail/letter/:id
+/// GET /inbox/mail/letter/{id}
 pub async fn view_request(
     jar: CookieJar,
     Path(id): Path<String>,

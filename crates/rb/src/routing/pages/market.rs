@@ -214,7 +214,7 @@ struct ItemTemplate {
     reaction_count: usize,
 }
 
-/// GET /market/item/:id
+/// GET /market/item/{id}
 pub async fn item_request(
     jar: CookieJar,
     Path(id): Path<String>,

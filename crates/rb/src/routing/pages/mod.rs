@@ -780,7 +780,7 @@ struct QuestionTemplate {
     is_helper: bool,
 }
 
-/// GET /@{}/q/:id
+/// GET /@{}/q/{id}
 pub async fn question_request(
     jar: CookieJar,
     Path((_, id)): Path<(String, String)>,
@@ -1248,7 +1248,7 @@ struct ResponseTemplate {
     is_helper: bool,
 }
 
-/// GET /@{}/r/:id
+/// GET /@{}/r/{id}
 pub async fn response_request(
     jar: CookieJar,
     Path((_, id)): Path<(String, String)>,
@@ -1468,7 +1468,7 @@ struct CommentTemplate {
     is_helper: bool,
 }
 
-/// GET /@:username/c/:id
+/// GET /@{username}/c/{id}
 pub async fn comment_request(
     jar: CookieJar,
     Path((_, id)): Path<(String, String)>,
@@ -2307,63 +2307,66 @@ pub async fn routes(database: Database) -> Router {
         .route("/inbox/audit/ipbans", get(ipbans_request)) // staff
         .route("/intents/post", get(compose_request))
         // assets
-        .route("/@:username/q/:id", get(question_request))
-        .route("/@:username/r/:id", get(response_request))
-        .route("/@:username/c/:id", get(comment_request))
+        .route("/@{username}/q/{id}", get(question_request))
+        .route("/@{username}/r/{id}", get(response_request))
+        .route("/@{username}/c/{id}", get(comment_request))
         // profiles
-        .route("/@:username/_app/warning", get(profile::warning_request))
-        .route("/@:username/comments", get(profile::comments_request))
-        .route("/@:username/mod", get(profile::mod_request)) // staff
-        .route("/@:username/questions", get(profile::questions_request))
-        .route("/@:username/questions/inbox", get(profile::inbox_request)) // staff
-        .route("/@:username/questions/outbox", get(profile::outbox_request)) // staff
-        .route("/@:username/following", get(profile::following_request))
-        .route("/@:username/followers", get(profile::followers_request))
-        .route("/@:username/friends", get(profile::friends_request))
+        .route("/@{username}/_app/warning", get(profile::warning_request))
+        .route("/@{username}/comments", get(profile::comments_request))
+        .route("/@{username}/mod", get(profile::mod_request)) // staff
+        .route("/@{username}/questions", get(profile::questions_request))
+        .route("/@{username}/questions/inbox", get(profile::inbox_request)) // staff
         .route(
-            "/@:username/friends/requests",
+            "/@{username}/questions/outbox",
+            get(profile::outbox_request),
+        ) // staff
+        .route("/@{username}/following", get(profile::following_request))
+        .route("/@{username}/followers", get(profile::followers_request))
+        .route("/@{username}/friends", get(profile::friends_request))
+        .route(
+            "/@{username}/friends/requests",
             get(profile::friend_requests_request),
         )
-        .route("/@:username/friends/blocks", get(profile::blocks_request))
-        .route("/@:username/embed", get(profile::profile_embed_request))
+        .route("/@{username}/friends/blocks", get(profile::blocks_request))
+        .route("/@{username}/embed", get(profile::profile_embed_request))
         .route(
-            "/@:username/relationship/friend_accept",
+            "/@{username}/relationship/friend_accept",
             get(profile::friend_request),
         )
         .route(
-            "/@:username/_app/card.html",
+            "/@{username}/_app/card.html",
             get(profile::render_card_request),
         )
         .route(
-            "/@:username/_app/feed.html",
+            "/@{username}/_app/feed.html",
             get(profile::partial_profile_request),
         )
         .route(
-            "/@:username/_app/comments.html",
+            "/@{username}/_app/comments.html",
             get(profile::partial_comments_request),
         )
-        .route("/@:username", get(profile::profile_request))
-        .route("/:id", get(api::profiles::expand_request))
+        .route("/@{username}", get(profile::profile_request))
+        .route("/{id}", get(api::profiles::expand_request))
         // circles
         .route("/circles", get(circles::circles_request))
         .route("/circles/new", get(circles::new_circle_request))
         .route(
-            "/circles/@:name/settings/privacy",
+            "/circles/@{name}/settings/privacy",
             get(circles::privacy_settings_request),
         )
         .route(
-            "/circles/@:name/settings",
+            "/circles/@{name}/settings",
             get(circles::general_settings_request),
         )
         .route(
-            "/circles/@:name/memberlist/accept",
+            "/circles/@{name}/memberlist/accept",
             get(circles::accept_invite_request),
         )
         .route(
-            "/circles/@:name/memberlist",
+            "/circles/@{name}/memberlist",
             get(circles::memberlist_request),
         )
-        .route("/circles/@:name", get(circles::profile_redirect_request))
+        .route("/circles/@{name}", get(circles::profile_redirect_request))
         .route(
             "/+:name/_app/feed.html",
             get(circles::partial_profile_request),
@@ -2383,13 +2386,13 @@ pub async fn routes(database: Database) -> Router {
         .route("/search/users", get(search::search_users_request))
         // chats
         .route("/chats", get(chats::chats_homepage_request))
-        .route("/chats/:id", get(chats::chat_request))
+        .route("/chats/{id}", get(chats::chat_request))
         .route("/chats/_app/msg.html", post(chats::render_message_request))
         // mail
         .route("/inbox/mail", get(mail::inbox_request))
         .route("/inbox/mail/sent", get(mail::outbox_request))
         .route("/inbox/mail/compose", get(mail::compose_request))
-        .route("/inbox/mail/letter/:id", get(mail::view_request))
+        .route("/inbox/mail/letter/{id}", get(mail::view_request))
         .route(
             "/inbox/mail/_app/components/mail.html",
             get(mail::partial_mail_request),
@@ -2397,24 +2400,24 @@ pub async fn routes(database: Database) -> Router {
         // market
         .route("/market", get(market::homepage_request))
         .route("/market/new", get(market::create_request))
-        .route("/market/item/:id", get(market::item_request))
+        .route("/market/item/{id}", get(market::item_request))
         .route(
-            "/market/_app/theme_playground.html/:id",
+            "/market/_app/theme_playground.html/{id}",
             get(market::theme_playground_request),
         )
         // auth
         .route("/login", get(login_request))
         .route("/sign_up", get(sign_up_request))
         // expanders
-        .route("/+q/:id", get(api::questions::expand_request))
-        .route("/question/:id", get(api::questions::expand_request))
-        .route("/+r/:id", get(api::responses::expand_request))
-        .route("/response/:id", get(api::responses::expand_request))
-        .route("/+c/:id", get(api::comments::expand_request))
-        .route("/comment/:id", get(api::comments::expand_request))
-        .route("/+u/:id", get(api::profiles::expand_request))
-        .route("/+i/:ip", get(api::profiles::expand_ip_request))
-        .route("/+g/:id", get(api::circles::expand_request))
+        .route("/+q/{id}", get(api::questions::expand_request))
+        .route("/question/{id}", get(api::questions::expand_request))
+        .route("/+r/{id}", get(api::responses::expand_request))
+        .route("/response/{id}", get(api::responses::expand_request))
+        .route("/+c/{id}", get(api::comments::expand_request))
+        .route("/comment/{id}", get(api::comments::expand_request))
+        .route("/+u/{id}", get(api::profiles::expand_request))
+        .route("/+i/{ip}", get(api::profiles::expand_ip_request))
+        .route("/+g/{id}", get(api::circles::expand_request))
         // partials
         .route(
             "/_app/components/response.html",

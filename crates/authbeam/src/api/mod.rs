@@ -33,78 +33,81 @@ pub fn routes(database: Database) -> Router {
     Router::new()
         // relationships
         .route(
-            "/relationships/follow/:id",
+            "/relationships/follow/{id}",
             post(relationships::follow_request),
         )
         .route(
-            "/relationships/friend/:id",
+            "/relationships/friend/{id}",
             post(relationships::friend_request),
         )
         .route(
-            "/relationships/block/:id",
+            "/relationships/block/{id}",
             post(relationships::block_request),
         )
         .route(
-            "/relationships/current/:id",
+            "/relationships/current/{id}",
             delete(relationships::delete_request),
         )
         // profiles
         .route(
-            "/profile/:id/tokens/generate",
+            "/profile/{id}/tokens/generate",
             post(profile::generate_token_request),
         )
-        .route("/profile/:id/tokens", post(profile::update_tokens_request))
-        .route("/profile/:id/tier", post(profile::update_tier_request))
-        .route("/profile/:id/group", post(profile::update_group_request))
-        .route("/profile/:id/coins", post(profile::update_coins_request))
+        .route("/profile/{id}/tokens", post(profile::update_tokens_request))
+        .route("/profile/{id}/tier", post(profile::update_tier_request))
+        .route("/profile/{id}/group", post(profile::update_group_request))
+        .route("/profile/{id}/coins", post(profile::update_coins_request))
         .route(
-            "/profile/:id/password",
+            "/profile/{id}/password",
             post(profile::update_password_request),
         )
         .route(
-            "/profile/:id/username",
+            "/profile/{id}/username",
             post(profile::update_username_request),
         )
         .route(
-            "/profile/:id/metadata",
+            "/profile/{id}/metadata",
             post(profile::update_metdata_request),
         )
-        .route("/profile/:id/metadata", put(profile::patch_metdata_request))
-        .route("/profile/:id/badges", post(profile::update_badges_request))
-        .route("/profile/:id/labels", post(profile::update_labels_request))
-        .route("/profile/:id/banner", get(profile::banner_request))
-        .route("/profile/:id/avatar", get(profile::avatar_request))
-        .route("/profile/:id", delete(profile::delete_request))
-        .route("/profile/:id", get(profile::get_request))
+        .route(
+            "/profile/{id}/metadata",
+            put(profile::patch_metdata_request),
+        )
+        .route("/profile/{id}/badges", post(profile::update_badges_request))
+        .route("/profile/{id}/labels", post(profile::update_labels_request))
+        .route("/profile/{id}/banner", get(profile::banner_request))
+        .route("/profile/{id}/avatar", get(profile::avatar_request))
+        .route("/profile/{id}", delete(profile::delete_request))
+        .route("/profile/{id}", get(profile::get_request))
         // mail
         .route("/mail", post(mail::create_request))
-        .route("/mail/:id/state", post(mail::update_state_request))
-        .route("/mail/:id", delete(mail::delete_request))
+        .route("/mail/{id}/state", post(mail::update_state_request))
+        .route("/mail/{id}", delete(mail::delete_request))
         // items
         .route("/items", post(items::create_request))
-        .route("/item/:id/buy", post(items::buy_request))
-        .route("/item/:id", post(items::update_item_request))
-        .route("/item/:id/status", post(items::update_status_request))
+        .route("/item/{id}/buy", post(items::buy_request))
+        .route("/item/{id}", post(items::update_item_request))
+        .route("/item/{id}/status", post(items::update_status_request))
         .route(
-            "/item/:id/content",
+            "/item/{id}/content",
             post(items::update_item_content_request),
         )
-        .route("/item/:id", delete(items::delete_request))
+        .route("/item/{id}", delete(items::delete_request))
         // notifications
-        .route("/notifications/:id", delete(notifications::delete_request))
+        .route("/notifications/{id}", delete(notifications::delete_request))
         .route(
             "/notifications/clear",
             delete(notifications::delete_all_request),
         )
         // warnings
         .route("/warnings", post(warnings::create_request))
-        .route("/warnings/:id", delete(warnings::delete_request))
+        .route("/warnings/{id}", delete(warnings::delete_request))
         // ipbans
         .route("/ipbans", post(ipbans::create_request))
-        .route("/ipbans/:id", delete(ipbans::delete_request))
+        .route("/ipbans/{id}", delete(ipbans::delete_request))
         // ipblocks
         .route("/ipblocks", post(ipblocks::create_request))
-        .route("/ipblocks/:id", delete(ipblocks::delete_request))
+        .route("/ipblocks/{id}", delete(ipblocks::delete_request))
         // me
         .route("/me/tokens/generate", post(me::generate_token_request))
         .route("/me/tokens", post(me::update_tokens_request))

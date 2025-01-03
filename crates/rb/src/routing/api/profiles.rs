@@ -19,8 +19,8 @@ use axum::{
 
 pub fn routes(database: Database) -> Router {
     Router::new()
-        .route("/:username/report", post(report_request))
-        .route("/:username/export", get(export_request)) // staff
+        .route("/{username}/report", post(report_request))
+        .route("/{username}/export", get(export_request)) // staff
         // ...
         .with_state(database)
 }

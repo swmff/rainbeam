@@ -96,7 +96,7 @@ struct ChatTemplate {
     page: i32,
 }
 
-/// GET /chats/:id
+/// GET /chats/{id}
 pub async fn chat_request(
     jar: CookieJar,
     Path(id): Path<String>,

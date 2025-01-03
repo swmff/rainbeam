@@ -19,14 +19,14 @@ use rainbeam::model::ResponseEditWarning;
 pub fn routes(database: Database) -> Router {
     Router::new()
         .route("/", post(create_request))
-        .route("/:id", get(get_request))
-        .route("/:id", post(edit_request))
-        .route("/:id/tags", post(edit_tags_request))
-        .route("/:id/context", post(edit_context_request))
-        .route("/:id/context/warning", post(edit_warning_request))
-        .route("/:id", delete(delete_request))
-        .route("/:id/unsend", post(unsend_request))
-        .route("/:id/report", post(report_request))
+        .route("/{id}", get(get_request))
+        .route("/{id}", post(edit_request))
+        .route("/{id}/tags", post(edit_tags_request))
+        .route("/{id}/context", post(edit_context_request))
+        .route("/{id}/context/warning", post(edit_warning_request))
+        .route("/{id}", delete(delete_request))
+        .route("/{id}/unsend", post(unsend_request))
+        .route("/{id}/report", post(report_request))
         // timelines
         .route("/timeline/home", get(home_timeline_request))
         // ...

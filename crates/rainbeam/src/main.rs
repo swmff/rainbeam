@@ -89,7 +89,7 @@ pub async fn main() {
         .nest("/api/v0/util", routing::api::util::routes(database.clone()))
         .nest("/api/v1", routing::api::routes(database.clone()))
         // pages
-        .nest("/", routing::pages::routes(database.clone()).await)
+        .merge(routing::pages::routes(database.clone()).await)
         // ...
         .nest_service(
             "/.well-known",

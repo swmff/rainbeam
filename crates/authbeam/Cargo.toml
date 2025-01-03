@@ -15,15 +15,15 @@ sqlite = ["databeam/sqlite"]
 default = ["databeam/sqlite"]    # for development
 
 [dependencies]
-axum = { version = "0.7.9", features = ["macros"] }
-axum-macros = "0.4.2"
-serde = { version = "1.0.216", features = ["derive"] }
+axum = { version = "0.8.1", features = ["macros"] }
+axum-macros = "0.5.0"
+serde = { version = "1.0.217", features = ["derive"] }
 serde_json = "1.0.134"
 tokio = { version = "1.42.0", features = ["macros", "rt-multi-thread"] }
 dotenv = "0.15.0"
-axum-extra = { version = "0.9.6", features = ["cookie"] }
+axum-extra = { version = "0.10.0", features = ["cookie", "multipart"] }
 regex = "1.11.1"
-reqwest = "0.12.10"
+reqwest = "0.12.12"
 hcaptcha-no-wasm = { version = "3.0.1" }
 mime_guess = "2.0.5"
 citrus-client = { version = "0.1.0" }

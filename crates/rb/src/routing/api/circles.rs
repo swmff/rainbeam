@@ -21,20 +21,20 @@ pub fn routes(database: Database) -> Router {
     Router::new()
         // global
         .route("/", post(create_request))
-        .route("/:id", get(get_request))
+        .route("/{id}", get(get_request))
         // specific
-        // .route("/:name", put(edit_request))
-        .route("/:id/metadata", post(edit_metadata_request))
-        .route("/:id", delete(delete_request))
-        .route("/:id/report", post(report_request))
+        // .route("/{name}", put(edit_request))
+        .route("/{id}/metadata", post(edit_metadata_request))
+        .route("/{id}", delete(delete_request))
+        .route("/{id}/report", post(report_request))
         // members
-        .route("/:id/accept_invite", post(accept_invite_request))
-        .route("/:id/invite/:username", post(send_invite_request))
-        .route("/:id/kick/:username", post(kick_member_request))
-        .route("/:id/leave", post(leave_request))
+        .route("/{id}/accept_invite", post(accept_invite_request))
+        .route("/{id}/invite/{username}", post(send_invite_request))
+        .route("/{id}/kick/{username}", post(kick_member_request))
+        .route("/{id}/leave", post(leave_request))
         // as a profile
-        .route("/:id/avatar", get(avatar_request))
-        .route("/:id/banner", get(banner_request))
+        .route("/{id}/avatar", get(avatar_request))
+        .route("/{id}/banner", get(banner_request))
         // ...
         .with_state(database)
 }

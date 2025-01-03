@@ -14,9 +14,9 @@ use axum_extra::extract::cookie::CookieJar;
 
 pub fn routes(database: Database) -> Router {
     Router::new()
-        .route("/:id", post(create_request))
-        .route("/:id", get(get_request))
-        .route("/:id", delete(delete_request))
+        .route("/{id}", post(create_request))
+        .route("/{id}", get(get_request))
+        .route("/{id}", delete(delete_request))
         // ...
         .with_state(database)
 }

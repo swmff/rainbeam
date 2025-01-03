@@ -19,10 +19,10 @@ mimalloc = []
 [dependencies]
 askama = { version = "0.12.1", features = ["with-axum"] }
 askama_axum = "0.4.0"
-axum = { version = "0.7.9", features = ["macros", "form"] }
-axum-extra = { version = "0.9.6", features = ["cookie"] }
-reqwest = { version = "0.12.10", features = ["json", "stream"] }
-serde = { version = "1.0.216", features = ["derive"] }
+axum = { version = "0.8.1", features = ["macros", "form"] }
+axum-extra = { version = "0.10.0", features = ["cookie"] }
+reqwest = { version = "0.12.12", features = ["json", "stream"] }
+serde = { version = "1.0.217", features = ["derive"] }
 tokio = { version = "1.42.0", features = ["macros", "rt-multi-thread"] }
 toml = "0.8.19"
 tower-http = { version = "0.6.2", features = ["fs", "trace"] }

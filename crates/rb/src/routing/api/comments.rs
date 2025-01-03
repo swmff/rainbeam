@@ -17,11 +17,11 @@ use axum_extra::extract::cookie::CookieJar;
 pub fn routes(database: Database) -> Router {
     Router::new()
         .route("/", post(create_request))
-        .route("/:id", get(get_request))
-        .route("/:id", put(edit_request))
-        .route("/:id", delete(delete_request))
-        .route("/:id/report", post(report_request))
-        .route("/:id/ipblock", post(ipblock_request))
+        .route("/{id}", get(get_request))
+        .route("/{id}", put(edit_request))
+        .route("/{id}", delete(delete_request))
+        .route("/{id}/report", post(report_request))
+        .route("/{id}/ipblock", post(ipblock_request))
         // ...
         .with_state(database)
 }

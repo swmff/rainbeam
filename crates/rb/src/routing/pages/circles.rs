@@ -519,7 +519,7 @@ struct MemberlistTemplate {
     is_owner: bool,
 }
 
-/// GET /circles/@:name/memberlist
+/// GET /circles/@{name}/memberlist
 pub async fn memberlist_request(
     jar: CookieJar,
     Path(name): Path<String>,
@@ -632,7 +632,7 @@ struct AcceptInviteTemplate {
     is_owner: bool,
 }
 
-/// GET /circles/@:name/memberlist/accept
+/// GET /circles/@{name}/memberlist/accept
 pub async fn accept_invite_request(
     jar: CookieJar,
     Path(name): Path<String>,
@@ -738,7 +738,7 @@ struct GeneralSettingsTemplate {
     metadata: String,
 }
 
-/// GET /circles/@:name/settings
+/// GET /circles/@{name}/settings
 pub async fn general_settings_request(
     jar: CookieJar,
     Path(name): Path<String>,
@@ -826,7 +826,7 @@ struct PrivacySettingsTemplate {
     metadata: String,
 }
 
-/// GET /circles/@:name/settings/privacy
+/// GET /circles/@{name}/settings/privacy
 pub async fn privacy_settings_request(
     jar: CookieJar,
     Path(name): Path<String>,
