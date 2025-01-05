@@ -5,7 +5,6 @@ use std::collections::{BTreeMap, HashMap};
 use crate::config::Config;
 use crate::model::*;
 use crate::model::{DatabaseError, Question};
-use citrus_client::model::CitrusID;
 
 use authbeam::model::{NotificationCreate, Permission, Profile, RelationshipStatus};
 use databeam::{utility, query as sqlquery};
@@ -1705,7 +1704,6 @@ impl Database {
                 },
                 question,
                 content: res.get("content").unwrap().to_string(),
-                // id: CitrusID::new(&self.server_options.host, &id).0,
                 id: id.to_owned(),
                 timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
                 tags: match serde_json::from_str(res.get("tags").unwrap()) {
@@ -1753,7 +1751,6 @@ impl Database {
             },
             question,
             content: res.get("content").unwrap().to_string(),
-            // id: CitrusID::new(&self.server_options.host, &id).0,
             id: id.to_owned(),
             timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
             tags: match serde_json::from_str(res.get("tags").unwrap()) {
@@ -1770,9 +1767,7 @@ impl Database {
     ///
     /// # Arguments
     /// * `id`
-    pub async fn get_response(&self, mut id: String) -> Result<FullResponse> {
-        id = CitrusID(id).hash();
-
+    pub async fn get_response(&self, id: String) -> Result<FullResponse> {
         // check in cache
         match self
             .base
@@ -1846,9 +1841,7 @@ impl Database {
     ///
     /// # Arguments
     /// * `id`
-    pub async fn get_response_short(&self, mut id: String) -> Result<QuestionResponse> {
-        id = CitrusID(id).hash();
-
+    pub async fn get_response_short(&self, id: String) -> Result<QuestionResponse> {
         // check in cache
         match self
             .base
@@ -2968,8 +2961,6 @@ impl Database {
             .await
         {
             Ok(_) => {
-                let id = CitrusID(id).hash();
-
                 self.base
                     .cachedb
                     .remove(format!("rbeam.app.response:{id}"))
@@ -3048,8 +3039,6 @@ impl Database {
             .await
         {
             Ok(_) => {
-                let id = CitrusID(id).hash();
-
                 self.base
                     .cachedb
                     .remove(format!("rbeam.app.response:{id}"))
@@ -3128,8 +3117,6 @@ impl Database {
             .await
         {
             Ok(_) => {
-                let id = CitrusID(id).hash();
-
                 self.base
                     .cachedb
                     .remove(format!("rbeam.app.response:{id}"))
@@ -3151,7 +3138,7 @@ impl Database {
     /// * `save_question` - if we should not delete the question too
     pub async fn delete_response(
         &self,
-        mut id: String,
+        id: String,
         user: Box<Profile>,
         save_question: bool,
     ) -> Result<()> {
@@ -3160,8 +3147,6 @@ impl Database {
             Ok(q) => q,
             Err(e) => return Err(e),
         };
-
-        id = CitrusID(id).hash();
 
         // check username
         if user.id != response.1.author.id {

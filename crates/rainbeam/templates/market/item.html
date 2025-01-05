@@ -170,7 +170,28 @@
             >{{ text "market:text.item_owned" }}</span
         >
 
-         {% if (user.id == creator.id) %}
+        <script>
+            globalThis.patch_metadata = async (metadata) => {
+                fetch("/api/v0/auth/profile/{{ user.id }}/metadata", {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        metadata,
+                    }),
+                })
+                    .then((res) => res.json())
+                    .then((res) => {
+                        trigger("app:toast", [
+                            res.success ? "success" : "error",
+                            res.success ? "Metadata updated!" : res.message,
+                        ]);
+                    });
+            };
+        </script>
+
+        {% if (user.id == creator.id) %}
          <!-- use decompiled -->
         <button class="primary bold" onclick="copy_to_profile()">
             {{ icon "paint-bucket" }}
@@ -182,6 +203,18 @@
             {{ icon "paint-bucket" }}
             <span>{{ text "market:action.use_theme" }}</span>
         </button>
+
+        <script>
+            async function use_template() {
+                await patch_metadata({
+                    kv: {
+                        "rainbeam:market_theme_template":
+                            document.getElementById("theme_content")
+                                .innerText,
+                    },
+                });
+            }
+        </script>
         {% endif %}
 
         <script type="text/css" id="theme_content">{{ item.content }}</script>
@@ -321,35 +354,6 @@
                             : parseInt(e.target.cost.value) || 0,
                     ]);
                 }
-
-                async function use_template() {
-                    await patch_metadata({
-                        kv: {
-                            "rainbeam:market_theme_template":
-                                document.getElementById("theme_content")
-                                    .innerText,
-                        },
-                    });
-                }
-
-                globalThis.patch_metadata = async (metadata) => {
-                    fetch("/api/v0/auth/profile/{{ user.id }}/metadata", {
-                        method: "PUT",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({
-                            metadata,
-                        }),
-                    })
-                        .then((res) => res.json())
-                        .then((res) => {
-                            trigger("app:toast", [
-                                res.success ? "success" : "error",
-                                res.success ? "Metadata updated!" : res.message,
-                            ]);
-                        });
-                };
             </script>
         </form>
 

@@ -65,28 +65,17 @@ pub struct Config {
     /// Used in embeds and links.
     #[serde(default)]
     pub host: String,
-    /// The hostname of the public server (for Citrus)
-    ///
-    /// Same as `host`, just without the protocol.
-    #[serde(default)]
-    pub citrus_id: String,
     /// The server ID for ID generation
     pub snowflake_server_id: usize,
     /// A list of image hosts that are blocked
     #[serde(default)]
     pub blocked_hosts: Vec<String>,
-    /// If a migration should be run
-    #[serde(default)]
-    pub migration: bool,
     /// Tiered benefits
     #[serde(default)]
     pub tiers: Tiers,
     /// A global site announcement shown at the top of the page
     #[serde(default)]
     pub alert: String,
-    /// If Citrus should use https or http
-    #[serde(default = "authbeam::database::secure_default")]
-    pub secure: bool,
 }
 
 impl Default for Config {
@@ -101,13 +90,10 @@ impl Default for Config {
             real_ip_header: Option::None,
             registration_enabled: true,
             host: String::new(),
-            citrus_id: String::new(),
             snowflake_server_id: 1234567890,
             blocked_hosts: Vec::new(),
-            migration: false,
             tiers: Tiers::default(),
             alert: String::new(),
-            secure: true,
         }
     }
 }

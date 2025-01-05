@@ -261,7 +261,6 @@ dependencies = [
  "axum",
  "axum-extra",
  "axum-macros",
- "citrus-client 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "databeam 0.2.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "dotenv",
  "hcaptcha-no-wasm",
@@ -632,18 +631,6 @@ dependencies = [
 [[package]]
 name = "citrus-client"
 version = "0.1.0"
-dependencies = [
- "reqwest",
- "serde",
- "serde_json",
- "toml",
-]
-
-[[package]]
-name = "citrus-client"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9c5780a85d06f64129cc3e0c9598f94624170e730913632abcee1f237821112e"
 dependencies = [
  "reqwest",
  "serde",
@@ -2691,7 +2678,6 @@ dependencies = [
  "authbeam",
  "axum",
  "axum-extra",
- "citrus-client 0.1.0",
  "databeam 0.2.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures-util",
  "hcaptcha-no-wasm",
@@ -2851,7 +2837,6 @@ dependencies = [
  "authbeam",
  "axum",
  "axum-extra",
- "citrus-client 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "databeam 0.2.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures-util",
  "hcaptcha-no-wasm",

@@ -8,17 +8,12 @@ use crate::model::{
     Warning, WarningCreate,
 };
 use crate::model::{Group, Notification, NotificationCreate, Permission, UserFollow};
-
-use citrus_client::{
-    CitrusClient, TemplateBuilder,
-    model::{CitrusID, HttpProtocol},
-};
 use hcaptcha_no_wasm::Hcaptcha;
 use rainbeam_shared::snow::AlmostSnowflake;
 use reqwest::Client as HttpClient;
 use serde::{Deserialize, Serialize};
 
-use databeam::{query as sqlquery, utility, DefaultReturn};
+use databeam::{query as sqlquery, utility};
 use pathbufd::{PathBufD, pathd};
 
 pub type Result<T> = std::result::Result<T, DatabaseError>;
@@ -67,23 +62,11 @@ pub struct ServerOptions {
     /// Used in embeds and links.
     #[serde(default)]
     pub host: String,
-    /// The hostname of the public server (for Citrus)
-    ///
-    /// Same as `host`, just without the protocol.
-    #[serde(default)]
-    pub citrus_id: String,
     /// The server ID for ID generation
     pub snowflake_server_id: usize,
     /// A list of image hosts that are blocked
     #[serde(default)]
     pub blocked_hosts: Vec<String>,
-    /// If Citrus should use https or http
-    #[serde(default = "secure_default")]
-    pub secure: bool,
-}
-
-pub fn secure_default() -> bool {
-    true
 }
 
 impl Default for ServerOptions {
@@ -95,10 +78,8 @@ impl Default for ServerOptions {
             static_dir: PathBufD::default(),
             media_dir: PathBufD::default(),
             host: String::new(),
-            citrus_id: String::new(),
             snowflake_server_id: 1234567890,
             blocked_hosts: Vec::new(),
-            secure: true,
         }
     }
 }
@@ -109,7 +90,6 @@ pub struct Database {
     pub base: databeam::StarterDatabase,
     pub config: ServerOptions,
     pub http: HttpClient,
-    pub citrus: CitrusClient,
 }
 
 impl Database {
@@ -123,11 +103,6 @@ impl Database {
         Self {
             base: base.clone(),
             http: HttpClient::new(),
-            citrus: if server_options.secure {
-                CitrusClient::new(HttpProtocol::Https)
-            } else {
-                CitrusClient::new(HttpProtocol::Http)
-            },
             config: server_options,
         }
     }
@@ -406,43 +381,6 @@ impl Database {
             return Ok(Box::new(Profile::anonymous(tag.3)));
         } else if (id == "0") | (id == "system") {
             return Ok(Box::new(Profile::system()));
-        }
-
-        // check with citrus
-        let cid = CitrusID(id.clone()).fields();
-
-        if cid.0 != self.config.citrus_id && !cid.0.is_empty() {
-            // make sure server supports the correct schema
-            let server = match self.citrus.server(cid.0.to_string()).await {
-                Ok(s) => s,
-                Err(_) => return Err(DatabaseError::Other),
-            };
-
-            if server.get_schema("net.rainbeam.structs.Profile").is_none() {
-                return Err(DatabaseError::Other);
-            }
-
-            // get profile
-            match self
-                .citrus
-                .get::<DefaultReturn<Option<Profile>>>(
-                    server,
-                    "net.rainbeam.structs.Profile",
-                    &TemplateBuilder("/api/v0/auth/profile/<field>".to_string())
-                        .build(vec![&cid.1])
-                        .0,
-                )
-                .await
-            {
-                Ok(p) => {
-                    if let Some(p) = p.payload {
-                        return Ok(Box::new(p));
-                    } else {
-                        return Err(DatabaseError::NotFound);
-                    }
-                }
-                Err(_) => return Err(DatabaseError::Other),
-            }
         }
 
         // remove circle tag
@@ -4085,58 +4023,6 @@ impl Database {
             // can't send to nobody!
             return Err(DatabaseError::ValueError);
         };
-
-        // check recipients against citrus
-        let mut seen_severs: Vec<String> = Vec::new();
-
-        for recipient in recipients.clone() {
-            // check with citrus
-            let cid = CitrusID(recipient.clone()).fields();
-
-            if cid.0 != self.config.citrus_id && !cid.0.is_empty() {
-                if seen_severs.contains(&cid.0) {
-                    continue;
-                }
-
-                seen_severs.push(cid.0.clone());
-
-                // make sure server supports the correct schema
-                let server = match self.citrus.server(cid.0.to_string()).await {
-                    Ok(s) => s,
-                    Err(_) => return Err(DatabaseError::Other),
-                };
-
-                if server.get_schema("net.rainbeam.structs.Mail").is_none() {
-                    return Err(DatabaseError::Other);
-                }
-
-                // send mail to remote server
-                //
-                // mail sent to remote servers will be broken up, so recipients
-                // will receive copies of the same email instead of all being
-                // grouped into the same mail
-                //
-                // This does not currently work because we cannot pass authentication
-                // checks on the remote server. We'll see the mail send, but the recipient will not
-                // receive it.
-                if let Err(_) = self
-                    .citrus
-                    .post::<MailCreate, DefaultReturn<Option<Profile>>>(
-                        server,
-                        "net.rainbeam.structs.Mail",
-                        "/api/v0/auth/mail",
-                        MailCreate {
-                            title: props.title.clone(),
-                            content: props.content.clone(),
-                            recipient: vec![recipient.clone()],
-                        },
-                    )
-                    .await
-                {
-                    return Err(DatabaseError::Other);
-                };
-            }
-        }
 
         // ...
         let mail = Mail {

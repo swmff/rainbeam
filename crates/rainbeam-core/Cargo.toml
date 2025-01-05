@@ -34,7 +34,6 @@ databeam = { version = "0.2.6", default-features = false }
 # databeam = { path = "../databeam", default-features = false }
 authbeam = { path = "../authbeam", default-features = false }
 langbeam = { path = "../langbeam" }
-citrus-client = { path = "../citrus-client" }
 mime_guess = "2.0.5"
 pathbufd = "0.1.4"
 # pathbufd = { path = "../../../pathbufd" }

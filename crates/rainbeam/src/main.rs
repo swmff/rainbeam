@@ -60,10 +60,8 @@ pub async fn main() {
             static_dir: config.static_dir.clone(),
             media_dir: config.media_dir.clone(),
             host: config.host.clone(),
-            citrus_id: config.citrus_id.clone(),
             snowflake_server_id: config.snowflake_server_id.clone(),
             blocked_hosts: config.blocked_hosts.clone(),
-            secure: config.secure.clone(),
         },
     )
     .await;
@@ -76,11 +74,6 @@ pub async fn main() {
     )
     .await;
     database.init().await;
-
-    if config.migration == true {
-        // database.migrate_ghsa_gc85_x5qp_77qq().await.unwrap(); // MIGRATION: c8f94a27b1ec3ef171cdc0b8bcf57b8af034e31b
-        std::process::exit(0);
-    }
 
     // create app
     let app = Router::new()

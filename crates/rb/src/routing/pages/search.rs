@@ -380,6 +380,7 @@ struct QuestionsTemplate {
     driver: i8,
     // search-specific
     results: Vec<(Question, usize, usize)>,
+    relationships: HashMap<String, RelationshipStatus>,
     is_helper: bool, // at least "helper"
 }
 
@@ -428,6 +429,41 @@ pub async fn search_questions_request(
         Err(e) => return Html(e.to_html(database)),
     };
 
+    // build relationships list
+    let mut relationships: HashMap<String, RelationshipStatus> = HashMap::new();
+
+    if let Some(ref ua) = auth_user {
+        for question in &results {
+            if relationships.contains_key(&question.0.author.id) {
+                continue;
+            }
+
+            if question.0.author.id == ua.id {
+                // make sure we can view our own questions
+                relationships.insert(question.0.author.id.clone(), RelationshipStatus::Friends);
+                continue;
+            };
+
+            relationships.insert(
+                question.0.author.id.clone(),
+                database
+                    .auth
+                    .get_user_relationship(question.0.author.id.clone(), ua.id.clone())
+                    .await
+                    .0,
+            );
+        }
+    } else {
+        for question in &results {
+            // no user, no relationships
+            if relationships.contains_key(&question.0.author.id) {
+                continue;
+            }
+
+            relationships.insert(question.0.author.id.clone(), RelationshipStatus::Unknown);
+        }
+    }
+
     // permissions
     let is_helper = if let Some(ref ua) = auth_user {
         let group = match database.auth.get_group_by_id(ua.group).await {
@@ -457,6 +493,7 @@ pub async fn search_questions_request(
             driver: 1,
             // search-specific
             results,
+            relationships,
             is_helper,
         }
         .render()

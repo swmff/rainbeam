@@ -424,7 +424,7 @@ config.name }}{% endblock %} {% block head %}
                             </a>
                             <a
                                 href="#"
-                                onclick="trigger('app:copy_text', ['{{ config.citrus_id}}:{{ other.id }}'])"
+                                onclick="trigger('app:copy_text', ['{{ other.id }}'])"
                             >
                                 {{ icon "copy" }}
                                 {{ text "general:action.copy_id" }}
