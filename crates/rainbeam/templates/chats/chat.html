@@ -247,6 +247,10 @@ endblock %} {% block nav_left %}
         {% endif %}
 
         <script>
+            if (globalThis.send_message) {
+                window.location.reload();
+            }
+
             globalThis.send_message = (event) => {
                 event.preventDefault();
                 trigger("chats:msg", [

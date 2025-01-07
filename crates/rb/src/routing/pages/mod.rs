@@ -179,6 +179,7 @@ struct PartialTimelineTemplate {
 pub async fn partial_timeline_request(
     jar: CookieJar,
     State(database): State<Database>,
+    Query(props): Query<PaginatedQuery>,
 ) -> impl IntoResponse {
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
@@ -193,7 +194,7 @@ pub async fn partial_timeline_request(
     };
 
     let responses = match database
-        .get_responses_by_following(auth_user.id.to_owned())
+        .get_responses_by_following_paginated(auth_user.id.to_owned(), props.page)
         .await
     {
         Ok(responses) => responses,
@@ -2368,10 +2369,10 @@ pub async fn routes(database: Database) -> Router {
         )
         .route("/circles/@{name}", get(circles::profile_redirect_request))
         .route(
-            "/+:name/_app/feed.html",
+            "/+{name}/_app/feed.html",
             get(circles::partial_profile_request),
         )
-        .route("/+:name", get(circles::profile_request))
+        .route("/+{name}", get(circles::profile_request))
         // settings
         .route("/settings", get(settings::account_settings))
         .route("/settings/sessions", get(settings::sessions_settings))

@@ -1,5 +1,7 @@
 use crate::database::Database;
 use crate::model::{DatabaseError, ResponseCreate, ResponseEdit, ResponseEditTags, ResponseEditContext};
+use crate::routing::pages::PaginatedQuery;
+use axum::extract::Query;
 use axum::http::{HeaderMap, HeaderValue};
 use hcaptcha_no_wasm::Hcaptcha;
 use authbeam::model::NotificationCreate;
@@ -419,6 +421,7 @@ pub async fn report_request(
 pub async fn home_timeline_request(
     jar: CookieJar,
     State(database): State<Database>,
+    Query(props): Query<PaginatedQuery>,
 ) -> impl IntoResponse {
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
@@ -440,7 +443,7 @@ pub async fn home_timeline_request(
     // ...
     Json(
         match database
-            .get_responses_by_following(auth_user.id.to_owned())
+            .get_responses_by_following_paginated(auth_user.id.to_owned(), props.page)
             .await
         {
             Ok(mut r) => {

@@ -1,6 +1,6 @@
 [package]
 name = "rainbeam"
-version = "1.21.3"
+version = "1.21.4"
 edition = "2021"
 authors = ["trisuaso", "swmff"]
 description = "Ask, share, socialize!"
@@ -26,7 +26,7 @@ serde = { version = "1.0.217", features = ["derive"] }
 tokio = { version = "1.42.0", features = ["macros", "rt-multi-thread"] }
 toml = "0.8.19"
 tower-http = { version = "0.6.2", features = ["fs", "trace"] }
-serde_json = "1.0.134"
+serde_json = "1.0.135"
 regex = "1.11.1"
 ammonia = "4.0.0"
 futures-util = "0.3.31"
@@ -34,7 +34,7 @@ async-recursion = "1.1.1"
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
 rainbeam-shared = { path = "../shared" }
-databeam = { version = "0.2.6", default-features = false }
+databeam = { version = "0.2.7", default-features = false }
 # databeam = { path = "../databeam", default-features = false }
 authbeam = { path = "../authbeam", default-features = false }
 langbeam = { path = "../langbeam" }

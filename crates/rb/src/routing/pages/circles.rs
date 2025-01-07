@@ -201,7 +201,7 @@ struct ProfileTemplate {
     is_owner: bool,
 }
 
-/// GET /+:name
+/// GET /+{name}
 pub async fn profile_request(
     jar: CookieJar,
     Path(name): Path<String>,
@@ -298,10 +298,11 @@ pub async fn profile_request(
     let is_member = if let Some(ref profile) = auth_user {
         is_owner = profile.id == circle.owner.id;
 
-        database
+        let membership = database
             .get_user_circle_membership(profile.id.clone(), circle.id.clone())
-            .await
-            == MembershipStatus::Active
+            .await;
+
+        (membership == MembershipStatus::Active) | (membership == MembershipStatus::Moderator)
     } else {
         false
     };
@@ -393,7 +394,7 @@ struct PartialProfileTemplate {
     is_helper: bool,   // at least "helper"
 }
 
-/// GET /+:name/_app/feed.html
+/// GET /+{name}/_app/feed.html
 pub async fn partial_profile_request(
     jar: CookieJar,
     Path(name): Path<String>,
@@ -580,10 +581,11 @@ pub async fn memberlist_request(
     let is_member = if let Some(ref profile) = auth_user {
         is_owner = profile.id == circle.owner.id;
 
-        database
+        let membership = database
             .get_user_circle_membership(profile.id.clone(), circle.id.clone())
-            .await
-            == MembershipStatus::Active
+            .await;
+
+        (membership == MembershipStatus::Active) | (membership == MembershipStatus::Moderator)
     } else {
         false
     };
@@ -688,10 +690,11 @@ pub async fn accept_invite_request(
     let is_member = if let Some(ref profile) = auth_user {
         is_owner = profile.id == circle.owner.id;
 
-        database
+        let membership = database
             .get_user_circle_membership(profile.id.clone(), circle.id.clone())
-            .await
-            == MembershipStatus::Active
+            .await;
+
+        (membership == MembershipStatus::Active) | (membership == MembershipStatus::Moderator)
     } else {
         false
     };

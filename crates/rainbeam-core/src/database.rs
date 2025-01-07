@@ -2425,7 +2425,25 @@ impl Database {
     ///
     /// # Arguments
     /// * `user`
-    pub async fn get_responses_by_following(&self, user: String) -> Result<Vec<FullResponse>> {
+    pub async fn get_responses_by_following_paginated(
+        &self,
+        user: String,
+        page: i32,
+    ) -> Result<Vec<FullResponse>> {
+        // check in cache
+        match self
+            .base
+            .cachedb
+            .get_timed::<Vec<FullResponse>, String>(format!(
+                "rbeam.app.timeline_save.get_responses_by_following_paginated:{}:{}",
+                user, page
+            ))
+            .await
+        {
+            Some(c) => return Ok(c.1),
+            None => (),
+        };
+
         // get following
         let following = match self.auth.get_following(user.clone()).await {
             Ok(f) => f,
@@ -2451,9 +2469,9 @@ impl Database {
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
             // we're also going to include our own responses so we don't have to do any complicated stuff to detect if we should start with "OR" (previous)
-            format!("SELECT * FROM \"xresponses\" WHERE \"author\" = ?{query_string} ORDER BY \"timestamp\" DESC LIMIT 50")
+            format!("SELECT * FROM \"xresponses\" WHERE \"author\" = ?{query_string} ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
-            format!( "SELECT * FROM \"xresponses\" WHERE \"author\" = $1{query_string} ORDER BY \"timestamp\" DESC LIMIT 50")
+            format!( "SELECT * FROM \"xresponses\" WHERE \"author\" = $1{query_string} ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         };
 
         let c = &self.base.db.client;
@@ -2479,6 +2497,17 @@ impl Database {
         };
 
         // return
+        self.base
+            .cachedb
+            .set_timed(
+                format!(
+                    "rbeam.app.timeline_save.get_responses_by_following_paginated:{}:{}",
+                    user.id, page
+                ),
+                res.clone(),
+            )
+            .await;
+
         Ok(res)
     }
 
@@ -4838,9 +4867,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            "SELECT * FROM \"xcircle_memberships\" WHERE \"user\" = ? AND \"membership\" = '\"Active\"'"
+            "SELECT * FROM \"xcircle_memberships\" WHERE \"user\" = ? AND \"membership\" = '\"Active\"' OR \"membership\" = '\"Moderator\"'"
         } else {
-            "SELECT * FROM \"xcircle_memberships\" WHERE \"user\" = $1 AND \"membership\" = '\"Active\"'"
+            "SELECT * FROM \"xcircle_memberships\" WHERE \"user\" = $1 AND \"membership\" = '\"Active\"' OR \"membership\" = '\"Moderator\"'"
         }
         .to_string();
 
@@ -4879,9 +4908,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            "SELECT * FROM \"xcircle_memberships\" WHERE \"circle\" = ? AND \"membership\" = '\"Active\"'"
+            "SELECT * FROM \"xcircle_memberships\" WHERE \"circle\" = ? AND \"membership\" = '\"Active\"' OR \"membership\" = '\"Moderator\"'"
         } else {
-            "SELECT * FROM \"xcircle_memberships\" WHERE \"circle\" = $1 AND \"membership\" = '\"Active\"'"
+            "SELECT * FROM \"xcircle_memberships\" WHERE \"circle\" = $1 AND \"membership\" = '\"Active\"' OR \"membership\" = '\"Moderator\"'"
         }
         .to_string();
 

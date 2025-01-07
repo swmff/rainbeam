@@ -1,6 +1,6 @@
 [package]
 name = "authbeam"
-version = "2.0.4"
+version = "2.0.5"
 edition = "2021"
 description = "Authentication manager"
 authors = ["trisuaso", "swmff"]
@@ -18,7 +18,7 @@ default = ["databeam/sqlite"]    # for development
 axum = { version = "0.8.1", features = ["macros"] }
 axum-macros = "0.5.0"
 serde = { version = "1.0.217", features = ["derive"] }
-serde_json = "1.0.134"
+serde_json = "1.0.135"
 tokio = { version = "1.42.0", features = ["macros", "rt-multi-thread"] }
 dotenv = "0.15.0"
 axum-extra = { version = "0.10.0", features = ["cookie", "multipart"] }
@@ -27,8 +27,8 @@ reqwest = "0.12.12"
 hcaptcha-no-wasm = { version = "3.0.1" }
 mime_guess = "2.0.5"
 rainbeam-shared = { version = "0.2.0" }
-databeam = { version = "0.2.6", default-features = false }
 # databeam = { path = "../databeam", default-features = false }
+databeam = { version = "0.2.7", default-features = false }
 image = "0.25.5"
 pathbufd = "0.1.4"
 # pathbufd = { path = "../../../pathbufd" }

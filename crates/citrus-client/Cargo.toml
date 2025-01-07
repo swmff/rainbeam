@@ -12,5 +12,5 @@ rust-version = "1.83"
 [dependencies]
 reqwest = "0.12.12"
 serde = "1.0.217"
-serde_json = "1.0.134"
+serde_json = "1.0.135"
 toml = "0.8.19"

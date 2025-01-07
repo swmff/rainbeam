@@ -96,7 +96,7 @@ block head %}
     use("app", (app) => {
         app["hook.attach_to_partial"](
             "/_app/timelines/timeline.html",
-            "/public",
+            "/",
             document.getElementById("feed"),
             document.body,
             parseInt("{{ page }}"),
