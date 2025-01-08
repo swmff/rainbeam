@@ -1,0 +1,34 @@
+%s:raw_base.content
+
+- let config = &self.config
+- let name = &config.name
+
+%nav
+    %div.content_container
+        %div.flex.gap-1.nav_side
+            %a.button.desktop.title[href="/"]
+                %r:
+                    <img
+                        src="/static/images/ui/logo.svg"
+                        alt="{name}"
+                        width="32px"
+                        height="32px"
+                        class="title-content"
+                        id="title-img"
+                    />
+                %-r:
+                %b.title-content[style="display: none"]
+                    {name}
+                %end
+            %end
+        %end
+    %end
+%end
+
+%div#page
+    %div.content_container#page_content
+        %slot[name="content"]'
+    %end
+%end
+
+%footer'

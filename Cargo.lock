@@ -805,6 +805,42 @@ dependencies = [
 ]
 
 [[package]]
+name = "crml"
+version = "0.1.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f29fb0819c2dc3ee8f3218d4e435fcd23674109514f4716ac0929e889fb24f0f"
+dependencies = [
+ "crml-core",
+ "crml-derive",
+]
+
+[[package]]
+name = "crml-core"
+version = "0.1.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "028f73c9d6c414d91d68282e638cde3b387ca0470bf8b70b181b353d2b043a85"
+dependencies = [
+ "pathbufd",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "crml-derive"
+version = "0.1.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "14b623bdf7f9d65abbcaf3c04f3e6f1a3da96ed72ec647c68c7052f5cd7f73ea"
+dependencies = [
+ "crml-core",
+ "pathbufd",
+ "proc-macro2",
+ "quote",
+ "serde",
+ "serde_json",
+ "syn",
+]
+
+[[package]]
 name = "crossbeam-deque"
 version = "0.8.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2839,12 +2875,11 @@ name = "rb"
 version = "1.21.4"
 dependencies = [
  "ammonia",
- "askama",
- "askama_axum",
  "async-recursion",
  "authbeam",
  "axum",
  "axum-extra",
+ "crml",
  "databeam 0.2.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures-util",
  "hcaptcha-no-wasm",

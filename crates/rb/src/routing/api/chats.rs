@@ -1,6 +1,6 @@
 use crate::database::Database;
 use crate::model::{ChatAdd, ChatNameEdit, DatabaseError};
-use crate::routing::pages::PaginatedQuery;
+use super::super::PaginatedQuery;
 use axum::extract::Query;
 use axum::http::{HeaderMap, HeaderValue};
 use hcaptcha_no_wasm::Hcaptcha;

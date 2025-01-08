@@ -1,0 +1,24 @@
+%s:base.content
+
+- let lang = &self.lang
+- let message = self.message
+
+%article
+    %main.flex.flex-col.gap-2
+        %div.card.flex.flex-col.gap-2.w-full
+            %p
+                %b~
+                    {{ text "error.html:link.uh_oh" }}
+                %end
+
+                %span#error' {message}
+            %end
+
+            @<hr />
+
+            %a.button.bold[href="/"]~
+                {{ text "error.html:link.go_home" }}
+            %end
+        %end
+    %end
+%end

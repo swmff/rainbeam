@@ -82,7 +82,7 @@ pub async fn main() {
         .nest("/api/v0/util", routing::api::util::routes(database.clone()))
         .nest("/api/v1", routing::api::routes(database.clone()))
         // pages
-        .merge(routing::pages::routes(database.clone()).await)
+        // .merge(routing::pages::routes(database.clone()).await)
         // ...
         .nest_service(
             "/.well-known",
@@ -98,7 +98,7 @@ pub async fn main() {
                 "{static_dir}/manifest.json"
             ))),
         )
-        .fallback_service(get(routing::pages::not_found).with_state(database.clone()))
+        .fallback_service(get(routing::pages::public::not_found).with_state(database.clone()))
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(trace::DefaultMakeSpan::new().level(Level::INFO))
