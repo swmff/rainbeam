@@ -14,11 +14,11 @@ init-web:
 
 web-dev:
     just web-bindings
-    cd crates/web && bun run dev --open
+    cd crates/web && bun run dev
 
 web-build:
     just web-bindings
-    cd crates/web && bun
+    cd crates/web && bun run build
 
 web-bindings:
     cargo test
@@ -31,6 +31,13 @@ build-d:
 # test
 test-api:
     cargo run --bin rainbeam
+
+# prod
+api:
+    ./target/release/rainbeam
+
+web:
+    cd crates/web && bun run ./build/index.js
 
 # ...
 doc:

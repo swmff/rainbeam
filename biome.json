@@ -15,6 +15,9 @@
             "style": {
                 "useTemplate": "off",
                 "noParameterAssign": "off"
+            },
+            "suspicious": {
+                "noExplicitAny": "off"
             }
         }
     }

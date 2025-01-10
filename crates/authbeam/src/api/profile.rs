@@ -278,6 +278,31 @@ pub async fn get_request(
     })
 }
 
+/// View a profile's information from auth token (no cleaning)
+pub async fn get_from_token_request(
+    Path(token): Path<String>,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    // get user
+    let auth_user = match database.get_profile_by_unhashed(token).await {
+        Ok(ua) => ua,
+        Err(e) => {
+            return Json(DefaultReturn {
+                success: false,
+                message: e.to_string(),
+                payload: None,
+            });
+        }
+    };
+
+    // return
+    Json(DefaultReturn {
+        success: true,
+        message: auth_user.username.to_string(),
+        payload: Some(auth_user),
+    })
+}
+
 /// Change a profile's tier
 pub async fn update_tier_request(
     jar: CookieJar,

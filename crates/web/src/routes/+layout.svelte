@@ -1,3 +1,11 @@
+<script lang="ts">
+    import type { Profile } from "$lib/bindings/Profile.js";
+    import { None, Option } from "$lib/classes/Option.js";
+
+    const { children, data } = $props();
+    const user = Option.from(data.user);
+</script>
+
 <svelte:head>
     <link rel="stylesheet" href="/css/style.css" />
 
@@ -41,30 +49,55 @@
 </svelte:head>
 
 <div id="page">
-    <div class="sidebar">
-        <nav>
-            <a href="/" class="button desktop title">
-                <img
-                    src="/images/ui/logo.svg"
-                    alt="name"
-                    width="32px"
-                    height="32px"
-                    class="title-content"
-                    id="title-img"
-                />
-            </a>
-
-            <b class="title-content" style="display: none">name</b>
-        </nav>
-    </div>
-
     <div class="content_container" id="page_content">
         <article>
             <main class="flex flex-col gap-2">
-                <slot />
+                <nav>
+                    <div class="nav_side">rainbeam</div>
+
+                    {#if user.is_some()}
+                        {@const profile = user.unwrap()}
+                        <div class="nav_side">
+                            <img
+                                title="{profile.username}'s avatar"
+                                src="/api/v0/auth/profile/{profile.id}/avatar"
+                                alt=""
+                                class="avatar shadow"
+                                style="--size: 24px"
+                            />
+                        </div>
+                    {:else}
+                        <div class="nav_side"></div>
+                    {/if}
+                </nav>
+
+                <div style="padding: 0.5rem;" class="flex flex-col gap-2">
+                    {@render children()}
+                </div>
             </main>
         </article>
     </div>
-
-    <div class="sidebar"></div>
 </div>
+
+<style>
+    article,
+    main {
+        min-height: 100dvh;
+    }
+
+    main {
+        border-left: solid 1px var(--color-super-lowered);
+        border-right: solid 1px var(--color-super-lowered);
+        padding: 0;
+    }
+
+    @media screen and (max-width: 900px) {
+        article {
+            padding: 0;
+        }
+
+        main {
+            border: none;
+        }
+    }
+</style>

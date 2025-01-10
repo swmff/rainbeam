@@ -49,48 +49,6 @@ a:not(nav *):not(.dropdown *).button:active {
     transform: scale(0.98);
 }
 
-.icon-only,
-button.icon-only,
-a.button.icon-only {
-    position: relative;
-    width: 35px;
-    height: 35px;
-    aspect-ratio: 1 / 1;
-    border-radius: var(--circle);
-    font-size: 18px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.icon-only.small {
-    font-size: 14px;
-    width: 28px !important;
-    height: 28px !important;
-    min-width: 28px !important;
-    min-height: 28px !important;
-}
-
-.icon-only .icon {
-    width: 1em;
-    height: 1em;
-    position: absolute;
-    left: calc(50% - 1em / 2.12);
-}
-
-.icon-only:active .icon {
-    transform: scale(1.02); /* negate button transform */
-}
-
-.icon-only .notification {
-    position: absolute;
-    z-index: 1;
-    width: 35px;
-    bottom: -20px;
-    display: block;
-    margin-left: 0.12em;
-}
-
 nav button,
 nav a.button {
     font-size: unset;

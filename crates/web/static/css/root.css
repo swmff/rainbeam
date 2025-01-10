@@ -114,7 +114,6 @@ article {
     margin: auto;
     max-width: 100%;
     padding: 0 0.75rem;
-    margin-bottom: 0.75rem;
 }
 
 .content_container {
@@ -129,10 +128,6 @@ article {
 }
 
 @media (min-width: 768px) {
-    #page {
-        padding: 0.5rem;
-    }
-
     .content_container {
         max-width: 720px;
     }

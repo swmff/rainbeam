@@ -644,7 +644,8 @@ pub struct ChatAdd {
 }
 
 /// General API errors
-#[derive(Debug)]
+#[derive(TS, Debug)]
+#[ts(export)]
 pub enum DatabaseError {
     AnonymousNotAllowed,
     InvalidNameUnique,

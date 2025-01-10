@@ -117,17 +117,20 @@ blockquote p:is(.dark *) {
 
 /* nav */
 nav {
-    background: var(--color-primary);
-    color: var(--color-text-primary) !important;
+    /* background: var(--color-primary);
+    color: var(--color-text-primary) !important; */
+    background: transparent;
+    color: inherit;
     width: 100%;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     color: var(--color-text);
     position: sticky;
     top: 0;
     z-index: 6374;
-    padding: 0rem 0.25rem;
+    padding: 0.5rem;
     transition: opacity 0.15s;
+    border-bottom: solid 1px var(--color-super-lowered);
 }
 
 nav .content_container,
@@ -135,10 +138,6 @@ footer .content_container {
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-
-nav:last-of-type {
-    margin-bottom: 1rem;
 }
 
 nav button,
@@ -170,22 +169,6 @@ nav .button:not(.title):not(.active) {
 nav button:not(.title):not(.active):hover,
 nav .button:not(.title):not(.active):hover {
     opacity: 100%;
-}
-
-.sidebar {
-    padding: 0.5rem;
-    display: flex;
-    justify-content: right;
-    width: 75%;
-}
-
-.sidebar nav {
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: flex-end;
-    background: transparent;
-    height: 100%;
-    width: 100px;
 }
 
 /* footer */
