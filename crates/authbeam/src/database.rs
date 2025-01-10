@@ -16,9 +16,12 @@ use serde::{Deserialize, Serialize};
 use databeam::{query as sqlquery, utility};
 use pathbufd::{PathBufD, pathd};
 
+use ts_rs::TS;
+
 pub type Result<T> = std::result::Result<T, DatabaseError>;
 
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(TS, Clone, Serialize, Deserialize, Debug)]
+#[ts(export)]
 pub struct HCaptchaConfig {
     /// HCaptcha site key
     ///

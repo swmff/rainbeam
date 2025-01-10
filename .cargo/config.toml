@@ -1,2 +1,5 @@
 [build]
 rustdocflags = ["--default-theme=ayu"]
+
+[env]
+TS_RS_EXPORT_DIR = { value = "crates/web/src/lib/bindings", relative = true }

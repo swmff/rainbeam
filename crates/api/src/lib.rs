@@ -1,0 +1,9 @@
+//! 🐈‍⬛ Rainbeam!
+#![doc = include_str!("../../../README.md")]
+#![doc(issue_tracker_base_url = "https://github.com/swmff/rainbeam/issues")]
+#![doc(html_favicon_url = "https://rainbeam.net/static/favicon.svg")]
+#![doc(html_logo_url = "https://rainbeam.net/static/favicon.svg")]
+pub use rainbeam::database;
+pub use rainbeam::config;
+pub use rainbeam::model;
+pub mod routing;

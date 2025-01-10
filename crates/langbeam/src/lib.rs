@@ -2,8 +2,10 @@ use std::collections::HashMap;
 use serde::{Serialize, Deserialize};
 use rainbeam_shared::fs;
 use pathbufd::PathBufD;
+use ts_rs::TS;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(TS, Debug, Clone, Serialize, Deserialize)]
+#[ts(export)]
 pub struct LangFile {
     pub name: String,
     pub version: String,

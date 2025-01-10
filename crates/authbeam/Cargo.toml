@@ -31,6 +31,7 @@ rainbeam-shared = { version = "0.2.0" }
 databeam = { version = "0.2.7", default-features = false }
 image = "0.25.5"
 pathbufd = "0.1.4"
+ts-rs = "10.1.0"
 # pathbufd = { path = "../../../pathbufd" }
 
 [lib]

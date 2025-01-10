@@ -3,9 +3,9 @@
 - let config = &self.config
 - let name = &config.name
 
-%nav
-    %div.content_container
-        %div.flex.gap-1.nav_side
+%div#page
+    %div.sidebar
+        %nav
             %a.button.desktop.title[href="/"]
                 %r:
                     <img
@@ -23,12 +23,12 @@
             %end
         %end
     %end
-%end
 
-%div#page
     %div.content_container#page_content
         %slot[name="content"]'
     %end
+
+    %div.sidebar'
 %end
 
 %footer'

@@ -13,6 +13,8 @@ use authbeam::model::{IpBlock, Profile, UserFollow};
 use databeam::DefaultReturn;
 pub use authbeam::model::RelationshipStatus;
 
+use ts_rs::TS;
+
 /// Trait for simple asset contexts
 pub trait Context {}
 
@@ -24,7 +26,8 @@ pub trait CtxAsset {
 }
 
 /// A question structure
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(TS, Serialize, Deserialize, Debug, Clone)]
+#[ts(export)]
 pub struct Question {
     /// The author of the question; "anonymous" marks the question as an anonymous question
     pub author: Box<Profile>,
@@ -94,7 +97,8 @@ impl Question {
 }
 
 /// Basic information which changes the way the response is deserialized
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(TS, Serialize, Deserialize, Debug, Clone)]
+#[ts(export)]
 pub struct QuestionContext {
     /// The media property of the question
     ///
@@ -116,7 +120,8 @@ impl Default for QuestionContext {
 }
 
 /// A question structure with ID references to profiles instead of the profiles
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(TS, Serialize, Deserialize, Debug, Clone)]
+#[ts(export)]
 pub struct RefQuestion {
     /// The author of the question; "anonymous" marks the question as an anonymous question
     pub author: String,
@@ -150,7 +155,8 @@ impl From<Question> for RefQuestion {
 }
 
 /// A response structure
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(TS, Serialize, Deserialize, Debug, Clone)]
+#[ts(export)]
 pub struct QuestionResponse {
     /// The author of the response; cannot be anonymous
     pub author: Box<Profile>,
@@ -219,7 +225,8 @@ impl CtxAsset for FullResponse {
 }
 
 /// Basic information which changes the way the response is deserialized
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(TS, Serialize, Deserialize, Debug, Clone)]
+#[ts(export)]
 pub struct ResponseContext {
     /// If the response is a post and the question shouldn't be rendered at all
     #[serde(default)]
@@ -251,7 +258,8 @@ impl Default for ResponseContext {
 }
 
 /// A comment structure
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(TS, Serialize, Deserialize, Debug, Clone)]
+#[ts(export)]
 pub struct ResponseComment {
     /// The author of the comment; cannot be anonymous
     pub author: Box<Profile>,
@@ -290,7 +298,8 @@ impl CtxAsset for ResponseComment {
 }
 
 /// Basic information which changes the way the response is deserialized
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(TS, Serialize, Deserialize, Debug, Clone)]
+#[ts(export)]
 pub struct CommentContext {}
 
 impl Context for CommentContext {}
@@ -301,7 +310,8 @@ impl Default for CommentContext {
 }
 
 /// A reaction structure
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(TS, Serialize, Deserialize, Debug, Clone)]
+#[ts(export)]
 pub struct Reaction {
     /// The reactor of the reaction; cannot be anonymous
     pub user: Box<Profile>,
@@ -312,7 +322,8 @@ pub struct Reaction {
 }
 
 /// The type of any asset (anything created by a user)
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(TS, Serialize, Deserialize, Debug, Clone)]
+#[ts(export)]
 pub enum AssetType {
     /// A [`Question`]
     Question,
@@ -325,7 +336,8 @@ pub enum AssetType {
 }
 
 /// The status of a user's membership in a [`Circle`]
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[derive(TS, Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[ts(export)]
 pub enum MembershipStatus {
     /// A user who has received an invite to a circle, but has not yet accepted
     Pending,
@@ -338,7 +350,8 @@ pub enum MembershipStatus {
 }
 
 /// The stored version of a user's membership in a [`Circle`]
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(TS, Serialize, Deserialize, Debug, Clone)]
+#[ts(export)]
 pub struct CircleMembership {
     /// The ID of the user
     pub user: String,
@@ -364,7 +377,8 @@ pub struct CircleMembership {
 ///
 /// Active members can post to the circle through the compose form. Memberships can always be managed
 /// by the owner of the circle, who can remove anybody they want from the circle.
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(TS, Serialize, Deserialize, Debug, Clone)]
+#[ts(export)]
 pub struct Circle {
     /// The name of the circle
     pub name: String,
@@ -378,7 +392,8 @@ pub struct Circle {
     pub timestamp: u128,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(TS, Serialize, Deserialize, Debug, Clone)]
+#[ts(export)]
 pub struct CircleMetadata {
     pub kv: HashMap<String, String>,
 }
@@ -410,7 +425,8 @@ impl CircleMetadata {
 }
 
 /// An export of a user's entire history
-#[derive(Serialize, Deserialize)]
+#[derive(TS, Serialize, Deserialize)]
+#[ts(export)]
 pub struct DataExport {
     /// The user's profile
     #[serde(default)]
@@ -444,7 +460,8 @@ pub struct DataExport {
     pub followers: Option<Vec<(UserFollow, Box<Profile>, Box<Profile>)>>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(TS, Serialize, Deserialize)]
+#[ts(export)]
 pub struct DataExportOptions {
     /// Include all
     #[serde(default)]
@@ -479,7 +496,8 @@ pub struct DataExportOptions {
 }
 
 /// Direct message stream
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(TS, Serialize, Deserialize, Clone, Debug)]
+#[ts(export)]
 pub struct Chat {
     /// The ID of the chat
     pub id: String,
@@ -495,11 +513,13 @@ pub struct Chat {
 }
 
 /// Additional information about a [`Chat`]
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(TS, Serialize, Deserialize, Clone, Debug)]
+#[ts(export)]
 pub struct ChatContext {}
 
 /// Direct message
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(TS, Serialize, Deserialize, Clone, Debug)]
+#[ts(export)]
 pub struct Message {
     /// The ID of the message
     pub id: String,
@@ -518,7 +538,8 @@ pub struct Message {
 }
 
 /// Additional information about a [`Message`]
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(TS, Serialize, Deserialize, Clone, Debug)]
+#[ts(export)]
 pub struct MessageContext {}
 
 // ...

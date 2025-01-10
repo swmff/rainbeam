@@ -4,11 +4,14 @@ use serde::{Deserialize, Serialize};
 use std::io::Result;
 use std::env::current_dir;
 
+use ts_rs::TS;
+
 use authbeam::database::HCaptchaConfig;
 use rainbeam_shared::fs;
 
 /// Premium features
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(TS, Clone, Serialize, Deserialize, Debug)]
+#[ts(export)]
 pub struct Tiers {
     /// Doubled character limits for everything
     ///
@@ -39,7 +42,8 @@ impl Default for Tiers {
 }
 
 /// Configuration file
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(TS, Clone, Serialize, Deserialize, Debug)]
+#[ts(export)]
 pub struct Config {
     /// The port to serve the server on
     pub port: u16,
@@ -49,9 +53,11 @@ pub struct Config {
     pub description: String,
     /// The location of the static directory, should not be supplied manually as it will be overwritten with `./.config/static`
     #[serde(default)]
+    #[ts(type = "String")]
     pub static_dir: PathBufD,
     /// The location of media uploads on the file system
     #[serde(default)]
+    #[ts(type = "String")]
     pub media_dir: PathBufD,
     /// HCaptcha configuration
     pub captcha: HCaptchaConfig,

@@ -9,11 +9,19 @@ mimalloc-build database="sqlite":
     just build-assets
     cargo build -r --no-default-features --features {{database}},mimalloc --bin rainbeam
 
-init-builder:
-    cd crates/builder && npm i && cd ../../
+init-web:
+    cd crates/web && npm i && cd ../../
 
-build-assets:
-    node ./crates/builder/index.js
+web-dev:
+    just web-bindings
+    cd crates/web && bun run dev --open
+
+web-build:
+    just web-bindings
+    cd crates/web && bun
+
+web-bindings:
+    cargo test
 
 # build debug
 build-d:
@@ -21,8 +29,7 @@ build-d:
     cargo build --bin rainbeam
 
 # test
-test:
-    just build-assets
+test-api:
     cargo run --bin rainbeam
 
 # ...

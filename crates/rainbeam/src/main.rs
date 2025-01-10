@@ -3,7 +3,7 @@
 #![doc(issue_tracker_base_url = "https://github.com/swmff/rainbeam/issues")]
 #![doc(html_favicon_url = "https://rainbeam.net/static/favicon.svg")]
 #![doc(html_logo_url = "https://rainbeam.net/static/favicon.svg")]
-use axum::routing::{get, get_service};
+use axum::routing::get_service;
 use axum::Router;
 
 use tower_http::trace::{self, TraceLayer};
@@ -82,23 +82,11 @@ pub async fn main() {
         .nest("/api/v0/util", routing::api::util::routes(database.clone()))
         .nest("/api/v1", routing::api::routes(database.clone()))
         // pages
-        // .merge(routing::pages::routes(database.clone()).await)
         // ...
         .nest_service(
             "/.well-known",
             get_service(tower_http::services::ServeDir::new(&well_known_dir)),
         )
-        .nest_service(
-            "/static",
-            get_service(tower_http::services::ServeDir::new(&static_dir)),
-        )
-        .nest_service(
-            "/manifest.json",
-            get_service(tower_http::services::ServeFile::new(format!(
-                "{static_dir}/manifest.json"
-            ))),
-        )
-        .fallback_service(get(routing::pages::public::not_found).with_state(database.clone()))
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(trace::DefaultMakeSpan::new().level(Level::INFO))

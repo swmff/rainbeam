@@ -27,7 +27,7 @@ pub enum HttpMethod {
 
 /// A simple identifier to identify resources from other servers
 ///
-/// ```
+/// ```text
 /// {server_id}:{uuid/hash}
 /// ```
 #[derive(Serialize, Deserialize, Clone, Debug)]
