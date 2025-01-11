@@ -93,11 +93,7 @@ pub async fn delete_request(
 
     // return
     if let Err(e) = database.delete_profile_by_id(auth_user.id).await {
-        return Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: (),
-        });
+        return Json(e.to_json());
     }
 
     Json(DefaultReturn {
@@ -325,11 +321,7 @@ pub async fn update_tokens_request(
         )
         .await
     {
-        return Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: (),
-        });
+        return Json(e.to_json());
     }
 
     Json(DefaultReturn {

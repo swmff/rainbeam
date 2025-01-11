@@ -1,10 +1,12 @@
 import type { LangFile as LangFileStruct } from "./bindings/LangFile";
 
-const langs: { [key: string]: LangFileStruct } = {};
+export const langs: { [key: string]: LangFileStruct } = {};
 
 export async function get(id: string): Promise<LangFileStruct> {
-    const file: LangFileStruct = await Bun.file(`./langs/${id}.json`).json();
-    langs[id] = file;
+    const file: LangFileStruct = await Bun.file(
+        `${process.cwd()}/langs/${id}.json`
+    ).json();
+    langs[file.name] = file;
     return file;
 }
 

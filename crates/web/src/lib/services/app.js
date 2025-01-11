@@ -102,7 +102,7 @@
     app.define("logout", async function (_) {
         if (
             !(await trigger("app:confirm", [
-                "Are you sure you would like to do this?",
+                "Are you sure you would like to do this?"
             ]))
         ) {
             return;
@@ -126,7 +126,7 @@
             if ($.ICONS[icon_name]) {
                 const parser = new DOMParser().parseFromString(
                     $.ICONS[icon_name],
-                    "text/xml",
+                    "text/xml"
                 );
 
                 const icon_element = parser.firstChild;
@@ -148,7 +148,7 @@
             icon_element.setAttribute("style", style);
 
             return icon_element;
-        },
+        }
     );
 
     app.define("copy_text", function ({ $ }, text) {
@@ -158,7 +158,7 @@
 
     app.define("intent_twitter", function ({ $ }, text, link) {
         window.open(
-            `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(link)}`,
+            `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(link)}`
         );
 
         $.toast("success", "Opened intent!");
@@ -167,7 +167,7 @@
     app.define("intent_bluesky", function ({ $ }, text, link) {
         text += ` ${link}`;
         window.open(
-            `https://bsky.app/intent/compose?text=${encodeURIComponent(text)}`,
+            `https://bsky.app/intent/compose?text=${encodeURIComponent(text)}`
         );
 
         $.toast("success", "Opened intent!");
@@ -185,7 +185,7 @@
 
     app.define("ban_ip", function (_, ip) {
         const reason = prompt(
-            "Please explain your reason for banning this IP below:",
+            "Please explain your reason for banning this IP below:"
         );
 
         if (!reason) {
@@ -195,18 +195,18 @@
         fetch("/api/v0/auth/ipbans", {
             method: "POST",
             headers: {
-                "Content-Type": "application/json",
+                "Content-Type": "application/json"
             },
             body: JSON.stringify({
                 ip,
-                reason,
-            }),
+                reason
+            })
         })
             .then((res) => res.json())
             .then((res) => {
                 trigger("app:toast", [
                     res.success ? "success" : "error",
-                    res.message || "IP banned!",
+                    res.message || "IP banned!"
                 ]);
             });
     });
@@ -241,10 +241,10 @@
                 {
                     root: document.body,
                     rootMargin: "0px",
-                    threshold: 1.0,
-                },
+                    threshold: 1.0
+                }
             );
-        },
+        }
     );
 
     // hooks
@@ -266,86 +266,6 @@
         });
     });
 
-    app.define("hook.dropdown", function (_, event) {
-        event.stopImmediatePropagation();
-        let target = event.target;
-
-        while (!target.matches(".dropdown")) {
-            target = target.parentElement;
-        }
-
-        // close all others
-        for (const dropdown of Array.from(
-            document.querySelectorAll(".inner[open]"),
-        )) {
-            dropdown.removeAttribute("open");
-        }
-
-        // open
-        setTimeout(() => {
-            for (const dropdown of Array.from(
-                target.querySelectorAll(".inner"),
-            )) {
-                // check y
-                const box = target.getBoundingClientRect();
-
-                let parent = dropdown.parentElement;
-
-                while (!parent.matches("html, .window")) {
-                    parent = parent.parentElement;
-                }
-
-                let parent_height = parent.getBoundingClientRect().y;
-
-                if (parent.nodeName === "HTML") {
-                    parent_height = window.screen.height;
-                }
-
-                const scroll = window.scrollY;
-                const height = parent_height;
-                const y = box.y + scroll;
-
-                if (y > height - scroll - 300) {
-                    dropdown.classList.add("top");
-                } else {
-                    dropdown.classList.remove("top");
-                }
-
-                // open
-                dropdown.toggleAttribute("open");
-
-                if (dropdown.getAttribute("open")) {
-                    dropdown.removeAttribute("aria-hidden");
-                } else {
-                    dropdown.setAttribute("aria-hidden", "true");
-                }
-            }
-        }, 5);
-    });
-
-    app.define("hook.dropdown.init", function (_, bind_to) {
-        for (const dropdown of Array.from(
-            document.querySelectorAll(".inner"),
-        )) {
-            dropdown.setAttribute("aria-hidden", "true");
-        }
-
-        bind_to.addEventListener("click", (event) => {
-            if (
-                event.target.matches(".dropdown") ||
-                event.target.matches("[exclude=dropdown]")
-            ) {
-                return;
-            }
-
-            for (const dropdown of Array.from(
-                document.querySelectorAll(".inner[open]"),
-            )) {
-                dropdown.removeAttribute("open");
-            }
-        });
-    });
-
     app.define("hook.character_counter", function (_, event) {
         let target = event.target;
 
@@ -359,12 +279,12 @@
 
     app.define("hook.character_counter.init", function (_, event) {
         for (const element of Array.from(
-            document.querySelectorAll("[hook=counter]") || [],
+            document.querySelectorAll("[hook=counter]") || []
         )) {
             const counter = document.getElementById(`${element.id}:counter`);
             counter.innerText = `0/${element.getAttribute("maxlength")}`;
             element.addEventListener("keyup", (e) =>
-                app["hook.character_counter"](e),
+                app["hook.character_counter"](e)
             );
         }
     });
@@ -376,7 +296,7 @@
 
     app.define("hook.long_text.init", function (_, event) {
         for (const element of Array.from(
-            document.querySelectorAll("[hook=long]") || [],
+            document.querySelectorAll("[hook=long]") || []
         )) {
             const is_long = element.innerText.length >= 64 * 16;
 
@@ -406,7 +326,7 @@
 
     app.define("hook.alt", function (_) {
         for (const element of Array.from(
-            document.querySelectorAll("img") || [],
+            document.querySelectorAll("img") || []
         )) {
             if (element.getAttribute("alt") && !element.getAttribute("title")) {
                 element.setAttribute("title", element.getAttribute("alt"));
@@ -426,7 +346,7 @@
 
                         if (
                             confirm(
-                                'Would you like to ban this IP? Please press "Cancel" to open the first profile found with this IP instead of banning it.',
+                                'Would you like to ban this IP? Please press "Cancel" to open the first profile found with this IP instead of banning it.'
                             )
                         ) {
                             $.ban_ip(href.pathname.replace("/+i/", ""));
@@ -448,7 +368,7 @@
                     history.replaceState(
                         history.state,
                         "",
-                        url.replace(partial, full),
+                        url.replace(partial, full)
                     );
 
                     fetch(url)
@@ -519,12 +439,12 @@
 
                 wrapper.addEventListener("scroll", event);
             });
-        },
+        }
     );
 
     app.define("hook.partial_embeds", function (_) {
         for (const paragraph of Array.from(
-            document.querySelectorAll("span[class] p"),
+            document.querySelectorAll("span[class] p")
         )) {
             const groups = /(\/\+r\/)([\w]+)/.exec(paragraph.innerText);
 
@@ -541,10 +461,10 @@
         }
 
         for (const paragraph of Array.from(
-            document.querySelectorAll("span[class] p"),
+            document.querySelectorAll("span[class] p")
         )) {
             const groups = /(\/inbox\/mail\/letter\/)([\w]+)/.exec(
-                paragraph.innerText,
+                paragraph.innerText
             );
 
             if (groups === null) {
@@ -565,18 +485,18 @@
             async (element) => {
                 const reaction = await (
                     await fetch(
-                        `/api/v1/reactions/${element.getAttribute("hook-arg:id")}`,
+                        `/api/v1/reactions/${element.getAttribute("hook-arg:id")}`
                     )
                 ).json();
 
                 if (reaction.success) {
                     element.children[0].classList.add("filled");
                 }
-            },
+            }
         );
 
         for (const element of Array.from(
-            document.querySelectorAll("[hook=check_reaction]") || [],
+            document.querySelectorAll("[hook=check_reaction]") || []
         )) {
             observer.observe(element);
         }
@@ -587,7 +507,7 @@
     app.define("hook.tabs:switch", function (_, tab) {
         // tab
         for (const element of Array.from(
-            document.querySelectorAll("[data-tab]"),
+            document.querySelectorAll("[data-tab]")
         )) {
             element.classList.add("hidden");
         }
@@ -599,7 +519,7 @@
         // button
         if (document.querySelector(`[data-tab-button="${tab}"]`)) {
             for (const element of Array.from(
-                document.querySelectorAll("[data-tab-button]"),
+                document.querySelectorAll("[data-tab-button]")
             )) {
                 element.classList.remove("active");
             }
@@ -621,7 +541,7 @@
     app.define("hook.tabs", function ({ $ }) {
         $["hook.tabs:check"](window.location.hash); // initial check
         window.addEventListener("hashchange", (event) =>
-            $["hook.tabs:check"](new URL(event.newURL).hash),
+            $["hook.tabs:check"](new URL(event.newURL).hash)
         );
     });
 

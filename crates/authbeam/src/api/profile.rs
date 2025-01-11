@@ -792,11 +792,7 @@ pub async fn update_tokens_request(
         .update_profile_tokens(other.id, req.tokens, other.ips, other.token_context)
         .await
     {
-        return Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: (),
-        });
+        return Json(e.to_json());
     }
 
     Json(DefaultReturn {
@@ -1360,11 +1356,7 @@ pub async fn update_metdata_request(
             message: "Acceptable".to_string(),
             payload: (),
         }),
-        Err(e) => Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: (),
-        }),
+        Err(e) => Json(e.to_json()),
     }
 }
 
@@ -1501,11 +1493,7 @@ pub async fn patch_metdata_request(
             message: "Acceptable".to_string(),
             payload: (),
         }),
-        Err(e) => Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: (),
-        }),
+        Err(e) => Json(e.to_json()),
     }
 }
 
@@ -1619,11 +1607,7 @@ pub async fn update_badges_request(
             message: "Acceptable".to_string(),
             payload: (),
         }),
-        Err(e) => Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: (),
-        }),
+        Err(e) => Json(e.to_json()),
     }
 }
 
@@ -1737,11 +1721,7 @@ pub async fn update_labels_request(
             message: "Acceptable".to_string(),
             payload: (),
         }),
-        Err(e) => Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: (),
-        }),
+        Err(e) => Json(e.to_json()),
     }
 }
 
@@ -1870,10 +1850,6 @@ pub async fn delete_request(
             message: "Acceptable".to_string(),
             payload: (),
         }),
-        Err(e) => Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: (),
-        }),
+        Err(e) => Json(e.to_json()),
     }
 }

@@ -1,9 +1,13 @@
 pub mod api;
+pub mod pages;
+pub use pages::PaginatedQuery;
 
-use serde::{Serialize, Deserialize};
+use serde::Serialize;
+use serde_json::Value;
 
-#[derive(Serialize, Deserialize)]
-pub struct PaginatedQuery {
-    #[serde(default)]
-    pub page: i32,
+pub fn into_some_serde_value<T>(s: T) -> Option<Value>
+where
+    T: Serialize,
+{
+    Some(serde_json::to_value(s).unwrap())
 }

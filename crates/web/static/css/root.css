@@ -36,6 +36,7 @@
 .dark * {
     --hue: 215;
     --sat: 15%;
+    /* --sat: 0%; */
     --lit: 12%;
     --color-surface: hsl(var(--hue), var(--sat), calc(0% + var(--lit)));
     --color-lowered: hsl(var(--hue), var(--sat), calc(6% + var(--lit)));

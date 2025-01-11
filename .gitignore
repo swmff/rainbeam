@@ -5,16 +5,15 @@ bun.lockb
 bindings/
 
 # prod
-crates/rainbeam/static/site/about.md
-crates/rainbeam/static/site/tos.md
-crates/rainbeam/static/site/privacy.md
-crates/rainbeam/static/fonts/
-crates/rainbeam/static/manifest.json
-crates/rainbeam/static/images/logo/
-crates/rainbeam/static/images/ui/logo.*
-crates/rainbeam/static/favicon.svg
-crates/rainbeam/static/build/
-crates/rainbeam/templates_build/
+crates/web/static/site/about.md
+crates/web/static/site/tos.md
+crates/web/static/site/privacy.md
+crates/web/static/fonts/
+crates/web/static/manifest.json
+crates/web/static/images/logo/
+crates/web/static/images/ui/logo.*
+crates/web/static/favicon.svg
+crates/web/static/build/
 *.db
 .config/config.toml
 .config/databeam/config.toml

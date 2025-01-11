@@ -1,32 +1,19 @@
 <script lang="ts">
-    import { onMount } from "svelte";
-    const { children } = $props();
+    import ClickOutside from "$lib/events/ClickOutside";
 
-    const id = crypto.randomUUID();
+    const { children, classname } = $props();
     let open = $state(false);
-
-    function clicked() {
-        open = !open;
-    }
-
-    onMount(() => {
-        document.documentElement.addEventListener("click", (e) => {
-            if ((e.target as HTMLElement).id !== id) {
-                return;
-            }
-
-            open = false;
-        });
-    });
 </script>
 
-<div
-    class="dropdown"
-    onclick={clicked}
-    onkeydown={() => {}}
-    role="button"
-    tabindex="0"
-    {id}
+<button
+    class="dropdown {classname} {open ? 'open' : ''}"
+    onclick={(event: any) => {
+        open = true;
+        event.stopPropagation();
+    }}
+    use:ClickOutside={() => {
+        open = false;
+    }}
 >
     {@render children()}
-</div>
+</button>

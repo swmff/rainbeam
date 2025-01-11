@@ -683,6 +683,14 @@ impl DatabaseError {
             _ => String::from("An unspecified error has occured"),
         }
     }
+
+    pub fn to_json<T: Default>(&self) -> DefaultReturn<T> {
+        DefaultReturn {
+            success: false,
+            message: self.to_string(),
+            payload: T::default(),
+        }
+    }
 }
 
 impl IntoResponse for DatabaseError {

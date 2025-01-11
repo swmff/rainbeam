@@ -34,6 +34,18 @@ export default class ApiProxy {
         );
     }
 
+    public async req_root(
+        method: ApiMethod | string,
+        params: ApiParams,
+        request: ApiRequest
+    ) {
+        return await fetch(`${config.client.api}/${params.route}`, {
+            method,
+            headers: request.headers,
+            body: request.body
+        });
+    }
+
     public async get(params: ApiParams, request: ApiRequest) {
         return await this.req(ApiMethod.Get, params, request);
     }
@@ -48,5 +60,21 @@ export default class ApiProxy {
 
     public async delete(params: ApiParams, request: ApiRequest) {
         return await this.req(ApiMethod.Delete, params, request);
+    }
+
+    public async get_root(params: ApiParams, request: ApiRequest) {
+        return await this.req_root(ApiMethod.Get, params, request);
+    }
+
+    public async post_root(params: ApiParams, request: ApiRequest) {
+        return await this.req_root(ApiMethod.Post, params, request);
+    }
+
+    public async put_root(params: ApiParams, request: ApiRequest) {
+        return await this.req_root(ApiMethod.Put, params, request);
+    }
+
+    public async delete_root(params: ApiParams, request: ApiRequest) {
+        return await this.req_root(ApiMethod.Delete, params, request);
     }
 }

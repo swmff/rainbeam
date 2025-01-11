@@ -78,11 +78,7 @@ pub async fn follow_request(
             message: "Follow toggled".to_string(),
             payload: (),
         }),
-        Err(e) => Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: (),
-        }),
+        Err(e) => Json(e.to_json()),
     }
 }
 

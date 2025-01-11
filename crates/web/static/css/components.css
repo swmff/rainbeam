@@ -55,6 +55,8 @@ dialog::backdrop {
     width: max-content;
     min-width: 10rem;
     max-width: 100dvw;
+    max-height: 80dvh;
+    overflow: auto;
     padding: 0.5rem 0.25rem;
     border: solid 1px var(--color-super-lowered);
     box-shadow: 0 0 8px 2px var(--color-shadow);
@@ -70,7 +72,7 @@ dialog::backdrop {
     right: unset;
 }
 
-.dropdown .inner[open] {
+.dropdown.open .inner {
     display: flex;
     flex-direction: column;
 }
@@ -80,6 +82,7 @@ dialog::backdrop {
     font-size: 14px;
     opacity: 50%;
     color: var(--color-text-raised);
+    text-align: left;
 }
 
 .dropdown .inner b.title {
@@ -108,6 +111,7 @@ dialog::backdrop {
     border-radius: var(--radius) !important;
     font-size: 14px;
     min-height: 32px !important;
+    height: 32px !important;
     font-weight: 500 !important;
     position: relative;
 
@@ -125,12 +129,10 @@ dialog::backdrop {
 
 .dropdown .inner a:focus,
 .dropdown .inner button:focus {
-    border-color: var(--color-primary-raised) !important;
-    box-shadow: 0 0 0 1px var(--color-primary-raised) !important;
     outline: none;
 }
 
-.dropdown:not(nav *):has(.inner[open]) button:not(.inner button) {
+.dropdown:not(nav *).open button:not(.inner button) {
     background: var(--color-lowered) !important;
 }
 
@@ -138,7 +140,7 @@ dialog::backdrop {
     transition: transform 0.15s;
 }
 
-.dropdown:has(.inner[open]) .dropdown-arrow {
+.dropdown.open .dropdown-arrow {
     transform: rotateZ(180deg);
 }
 

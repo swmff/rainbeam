@@ -46,11 +46,7 @@ pub async fn create_request(
             message: "Acceptable".to_string(),
             payload: (),
         }),
-        Err(e) => Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: (),
-        }),
+        Err(e) => Json(e.to_json()),
     }
 }
 
@@ -91,10 +87,6 @@ pub async fn delete_request(
             message: "Acceptable".to_string(),
             payload: (),
         }),
-        Err(e) => Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: (),
-        }),
+        Err(e) => Json(e.to_json()),
     }
 }

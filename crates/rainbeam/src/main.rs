@@ -81,6 +81,7 @@ pub async fn main() {
         .nest_service("/api/v0/auth", AuthApi::routes(auth_database.clone()))
         .nest("/api/v0/util", routing::api::util::routes(database.clone()))
         .nest("/api/v1", routing::api::routes(database.clone()))
+        .merge(routing::pages::routes(database.clone()).await)
         // pages
         // ...
         .nest_service(
