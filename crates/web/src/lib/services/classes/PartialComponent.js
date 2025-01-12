@@ -16,13 +16,13 @@ function create_observer() {
         {
             root: document.body,
             rootMargin: "0px",
-            threshold: 1.0,
-        },
+            threshold: 1.0
+        }
     );
 }
 
 observer = undefined;
-document.documentElement.addEventListener("turbo:load", () => {
+document.documentElement.addEventListener("load", () => {
     if (observer) {
         observer.disconnect();
         observer = undefined;
@@ -65,7 +65,7 @@ class PartialComponent extends HTMLElement {
                     // "complete" replace
                     const dom = new DOMParser().parseFromString(
                         res,
-                        "text/html",
+                        "text/html"
                     );
 
                     this.replaceWith(...dom.body.children);

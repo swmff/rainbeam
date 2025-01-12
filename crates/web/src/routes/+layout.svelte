@@ -1,5 +1,6 @@
 <script lang="ts">
     import { Option } from "$lib/classes/Option.js";
+    import type { Profile } from "$lib/bindings/Profile.js";
 
     import {
         Book,
@@ -16,6 +17,7 @@
         UserRoundPlus,
         UsersRound
     } from "lucide-svelte";
+
     import Dropdown from "$lib/components/Dropdown.svelte";
     import { onMount } from "svelte";
 
@@ -27,6 +29,7 @@
     onMount(async () => {
         const init = await import("$lib/init");
         init.default();
+        (globalThis as any).__init = init.default;
     });
 </script>
 
@@ -90,6 +93,7 @@
 </svelte:head>
 
 <div id="page">
+    <div id="toast_zone"></div>
     <div class="content_container" id="page_content">
         <article>
             <main class="flex flex-col gap-2">
@@ -112,10 +116,10 @@
                     </div>
 
                     {#if user.is_some()}
-                        {@const profile = user.unwrap()}
+                        {@const profile = user.unwrap() as Profile}
                         <div class="nav_side">
                             <Dropdown classname="title">
-                                <div class="flex items-center gap-2">
+                                <button class="camo flex items-center gap-2">
                                     <img
                                         title="{profile.username}'s avatar"
                                         src="/api/v0/auth/profile/{profile.id}/avatar"
@@ -125,7 +129,7 @@
                                     />
 
                                     <ChevronDown class="icon dropdown-arrow" />
-                                </div>
+                                </button>
 
                                 <div class="inner shadow-md">
                                     <b class="title">{profile.username}</b>

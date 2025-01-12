@@ -138,7 +138,7 @@
 
             // fetch icon
             const icon = await (
-                await fetch(`/static/build/icons/${icon_name}.svg`)
+                await fetch(`/images/icons/${icon_name}.svg`)
             ).text();
 
             const parser = new DOMParser().parseFromString(icon, "text/xml");
@@ -279,7 +279,7 @@
 
     app.define("hook.character_counter.init", function (_, event) {
         for (const element of Array.from(
-            document.querySelectorAll("[hook=counter]") || []
+            document.querySelectorAll("[data-hook=counter]") || []
         )) {
             const counter = document.getElementById(`${element.id}:counter`);
             counter.innerText = `0/${element.getAttribute("maxlength")}`;
@@ -296,7 +296,7 @@
 
     app.define("hook.long_text.init", function (_, event) {
         for (const element of Array.from(
-            document.querySelectorAll("[hook=long]") || []
+            document.querySelectorAll("[data-hook=long]") || []
         )) {
             const is_long = element.innerText.length >= 64 * 16;
 
@@ -306,7 +306,7 @@
 
             element.classList.add("hook:long.hidden_text");
 
-            if (element.getAttribute("hook-arg") === "lowered") {
+            if (element.getAttribute("data-hook-arg") === "lowered") {
                 element.classList.add("hook:long.hidden_text+lowered");
             }
 
@@ -485,7 +485,7 @@
             async (element) => {
                 const reaction = await (
                     await fetch(
-                        `/api/v1/reactions/${element.getAttribute("hook-arg:id")}`
+                        `/api/v1/reactions/${element.getAttribute("data-hook-arg_id")}`
                     )
                 ).json();
 
@@ -496,7 +496,7 @@
         );
 
         for (const element of Array.from(
-            document.querySelectorAll("[hook=check_reaction]") || []
+            document.querySelectorAll("[data-hook=check_reaction]") || []
         )) {
             observer.observe(element);
         }

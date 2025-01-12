@@ -5,11 +5,13 @@ export default function ClickOutside(element: HTMLElement, callback: any) {
         }
     }
 
+    (globalThis as any).__click_outside = callback;
     document.body.addEventListener("click", click);
 
     return {
         update(callback_: any) {
             callback = callback_;
+            (globalThis as any).__click_outside = callback_;
         },
         destroy() {
             document.body.removeEventListener("click", click);

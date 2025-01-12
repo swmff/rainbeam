@@ -119,7 +119,7 @@ blockquote p:is(.dark *) {
 nav {
     /* background: var(--color-primary);
     color: var(--color-text-primary) !important; */
-    background: transparent;
+    background: var(--color-surface);
     color: inherit;
     width: 100%;
     display: flex;

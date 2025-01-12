@@ -94,7 +94,7 @@ struct PartialTimelineTemplate {
 pub async fn partial_timeline_request(
     jar: CookieJar,
     State(database): State<Database>,
-    Query(props): Query<PaginatedQuery>,
+    Query(props): Query<PaginatedCleanQuery>,
 ) -> impl IntoResponse {
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
@@ -108,13 +108,26 @@ pub async fn partial_timeline_request(
         None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
-    let responses = match database
+    let responses_original = match database
         .get_responses_by_following_paginated(auth_user.id.to_owned(), props.page)
         .await
     {
         Ok(responses) => responses,
         Err(e) => return Json(e.to_json()),
     };
+
+    let mut responses = Vec::new();
+    if props.clean {
+        for mut response in responses_original {
+            response.0.author.clean();
+            response.0.recipient.clean();
+            response.1.author.clean();
+
+            responses.push(response)
+        }
+    } else {
+        responses = responses_original;
+    }
 
     let mut is_helper: bool = false;
     let is_powerful = {
@@ -316,6 +329,14 @@ pub async fn privacy_request(State(database): State<Database>) -> impl IntoRespo
 pub struct PaginatedQuery {
     #[serde(default)]
     pub page: i32,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct PaginatedCleanQuery {
+    #[serde(default)]
+    pub page: i32,
+    #[serde(default)]
+    pub clean: bool,
 }
 
 #[derive(Serialize, Deserialize)]

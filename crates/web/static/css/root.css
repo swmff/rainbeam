@@ -35,8 +35,8 @@
 .dark,
 .dark * {
     --hue: 215;
-    --sat: 15%;
-    /* --sat: 0%; */
+    /* --sat: 15%; */
+    --sat: 0%;
     --lit: 12%;
     --color-surface: hsl(var(--hue), var(--sat), calc(0% + var(--lit)));
     --color-lowered: hsl(var(--hue), var(--sat), calc(6% + var(--lit)));
@@ -333,7 +333,7 @@ img.emoji {
 
 .avatar {
     --size: 50px;
-    border-radius: var(--radius);
+    border-radius: calc(var(--radius) / 2);
     width: var(--size);
     min-width: var(--size);
     max-width: var(--size);

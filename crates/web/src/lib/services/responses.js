@@ -11,7 +11,7 @@
             warning = "",
             reply = "",
             unlisted = false,
-            circle = "",
+            circle = ""
         ) {
             await app.debounce("responses:create");
             if (!tags) {
@@ -22,7 +22,7 @@
                 fetch("/api/v1/responses", {
                     method: "POST",
                     headers: {
-                        "Content-Type": "application/json",
+                        "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
                         question,
@@ -34,8 +34,8 @@
                         warning: warning || "",
                         reply: reply || "",
                         unlisted: unlisted || false,
-                        circle: circle || "",
-                    }),
+                        circle: circle || ""
+                    })
                 })
                     .then((res) => res.json())
                     .then((res) => {
@@ -49,14 +49,14 @@
                         if (!is_post) {
                             app.smooth_remove(
                                 document.getElementById(`question:${question}`),
-                                500,
+                                500
                             );
                         }
 
                         return resolve(res);
                     });
             });
-        },
+        }
     );
 
     self.define("edit", function ({ $, app }, id, content) {
@@ -64,17 +64,17 @@
             fetch(`/api/v1/responses/${id}`, {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    content,
-                }),
+                    content
+                })
             })
                 .then((res) => res.json())
                 .then((res) => {
                     app.toast(
                         res.success ? "success" : "error",
-                        res.success ? "Response edited!" : res.message,
+                        res.success ? "Response edited!" : res.message
                     );
 
                     if (res.success === true) {
@@ -91,17 +91,17 @@
             fetch(`/api/v1/responses/${id}/tags`, {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    tags,
-                }),
+                    tags
+                })
             })
                 .then((res) => res.json())
                 .then((res) => {
                     app.toast(
                         res.success ? "success" : "error",
-                        res.success ? "Response edited!" : res.message,
+                        res.success ? "Response edited!" : res.message
                     );
 
                     if (res.success === true) {
@@ -118,17 +118,17 @@
             fetch(`/api/v1/responses/${id}/context`, {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    context,
-                }),
+                    context
+                })
             })
                 .then((res) => res.json())
                 .then((res) => {
                     app.toast(
                         res.success ? "success" : "error",
-                        res.success ? "Response edited!" : res.message,
+                        res.success ? "Response edited!" : res.message
                     );
 
                     if (res.success === true) {
@@ -145,17 +145,17 @@
             fetch(`/api/v1/responses/${id}/context/warning`, {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    warning,
-                }),
+                    warning
+                })
             })
                 .then((res) => res.json())
                 .then((res) => {
                     app.toast(
                         res.success ? "success" : "error",
-                        res.success ? "Response edited!" : res.message,
+                        res.success ? "Response edited!" : res.message
                     );
 
                     if (res.success === true) {
@@ -170,25 +170,25 @@
     self.define("delete", async function ({ $, app }, id) {
         if (
             !(await trigger("app:confirm", [
-                "Are you sure you want to do this? This will delete the response and its question.",
+                "Are you sure you want to do this? This will delete the response and its question."
             ]))
         ) {
             return;
         }
 
         fetch(`/api/v1/responses/${id}`, {
-            method: "DELETE",
+            method: "DELETE"
         })
             .then((res) => res.json())
             .then((res) => {
                 app.toast(
                     res.success ? "success" : "error",
-                    res.success ? "Response deleted!" : res.message,
+                    res.success ? "Response deleted!" : res.message
                 );
 
                 app.smooth_remove(
                     document.getElementById(`response:${id}`),
-                    500,
+                    500
                 );
             });
     });
@@ -196,25 +196,25 @@
     self.define("unsend", function ({ $, app }, id) {
         if (
             !confirm(
-                "Are you sure you want to do this? This will delete the response and allow you to answer the question again.",
+                "Are you sure you want to do this? This will delete the response and allow you to answer the question again."
             )
         ) {
             return;
         }
 
         fetch(`/api/v1/responses/${id}/unsend`, {
-            method: "POST",
+            method: "POST"
         })
             .then((res) => res.json())
             .then((res) => {
                 app.toast(
                     res.success ? "success" : "error",
-                    res.success ? "Question returned to inbox!" : res.message,
+                    res.success ? "Question returned to inbox!" : res.message
                 );
 
                 app.smooth_remove(
                     document.getElementById(`response:${id}`),
-                    500,
+                    500
                 );
             });
     });
@@ -229,12 +229,12 @@
 
             const part_1 = (
                 target.querySelector(".question_content p:nth-child(2)") || {
-                    innerText: "",
+                    innerText: ""
                 }
             ).innerText;
 
             const part_2 = target.querySelector(
-                ".response_content:not(include-partial *) p",
+                ".response_content:not(include-partial *) p"
             ).innerText;
 
             // ...
@@ -271,29 +271,24 @@
 
             out += ` ${link}`;
             return out;
-        },
+        }
     );
 
     self.define("click", function (_, id, do_render_nested) {
-        // close dropdowns
-        for (const dropdown of Array.from(
-            document.querySelectorAll(".inner[open]"),
-        )) {
-            dropdown.removeAttribute("open");
-        }
+        globalThis.__click_outside();
 
         // check for warning
         const warning = document.querySelector(
-            `#response\\:${id} .response_warning`,
+            `#response\\:${id} .response_warning`
         );
 
         if (warning) {
             const content = document.querySelector(
-                `#response\\:${id} .response_content`,
+                `#response\\:${id} .response_content`
             );
 
             const question = document.querySelector(
-                `#response\\:${id} .question`,
+                `#response\\:${id} .question`
             );
 
             if (question) {
