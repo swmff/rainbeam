@@ -1,8 +1,9 @@
+// @ts-nocheck
 (() => {
     const self = reg_ns("warnings", []);
 
     const accepted_warnings = JSON.parse(
-        window.localStorage.getItem("accepted_warnings") || "{}",
+        window.localStorage.getItem("accepted_warnings") || "{}"
     );
 
     self.define(
@@ -25,7 +26,7 @@
                 window.location.href = warning_page;
                 return;
             }
-        },
+        }
     );
 
     self.define(
@@ -35,12 +36,12 @@
 
             window.localStorage.setItem(
                 "accepted_warnings",
-                JSON.stringify(accepted_warnings),
+                JSON.stringify(accepted_warnings)
             );
 
             setTimeout(() => {
                 window.location.href = redirect;
             }, 100);
-        },
+        }
     );
 })();

@@ -1,3 +1,4 @@
+// @ts-nocheck
 (() => {
     const self = reg_ns("search", ["app"]);
 
@@ -6,7 +7,7 @@
         questions: "/search/questions?q=",
         users: "/search/users?q=",
         posts: "/search/posts?q=",
-        tag: "/search/responses?tag=",
+        tag: "/search/responses?tag="
     };
 
     self.define("run", function ({ $, app }, driver, query) {

@@ -1,15 +1,16 @@
+// @ts-nocheck
 (() => {
     const self = reg_ns("chats", ["app", "notifications"]);
 
     self.define("create", function ({ $, app }, id) {
         fetch(`/api/v1/chats/from_user/${id}`, {
-            method: "POST",
+            method: "POST"
         })
             .then((res) => res.json())
             .then((res) => {
                 app.toast(
                     res.success ? "success" : "error",
-                    res.success ? "Chat created!" : res.message,
+                    res.success ? "Chat created!" : res.message
                 );
 
                 if (res.success === true) {
@@ -21,20 +22,20 @@
     self.define("leave", async function ({ $, app }, id) {
         if (
             !(await trigger("app:confirm", [
-                "Are you sure you want to do this?",
+                "Are you sure you want to do this?"
             ]))
         ) {
             return;
         }
 
         fetch(`/api/v1/chats/${id}`, {
-            method: "DELETE",
+            method: "DELETE"
         })
             .then((res) => res.json())
             .then((res) => {
                 app.toast(
                     res.success ? "success" : "error",
-                    res.success ? "Chat left!" : res.message,
+                    res.success ? "Chat left!" : res.message
                 );
 
                 if (res.success === true) {
@@ -48,18 +49,18 @@
             fetch(`/api/v1/chats/${id}/name`, {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
                     chat: id,
-                    name,
-                }),
+                    name
+                })
             })
                 .then((res) => res.json())
                 .then((res) => {
                     app.toast(
                         res.success ? "success" : "error",
-                        res.success ? "Name updated!" : res.message,
+                        res.success ? "Name updated!" : res.message
                     );
 
                     if (res.success === true) {
@@ -76,18 +77,18 @@
             fetch(`/api/v1/chats/${id}/add`, {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
                     chat: id,
-                    friend,
-                }),
+                    friend
+                })
             })
                 .then((res) => res.json())
                 .then((res) => {
                     app.toast(
                         res.success ? "success" : "error",
-                        res.success ? "Friend added to chat!" : res.message,
+                        res.success ? "Friend added to chat!" : res.message
                     );
 
                     if (res.success === true) {
@@ -104,18 +105,18 @@
             fetch("/api/v1/messages", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
                     chat: id,
-                    content,
-                }),
+                    content
+                })
             })
                 .then((res) => res.json())
                 .then((res) => {
                     app.toast(
                         res.success ? "success" : "error",
-                        res.success ? "Message sent!" : res.message,
+                        res.success ? "Message sent!" : res.message
                     );
 
                     if (res.success === true) {
@@ -133,9 +134,9 @@
             fetch("/chats/_app/msg.html", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/json"
                 },
-                body: JSON.stringify(msg),
+                body: JSON.stringify(msg)
             })
                 .then((res) => res.text())
                 .then((html) => {
@@ -151,35 +152,35 @@
                     // remove notification (if we have enough information)
                     if (window.CHAT_USER_ID && window.CHAT_ID && !is_own) {
                         notifications.delete(
-                            `msg:${window.CHAT_USER_ID}:${window.CHAT_ID}`,
+                            `msg:${window.CHAT_USER_ID}:${window.CHAT_ID}`
                         );
                     }
                 });
-        },
+        }
     );
 
     self.define("msg_delete", async function ({ $, app }, id) {
         if (
             !(await trigger("app:confirm", [
-                "Are you sure you want to do this?",
+                "Are you sure you want to do this?"
             ]))
         ) {
             return;
         }
 
         fetch(`/api/v1/messages/${id}`, {
-            method: "DELETE",
+            method: "DELETE"
         })
             .then((res) => res.json())
             .then((res) => {
                 app.toast(
                     res.success ? "success" : "error",
-                    res.success ? "Message deleted!" : res.message,
+                    res.success ? "Message deleted!" : res.message
                 );
 
                 app.smooth_remove(
                     document.getElementById(`message:${id}`),
-                    500,
+                    500
                 );
             });
     });
@@ -189,33 +190,33 @@
             fetch(`/api/v1/messages/${id}`, {
                 method: "PUT",
                 headers: {
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    content,
-                }),
+                    content
+                })
             })
                 .then((res) => res.json())
                 .then((res) => {
                     app.toast(
                         res.success ? "success" : "error",
-                        res.success ? "Message edited!" : res.message,
+                        res.success ? "Message edited!" : res.message
                     );
 
                     // update message on page
                     fetch("/api/v1/pages/_app/render", {
                         method: "POST",
                         headers: {
-                            "Content-Type": "application/json",
+                            "Content-Type": "application/json"
                         },
                         body: JSON.stringify({
-                            content,
-                        }),
+                            content
+                        })
                     })
                         .then((res) => res.text())
                         .then((res) => {
                             document.getElementById(
-                                `msg_content:${id}`,
+                                `msg_content:${id}`
                             ).innerHTML = res;
                         });
 
@@ -248,7 +249,7 @@
 
         setTimeout(() => {
             globalThis.message_editor_.setValue(
-                globalThis.message_contents[id],
+                globalThis.message_contents[id]
             );
         }, 250);
 

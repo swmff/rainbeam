@@ -1,8 +1,7 @@
 <script lang="ts">
-    import { Option, Some } from "$lib/classes/Option.js";
+    import { Option } from "$lib/classes/Option.js";
     import type { Profile } from "$lib/bindings/Profile.js";
     import { onMount } from "svelte";
-    import BigFriend from "$lib/components/BigFriend.svelte";
     import Response from "$lib/components/Response.svelte";
     import { active_page } from "$lib/stores.js";
 
@@ -17,7 +16,7 @@
 
     async function load_responses() {
         return await (
-            await fetch(`/_partial/timeline?page=${query.page || "0"}`)
+            await fetch(`/_partial/posts/following?page=${query.page || "0"}`)
         ).json();
     }
 
@@ -38,8 +37,8 @@
 
         use("app", (app: any) => {
             app["hook.attach_to_partial"](
-                "/_partial/timeline",
-                "/",
+                "/_partial/posts/following",
+                "/inbox/posts/following",
                 document.getElementById("feed"),
                 document.body,
                 Number.parseInt(query.page || "0"),
@@ -65,10 +64,8 @@
 <article>
     <main class="flex flex-col gap-2">
         <div class="pillmenu convertible shadow">
-            <a href="/" class="active"
-                ><span>{lang["timelines:link.timeline"]}</span></a
-            >
-            <a href="/inbox/posts"
+            <a href="/"><span>{lang["timelines:link.timeline"]}</span></a>
+            <a href="/inbox/posts" class="active"
                 ><span>{lang["timelines:link.posts"]}</span></a
             >
             <a href="/inbox/global"
@@ -77,36 +74,16 @@
         </div>
 
         <div class="pillmenu convertible shadow">
-            <a href="/public"><span>{lang["timelines:link.public"]}</span></a>
-            <a href="/" class="active"
+            <a href="/inbox/posts"
+                ><span>{lang["timelines:link.public"]}</span></a
+            >
+            <a href="/inbox/posts/following" class="active"
                 ><span>{lang["timelines:link.following"]}</span></a
             >
         </div>
 
         {#if user.is_some()}
             {@const profile = user.unwrap() as Profile}
-            <div class="card w-full flex flex-col gap-2">
-                <h5 id="friends">My Friends</h5>
-                <div class="flex gap-2 flex-wrap">
-                    <BigFriend user={profile} profile={Some(profile)} {lang} />
-                    {#each page.friends as user}
-                        {#if profile.id !== user[0].id}
-                            <BigFriend
-                                user={user[0]}
-                                profile={Some(profile)}
-                                {lang}
-                            />
-                        {:else}
-                            <BigFriend
-                                user={user[1]}
-                                profile={Some(profile)}
-                                {lang}
-                            />
-                        {/if}
-                    {/each}
-                </div>
-            </div>
-
             <div id="feed" class="flex flex-col gap-2">
                 {#each responses as res}
                     <Response

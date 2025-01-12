@@ -2,6 +2,7 @@
 //! Sending drawn images as questions
 //!
 //! Rainbeam <https://github.com/swmff/rainbeam>
+// @ts-nocheck
 (() => {
     const self = reg_ns("carp", ["app"]);
 
@@ -89,7 +90,7 @@
                     (e) => {
                         this.draw_event(e);
                     },
-                    false,
+                    false
                 );
 
                 canvas.addEventListener(
@@ -97,7 +98,7 @@
                     (e) => {
                         this.push_state();
                     },
-                    false,
+                    false
                 );
 
                 canvas.addEventListener(
@@ -105,7 +106,7 @@
                     (e) => {
                         this.move_event(e);
                     },
-                    false,
+                    false
                 );
 
                 canvas.addEventListener(
@@ -113,7 +114,7 @@
                     (e) => {
                         this.move_event(e);
                     },
-                    false,
+                    false
                 );
 
                 // mobile
@@ -127,7 +128,7 @@
 
                         this.draw_event(e, true);
                     },
-                    false,
+                    false
                 );
 
                 canvas.addEventListener(
@@ -140,7 +141,7 @@
 
                         this.move_event(e);
                     },
-                    false,
+                    false
                 );
 
                 canvas.addEventListener(
@@ -154,7 +155,7 @@
                         this.push_state();
                         this.move_event(e);
                     },
-                    false,
+                    false
                 );
 
                 // add controls
@@ -193,7 +194,7 @@
                 color_button.title = "Select color";
                 color_button.setAttribute("type", "button");
                 color_button.appendChild(
-                    await trigger("app:icon", ["paint-bucket", "icon"]),
+                    await trigger("app:icon", ["paint-bucket", "icon"])
                 );
 
                 color_button.addEventListener("click", () => {
@@ -220,7 +221,7 @@
                 const download_button = document.createElement("button");
                 download_button.title = "Download graph";
                 download_button.appendChild(
-                    await trigger("app:icon", ["download", "icon"]),
+                    await trigger("app:icon", ["download", "icon"])
                 );
 
                 media_container.appendChild(download_button);
@@ -232,7 +233,7 @@
                 const upload_button = document.createElement("button");
                 upload_button.title = "Upload graph";
                 upload_button.appendChild(
-                    await trigger("app:icon", ["upload", "icon"]),
+                    await trigger("app:icon", ["upload", "icon"])
                 );
 
                 media_container.appendChild(upload_button);
@@ -329,7 +330,7 @@
                     this.#color_old !== this.COLOR ? this.COLOR : null,
                     this.#stroke_size_old !== this.STROKE_SIZE
                         ? this.STROKE_SIZE
-                        : null,
+                        : null
                 ];
 
                 for (const i in point) {
@@ -369,10 +370,10 @@
                     // Canvas width
                     w: this.#ctx.canvas.width,
                     // Canvas height
-                    h: this.#ctx.canvas.height,
+                    h: this.#ctx.canvas.height
                 },
                 // Canvas data
-                d: this.LINES,
+                d: this.LINES
             });
         }
 

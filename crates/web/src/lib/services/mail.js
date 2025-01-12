@@ -1,3 +1,4 @@
+// @ts-nocheck
 (() => {
     const self = reg_ns("mail", ["app"]);
 
@@ -6,19 +7,19 @@
             fetch("/api/v0/auth/mail", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
                     recipient: recipient.trim().split(","),
                     title,
-                    content,
-                }),
+                    content
+                })
             })
                 .then((res) => res.json())
                 .then((res) => {
                     app.toast(
                         res.success ? "success" : "error",
-                        res.success ? "Mail sent!" : res.message,
+                        res.success ? "Mail sent!" : res.message
                     );
 
                     if (res.success === true) {
@@ -33,20 +34,20 @@
     self.define("delete", async function ({ $, app }, id) {
         if (
             !(await trigger("app:confirm", [
-                "Are you sure you want to do this?",
+                "Are you sure you want to do this?"
             ]))
         ) {
             return;
         }
 
         fetch(`/api/v0/auth/mail/${id}`, {
-            method: "DELETE",
+            method: "DELETE"
         })
             .then((res) => res.json())
             .then((res) => {
                 app.toast(
                     res.success ? "success" : "error",
-                    res.success ? "Mail deleted!" : res.message,
+                    res.success ? "Mail deleted!" : res.message
                 );
 
                 app.smooth_remove(document.getElementById(`mail:${id}`), 500);
@@ -57,17 +58,17 @@
         fetch(`/api/v0/auth/mail/${id}/state`, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json",
+                "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                state,
-            }),
+                state
+            })
         })
             .then((res) => res.json())
             .then((res) => {
                 app.toast(
                     res.success ? "success" : "error",
-                    res.success ? "Mail updated!" : res.message,
+                    res.success ? "Mail updated!" : res.message
                 );
             });
     });

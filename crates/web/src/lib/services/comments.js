@@ -1,3 +1,4 @@
+// @ts-nocheck
 (() => {
     const self = reg_ns("comments", ["app"]);
 
@@ -9,20 +10,20 @@
                 fetch("/api/v1/comments", {
                     method: "POST",
                     headers: {
-                        "Content-Type": "application/json",
+                        "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
                         response,
                         content,
                         reply,
-                        anonymous,
-                    }),
+                        anonymous
+                    })
                 })
                     .then((res) => res.json())
                     .then((res) => {
                         app.toast(
                             res.success ? "success" : "error",
-                            res.success ? "Comment posted!" : res.message,
+                            res.success ? "Comment posted!" : res.message
                         );
 
                         if (res.success === true) {
@@ -32,7 +33,7 @@
                         return reject(res);
                     });
             });
-        },
+        }
     );
 
     self.define("edit", function ({ $, app }, id, content) {
@@ -40,17 +41,17 @@
             fetch(`/api/v1/comments/${id}`, {
                 method: "PUT",
                 headers: {
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    content,
-                }),
+                    content
+                })
             })
                 .then((res) => res.json())
                 .then((res) => {
                     app.toast(
                         res.success ? "success" : "error",
-                        res.success ? "Comment edited!" : res.message,
+                        res.success ? "Comment edited!" : res.message
                     );
 
                     if (res.success === true) {
@@ -65,25 +66,25 @@
     self.define("delete", async function ({ $, app }, id) {
         if (
             !(await trigger("app:confirm", [
-                "Are you sure you want to do this?",
+                "Are you sure you want to do this?"
             ]))
         ) {
             return;
         }
 
         fetch(`/api/v1/comments/${id}`, {
-            method: "DELETE",
+            method: "DELETE"
         })
             .then((res) => res.json())
             .then((res) => {
                 app.toast(
                     res.success ? "success" : "error",
-                    res.success ? "Comment deleted!" : res.message,
+                    res.success ? "Comment deleted!" : res.message
                 );
 
                 app.smooth_remove(
                     document.getElementById(`comment:${id}`),
-                    500,
+                    500
                 );
             });
     });
@@ -91,20 +92,20 @@
     self.define("ipblock", async function ({ $, app }, id) {
         if (
             !(await trigger("app:confirm", [
-                "Are you sure you want to do this?",
+                "Are you sure you want to do this?"
             ]))
         ) {
             return;
         }
 
         fetch(`/api/v1/comments/${id}/ipblock`, {
-            method: "POST",
+            method: "POST"
         })
             .then((res) => res.json())
             .then((res) => {
                 app.toast(
                     res.success ? "success" : "error",
-                    res.success ? "IP blocked!" : res.message,
+                    res.success ? "IP blocked!" : res.message
                 );
             });
     });

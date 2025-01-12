@@ -1,3 +1,4 @@
+// @ts-nocheck
 (() => {
     const self = reg_ns("items", ["app"]);
 
@@ -8,21 +9,21 @@
                 fetch("/api/v0/auth/items", {
                     method: "POST",
                     headers: {
-                        "Content-Type": "application/json",
+                        "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
                         name,
                         description,
                         content,
                         cost,
-                        type,
-                    }),
+                        type
+                    })
                 })
                     .then((res) => res.json())
                     .then((res) => {
                         app.toast(
                             res.success ? "success" : "error",
-                            res.success ? "Item created!" : res.message,
+                            res.success ? "Item created!" : res.message
                         );
 
                         if (res.success === true) {
@@ -32,7 +33,7 @@
                         }
                     });
             });
-        },
+        }
     );
 
     self.define("content_input", async function ({ _, app }, type) {
@@ -41,7 +42,7 @@
         if (type === "UserTheme") {
             if (
                 !(await app.confirm(
-                    "Are you sure you would like to create an item using your current profile theme?\n\nYou can press no to input CSS directly instead.",
+                    "Are you sure you would like to create an item using your current profile theme?\n\nYou can press no to input CSS directly instead."
                 ))
             ) {
                 const css = await app.prompt_long("Enter CSS manually:");
@@ -96,20 +97,20 @@
     self.define("delete", async function ({ $, app }, id) {
         if (
             !(await trigger("app:confirm", [
-                "Are you sure you want to do this?",
+                "Are you sure you want to do this?"
             ]))
         ) {
             return;
         }
 
         fetch(`/api/v0/auth/item/${id}`, {
-            method: "DELETE",
+            method: "DELETE"
         })
             .then((res) => res.json())
             .then((res) => {
                 app.toast(
                     res.success ? "success" : "error",
-                    res.success ? "Item deleted!" : res.message,
+                    res.success ? "Item deleted!" : res.message
                 );
             });
     });
@@ -117,20 +118,20 @@
     self.define("purchase", async function ({ $, app }, id, price) {
         if (
             !(await trigger("app:confirm", [
-                `Are you sure you want to purchase this item for ${price} coins?`,
+                `Are you sure you want to purchase this item for ${price} coins?`
             ]))
         ) {
             return;
         }
 
         fetch(`/api/v0/auth/item/${id}/buy`, {
-            method: "POST",
+            method: "POST"
         })
             .then((res) => res.json())
             .then((res) => {
                 app.toast(
                     res.success ? "success" : "error",
-                    res.success ? "Item purchased!" : res.message,
+                    res.success ? "Item purchased!" : res.message
                 );
             });
     });
@@ -141,22 +142,22 @@
             fetch(`/api/v0/auth/item/${id}`, {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
                     name,
                     description,
-                    cost,
-                }),
+                    cost
+                })
             })
                 .then((res) => res.json())
                 .then((res) => {
                     app.toast(
                         res.success ? "success" : "error",
-                        res.success ? "Item updated!" : res.message,
+                        res.success ? "Item updated!" : res.message
                     );
                 });
-        },
+        }
     );
 
     self.define("edit_content", async function ({ $, app }, id, type) {
@@ -165,17 +166,17 @@
         fetch(`/api/v0/auth/item/${id}/content`, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json",
+                "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                content,
-            }),
+                content
+            })
         })
             .then((res) => res.json())
             .then((res) => {
                 app.toast(
                     res.success ? "success" : "error",
-                    res.success ? "Item updated!" : res.message,
+                    res.success ? "Item updated!" : res.message
                 );
             });
     });
@@ -184,22 +185,22 @@
         fetch(`/api/v0/auth/item/${id}/status`, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json",
+                "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                status,
-            }),
+                status
+            })
         })
             .then((res) => res.json())
             .then((res) => {
                 app.toast(
                     res.success ? "success" : "error",
-                    res.success ? "Item updated!" : res.message,
+                    res.success ? "Item updated!" : res.message
                 );
 
                 if (res.success) {
                     for (const element of Array.from(
-                        document.querySelectorAll("[data-item-status]"),
+                        document.querySelectorAll("[data-item-status]")
                     )) {
                         element.classList.remove("active");
                     }

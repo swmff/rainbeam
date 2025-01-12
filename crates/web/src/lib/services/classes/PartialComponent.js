@@ -1,3 +1,4 @@
+// @ts-nocheck
 let observer;
 
 function create_observer() {

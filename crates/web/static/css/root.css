@@ -66,8 +66,9 @@ html,
 body {
     line-height: 1.5;
     letter-spacing: 0.15px;
-    font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
-        "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    font-family: "Inter", "Poppins", "Roboto", ui-sans-serif, system-ui,
+        sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+        "Noto Color Emoji";
     color: var(--color-text);
     background: var(--color-surface);
     overflow: auto auto;

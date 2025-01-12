@@ -198,7 +198,7 @@ struct PartialPublicTimelineTemplate {
 pub async fn partial_public_timeline_request(
     jar: CookieJar,
     State(database): State<Database>,
-    Query(props): Query<PaginatedQuery>,
+    Query(props): Query<PaginatedCleanQuery>,
 ) -> impl IntoResponse {
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
@@ -212,10 +212,23 @@ pub async fn partial_public_timeline_request(
         None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
-    let responses = match database.get_responses_paginated(props.page).await {
+    let responses_original = match database.get_responses_paginated(props.page).await {
         Ok(responses) => responses,
         Err(e) => return Json(e.to_json()),
     };
+
+    let mut responses = Vec::new();
+    if props.clean {
+        for mut response in responses_original {
+            response.0.author.clean();
+            response.0.recipient.clean();
+            response.1.author.clean();
+
+            responses.push(response)
+        }
+    } else {
+        responses = responses_original;
+    }
 
     let mut is_helper: bool = false;
     let is_powerful = {
@@ -556,7 +569,7 @@ struct PartialPostsTemplate {
 pub async fn partial_posts_request(
     jar: CookieJar,
     State(database): State<Database>,
-    Query(props): Query<PaginatedQuery>,
+    Query(props): Query<PaginatedCleanQuery>,
 ) -> impl IntoResponse {
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
@@ -570,36 +583,22 @@ pub async fn partial_posts_request(
         None => None,
     };
 
-    let mut responses = match database.get_posts_paginated(props.page).await {
+    let responses_original = match database.get_posts_paginated(props.page).await {
         Ok(responses) => responses,
         Err(e) => return Json(e.to_json()),
     };
 
-    // remove content from blocked users/users that have blocked us
-    if let Some(ref ua) = auth_user {
-        let blocked = match database
-            .auth
-            .get_user_relationships_of_status(ua.id.clone(), RelationshipStatus::Blocked)
-            .await
-        {
-            Ok(l) => l,
-            Err(_) => Vec::new(),
-        };
+    let mut responses = Vec::new();
+    if props.clean {
+        for mut response in responses_original {
+            response.0.author.clean();
+            response.0.recipient.clean();
+            response.1.author.clean();
 
-        for user in blocked {
-            for (i, _) in responses
-                .clone()
-                .iter()
-                .filter(|x| x.1.author.id == user.0.id)
-                .enumerate()
-            {
-                if i > responses.len() {
-                    continue;
-                }
-
-                responses.remove(i);
-            }
+            responses.push(response)
         }
+    } else {
+        responses = responses_original;
     }
 
     let mut is_helper: bool = false;
@@ -674,19 +673,18 @@ pub async fn partial_posts_request(
 }
 
 #[derive(Serialize, Deserialize)]
-struct FollowingPostsTemplate {
-    page: i32,
+struct PartialPostsFollowingTemplate {
     responses: Vec<FullResponse>,
     relationships: HashMap<String, RelationshipStatus>,
     is_powerful: bool,
     is_helper: bool,
 }
 
-/// GET /inbox/posts/following
-pub async fn following_posts_timeline_request(
+/// GET /_app/timelines/posts_following.html
+pub async fn partial_posts_following_request(
     jar: CookieJar,
     State(database): State<Database>,
-    Query(query): Query<PaginatedQuery>,
+    Query(props): Query<PaginatedCleanQuery>,
 ) -> impl IntoResponse {
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
@@ -700,12 +698,39 @@ pub async fn following_posts_timeline_request(
         None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
-    let responses = match database
-        .get_posts_by_following_paginated(query.page, auth_user.id.clone())
+    let responses_original = match database
+        .get_posts_by_following_paginated(props.page, auth_user.id.clone())
         .await
     {
         Ok(responses) => responses,
-        Err(_) => return Json(DatabaseError::Other.to_json()),
+        Err(e) => return Json(e.to_json()),
+    };
+
+    let mut responses = Vec::new();
+    if props.clean {
+        for mut response in responses_original {
+            response.0.author.clean();
+            response.0.recipient.clean();
+            response.1.author.clean();
+
+            responses.push(response)
+        }
+    } else {
+        responses = responses_original;
+    }
+
+    let mut is_helper: bool = false;
+    let is_powerful = {
+        let group = match database.auth.get_group_by_id(auth_user.group).await {
+            Ok(g) => g,
+            Err(_) => return Json(DatabaseError::Other.to_json()),
+        };
+
+        if group.permissions.contains(&Permission::Helper) {
+            is_helper = true
+        }
+
+        group.permissions.contains(&Permission::Manager)
     };
 
     // build relationships list
@@ -713,6 +738,12 @@ pub async fn following_posts_timeline_request(
 
     for response in &responses {
         if relationships.contains_key(&response.1.author.id) {
+            continue;
+        }
+
+        if is_helper {
+            // make sure staff can view your responses
+            relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
             continue;
         }
 
@@ -733,26 +764,10 @@ pub async fn following_posts_timeline_request(
     }
 
     // ...
-    let mut is_helper: bool = false;
-    let is_powerful = {
-        let group = match database.auth.get_group_by_id(auth_user.group).await {
-            Ok(g) => g,
-            Err(_) => return Json(DatabaseError::Other.to_json()),
-        };
-
-        if group.permissions.contains(&Permission::Helper) {
-            is_helper = true
-        }
-
-        group.permissions.contains(&Permission::Manager)
-    };
-
-    // ...
     Json(DefaultReturn {
         success: true,
         message: String::new(),
-        payload: crate::routing::into_some_serde_value(FollowingPostsTemplate {
-            page: query.page,
+        payload: crate::routing::into_some_serde_value(PartialPostsFollowingTemplate {
             responses,
             relationships,
             is_powerful,
@@ -1506,10 +1521,6 @@ pub async fn routes(database: Database) -> Router {
         .route("/site/privacy", get(privacy_request))
         // inbox
         .route("/inbox", get(inbox_request))
-        .route(
-            "/inbox/posts/following",
-            get(following_posts_timeline_request),
-        )
         .route("/inbox/global", get(public_global_timeline_request))
         .route("/inbox/global/following", get(global_timeline_request))
         .route("/inbox/notifications", get(notifications_request))
@@ -1632,6 +1643,10 @@ pub async fn routes(database: Database) -> Router {
             get(partial_public_timeline_request),
         )
         .route("/_app/timelines/posts.html", get(partial_posts_request))
+        .route(
+            "/_app/timelines/posts_following.html",
+            get(partial_posts_following_request),
+        )
         // ...
         .with_state(database)
 }

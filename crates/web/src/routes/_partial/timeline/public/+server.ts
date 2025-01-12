@@ -5,7 +5,7 @@ export const GET: RequestHandler = async ({ request, url }) => {
     const res = await db.api.get_root(
         {
             version: "",
-            route: `/_app/timelines/posts.html?clean=true&page=${url.searchParams.get("page") || "0"}`
+            route: `/_app/timelines/public_timeline.html?clean=true&page=${url.searchParams.get("page") || "0"}`
         },
         { headers: request.headers, body: request.body }
     );

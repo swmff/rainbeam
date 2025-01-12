@@ -1,3 +1,4 @@
+// @ts-nocheck
 (() => {
     const self = reg_ns("responses", ["app"]);
 
@@ -222,6 +223,12 @@
     self.define(
         "gen_share",
         function (_, target, id, target_length, include_link) {
+            const share_hashtag = globalThis.__user
+                ? globalThis.__user.unwrap().metadata.kv[
+                      "rainbeam:share_hashtag"
+                  ] || ""
+                : "";
+
             // resolve target
             while (!target.classList.contains("response")) {
                 target = target.parentElement;
@@ -253,6 +260,10 @@
             const sep_size = separator.length;
             const part_1_size = target_length / 2 - sep_size;
 
+            if (share_hashtag) {
+                out += `#${share_hashtag}`;
+            }
+
             if (part_1 !== "") {
                 out +=
                     part_1_size > part_1.length
@@ -275,7 +286,9 @@
     );
 
     self.define("click", function (_, id, do_render_nested) {
-        globalThis.__click_outside();
+        if (globalThis.__close_dropdown) {
+            globalThis.__close_dropdown();
+        }
 
         // check for warning
         const warning = document.querySelector(

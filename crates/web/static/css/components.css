@@ -144,11 +144,49 @@ dialog::backdrop {
     transform: rotateZ(180deg);
 }
 
-@media screen and (max-height: 900px) {
+@media screen and (max-width: 900px) {
     /* stuff to make some components feel more mobile-native */
-    body:has(.dropdown:not(dialog *) .inner[open]),
+    body:has(.dropdown:not(dialog *).open .inner),
     body:has(dialog[open]) {
         overflow: hidden;
+    }
+
+    /* nav */
+    nav {
+        padding: 0.5rem 0.25rem;
+        margin-bottom: 0;
+        backdrop-filter: none;
+        border-bottom: solid 1px var(--color-super-lowered);
+    }
+
+    nav button:not(.dropdown *),
+    nav a.button:not(.dropdown *) {
+        font-size: 12px;
+        flex-direction: column;
+        width: 60px;
+        height: 48px !important;
+        gap: 0 !important;
+        transform: scale(0.9);
+        padding: 0 !important;
+    }
+
+    nav button.active,
+    nav a.button.active {
+        animation: grow 1 0.25s 0.1s forwards running;
+    }
+
+    nav button .notification.tr,
+    nav a.button .notification.tr {
+        font-size: 12px;
+    }
+
+    nav button::before,
+    nav a::before {
+        content: unset;
+    }
+
+    nav .nav_side {
+        display: contents;
     }
 
     /* dropdown to drawer */
@@ -170,15 +208,15 @@ dialog::backdrop {
         background: #000000;
     }
 
-    .dropdown:not(dialog *):not(nav *) .inner[open] {
+    .dropdown:not(dialog *):not(nav *).open .inner {
         top: unset !important;
         left: 0 !important;
         bottom: 0 !important;
         right: unset !important;
         width: 100% !important;
         max-height: 90dvh;
-        border-top-left-radius: calc(var(--radius) * 2);
-        border-top-right-radius: calc(var(--radius) * 2);
+        border-top-left-radius: var(--radius);
+        border-top-right-radius: var(--radius);
         padding-top: 1rem;
         padding-bottom: 2rem;
         border-bottom-left-radius: 0;
@@ -190,7 +228,7 @@ dialog::backdrop {
         box-shadow: 0 0 4px var(--color-shadow);
     }
 
-    .dropdown:not(dialog *):not(nav *):has(.inner[open])::before {
+    .dropdown:not(dialog *):not(nav *).open::before {
         opacity: 50%;
     }
 
@@ -199,7 +237,7 @@ dialog::backdrop {
         min-height: 35px !important;
     }
 
-    .dropdown:is(nav *) .inner[open] {
+    .dropdown:is(nav *).open .inner {
         max-height: 80dvh;
         overflow: auto;
     }

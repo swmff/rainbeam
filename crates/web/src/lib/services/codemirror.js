@@ -1,3 +1,4 @@
+// @ts-nocheck
 (() => {
     const self = reg_ns("codemirror");
 
@@ -11,7 +12,7 @@
             placeholder,
             global = "editor",
             mode = "markdown",
-            inputStyle = "contenteditable",
+            inputStyle = "contenteditable"
         ) {
             globalThis[global] = CodeMirror(bind_to, {
                 value: value || "",
@@ -31,18 +32,18 @@
                     End: "goLineRight",
                     Enter: (cm) => {
                         cm.replaceSelection("\n");
-                    },
-                },
+                    }
+                }
             });
 
             // ...
             for (const element of Array.from(
-                document.querySelectorAll(".CodeMirror-code"),
+                document.querySelectorAll(".CodeMirror-code")
             )) {
                 element.setAttribute("spellcheck", "true");
             }
         },
-        ["object", "string", "string"],
+        ["object", "string", "string"]
     );
 
     // tabs
@@ -75,11 +76,11 @@
                     await fetch("/api/v1/pages/_app/render", {
                         method: "POST",
                         headers: {
-                            "Content-Type": "application/json",
+                            "Content-Type": "application/json"
                         },
                         body: JSON.stringify({
-                            content: globalThis.editor.getValue(),
-                        }),
+                            content: globalThis.editor.getValue()
+                        })
                     })
                 ).text();
             });

@@ -9,12 +9,16 @@
     <title>{lang["error.html:link.uh_oh"]}</title>
 </svelte:head>
 
-<div class="card flex flex-col gap-2">
-    <h4>{lang["error.html:link.uh_oh"]}</h4>
-    <span>{page.error?.message} ({page.status})</span>
+<article>
+    <main>
+        <div class="card flex flex-col gap-2">
+            <h4>{lang["error.html:link.uh_oh"]}</h4>
+            <span>{page.error?.message} ({page.status})</span>
 
-    <hr />
-    <div class="flex gap-2">
-        <a href="/" class="button">{lang["error.html:link.go_home"]}</a>
-    </div>
-</div>
+            <hr />
+            <div class="flex gap-2">
+                <a href="/" class="button">{lang["error.html:link.go_home"]}</a>
+            </div>
+        </div>
+    </main>
+</article>

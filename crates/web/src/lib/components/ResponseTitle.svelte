@@ -17,7 +17,6 @@
         Rocket,
         Tag,
         Trash,
-        TwitterIcon,
         Undo2
     } from "lucide-svelte";
 
@@ -25,11 +24,10 @@
     import type { Option } from "$lib/classes/Option";
     import type { Profile } from "$lib/bindings/Profile";
     import type { LangFile } from "$lib/bindings/LangFile";
-    import type { Config } from "$lib/bindings/Config";
+    import type { CleanConfig } from "$lib/db";
 
     const {
         res,
-        is_powerful,
         is_helper,
         is_pinned,
         show_pin_button,
@@ -39,14 +37,13 @@
         config
     }: {
         res: [Question, QuestionResponse, number, number];
-        is_powerful: boolean;
         is_helper: boolean;
         is_pinned: boolean;
         show_pin_button: boolean;
         do_render_nested: boolean;
         profile: Option<Profile>;
         lang: LangFile["data"];
-        config: Config;
+        config: CleanConfig;
     } = $props();
 
     const [question, response, comment_count, reaction_count] = res;

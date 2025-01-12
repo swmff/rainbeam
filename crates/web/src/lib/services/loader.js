@@ -1,10 +1,11 @@
 //! Namespace Loader
 //! https://github.com/hkauso/regns
+// @ts-nocheck
 
 globalThis.ns_config = globalThis.ns_config || {
     root: "/static/js/",
     version: 0,
-    verbose: true,
+    verbose: true
 };
 
 globalThis._app_base = globalThis._app_base || { ns_store: {}, classes: {} };
@@ -27,7 +28,7 @@ globalThis.ns = (ns) => {
     if (!res) {
         return console.error(
             "namespace does not exist, please use one of the following:",
-            Object.keys(globalThis._app_base.ns_store),
+            Object.keys(globalThis._app_base.ns_store)
         );
     }
 
@@ -88,7 +89,7 @@ globalThis.reg_ns = (ns, deps) => {
                             return console.error(
                                 "argument does not pass type check:",
                                 i,
-                                args[i],
+                                args[i]
                             );
                         }
                     }
@@ -98,7 +99,7 @@ globalThis.reg_ns = (ns, deps) => {
                 // we MUST return here, otherwise nothing will work in workers
                 return self._fn_store[name](self._get_deps(), ...args); // call with deps and arguments
             };
-        },
+        }
     };
 
     regns_log("log", "registered namespace:", ns);

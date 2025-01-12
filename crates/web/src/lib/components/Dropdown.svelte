@@ -8,10 +8,13 @@
 <div
     class="dropdown {classname} {open ? 'open' : ''}"
     onclick={(event: any) => {
-        if (open === true) {
-            open = false;
-            return;
+        if ((globalThis as any).__close_dropdown) {
+            (globalThis as any).__close_dropdown();
         }
+
+        (globalThis as any).__close_dropdown = () => {
+            open = false;
+        };
 
         open = true;
         event.stopPropagation();
@@ -49,6 +52,7 @@
     }}
     use:ClickOutside={() => {
         open = false;
+        (globalThis as any).__close_dropdown = undefined;
     }}
     onkeydown={() => {}}
     tabindex="0"

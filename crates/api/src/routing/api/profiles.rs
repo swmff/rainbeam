@@ -18,6 +18,7 @@ use axum::{
 
 pub fn routes(database: Database) -> Router {
     Router::new()
+        .route("/me/unread", get(unread_request))
         .route("/{username}/report", post(report_request))
         .route("/{username}/export", get(export_request)) // staff
         // ...
@@ -25,6 +26,43 @@ pub fn routes(database: Database) -> Router {
 }
 
 // routes
+
+/// Get the number of unread notifications and inbox questions for the current user
+pub async fn unread_request(jar: CookieJar, State(database): State<Database>) -> impl IntoResponse {
+    // get user from token
+    let ua = match jar.get("__Secure-Token") {
+        Some(c) => {
+            match database
+                .auth
+                .get_profile_by_unhashed(c.value_trimmed().to_string())
+                .await
+            {
+                Ok(ua) => ua,
+                Err(e) => return Json(e.to_json()),
+            }
+        }
+        None => {
+            return Json(DatabaseError::NotAllowed.to_json());
+        }
+    };
+
+    // ...
+    let unread = match database.get_questions_by_recipient(ua.id.to_owned()).await {
+        Ok(unread) => unread.len(),
+        Err(_) => 0,
+    };
+
+    let notifs = database
+        .auth
+        .get_notification_count_by_recipient(ua.id.to_owned())
+        .await;
+
+    Json(DefaultReturn {
+        success: true,
+        message: String::new(),
+        payload: Some((unread, notifs)),
+    })
+}
 
 /// Redirect an ID to a full username
 pub async fn expand_request(

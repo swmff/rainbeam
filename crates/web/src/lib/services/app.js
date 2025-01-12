@@ -1,3 +1,4 @@
+// @ts-nocheck
 (() => {
     const app = reg_ns("app");
 
@@ -361,7 +362,25 @@
 
     app.define(
         "hook.attach_to_partial",
-        function ({ $ }, partial, full, attach, wrapper, page, run_on_load) {
+        function (
+            { $ },
+            partial,
+            full,
+            attach,
+            wrapper,
+            page,
+            run_on_load,
+            target_field,
+            object_callback
+        ) {
+            if (globalThis.__scroll_event) {
+                globalThis.__scroll_event = undefined;
+                wrapper.removeEventListener(
+                    "scroll",
+                    globalThis.__scroll_event
+                );
+            }
+
             return new Promise((resolve, reject) => {
                 async function load_partial() {
                     const url = `${partial}?page=${page}`;
@@ -373,12 +392,9 @@
 
                     fetch(url)
                         .then(async (res) => {
-                            const text = await res.text();
+                            const text = await res.json();
 
-                            if (
-                                text.length < 100 ||
-                                text.includes('data-marker="no-results"')
-                            ) {
+                            if (text.payload[target_field].length < 10) {
                                 // pretty much blank content, no more pages
                                 wrapper.removeEventListener("scroll", event);
 
@@ -389,7 +405,9 @@
                                 return resolve();
                             }
 
-                            attach.innerHTML += text;
+                            for (const object of text.payload[target_field]) {
+                                object_callback(object);
+                            }
 
                             $.clean_date_codes();
                             $.link_filter();
@@ -438,6 +456,7 @@
                 };
 
                 wrapper.addEventListener("scroll", event);
+                globalThis.__scroll_event = event;
             });
         }
     );

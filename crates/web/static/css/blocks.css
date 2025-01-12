@@ -38,10 +38,6 @@
     background: var(--color-lowered);
     color: var(--color-text-lowered) !important;
     box-shadow: none;
-    /* border */
-    border-top: solid 1px var(--color-super-lowered);
-    border-left: solid 1px var(--color-super-lowered);
-    border-right: solid 1px var(--color-super-lowered);
 }
 
 .card-nest .card:last-child:not(details *),
@@ -51,10 +47,6 @@
     border-bottom-left-radius: var(--radius);
     border-bottom-right-radius: var(--radius);
     box-shadow: none;
-    /* border */
-    border-bottom: solid 1px var(--color-super-lowered);
-    border-left: solid 1px var(--color-super-lowered);
-    border-right: solid 1px var(--color-super-lowered);
 }
 
 .card-nest.shadow:not(include-partial *) .card {
@@ -117,9 +109,8 @@ blockquote p:is(.dark *) {
 
 /* nav */
 nav {
-    /* background: var(--color-primary);
-    color: var(--color-text-primary) !important; */
-    background: var(--color-surface);
+    background: var(--color-primary);
+    color: var(--color-text-primary) !important;
     color: inherit;
     width: 100%;
     display: flex;
@@ -130,7 +121,6 @@ nav {
     z-index: 6374;
     padding: 0.5rem;
     transition: opacity 0.15s;
-    border-bottom: solid 1px var(--color-super-lowered);
 }
 
 nav .content_container,
@@ -140,8 +130,8 @@ footer .content_container {
     align-items: center;
 }
 
-nav button,
-nav a.button {
+nav button:not(.inner *),
+nav a.button:not(.inner *) {
     border-radius: var(--radius);
     color: inherit;
     padding: 0.75rem 0.75rem;
@@ -154,9 +144,9 @@ nav a.button {
         transform 0.15s;
 }
 
-nav button:hover,
-nav a.button:hover {
-    background: transparent;
+nav button:not(.inner *):hover,
+nav a.button:not(.inner *):hover {
+    background: transparent !important;
     outline: none;
     opacity: 100%;
 }

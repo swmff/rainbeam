@@ -1,3 +1,4 @@
+// @ts-nocheck
 (() => {
     const self = reg_ns("reports");
 
@@ -15,12 +16,12 @@
         fetch(`/api/v1/${$.type}/${$.target}/report`, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json",
+                "Content-Type": "application/json"
             },
             body: JSON.stringify({
                 content: e.target.content.value,
-                token: e.target.querySelector(".h-captcha textarea").value,
-            }),
+                token: e.target.querySelector(".h-captcha textarea").value
+            })
         })
             .then((res) => res.json())
             .then((res) => {

@@ -1,3 +1,4 @@
+// @ts-nocheck
 (() => {
     const self = reg_ns("questions", ["app"]);
 
@@ -9,20 +10,20 @@
                 fetch("/api/v1/questions", {
                     method: "POST",
                     headers: {
-                        "Content-Type": "application/json",
+                        "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
                         recipient,
                         content,
                         anonymous,
-                        media: media || "",
-                    }),
+                        media: media || ""
+                    })
                 })
                     .then((res) => res.json())
                     .then((res) => {
                         app.toast(
                             res.success ? "success" : "error",
-                            res.success ? "Question asked!" : res.message,
+                            res.success ? "Question asked!" : res.message
                         );
 
                         if (res.success === true) {
@@ -32,31 +33,31 @@
                         return reject(res);
                     });
             });
-        },
+        }
     );
 
     self.define("delete", async function ({ $, app }, id) {
         if (
             !(await trigger("app:confirm", [
-                "Are you sure you want to do this?",
+                "Are you sure you want to do this?"
             ]))
         ) {
             return;
         }
 
         fetch(`/api/v1/questions/${id}`, {
-            method: "DELETE",
+            method: "DELETE"
         })
             .then((res) => res.json())
             .then((res) => {
                 app.toast(
                     res.success ? "success" : "error",
-                    res.success ? "Question deleted!" : res.message,
+                    res.success ? "Question deleted!" : res.message
                 );
 
                 app.smooth_remove(
                     document.getElementById(`question:${id}`),
-                    500,
+                    500
                 );
             });
     });
@@ -64,7 +65,7 @@
     self.define("carp", function () {
         use("carp", (carp) => {
             for (const question of document.querySelectorAll(
-                ".question_content",
+                ".question_content"
             )) {
                 const p = question.querySelector("p");
 
@@ -87,20 +88,20 @@
     self.define("ipblock", async function ({ $, app }, id) {
         if (
             !(await trigger("app:confirm", [
-                "Are you sure you want to do this?",
+                "Are you sure you want to do this?"
             ]))
         ) {
             return;
         }
 
         fetch(`/api/v1/questions/${id}/ipblock`, {
-            method: "POST",
+            method: "POST"
         })
             .then((res) => res.json())
             .then((res) => {
                 app.toast(
                     res.success ? "success" : "error",
-                    res.success ? "IP blocked!" : res.message,
+                    res.success ? "IP blocked!" : res.message
                 );
             });
     });

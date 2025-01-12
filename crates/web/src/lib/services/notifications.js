@@ -1,3 +1,4 @@
+// @ts-nocheck
 (() => {
     const self = reg_ns("notifications", ["app"]);
 
@@ -9,19 +10,19 @@
         // }
 
         fetch(`/api/v0/auth/notifications/${id}`, {
-            method: "DELETE",
+            method: "DELETE"
         })
             .then((res) => res.json())
             .then((res) => {
                 if (document.getElementById(`notif:${id}`)) {
                     trigger("app:toast", [
                         res.success ? "success" : "error",
-                        res.success ? "Notification deleted!" : res.message,
+                        res.success ? "Notification deleted!" : res.message
                     ]);
 
                     app.smooth_remove(
                         document.getElementById(`notif:${id}`),
-                        500,
+                        500
                     );
                 }
             });
@@ -35,13 +36,13 @@
         // }
 
         fetch("/api/v0/auth/notifications/clear", {
-            method: "DELETE",
+            method: "DELETE"
         })
             .then((res) => res.json())
             .then((res) => {
                 trigger("app:toast", [
                     res.success ? "success" : "error",
-                    res.success ? "Notifications cleared!" : res.message,
+                    res.success ? "Notifications cleared!" : res.message
                 ]);
             });
     });

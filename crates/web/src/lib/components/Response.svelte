@@ -7,7 +7,7 @@
     import ResponseTitle from "./ResponseTitle.svelte";
     import type { Profile } from "$lib/bindings/Profile";
     import type { LangFile } from "$lib/bindings/LangFile";
-    import type { Config } from "$lib/bindings/Config";
+    import type { CleanConfig } from "$lib/db";
 
     const {
         res,
@@ -31,7 +31,7 @@
         show_pin_button: boolean;
         profile: Option<Profile>;
         lang: LangFile["data"];
-        config: Config;
+        config: CleanConfig;
         do_render_nested: boolean;
     } = $props();
 
@@ -48,7 +48,7 @@
     tabindex="0"
     role="button"
 >
-    <div class="card-nest w-full shadow response">
+    <div class="card-nest w-full response">
         {#if response.context.is_post == false}
             {@const author_tag = anonymous_tag(question.author.id)}
             <!-- question -->
@@ -175,7 +175,6 @@
             {#if response.context.is_post == true}
                 <ResponseTitle
                     {res}
-                    {is_powerful}
                     {is_helper}
                     {is_pinned}
                     {show_pin_button}
@@ -239,7 +238,6 @@
             {#if response.context.is_post == false}
                 <ResponseTitle
                     {res}
-                    {is_powerful}
                     {is_helper}
                     {is_pinned}
                     {show_pin_button}

@@ -1,3 +1,4 @@
+// @ts-nocheck
 (() => {
     const self = reg_ns("tokens");
 
