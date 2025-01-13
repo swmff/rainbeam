@@ -1093,7 +1093,7 @@ pub async fn inbox_request(jar: CookieJar, State(database): State<Database>) -> 
                     .metadata
                     .kv
                     .get("sparkler:anonymous_avatar")
-                    .unwrap_or(&"/static/images/default-avatar.svg".to_string())
+                    .unwrap_or(&"/images/default-avatar.svg".to_string())
                     .to_string(),
             ),
             is_helper,

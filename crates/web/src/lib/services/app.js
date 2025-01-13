@@ -474,8 +474,9 @@
             // add embed
             paragraph.innerText = paragraph.innerText.replace(groups[0], "");
             paragraph.parentElement.innerHTML += `<include-partial
-                src="/_app/components/response.html?id=${groups[2]}&do_render_nested=false"
+                src="/_components/response?id=${groups[2]}&do_render_nested=false"
                 uses="app:clean_date_codes,app:link_filter,app:hook.alt"
+                data-click="trigger('responses:click', ['${groups[2]}', false]);"
             ></include-partial>`;
         }
 
@@ -493,7 +494,7 @@
             // add embed
             paragraph.innerText = paragraph.innerText.replace(groups[0], "");
             paragraph.parentElement.innerHTML = `<include-partial
-                src="/inbox/mail/_app/components/mail.html?id=${groups[2]}&do_render_nested=false"
+                src="/_components/inbox/mail?id=${groups[2]}&do_render_nested=false"
                 uses="app:clean_date_codes,app:link_filter,app:hook.alt,app:hook.partial_embeds"
             ></include-partial>${paragraph.parentElement.innerHTML}`;
         }

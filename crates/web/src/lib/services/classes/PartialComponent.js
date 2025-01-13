@@ -69,7 +69,7 @@ class PartialComponent extends HTMLElement {
                         "text/html"
                     );
 
-                    this.replaceWith(...dom.body.children);
+                    this.replaceWith(...dom.body.children[0].children);
                 }
 
                 if (globalThis[`lib:${value}`]) {
@@ -81,6 +81,14 @@ class PartialComponent extends HTMLElement {
                 this.setAttribute("loaded", this.loaded);
 
                 setTimeout(() => {
+                    if (this.getAttribute("data-click")) {
+                        this.setAttribute(
+                            "onclick",
+                            this.getAttribute("data-click")
+                        );
+                        return;
+                    }
+
                     if (!this.getAttribute("uses")) {
                         return;
                     }

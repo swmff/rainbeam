@@ -13,7 +13,6 @@ export function anonymous_tag(
 }
 
 import { marked } from "marked";
-import purify from "dompurify";
 export function render_markdown(input: string): string {
-    return marked.parse(purify.sanitize(input)) as string;
+    return marked.parse(input) as string;
 }

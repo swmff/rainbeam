@@ -1,33 +1,16 @@
-import type { LayoutServerLoad } from "./$types";
+import type { PageServerLoad } from "./$types";
 import { type Option, Some, None } from "$lib/classes/Option";
 import type { Profile } from "$lib/bindings/Profile";
 
 import { langs } from "$lib/lang";
 import * as db from "$lib/db";
-import type { LangFile } from "$lib/bindings/LangFile";
 import type { Serialized } from "$lib/proc/tserde";
 
-export type LayoutData = {
-    user: Serialized;
-    notifs: number;
-    unread: number;
-    lang: LangFile["data"];
-    config: db.CleanConfig;
-    data: any;
-    query: Serialized;
-    layout_skip: boolean;
-};
-
-export const load: LayoutServerLoad = async ({
+export const load: PageServerLoad = async ({
     cookies,
     url,
     request
-}): Promise<LayoutData> => {
-    if (url.pathname.startsWith("/_")) {
-        // @ts-ignore
-        return { user: { inner: null }, layout_skip: true };
-    }
-
+}): Promise<any> => {
     const token = cookies.get("__Secure-Token");
     const lang = cookies.get("net.rainbeam.langs.choice");
 
@@ -38,13 +21,10 @@ export const load: LayoutServerLoad = async ({
         query[param[0]] = param[1];
     }
 
-    // fetch unread data
-    const unread = await db.get_unread(request.headers);
-
     // fetch page data
     const data = await db.api.get_root(
         {
-            route: url.pathname + url.search,
+            route: `_app/${url.pathname.slice(2)}.html${url.search}`,
             version: ""
         },
         {
@@ -60,8 +40,6 @@ export const load: LayoutServerLoad = async ({
                   (await db.get_profile_from_token(token)).payload as Profile
               ).serialize()
             : (None as Option<Profile>).serialize(),
-        notifs: unread.payload[0],
-        unread: unread.payload[1],
         lang: langs[lang || "net.rainbeam.langs:en-US"].data,
         config: {
             name: db.config.name,
@@ -72,7 +50,6 @@ export const load: LayoutServerLoad = async ({
             }
         },
         data: data.status === 200 ? (await data.json()).payload : {},
-        query,
-        layout_skip: false
+        query
     };
 };

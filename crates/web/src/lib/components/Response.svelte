@@ -35,7 +35,7 @@
         do_render_nested: boolean;
     } = $props();
 
-    const [question, response, comment_count, reaction_count] = res;
+    const [question, response] = res;
 </script>
 
 <div
@@ -107,7 +107,7 @@
                                 <!-- default avatar, setting not set OR blank or unsafe -->
                                 <img
                                     title="{question.author.username}'s avatar"
-                                    src="/static/images/default-avatar.svg"
+                                    src="/images/default-avatar.svg"
                                     alt=""
                                     class="avatar"
                                     loading="lazy"
@@ -159,10 +159,11 @@
                     <p style="display: none">{question.context.media}</p>
                     {@html render_markdown(question.content)}
 
-                    {#if response.reply && response.context.is_post == false}
+                    {#if response.reply && response.context.is_post === false && do_render_nested === true}
                         <include-partial
-                            src="/_app/components/response.html?id={response.reply}&do_render_nested=false"
+                            src="/_components/response?id={response.reply}&do_render_nested=false"
                             uses="app:clean_date_codes,app:link_filter,app:hook.alt"
+                            data-click="trigger('responses:click', ['{response.reply}', false]);"
                         ></include-partial>
                     {/if}
                 </span>
@@ -195,8 +196,9 @@
 
                 {#if response.reply && response.context.is_post == true && do_render_nested == true}
                     <include-partial
-                        src="/_app/components/response.html?id={response.reply}&do_render_nested=false"
+                        src="/_components/response?id={response.reply}&do_render_nested=false"
                         uses="app:clean_date_codes,app:link_filter,app:hook.alt"
+                        data-click="trigger('responses:click', ['{response.reply}', false]);"
                     ></include-partial>
                 {/if}
             </span>

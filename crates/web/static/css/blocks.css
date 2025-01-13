@@ -58,6 +58,10 @@ include-partial .card-nest .card {
     border: solid 1px var(--color-super-lowered) !important;
 }
 
+include-partial:has(.response) {
+    cursor: pointer;
+}
+
 .card.secondary {
     background: var(--color-lowered);
     color: var(--color-text-lowered) !important;
