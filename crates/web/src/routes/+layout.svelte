@@ -196,14 +196,14 @@
                                 title="{profile.username}'s avatar"
                                 src="/api/v0/auth/profile/{profile.id}/avatar"
                                 alt=""
-                                class="avatar shadow"
+                                class="avatar"
                                 style="--size: 24px"
                             />
 
                             <ChevronDown class="icon dropdown-arrow" />
                         </button>
 
-                        <div class="inner shadow-md">
+                        <div class="inner">
                             <b class="title">{profile.username}</b>
 
                             <a href="/@{profile.username}">
@@ -277,7 +277,7 @@
                             <ChevronDown class="icon dropdown-arrow" />
                         </div>
 
-                        <div class="inner shadow-md">
+                        <div class="inner">
                             <b class="title">{lang["general:title.account"]}</b>
 
                             <a href="/login">

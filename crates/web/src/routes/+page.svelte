@@ -41,7 +41,7 @@
 
 <article>
     <main class="flex flex-col gap-2">
-        <div class="pillmenu convertible shadow">
+        <div class="pillmenu convertible">
             <a href="/" class="active"
                 ><span>{lang["timelines:link.timeline"]}</span></a
             >
@@ -53,7 +53,7 @@
             >
         </div>
 
-        <div class="pillmenu convertible shadow">
+        <div class="pillmenu convertible">
             <a href="/public"><span>{lang["timelines:link.public"]}</span></a>
             <a href="/" class="active"
                 ><span>{lang["timelines:link.following"]}</span></a

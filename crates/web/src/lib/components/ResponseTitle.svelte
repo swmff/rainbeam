@@ -161,7 +161,7 @@
                     <Repeat2 class="icon" />
                 </button>
 
-                <div class="inner shadow-md w-content">
+                <div class="inner w-content">
                     {#if profile.is_some()}
                         <button
                             onclick={() => {
@@ -205,7 +205,7 @@
                     <Ellipsis class="icon" />
                 </button>
 
-                <div class="inner shadow-md w-content">
+                <div class="inner w-content">
                     <b class="title">Sharing</b>
 
                     <button
@@ -388,9 +388,8 @@
                                 }}
                                 class="red"
                             >
-                                <Trash class="icon" />} {lang[
-                                    "general:action.delete"
-                                ]}
+                                <Trash class="icon" />
+                                {lang["general:action.delete"]}
                             </button>
                         {/if}
                     {/if}

@@ -62,3 +62,48 @@ export async function get_unread(headers: Headers) {
         )
     ).json();
 }
+
+export async function get_response(id: string) {
+    return await (
+        await api.get(
+            {
+                route: `responses/${id}`,
+                version: "v1"
+            },
+            {
+                body: null,
+                headers: {}
+            }
+        )
+    ).json();
+}
+
+export async function get_question(id: string) {
+    return await (
+        await api.get(
+            {
+                route: `questions/${id}`,
+                version: "v1"
+            },
+            {
+                body: null,
+                headers: {}
+            }
+        )
+    ).json();
+}
+
+export async function get_comment(id: string) {
+    return await (
+        await api.get(
+            {
+                route: `comments/${id}`,
+                version: "v1"
+            },
+            {
+                body: null,
+                headers: {}
+            }
+        )
+    ).json();
+}

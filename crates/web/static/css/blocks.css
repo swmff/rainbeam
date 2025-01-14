@@ -67,6 +67,10 @@ include-partial:has(.response) {
     color: var(--color-text-lowered) !important;
 }
 
+a.card {
+    border: solid 1px var(--color-super-lowered);
+}
+
 a.card:hover {
     text-decoration: none;
     border-color: var(--color-primary);

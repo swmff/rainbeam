@@ -6,6 +6,7 @@ import { langs } from "$lib/lang";
 import * as db from "$lib/db";
 import type { LangFile } from "$lib/bindings/LangFile";
 import type { Serialized } from "$lib/proc/tserde";
+import { clean } from "$lib/helpers";
 
 export type LayoutData = {
     user: Serialized;
@@ -52,7 +53,6 @@ export const load: LayoutServerLoad = async ({
             headers: request.headers
         }
     );
-
     // return
     return {
         user: token
@@ -60,8 +60,8 @@ export const load: LayoutServerLoad = async ({
                   (await db.get_profile_from_token(token)).payload as Profile
               ).serialize()
             : (None as Option<Profile>).serialize(),
-        notifs: unread.payload[0],
-        unread: unread.payload[1],
+        notifs: unread.payload[1],
+        unread: unread.payload[0],
         lang: langs[lang || "net.rainbeam.langs:en-US"].data,
         config: {
             name: db.config.name,
@@ -71,7 +71,7 @@ export const load: LayoutServerLoad = async ({
                 site_key: db.config.captcha.site_key
             }
         },
-        data: data.status === 200 ? (await data.json()).payload : {},
+        data: data.status === 200 ? clean((await data.json()).payload) : {},
         query,
         layout_skip: false
     };

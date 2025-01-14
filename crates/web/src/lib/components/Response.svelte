@@ -83,7 +83,6 @@
                                     style="color: inherit"
                                     class="username short"
                                 >
-                                    <!-- prettier-ignore -->
                                     {#if display_name}
                                         {#if display_name.trim()}
                                             {display_name.trim()}

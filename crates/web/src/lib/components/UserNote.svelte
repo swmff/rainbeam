@@ -44,7 +44,6 @@
                 }}
                 style="border: solid 2px var(--color-surface) !important"
             >
-                <!-- prettier-ignore -->
                 {#if emoji}
                     {emoji}
                 {:else}
@@ -73,7 +72,7 @@
                                     <Ellipsis class="icon" />
                                 </button>
 
-                                <div class="inner shadow-md w-content">
+                                <div class="inner w-content">
                                     {#if profile.id === user.id}
                                         <a
                                             href="/settings?note_clear"

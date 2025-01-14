@@ -1,7 +1,5 @@
 //! Namespace Loader
-//! https://github.com/hkauso/regns
 // @ts-nocheck
-
 globalThis.ns_config = globalThis.ns_config || {
     root: "/static/js/",
     version: 0,
