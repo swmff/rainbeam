@@ -1,4 +1,6 @@
 // @ts-nocheck
+import { replaceState } from "$app/navigation";
+
 (() => {
     const app = reg_ns("app");
 
@@ -359,107 +361,6 @@
             } catch {}
         }
     });
-
-    app.define(
-        "hook.attach_to_partial",
-        function (
-            { $ },
-            partial,
-            full,
-            attach,
-            wrapper,
-            page,
-            run_on_load,
-            target_field,
-            object_callback
-        ) {
-            if (globalThis.__scroll_event) {
-                globalThis.__scroll_event = undefined;
-                wrapper.removeEventListener(
-                    "scroll",
-                    globalThis.__scroll_event
-                );
-            }
-
-            return new Promise((resolve, reject) => {
-                async function load_partial() {
-                    const url = `${partial}?page=${page}`;
-                    history.replaceState(
-                        history.state,
-                        "",
-                        url.replace(partial, full)
-                    );
-
-                    fetch(url)
-                        .then(async (res) => {
-                            const text = await res.json();
-
-                            if (text.payload[target_field].length < 10) {
-                                // pretty much blank content, no more pages
-                                wrapper.removeEventListener("scroll", event);
-
-                                if (globalThis._app_base.ns_store.$questions) {
-                                    trigger("questions:carp");
-                                }
-
-                                return resolve();
-                            }
-
-                            for (const object of text.payload[target_field]) {
-                                object_callback(object);
-                            }
-
-                            $.clean_date_codes();
-                            $.link_filter();
-                            $["hook.alt"]();
-
-                            if (globalThis._app_base.ns_store.$questions) {
-                                trigger("questions:carp");
-                            }
-                        })
-                        .catch(() => {
-                            // done scrolling, no more pages (http error)
-                            wrapper.removeEventListener("scroll", event);
-
-                            if (globalThis._app_base.ns_store.$questions) {
-                                trigger("questions:carp");
-                            }
-
-                            resolve();
-                        });
-                }
-
-                const event = async () => {
-                    if (
-                        wrapper.scrollTop + wrapper.offsetHeight + 100 >
-                        attach.offsetHeight
-                    ) {
-                        app.debounce("app:partials")
-                            .then(async () => {
-                                if (document.getElementById("initial_loader")) {
-                                    console.log("partial blocked");
-                                    return;
-                                }
-
-                                page += 1;
-                                await load_partial();
-                                await $["hook.partial_embeds"]();
-
-                                if (globalThis._app_base.ns_store.$questions) {
-                                    trigger("questions:carp");
-                                }
-                            })
-                            .catch(() => {
-                                console.log("partial stuck");
-                            });
-                    }
-                };
-
-                wrapper.addEventListener("scroll", event);
-                globalThis.__scroll_event = event;
-            });
-        }
-    );
 
     app.define("hook.partial_embeds", function (_) {
         for (const paragraph of Array.from(

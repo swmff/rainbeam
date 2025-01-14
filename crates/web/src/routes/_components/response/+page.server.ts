@@ -33,6 +33,21 @@ export const load: PageServerLoad = async ({
         }
     );
 
+    // get data
+    let data_ = data.status === 200 ? await data.json() : { success: false };
+
+    if (!data_.success) {
+        data_.payload = {
+            response: undefined,
+            anonymous_avatar: "",
+            anonymous_username: "",
+            is_pinned: false,
+            is_powerful: false,
+            is_helper: false,
+            show_pin_button: false
+        };
+    }
+
     // return
     return {
         user: token
@@ -49,7 +64,7 @@ export const load: PageServerLoad = async ({
                 site_key: db.config.captcha.site_key
             }
         },
-        data: data.status === 200 ? (await data.json()).payload : {},
+        data: data_.payload,
         query
     };
 };

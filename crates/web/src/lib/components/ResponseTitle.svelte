@@ -32,6 +32,7 @@
         is_pinned,
         show_pin_button,
         do_render_nested = true,
+        show_comments = true,
         profile,
         lang,
         config
@@ -41,6 +42,7 @@
         is_pinned: boolean;
         show_pin_button: boolean;
         do_render_nested: boolean;
+        show_comments: boolean;
         profile: Option<Profile>;
         lang: LangFile["data"];
         config: CleanConfig;
@@ -140,16 +142,18 @@
                 {/if}
             </button>
 
-            <a
-                href="/@{response.author.username}/r/{response.id}"
-                title="{comment_count} comments"
-                class="button camo"
-            >
-                <MessageCircle class="icon" />
-                {#if comment_count > 0}
-                    <span class="notification camo">{comment_count}</span>
-                {/if}
-            </a>
+            {#if show_comments}
+                <a
+                    href="/@{response.author.username}/r/{response.id}"
+                    title="{comment_count} comments"
+                    class="button camo"
+                >
+                    <MessageCircle class="icon" />
+                    {#if comment_count > 0}
+                        <span class="notification camo">{comment_count}</span>
+                    {/if}
+                </a>
+            {/if}
 
             <!-- quote -->
             <Dropdown>

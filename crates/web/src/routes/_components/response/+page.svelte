@@ -22,16 +22,21 @@
     } = page;
 </script>
 
-<Response
-    res={response}
-    {anonymous_avatar}
-    {anonymous_username}
-    {is_pinned}
-    {is_powerful}
-    {is_helper}
-    {show_pin_button}
-    {profile}
-    {config}
-    {lang}
-    {do_render_nested}
-/>
+{#if response}
+    <Response
+        res={response}
+        {anonymous_avatar}
+        {anonymous_username}
+        {is_pinned}
+        {is_powerful}
+        {is_helper}
+        {show_pin_button}
+        show_comments={true}
+        {profile}
+        {config}
+        {lang}
+        {do_render_nested}
+    />
+{:else}
+    <div class="markdown-alert-warning">Failed to load response.</div>
+{/if}

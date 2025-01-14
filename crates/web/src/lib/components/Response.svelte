@@ -3,7 +3,6 @@
     import type { Question } from "$lib/bindings/Question";
     import type { QuestionResponse } from "$lib/bindings/QuestionResponse";
     import { anonymous_tag, render_markdown } from "$lib/helpers";
-    import { Globe } from "lucide-svelte";
     import ResponseTitle from "./ResponseTitle.svelte";
     import type { Profile } from "$lib/bindings/Profile";
     import type { LangFile } from "$lib/bindings/LangFile";
@@ -20,7 +19,8 @@
         profile,
         lang,
         config,
-        do_render_nested = true
+        do_render_nested = true,
+        show_comments = true
     }: {
         res: [Question, QuestionResponse, number, number];
         anonymous_avatar: string;
@@ -33,6 +33,7 @@
         lang: LangFile["data"];
         config: CleanConfig;
         do_render_nested: boolean;
+        show_comments: boolean;
     } = $props();
 
     const [question, response] = res;
@@ -59,7 +60,7 @@
                     : ''}"
             >
                 <div class="flex justify-between gap-1 question_title">
-                    <div class="footernav">
+                    <div class="footernav items-center">
                         <b class="flex items-center gap-2 item">
                             {#if author_tag[0] === false}
                                 {@const display_name =
@@ -115,10 +116,14 @@
                                 />
                             {/if}
 
-                            {#if anonymous_username}
-                                {anonymous_username}
-                            {:else}
-                                anonymous
+                            {#if author_tag[0]}
+                                <span>
+                                    {#if anonymous_username}
+                                        {anonymous_username}
+                                    {:else}
+                                        anonymous
+                                    {/if}
+                                </span>
                             {/if}
 
                             {#if is_powerful}
@@ -141,11 +146,11 @@
 
                         {#if question.recipient.id === "@"}
                             <a
-                                class="button item primary icon-only small"
+                                class="item primary"
                                 href="/question/{question.id}"
                                 title="Global question"
                             >
-                                <Globe class="icon" />
+                                +
                             </a>
                         {/if}
                     </div>
@@ -182,6 +187,7 @@
                     {profile}
                     {lang}
                     {do_render_nested}
+                    {show_comments}
                     {config}
                 />
             {/if}
@@ -246,6 +252,7 @@
                     {profile}
                     {lang}
                     {do_render_nested}
+                    {show_comments}
                     {config}
                 />
             {/if}

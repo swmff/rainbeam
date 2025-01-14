@@ -3,6 +3,7 @@
     import type { Profile } from "$lib/bindings/Profile.js";
     import { onMount } from "svelte";
     import Response from "$lib/components/Response.svelte";
+    import Scroller from "$lib/components/Scroller.svelte";
     import { active_page } from "$lib/stores.js";
 
     const { data } = $props();
@@ -34,30 +35,6 @@
         setTimeout(() => {
             trigger("questions:carp");
         }, 100);
-
-        use("app", (app: any) => {
-            app["hook.attach_to_partial"](
-                "/_partial/posts",
-                "/inbox/posts",
-                document.getElementById("feed"),
-                document.body,
-                Number.parseInt(query.page || "0"),
-                false,
-                "responses",
-                (res: any) => {
-                    responses.push(res);
-                }
-            ).then(() => {
-                console.log("partial end");
-                (document.getElementById("feed") as HTMLElement).innerHTML +=
-                    `<div class="w-full flex flex-col gap-2">
-                        <hr />
-                        <p class="w-full flex justify-center fade">
-                            You've reached the end
-                        </p>
-                    </div>`;
-            });
-        });
     });
 </script>
 
@@ -98,6 +75,7 @@
                         is_helper={page.is_helper}
                         is_pinned={false}
                         show_pin_button={false}
+                        show_comments={true}
                         do_render_nested={true}
                         profile={user}
                         {lang}
@@ -105,6 +83,22 @@
                     />
                 {/each}
             </div>
+
+            <Scroller
+                threshold={100}
+                load={async () => {
+                    if (query.page) {
+                        query.page += 1;
+                    } else {
+                        query.page = 1;
+                    }
+
+                    for (const res of (await load_responses()).payload
+                        .responses) {
+                        responses.push(res);
+                    }
+                }}
+            />
         {/if}
     </main>
 </article>
