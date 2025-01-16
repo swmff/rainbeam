@@ -104,7 +104,7 @@
             >
             {#if user.is_some()}
                 {@const profile = user.unwrap()}
-                {#if profile.id == response.author.id}
+                {#if profile.id === response.author.id}
                     <a href="#/edit" data-tab-button="edit"
                         ><span>{lang["general:action.edit"]}</span></a
                     >

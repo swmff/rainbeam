@@ -75,7 +75,7 @@
             {:else}
                 <!-- default avatar, setting not set OR blank or unsafe -->
                 <img
-                    title="anonymous' avatar"
+                    title="anonymous avatar"
                     src="/images/default-avatar.svg"
                     alt=""
                     class="avatar"
@@ -172,7 +172,7 @@
 
                 {#if profile.is_some()}
                     {@const user = profile.unwrap()}
-                    {#if user.id == comment.author.id || user.id == response.author.id}
+                    {#if user.id === comment.author.id || user.id === response.author.id}
                         <!-- actions for the comment author/response author only -->
                         <b class="title">Manage</b>
 

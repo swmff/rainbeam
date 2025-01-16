@@ -30,6 +30,7 @@
 
     import Dropdown from "$lib/components/Dropdown.svelte";
     import { onMount } from "svelte";
+    import { afterNavigate } from "$app/navigation";
 
     const user = Option.from(data.user) as Option<Profile>;
     const lang = data.lang;
@@ -43,10 +44,7 @@
     onMount(async () => {
         if ((globalThis as any).__scroll_event) {
             (globalThis as any).__scroll_event = undefined;
-            document.body.removeEventListener(
-                "scroll",
-                (globalThis as any).__scroll_event
-            );
+            document.body.removeEventListener("scroll", (globalThis as any).__scroll_event);
         }
 
         const init = await import("$lib/init");
@@ -58,6 +56,12 @@
         active_page.subscribe((v) => {
             active = v;
         });
+    });
+
+    afterNavigate(() => {
+        setTimeout(() => {
+            (globalThis as any).__init();
+        }, 100);
     });
 </script>
 
@@ -85,10 +89,7 @@
         function media_theme_pref() {
             document.documentElement.removeAttribute("class");
 
-            if (
-                window.matchMedia("(prefers-color-scheme: dark)").matches &&
-                !window.localStorage.getItem("theme")
-            ) {
+            if (window.matchMedia("(prefers-color-scheme: dark)").matches && !window.localStorage.getItem("theme")) {
                 document.documentElement.classList.add("dark");
             } else if (
                 window.matchMedia("(prefers-color-scheme: light)").matches &&
@@ -107,9 +108,7 @@
                 return;
             }
 
-            const profile_theme = document
-                .getElementById("theme")
-                .innerText.trim();
+            const profile_theme = document.getElementById("theme").innerText.trim();
 
             if (profile_theme) {
                 return;
@@ -138,36 +137,22 @@
                         id="title-img"
                     />
 
-                    <b class="title-content" style="display: none"
-                        >{config.name}</b
-                    >
+                    <b class="title-content" style="display: none">{config.name}</b>
                 </a>
 
                 {#if user.is_some()}
-                    <a
-                        class="button {active === 'timeline' ? 'active' : ''}"
-                        href="/"
-                        title="Timeline"
-                    >
+                    <a class="button {active === 'timeline' ? 'active' : ''}" href="/" title="Timeline">
                         <House class="icon" />
-                        <span class="desktop"
-                            >{lang["general:link.timeline"]}</span
-                        >
+                        <span class="desktop">{lang["general:link.timeline"]}</span>
                         <span class="mobile">{lang["general:link.home"]}</span>
                     </a>
 
-                    <a
-                        class="button {active === 'inbox' ? 'active' : ''}"
-                        href="/inbox"
-                        title="My inbox"
-                    >
+                    <a class="button {active === 'inbox' ? 'active' : ''}" href="/inbox" title="My inbox">
                         <Inbox class="icon" />
                         <span class="flex items-center gap-2">
                             <span>{lang["general:link.inbox"]}</span>
                             {#if unread}
-                                <span class="notification tr camo"
-                                    >{unread}</span
-                                >
+                                <span class="notification tr camo">{unread}</span>
                             {/if}
                         </span>
                     </a>
@@ -182,9 +167,7 @@
                             id="title-img"
                         />
 
-                        <b class="title-content" style="display: none"
-                            >{config.name}</b
-                        >
+                        <b class="title-content" style="display: none">{config.name}</b>
                     </a>
                 {/if}
             </div>
@@ -193,9 +176,7 @@
                 {@const profile = user.unwrap()}
                 <div class="nav_side flex gap-1">
                     <a
-                        class="button {active === 'notifications'
-                            ? 'active'
-                            : ''}"
+                        class="button {active === 'notifications' ? 'active' : ''}"
                         href="/inbox/notifications"
                         title="My notifications"
                     >
@@ -240,8 +221,7 @@
                                 {lang["general:link.settings"]}
                             </a>
 
-                            <b class="title">{lang["general:title.services"]}</b
-                            >
+                            <b class="title">{lang["general:title.services"]}</b>
 
                             <a href="/market?status=Featured">
                                 <Store class="icon" />
@@ -343,11 +323,7 @@
                     rel="noopener noreferrer"
                     target="_blank"
                     onclick={() => {
-                        (
-                            document.getElementById(
-                                "link_filter"
-                            ) as HTMLDialogElement
-                        ).close();
+                        (document.getElementById("link_filter") as HTMLDialogElement).close();
                     }}
                     onkeydown={() => {}}
                     role="button"
@@ -359,11 +335,7 @@
                     class="bold"
                     type="button"
                     onclick={() => {
-                        (
-                            document.getElementById(
-                                "link_filter"
-                            ) as HTMLDialogElement
-                        ).close();
+                        (document.getElementById("link_filter") as HTMLDialogElement).close();
                     }}
                 >
                     {lang["general:dialog.cancel"]}
@@ -391,18 +363,10 @@
                             class="primary bold circle"
                             onclick={() => {
                                 (globalThis as any).web_api_prompt_submit(
-                                    (
-                                        document.getElementById(
-                                            "prompt"
-                                        ) as HTMLInputElement
-                                    ).value
+                                    (document.getElementById("prompt") as HTMLInputElement).value
                                 );
 
-                                (
-                                    document.getElementById(
-                                        "prompt"
-                                    ) as HTMLInputElement
-                                ).value = "";
+                                (document.getElementById("prompt") as HTMLInputElement).value = "";
                             }}
                             type="button"
                         >
@@ -445,18 +409,10 @@
                             class="primary bold circle"
                             onclick={() => {
                                 (globalThis as any).web_api_prompt_long_submit(
-                                    (
-                                        document.getElementById(
-                                            "prompt_long"
-                                        ) as HTMLTextAreaElement
-                                    ).value
+                                    (document.getElementById("prompt_long") as HTMLTextAreaElement).value
                                 );
 
-                                (
-                                    document.getElementById(
-                                        "prompt_long"
-                                    ) as HTMLTextAreaElement
-                                ).value = "";
+                                (document.getElementById("prompt_long") as HTMLTextAreaElement).value = "";
                             }}
                             type="button"
                         >
@@ -467,9 +423,7 @@
                         <button
                             class="bold red camo"
                             onclick={() => {
-                                (globalThis as any).web_api_prompt_long_submit(
-                                    ""
-                                );
+                                (globalThis as any).web_api_prompt_long_submit("");
                             }}
                             type="button"
                         >
@@ -499,9 +453,7 @@
                         <button
                             class="primary bold circle"
                             onclick={() => {
-                                (globalThis as any).web_api_confirm_submit(
-                                    true
-                                );
+                                (globalThis as any).web_api_confirm_submit(true);
                             }}
                             type="button"
                         >
@@ -512,9 +464,7 @@
                         <button
                             class="bold red camo"
                             onclick={() => {
-                                (globalThis as any).web_api_confirm_submit(
-                                    false
-                                );
+                                (globalThis as any).web_api_confirm_submit(false);
                             }}
                             type="button"
                         >

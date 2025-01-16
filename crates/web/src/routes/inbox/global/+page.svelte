@@ -15,10 +15,6 @@
     const questions = page.questions;
 
     onMount(async () => {
-        setTimeout(() => {
-            (globalThis as any).__init();
-        }, 100);
-
         // partial
         setTimeout(() => {
             trigger("questions:carp");

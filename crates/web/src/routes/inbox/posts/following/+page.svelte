@@ -27,10 +27,6 @@
             responses.push(res);
         }
 
-        setTimeout(() => {
-            (globalThis as any).__init();
-        }, 100);
-
         // partial
         setTimeout(() => {
             trigger("questions:carp");

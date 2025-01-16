@@ -50,7 +50,7 @@
     role="button"
 >
     <div class="card-nest w-full response">
-        {#if response.context.is_post == false}
+        {#if response.context.is_post === false}
             {@const author_tag = anonymous_tag(question.author.id)}
             <!-- question -->
             <div
@@ -177,7 +177,7 @@
         {/if}
 
         <div class="card flex flex-col gap-1 response_body">
-            {#if response.context.is_post == true}
+            {#if response.context.is_post === true}
                 <ResponseTitle
                     {res}
                     {is_helper}
@@ -199,7 +199,7 @@
             >
                 {@html render_markdown(response.content)}
 
-                {#if response.reply && response.context.is_post == true && do_render_nested == true}
+                {#if response.reply && response.context.is_post === true && do_render_nested === true}
                     <include-partial
                         src="/_components/response?id={response.reply}&do_render_nested=false"
                         uses="app:clean_date_codes,app:link_filter,app:hook.alt"
@@ -242,7 +242,7 @@
                 </span>
             {/if}
 
-            {#if response.context.is_post == false}
+            {#if response.context.is_post === false}
                 <ResponseTitle
                     {res}
                     {is_helper}

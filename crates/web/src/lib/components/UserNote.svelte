@@ -16,11 +16,13 @@
     const {
         user,
         current_profile,
-        lang
+        lang,
+        use_static = false
     }: {
         user: Profile;
         current_profile: Option<Profile>;
         lang: LangFile["data"];
+        use_static: boolean;
     } = $props();
 </script>
 
@@ -33,7 +35,7 @@
     {#if note || profile.id === user.id}
         {#if note || profile.id === user.id}
             <button
-                class="status_note primary"
+                class="status_note primary {use_static ? 'static' : ''}"
                 title="View note"
                 onclick={() => {
                     (

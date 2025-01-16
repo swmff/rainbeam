@@ -268,12 +268,12 @@
 
                     {#if profile.is_some()}
                         {@const user = profile.unwrap() as Profile}
-                        {#if user.id == response.author.id}
+                        {#if user.id === response.author.id}
                             <!-- actions for the profile owner only -->
                             <b class="title">Manage</b>
 
                             <!-- pin -->
-                            {#if show_pin_button == true && is_pinned == false}
+                            {#if show_pin_button === true && is_pinned === false}
                                 <button
                                     onclick={() => {
                                         (globalThis as any).pin_response(
@@ -314,7 +314,7 @@
                                 {lang["response_title.html:action.edit_tags"]}
                             </a>
 
-                            {#if response.context.is_post == false}
+                            {#if response.context.is_post === false}
                                 <button
                                     onclick={() => {
                                         trigger("responses:unsend", [
@@ -366,7 +366,7 @@
 
                     {#if profile.is_some()}
                         {@const user = profile.unwrap() as Profile}
-                        {#if user.id == response.author.id}
+                        {#if user.id === response.author.id}
                             <!-- actions for users that ARE NOT the author -->
                             <button
                                 onclick={() => {

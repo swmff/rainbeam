@@ -6,6 +6,7 @@ export type CleanConfig = {
     name: Config["name"];
     description: Config["description"];
     host: Config["host"];
+    tiers: Config["tiers"];
     captcha: {
         site_key: Config["captcha"]["site_key"];
     };

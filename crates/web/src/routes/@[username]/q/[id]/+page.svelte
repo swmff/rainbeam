@@ -14,11 +14,7 @@
     const lang = data.lang;
     const page = data.data;
 
-    onMount(async () => {
-        setTimeout(() => {
-            (globalThis as any).__init();
-        }, 100);
-    });
+    onMount(async () => {});
 
     const {
         question,

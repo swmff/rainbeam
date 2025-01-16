@@ -95,6 +95,7 @@ export const load: LayoutServerLoad = async ({
             name: db.config.name,
             description: db.config.description,
             host: db.config.host,
+            tiers: db.config.tiers,
             captcha: {
                 site_key: db.config.captcha.site_key
             }

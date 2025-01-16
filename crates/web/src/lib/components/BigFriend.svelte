@@ -25,6 +25,6 @@
             />
         </a>
 
-        <UserNote {user} current_profile={profile} {lang} />
+        <UserNote {user} current_profile={profile} {lang} use_static={false} />
     </div>
 </div>

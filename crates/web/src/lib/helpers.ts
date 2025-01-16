@@ -36,9 +36,7 @@ export const BAD_ITEMS = [
     "password",
     "salt",
     "coins",
-    "badges",
     "group",
-    "tier",
     "email",
     "policy_consent"
 ];
@@ -69,6 +67,9 @@ export function clean(s: Serialized, bad: Array<string> = BAD_ITEMS) {
                 s[field[0]] = f;
             } else if (field_type === "object") {
                 s[field[0]] = clean(field[1], bad);
+            } else if (field[0] === "id") {
+                // remove anonymous tags
+                s[field[0]] = field[1].split("#")[0];
             }
 
             continue;

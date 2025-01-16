@@ -2,11 +2,9 @@
 
 # build release
 build database="sqlite":
-    just build-assets
     cargo build -r --no-default-features --features {{database}} --bin rainbeam
 
 mimalloc-build database="sqlite":
-    just build-assets
     cargo build -r --no-default-features --features {{database}},mimalloc --bin rainbeam
 
 build-bundle:
