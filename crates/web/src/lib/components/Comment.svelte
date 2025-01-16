@@ -99,7 +99,14 @@
             {/if}
         </b>
 
-        <span class="date item fade">{comment.timestamp}</span>
+        <span class="flex fade item">
+            {#if comment.edited !== BigInt(0) && comment.edited !== comment.timestamp}
+                <span class="date item">{comment.edited}</span>
+                <sup title="Edited">*</sup>
+            {:else}
+                <span class="date item">{comment.timestamp}</span>
+            {/if}
+        </span>
     </div>
 
     <span class="comment_content" data-hook="long">

@@ -11,6 +11,6 @@ export const fallback: RequestHandler = async ({ request, params }) => {
 
     return redirect(
         303,
-        `/@${response.payload[0].author.username}/q/${params.id}`
+        `/@${response.payload.author.username}/q/${params.id}`
     );
 };

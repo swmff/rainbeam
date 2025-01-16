@@ -1,7 +1,6 @@
 <script lang="ts">
     import type { Option } from "$lib/classes/Option";
     import type { Question } from "$lib/bindings/Question";
-    import { anonymous_tag, render_markdown } from "$lib/helpers";
     import { Flag, Heart, Reply } from "lucide-svelte";
     import type { Profile } from "$lib/bindings/Profile";
     import QuestionComponent from "$lib/components/Question.svelte";
@@ -17,7 +16,6 @@
     } = $props();
 
     const [question, response_count, reaction_count] = ques;
-    const author_tag = anonymous_tag(question.author.id);
 </script>
 
 <div class="card-nest w-full" id="question:{question.id}">

@@ -6,7 +6,7 @@ import { langs } from "$lib/lang";
 import * as db from "$lib/db";
 import type { LangFile } from "$lib/bindings/LangFile";
 import type { Serialized } from "$lib/proc/tserde";
-import { clean } from "$lib/helpers";
+import { BAD_ITEMS, BAD_ITEMS_POWERFUL, clean, aclosure } from "$lib/helpers";
 
 export type LayoutData = {
     user: Serialized;
@@ -53,15 +53,22 @@ export const load: LayoutServerLoad = async ({
             headers: request.headers
         }
     );
+
+    const payload = data.status === 200 ? (await data.json()).payload : {};
+
     // return
     return {
-        user: token
-            ? Some(
-                  (await db.get_profile_from_token(token)).payload as Profile
-              ).serialize()
-            : (None as Option<Profile>).serialize(),
-        notifs: unread.payload[1],
-        unread: unread.payload[0],
+        user: await aclosure(async () => {
+            if (token) {
+                return Some(
+                    (await db.get_profile_from_token(token)).payload as Profile
+                ).serialize();
+            }
+
+            return (None as Option<Profile>).serialize();
+        }),
+        notifs: (unread.payload || [0, 0])[1],
+        unread: (unread.payload || [0, 0])[0],
         lang: langs[lang || "net.rainbeam.langs:en-US"].data,
         config: {
             name: db.config.name,
@@ -71,7 +78,10 @@ export const load: LayoutServerLoad = async ({
                 site_key: db.config.captcha.site_key
             }
         },
-        data: data.status === 200 ? clean((await data.json()).payload) : {},
+        data:
+            payload.is_powerful === true
+                ? clean(payload, BAD_ITEMS_POWERFUL)
+                : clean(payload, BAD_ITEMS),
         query,
         layout_skip: false
     };

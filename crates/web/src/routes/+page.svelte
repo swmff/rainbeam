@@ -39,89 +39,97 @@
     });
 </script>
 
-<article>
-    <main class="flex flex-col gap-2">
-        <div class="pillmenu convertible">
-            <a href="/" class="active"
-                ><span>{lang["timelines:link.timeline"]}</span></a
-            >
-            <a href="/inbox/posts"
-                ><span>{lang["timelines:link.posts"]}</span></a
-            >
-            <a href="/inbox/global"
-                ><span>{lang["timelines:link.global"]}</span></a
-            >
-        </div>
+{#if user.is_some()}
+    <article>
+        <main class="flex flex-col gap-2">
+            <div class="pillmenu convertible">
+                <a href="/" class="active"
+                    ><span>{lang["timelines:link.timeline"]}</span></a
+                >
+                <a href="/inbox/posts"
+                    ><span>{lang["timelines:link.posts"]}</span></a
+                >
+                <a href="/inbox/global"
+                    ><span>{lang["timelines:link.global"]}</span></a
+                >
+            </div>
 
-        <div class="pillmenu convertible">
-            <a href="/public"><span>{lang["timelines:link.public"]}</span></a>
-            <a href="/" class="active"
-                ><span>{lang["timelines:link.following"]}</span></a
-            >
-        </div>
+            <div class="pillmenu convertible">
+                <a href="/public"
+                    ><span>{lang["timelines:link.public"]}</span></a
+                >
+                <a href="/" class="active"
+                    ><span>{lang["timelines:link.following"]}</span></a
+                >
+            </div>
 
-        {#if user.is_some()}
-            {@const profile = user.unwrap() as Profile}
-            <div class="card w-full flex flex-col gap-2">
-                <h5 id="friends">My Friends</h5>
-                <div class="flex gap-2 flex-wrap">
-                    <BigFriend user={profile} profile={Some(profile)} {lang} />
-                    {#each page.friends as user}
-                        {#if profile.id !== user[0].id}
-                            <BigFriend
-                                user={user[0]}
-                                profile={Some(profile)}
-                                {lang}
-                            />
-                        {:else}
-                            <BigFriend
-                                user={user[1]}
-                                profile={Some(profile)}
-                                {lang}
-                            />
-                        {/if}
+            {#if user.is_some()}
+                {@const profile = user.unwrap() as Profile}
+                <div class="card w-full flex flex-col gap-2">
+                    <h5 id="friends">My Friends</h5>
+                    <div class="flex gap-2 flex-wrap">
+                        <BigFriend
+                            user={profile}
+                            profile={Some(profile)}
+                            {lang}
+                        />
+                        {#each page.friends as user}
+                            {#if profile.id !== user[0].id}
+                                <BigFriend
+                                    user={user[0]}
+                                    profile={Some(profile)}
+                                    {lang}
+                                />
+                            {:else}
+                                <BigFriend
+                                    user={user[1]}
+                                    profile={Some(profile)}
+                                    {lang}
+                                />
+                            {/if}
+                        {/each}
+                    </div>
+                </div>
+
+                <div id="feed" class="flex flex-col gap-2">
+                    {#each responses as res}
+                        <Response
+                            {res}
+                            anonymous_avatar={profile.metadata.kv[
+                                "sparkler:anonymous_avatar"
+                            ] || ""}
+                            anonymous_username={profile.metadata.kv[
+                                "sparkler:anonymous_username"
+                            ] || ""}
+                            is_powerful={page.is_powerful}
+                            is_helper={page.is_helper}
+                            is_pinned={false}
+                            show_pin_button={false}
+                            do_render_nested={true}
+                            show_comments={true}
+                            profile={user}
+                            {lang}
+                            {config}
+                        />
                     {/each}
                 </div>
-            </div>
 
-            <div id="feed" class="flex flex-col gap-2">
-                {#each responses as res}
-                    <Response
-                        {res}
-                        anonymous_avatar={profile.metadata.kv[
-                            "sparkler:anonymous_avatar"
-                        ] || ""}
-                        anonymous_username={profile.metadata.kv[
-                            "sparkler:anonymous_username"
-                        ] || ""}
-                        is_powerful={page.is_powerful}
-                        is_helper={page.is_helper}
-                        is_pinned={false}
-                        show_pin_button={false}
-                        do_render_nested={true}
-                        show_comments={true}
-                        profile={user}
-                        {lang}
-                        {config}
-                    />
-                {/each}
-            </div>
+                <Scroller
+                    threshold={100}
+                    load={async () => {
+                        if (query.page) {
+                            query.page += 1;
+                        } else {
+                            query.page = 1;
+                        }
 
-            <Scroller
-                threshold={100}
-                load={async () => {
-                    if (query.page) {
-                        query.page += 1;
-                    } else {
-                        query.page = 1;
-                    }
-
-                    for (const res of (await load_responses()).payload
-                        .responses) {
-                        responses.push(res);
-                    }
-                }}
-            />
-        {/if}
-    </main>
-</article>
+                        for (const res of (await load_responses()).payload
+                            .responses) {
+                            responses.push(res);
+                        }
+                    }}
+                />
+            {/if}
+        </main>
+    </article>
+{/if}

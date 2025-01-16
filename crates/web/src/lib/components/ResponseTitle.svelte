@@ -284,7 +284,7 @@
                                     <Pin class="icon" />
                                     {lang["response_title.html:action.pin"]}
                                 </button>
-                            {:else}
+                            {:else if show_pin_button}
                                 <button
                                     onclick={() => {
                                         (globalThis as any).unpin_response(

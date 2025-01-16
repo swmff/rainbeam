@@ -1,3 +1,4 @@
+import { None, type Option } from "./classes/Option";
 import type { Serialized } from "./proc/tserde";
 
 /// https://swmff.github.io/rainbeam/authbeam/model/struct.Profile.html#method.anonymous_tag
@@ -19,61 +20,69 @@ export function render_markdown(input: string): string {
     return marked.parse(input) as string;
 }
 
-export function clean(s: Serialized | Array<any>) {
+export function closure<T>(run: () => T): T {
+    return run();
+}
+
+export async function aclosure<T>(run: () => T): Promise<T> {
+    return await run();
+}
+
+export const BAD_ITEMS = [
+    "ips",
+    "ip",
+    "tokens",
+    "token_context",
+    "password",
+    "salt",
+    "coins",
+    "badges",
+    "group",
+    "tier",
+    "email",
+    "policy_consent"
+];
+
+export const BAD_ITEMS_POWERFUL = [];
+
+export function clean(s: Serialized, bad: Array<string> = BAD_ITEMS) {
     if (!s) {
         return s;
     }
 
-    const bad = [
-        "ips",
-        "ip",
-        "tokens",
-        "token_context",
-        "password",
-        "salt",
-        "coins",
-        "badges",
-        "group",
-        "tier",
-        "email",
-        "policy_consent"
-    ];
+    const metadata_allowed = ["sparkler:display_name"];
 
-    if (typeof s === "object") {
-        let s_ = s as Serialized;
-        for (const field of Object.entries(s)) {
-            const field_type = typeof field;
+    for (const field of Object.entries(s)) {
+        const field_type = typeof field[1];
 
-            if (!bad.includes(field[0])) {
-                if (field_type === "object") {
-                    s_[field[0]] = clean(field[1]);
+        if (!bad.includes(field[0])) {
+            if (field[0] === "kv") {
+                const f: Serialized = {};
+                for (const f_ of Object.entries(field[1])) {
+                    if (!metadata_allowed.includes(field[0])) {
+                        continue;
+                    }
+
+                    f[f_[0]] = f_[1];
                 }
 
-                continue;
-            }
-
-            if (Array.isArray(field[1])) {
-                s_[field[0]] = [];
-            } else if (field_type === "string") {
-                s_[field[0]] = "";
-            } else if (field_type === "number") {
-                s_[field[0]] = 0;
+                s[field[0]] = f;
             } else if (field_type === "object") {
-                s_[field[0]] = {};
+                s[field[0]] = clean(field[1], bad);
             }
+
+            continue;
         }
 
-        s = s_;
-    } else if (Array.isArray(s)) {
-        let s_ = s as Array<any>;
-
-        for (const item of s_) {
-            if (typeof item === "object") {
-                s_.splice(s_.indexOf(item), 1, clean(item));
-            }
+        if (Array.isArray(field[1])) {
+            s[field[0]] = [];
+        } else if (field_type === "string") {
+            s[field[0]] = "";
+        } else if (field_type === "number") {
+            s[field[0]] = 0;
+        } else if (field_type === "object") {
+            s[field[0]] = {};
         }
-
-        s = s_;
     }
 
     return s;

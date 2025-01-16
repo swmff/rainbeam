@@ -14,7 +14,7 @@
             mode = "markdown",
             inputStyle = "contenteditable"
         ) {
-            globalThis[global] = CodeMirror(bind_to, {
+            const editor = CodeMirror(bind_to, {
                 value: value || "",
                 mode,
                 lineWrapping: true,
@@ -36,12 +36,17 @@
                 }
             });
 
+            globalThis[global] = editor;
+
             // ...
             for (const element of Array.from(
                 document.querySelectorAll(".CodeMirror-code")
             )) {
                 element.setAttribute("spellcheck", "true");
             }
+
+            // return
+            return editor;
         },
         ["object", "string", "string"]
     );
