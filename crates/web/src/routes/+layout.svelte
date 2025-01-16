@@ -118,6 +118,8 @@
             media_theme_pref();
         });
     </script>
+
+    <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
 </svelte:head>
 
 {#if !data.layout_skip}
@@ -141,29 +143,50 @@
                     >
                 </a>
 
-                <a
-                    class="button {active === 'timeline' ? 'active' : ''}"
-                    href="/"
-                    title="Timeline"
-                >
-                    <House class="icon" />
-                    <span class="desktop">{lang["general:link.timeline"]}</span>
-                    <span class="mobile">{lang["general:link.home"]}</span>
-                </a>
+                {#if user.is_some()}
+                    <a
+                        class="button {active === 'timeline' ? 'active' : ''}"
+                        href="/"
+                        title="Timeline"
+                    >
+                        <House class="icon" />
+                        <span class="desktop"
+                            >{lang["general:link.timeline"]}</span
+                        >
+                        <span class="mobile">{lang["general:link.home"]}</span>
+                    </a>
 
-                <a
-                    class="button {active === 'inbox' ? 'active' : ''}"
-                    href="/inbox"
-                    title="My inbox"
-                >
-                    <Inbox class="icon" />
-                    <span class="flex items-center gap-2">
-                        <span>{lang["general:link.inbox"]}</span>
-                        {#if unread}
-                            <span class="notification tr camo">{unread}</span>
-                        {/if}
-                    </span>
-                </a>
+                    <a
+                        class="button {active === 'inbox' ? 'active' : ''}"
+                        href="/inbox"
+                        title="My inbox"
+                    >
+                        <Inbox class="icon" />
+                        <span class="flex items-center gap-2">
+                            <span>{lang["general:link.inbox"]}</span>
+                            {#if unread}
+                                <span class="notification tr camo"
+                                    >{unread}</span
+                                >
+                            {/if}
+                        </span>
+                    </a>
+                {:else}
+                    <a href="/" class="button title mobile">
+                        <img
+                            src="/images/ui/logo.svg"
+                            alt={config.name}
+                            width="32px"
+                            height="32px"
+                            class="title-content"
+                            id="title-img"
+                        />
+
+                        <b class="title-content" style="display: none"
+                            >{config.name}</b
+                        >
+                    </a>
+                {/if}
             </div>
 
             {#if user.is_some()}
@@ -186,6 +209,7 @@
                         class="button {active === 'compose' ? 'active' : ''}"
                         href="/intents/post"
                         title="Create post"
+                        data-sveltekit-reload
                     >
                         <PenSquare class="icon" />
                     </a>
@@ -273,9 +297,9 @@
             {:else}
                 <div class="nav_side">
                     <Dropdown classname="title">
-                        <div class="flex items-center gap-2">
+                        <button class="camo flex items-center gap-2">
                             <ChevronDown class="icon dropdown-arrow" />
-                        </div>
+                        </button>
 
                         <div class="inner">
                             <b class="title">{lang["general:title.account"]}</b>

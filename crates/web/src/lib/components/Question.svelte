@@ -3,8 +3,10 @@
     import { anonymous_tag, render_markdown } from "$lib/helpers";
 
     const {
+        actions,
         question
     }: {
+        actions: any;
         question: Question;
     } = $props();
 
@@ -50,6 +52,8 @@
 
             <span class="date item fade">{question.timestamp}</span>
         </div>
+
+        {@render actions?.()}
     </div>
 
     <span class="question_content" data-hook="long">

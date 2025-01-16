@@ -5,7 +5,7 @@ import toml from "smol-toml";
 export type CleanConfig = {
     name: Config["name"];
     description: Config["description"];
-    host: Config["description"];
+    host: Config["host"];
     captcha: {
         site_key: Config["captcha"]["site_key"];
     };
@@ -34,6 +34,14 @@ export async function get_profile(id: string) {
 }
 
 export async function get_profile_from_token(token: string) {
+    if (!token) {
+        return {
+            success: false,
+            message: "",
+            payload: null
+        };
+    }
+
     return await (
         await api.get(
             {

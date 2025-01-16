@@ -6,7 +6,6 @@
     import { active_page } from "$lib/stores.js";
     import Comment from "$lib/components/Comment.svelte";
     import { ArrowUp, Check } from "lucide-svelte";
-    import type { HTMLTextareaAttributes } from "svelte/elements";
 
     const { data } = $props();
     active_page.set("response");
@@ -43,6 +42,11 @@
         is_powerful
     } = page;
 </script>
+
+<svelte:head>
+    <title>{config.name}</title>
+    <meta name="description" content={config.description} />
+</svelte:head>
 
 <article>
     <main class="flex flex-col gap-2">

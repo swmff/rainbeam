@@ -26,6 +26,11 @@
     });
 </script>
 
+<svelte:head>
+    <title>{config.name}</title>
+    <meta name="description" content={config.description} />
+</svelte:head>
+
 <article>
     <main class="flex flex-col gap-2">
         <div class="pillmenu convertible">

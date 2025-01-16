@@ -6,6 +6,8 @@
     import Response from "$lib/components/Response.svelte";
     import Scroller from "$lib/components/Scroller.svelte";
     import { active_page } from "$lib/stores.js";
+    import { Smile, UserRoundPlus } from "lucide-svelte";
+    import LangPicker from "$lib/components/LangPicker.svelte";
 
     const { data } = $props();
     active_page.set("timeline");
@@ -38,6 +40,11 @@
         }, 100);
     });
 </script>
+
+<svelte:head>
+    <title>{config.name}</title>
+    <meta name="description" content={config.description} />
+</svelte:head>
 
 {#if user.is_some()}
     <article>
@@ -132,4 +139,46 @@
             {/if}
         </main>
     </article>
+{:else}
+    <div class="w-full flex flex-col items-center" style="margin-top: 2rem">
+        <div class="flex flex-col items-center gap-2">
+            <h1 class="no-margin" style="color: var(--color-primary)">
+                {config.name}
+            </h1>
+
+            <h3 style="font-weight: normal; margin-top: 0">
+                {config.description}
+            </h3>
+        </div>
+
+        <div
+            class="flex flex-col gap-4 items-center justify-center"
+            style="width: 20rem; max-width: 100%"
+        >
+            <hr class="w-full" />
+
+            <div class="flex flex-col gap-2 w-full">
+                <a
+                    class="big primary button bold w-full"
+                    href="/sign_up"
+                    data-turbo="false"
+                    style="gap: 1rem !important"
+                >
+                    <UserRoundPlus class="icon" />
+                    {lang["homepage.html:link.create_account"]}
+                </a>
+
+                <a
+                    class="big button secondary bold w-full"
+                    href="/login"
+                    data-turbo="false"
+                    style="gap: 1rem !important"
+                >
+                    <Smile class="icon" />{lang["general:link.login"]}
+                </a>
+
+                <LangPicker lang={data.lang_name} />
+            </div>
+        </div>
+    </div>
 {/if}

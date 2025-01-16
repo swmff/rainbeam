@@ -9,6 +9,9 @@ mimalloc-build database="sqlite":
     just build-assets
     cargo build -r --no-default-features --features {{database}},mimalloc --bin rainbeam
 
+build-bundle:
+    cargo build -r --bin rainbundle
+
 init-web:
     cd crates/web && npm i && cd ../../
 
@@ -29,10 +32,16 @@ build-d:
     cargo build --bin rainbeam
 
 # test
+test:
+    cargo run --bin rainbundle -- ./ dev
+
 test-api:
     cargo run --bin rainbeam
 
 # prod
+run:
+    ./target/release/rainbundle ./ prod
+
 api:
     ./target/release/rainbeam
 

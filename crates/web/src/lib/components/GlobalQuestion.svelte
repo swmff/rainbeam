@@ -19,7 +19,7 @@
 </script>
 
 <div class="card-nest w-full" id="question:{question.id}">
-    <QuestionComponent {question} />
+    <QuestionComponent {question} actions={null} />
 
     <div class="card flex gap-2">
         <button

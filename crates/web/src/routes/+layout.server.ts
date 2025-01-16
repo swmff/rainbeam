@@ -1,5 +1,5 @@
 import type { LayoutServerLoad } from "./$types";
-import { type Option, Some, None } from "$lib/classes/Option";
+import { Option, Some } from "$lib/classes/Option";
 import type { Profile } from "$lib/bindings/Profile";
 
 import { langs } from "$lib/lang";
@@ -7,12 +7,14 @@ import * as db from "$lib/db";
 import type { LangFile } from "$lib/bindings/LangFile";
 import type { Serialized } from "$lib/proc/tserde";
 import { BAD_ITEMS, BAD_ITEMS_POWERFUL, clean, aclosure } from "$lib/helpers";
+import { error } from "@sveltejs/kit";
 
 export type LayoutData = {
     user: Serialized;
     notifs: number;
     unread: number;
     lang: LangFile["data"];
+    lang_name: LangFile["name"];
     config: db.CleanConfig;
     data: any;
     query: Serialized;
@@ -31,6 +33,29 @@ export const load: LayoutServerLoad = async ({
 
     const token = cookies.get("__Secure-Token");
     const lang = cookies.get("net.rainbeam.langs.choice");
+
+    // get user
+    const user = await aclosure(async () => {
+        if (token) {
+            return Some(
+                (await db.get_profile_from_token(token)).payload as Profile
+            );
+        }
+
+        return Option.None(); // for some reason just using None here will return a random profile...
+    });
+
+    if (
+        user.is_none() &&
+        (url.pathname.startsWith("/inbox") ||
+            url.pathname === "/intents/post" ||
+            url.pathname.startsWith("/settings") ||
+            url.pathname.startsWith("/market") ||
+            url.pathname.startsWith("/mail") ||
+            url.pathname.startsWith("/chats"))
+    ) {
+        throw error(401, "Unauthorized");
+    }
 
     // build query params map
     let query: Serialized = {};
@@ -58,18 +83,14 @@ export const load: LayoutServerLoad = async ({
 
     // return
     return {
-        user: await aclosure(async () => {
-            if (token) {
-                return Some(
-                    (await db.get_profile_from_token(token)).payload as Profile
-                ).serialize();
-            }
-
-            return (None as Option<Profile>).serialize();
-        }),
+        user: user.serialize(),
         notifs: (unread.payload || [0, 0])[1],
         unread: (unread.payload || [0, 0])[0],
-        lang: langs[lang || "net.rainbeam.langs:en-US"].data,
+        lang: (
+            langs[lang || "net.rainbeam.langs:en-US"] ||
+            langs["net.rainbeam.langs:en-US"]
+        ).data,
+        lang_name: lang || "net.rainbeam.langs:en-US",
         config: {
             name: db.config.name,
             description: db.config.description,

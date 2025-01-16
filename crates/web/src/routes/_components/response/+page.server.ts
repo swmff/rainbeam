@@ -2,6 +2,8 @@ import type { PageServerLoad } from "./$types";
 import { type Option, Some, None } from "$lib/classes/Option";
 import type { Profile } from "$lib/bindings/Profile";
 
+export let csr = false;
+
 import { langs } from "$lib/lang";
 import * as db from "$lib/db";
 import type { Serialized } from "$lib/proc/tserde";

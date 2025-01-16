@@ -1,0 +1,14 @@
+[package]
+name = "rainbundle"
+version = "0.1.0"
+edition = "2021"
+authors = ["trisuaso", "swmff"]
+description = "Rainbeam web and API server executable bundle"
+homepage = "https://rainbeam.net"
+repository = "https://github.com/swmff/rainbeam"
+license = "MIT"
+rust-version = "1.83"
+
+[dependencies]
+pathbufd = "0.1.4"
+tokio = { version = "1.43.0", features = ["tokio-macros", "process"] }

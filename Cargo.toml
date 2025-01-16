@@ -9,6 +9,7 @@ members = [
     "crates/shared",
     "crates/citrus-client",
     "crates/langbeam",
+    "crates/rainbundle",
 ]
 
 [profile.dev]

@@ -6,7 +6,6 @@
     import { active_page } from "$lib/stores.js";
     import Comment from "$lib/components/Comment.svelte";
     import { Check } from "lucide-svelte";
-    import type { HTMLTextareaAttributes } from "svelte/elements";
 
     const { data } = $props();
     active_page.set("response");
@@ -43,6 +42,40 @@
     const { question, response, comments, reactions, is_helper, is_powerful } =
         page;
 </script>
+
+<svelte:head>
+    <title>{config.name}</title>
+    <meta name="description" content={config.description} />
+    <meta name="og:url" content="{config.host}}/response/{response.id}" />
+
+    <meta property="og:type" content="website" />
+    <meta property="profile:username" content="spark" />
+
+    <meta
+        name="og:image"
+        content="{config.host}/api/v0/auth/profile/{response.author.id}/avatar"
+    />
+
+    <meta
+        name="twitter:image"
+        content="https://neospring.org/api/v0/auth/profile/{response.author
+            .id}/avatar"
+    />
+
+    <meta name="twitter:card" content="summary" />
+
+    <meta
+        name="og:title"
+        content="@{response.author.username} answered: {question.content}"
+    />
+    <meta
+        name="twitter:title"
+        content="@{response.author.username} answered: {question.content}"
+    />
+
+    <meta name="og:description" content={response.content} />
+    <meta name="twitter:description" content={response.content} />
+</svelte:head>
 
 <article>
     <main class="flex flex-col gap-2">
