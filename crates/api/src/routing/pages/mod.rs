@@ -1543,7 +1543,6 @@ pub async fn routes(database: Database) -> Router {
         .route("/@{username}/c/{id}", get(comment_request))
         // profiles
         .route("/@{username}/_app/warning", get(profile::warning_request))
-        .route("/@{username}/comments", get(profile::comments_request))
         .route("/@{username}/mod", get(profile::mod_request)) // staff
         .route("/@{username}/questions", get(profile::questions_request))
         .route("/@{username}/questions/inbox", get(profile::inbox_request)) // staff
@@ -1551,14 +1550,23 @@ pub async fn routes(database: Database) -> Router {
             "/@{username}/questions/outbox",
             get(profile::outbox_request),
         ) // staff
-        .route("/@{username}/following", get(profile::following_request))
-        .route("/@{username}/followers", get(profile::followers_request))
-        .route("/@{username}/friends", get(profile::friends_request))
         .route(
-            "/@{username}/friends/requests",
+            "/@{username}/social/following",
+            get(profile::following_request),
+        )
+        .route(
+            "/@{username}/social/followers",
+            get(profile::followers_request),
+        )
+        .route("/@{username}/social/friends", get(profile::friends_request))
+        .route(
+            "/@{username}/social/friends/requests",
             get(profile::friend_requests_request),
         )
-        .route("/@{username}/friends/blocks", get(profile::blocks_request))
+        .route(
+            "/@{username}/social/friends/blocks",
+            get(profile::blocks_request),
+        )
         .route("/@{username}/embed", get(profile::profile_embed_request))
         .route(
             "/@{username}/relationship/friend_accept",
@@ -1567,10 +1575,6 @@ pub async fn routes(database: Database) -> Router {
         .route(
             "/@{username}/_app/feed.html",
             get(profile::partial_profile_request),
-        )
-        .route(
-            "/@{username}/_app/comments.html",
-            get(profile::partial_comments_request),
         )
         .route("/@{username}", get(profile::profile_request))
         .route("/{id}", get(api::profiles::expand_request))

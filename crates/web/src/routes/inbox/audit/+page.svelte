@@ -44,25 +44,13 @@
 
             <div class="flex justify-between gap-2 w-full">
                 {#if page > 0}
-                    <a
-                        class="button secondary"
-                        href="?page={page - 1}"
-                        data-sveltekit-reload
-                    >
-                        Previous
-                    </a>
+                    <a class="button secondary" href="?page={data.query.page - 1}" data-sveltekit-reload> Previous </a>
                 {:else}
                     <div></div>
                 {/if}
 
                 {#if logs.length !== 0}
-                    <a
-                        class="button secondary"
-                        href="?page={page + 1}"
-                        data-sveltekit-reload
-                    >
-                        Next
-                    </a>
+                    <a class="button secondary" href="?page={data.query.page + 1}" data-sveltekit-reload> Next </a>
                 {/if}
             </div>
         {/if}

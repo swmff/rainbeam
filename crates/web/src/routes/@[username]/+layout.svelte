@@ -24,11 +24,8 @@
     import { active_page } from "$lib/stores.js";
     active_page.set("profile");
 
-    import Question from "$lib/components/Question.svelte";
     import Dropdown from "$lib/components/Dropdown.svelte";
-    import MoreResponseOptions from "$lib/components/MoreResponseOptions.svelte";
     import { Option } from "$lib/classes/Option";
-    import Notification from "$lib/components/Notification.svelte";
     import type { RelationshipStatus } from "$lib/bindings/RelationshipStatus";
     import { render_markdown } from "$lib/helpers.js";
     import UserNote from "$lib/components/UserNote.svelte";
@@ -316,19 +313,33 @@
                         <!-- social -->
                         {#if !hide_social}
                             <div class="footernav flex-wrap justify-center profile_social" style="font-size: 13px;">
-                                <a href="/@{other.username}/followers" class="item" style="color: var(--color-text)">
+                                <a
+                                    href="/@{other.username}/social/followers"
+                                    class="item"
+                                    style="color: var(--color-text)"
+                                >
                                     <b>{followers_count}</b>
                                     <span class="fade"
-                                        >{lang["profile:base.html:link.follower"]}{#if followers_count > 1}s{/if}</span
+                                        >{lang[
+                                            "profile:base.html:link.follower"
+                                        ]}{#if followers_count > 1 || followers_count === 0}s{/if}</span
                                     >
                                 </a>
 
-                                <a href="/@{other.username}/following" class="item" style="color: var(--color-text)">
+                                <a
+                                    href="/@{other.username}/social/following"
+                                    class="item"
+                                    style="color: var(--color-text)"
+                                >
                                     <b>{following_count}</b>
                                     <span class="fade">{lang["profile:base.html:link.following"]}</span>
                                 </a>
 
-                                <a href="/@{other.username}/friends" class="item" style="color: var(--color-text)">
+                                <a
+                                    href="/@{other.username}/social/friends"
+                                    class="item"
+                                    style="color: var(--color-text)"
+                                >
                                     <b>{friends_count}</b>
                                     <span class="fade"
                                         >{lang[

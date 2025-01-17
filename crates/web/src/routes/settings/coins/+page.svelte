@@ -113,12 +113,12 @@
         <!-- pagination buttons -->
         <div class="flex justify-between gap-2 w-full">
             {#if page > 0}
-                <a class="button" href="?page={page - 1}#/transactions">{lang["general:link.previous"]}</a>
+                <a class="button" href="?page={data.query.page - 1}#/transactions">{lang["general:link.previous"]}</a>
             {:else}
                 <div></div>
             {/if}
             {#if transactions.length !== 0}
-                <a class="button" href="?page={page + 1}#/transactions">{lang["general:link.next"]}</a>
+                <a class="button" href="?page={data.query.page + 1}#/transactions">{lang["general:link.next"]}</a>
             {/if}
         </div>
     </div>

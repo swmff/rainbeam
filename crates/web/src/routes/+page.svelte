@@ -19,9 +19,7 @@
     const query = data.query;
 
     async function load_responses() {
-        return await (
-            await fetch(`/_partial/timeline?page=${query.page || "0"}`)
-        ).json();
+        return await (await fetch(`/_partial/timeline?page=${query.page || "0"}`)).json();
     }
 
     let responses = $state([] as any[]);
@@ -46,24 +44,14 @@
     <article>
         <main class="flex flex-col gap-2">
             <div class="pillmenu convertible">
-                <a href="/" class="active"
-                    ><span>{lang["timelines:link.timeline"]}</span></a
-                >
-                <a href="/inbox/posts"
-                    ><span>{lang["timelines:link.posts"]}</span></a
-                >
-                <a href="/inbox/global"
-                    ><span>{lang["timelines:link.global"]}</span></a
-                >
+                <a href="/" class="active"><span>{lang["timelines:link.timeline"]}</span></a>
+                <a href="/inbox/posts"><span>{lang["timelines:link.posts"]}</span></a>
+                <a href="/inbox/global"><span>{lang["timelines:link.global"]}</span></a>
             </div>
 
             <div class="pillmenu convertible">
-                <a href="/public"
-                    ><span>{lang["timelines:link.public"]}</span></a
-                >
-                <a href="/" class="active"
-                    ><span>{lang["timelines:link.following"]}</span></a
-                >
+                <a href="/public"><span>{lang["timelines:link.public"]}</span></a>
+                <a href="/" class="active"><span>{lang["timelines:link.following"]}</span></a>
             </div>
 
             {#if user.is_some()}
@@ -71,24 +59,12 @@
                 <div class="card w-full flex flex-col gap-2">
                     <h5 id="friends">My Friends</h5>
                     <div class="flex gap-2 flex-wrap">
-                        <BigFriend
-                            user={profile}
-                            profile={Some(profile)}
-                            {lang}
-                        />
+                        <BigFriend user={profile} profile={Some(profile)} {lang} />
                         {#each page.friends as user}
                             {#if profile.id !== user[0].id}
-                                <BigFriend
-                                    user={user[0]}
-                                    profile={Some(profile)}
-                                    {lang}
-                                />
+                                <BigFriend user={user[0]} profile={Some(profile)} {lang} />
                             {:else}
-                                <BigFriend
-                                    user={user[1]}
-                                    profile={Some(profile)}
-                                    {lang}
-                                />
+                                <BigFriend user={user[1]} profile={Some(profile)} {lang} />
                             {/if}
                         {/each}
                     </div>
@@ -98,12 +74,8 @@
                     {#each responses as res}
                         <Response
                             {res}
-                            anonymous_avatar={profile.metadata.kv[
-                                "sparkler:anonymous_avatar"
-                            ] || ""}
-                            anonymous_username={profile.metadata.kv[
-                                "sparkler:anonymous_username"
-                            ] || ""}
+                            anonymous_avatar={profile.metadata.kv["sparkler:anonymous_avatar"] || ""}
+                            anonymous_username={profile.metadata.kv["sparkler:anonymous_username"] || ""}
                             is_powerful={page.is_powerful}
                             is_helper={page.is_helper}
                             is_pinned={false}
@@ -126,8 +98,7 @@
                             query.page = 1;
                         }
 
-                        for (const res of (await load_responses()).payload
-                            .responses) {
+                        for (const res of (await load_responses()).payload.responses) {
                             responses.push(res);
                         }
                     }}
@@ -147,10 +118,7 @@
             </h3>
         </div>
 
-        <div
-            class="flex flex-col gap-4 items-center justify-center"
-            style="width: 20rem; max-width: 100%"
-        >
+        <div class="flex flex-col gap-4 items-center justify-center" style="width: 20rem; max-width: 100%">
             <hr class="w-full" />
 
             <div class="flex flex-col gap-2 w-full">
@@ -159,6 +127,7 @@
                     href="/sign_up"
                     data-turbo="false"
                     style="gap: 1rem !important"
+                    data-sveltekit-reload
                 >
                     <UserRoundPlus class="icon" />
                     {lang["homepage.html:link.create_account"]}
@@ -169,6 +138,7 @@
                     href="/login"
                     data-turbo="false"
                     style="gap: 1rem !important"
+                    data-sveltekit-reload
                 >
                     <Smile class="icon" />{lang["general:link.login"]}
                 </a>
@@ -177,4 +147,9 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // logout of account (if it exists), we can only possibly see this page with an account if it was deleted
+        fetch("/api/v0/auth/logout", { method: "POST" });
+    </script>
 {/if}

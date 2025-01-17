@@ -10,9 +10,9 @@
     const { viewing_other_profile } = page;
 
     import { active_page } from "$lib/stores.js";
-    import { onMount } from "svelte";
-
     let active = $state("");
+
+    import { onMount } from "svelte";
 
     onMount(() => {
         active_page.subscribe((v) => {

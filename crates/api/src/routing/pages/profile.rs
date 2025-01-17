@@ -8,7 +8,6 @@ use serde::{Deserialize, Serialize};
 use axum::Json;
 
 use authbeam::model::{Permission, Profile, UserFollow, Warning};
-use rainbeam::model::ResponseComment;
 
 use databeam::DefaultReturn;
 use crate::database::Database;
@@ -619,7 +618,7 @@ struct FollowersTemplate {
     is_helper: bool,
 }
 
-/// GET /@{username}/followers
+/// GET /@{username}/social/followers
 pub async fn followers_request(
     jar: CookieJar,
     Path(username): Path<String>,
@@ -741,7 +740,7 @@ struct FollowingTemplate {
     is_helper: bool,
 }
 
-/// GET /@{username}/following
+/// GET /@{username}/social/following
 pub async fn following_request(
     jar: CookieJar,
     Path(username): Path<String>,
@@ -863,7 +862,7 @@ struct FriendsTemplate {
     is_helper: bool,
 }
 
-/// GET /@{username}/friends
+/// GET /@{username}/social/friends
 pub async fn friends_request(
     jar: CookieJar,
     Path(username): Path<String>,
@@ -989,7 +988,7 @@ struct FriendRequestsTemplate {
     is_helper: bool,
 }
 
-/// GET /@{username}/friends/requests
+/// GET /@{username}/social/friends/requests
 pub async fn friend_requests_request(
     jar: CookieJar,
     Path(username): Path<String>,
@@ -1079,7 +1078,7 @@ struct BlocksTemplate {
     is_helper: bool,
 }
 
-/// GET /@{username}/friends/blocks
+/// GET /@{username}/social/friends/blocks
 pub async fn blocks_request(
     jar: CookieJar,
     Path(username): Path<String>,

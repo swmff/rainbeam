@@ -245,12 +245,12 @@
 
                             <b class="title">{lang["general:title.social"]}</b>
 
-                            <a href="/@{profile.username}/friends">
+                            <a href="/@{profile.username}/social/friends">
                                 <BookUser class="icon" />
                                 {lang["general:link.friends"]}
                             </a>
 
-                            <a href="/@{profile.username}/friends/requests">
+                            <a href="/@{profile.username}/social/friends/requests">
                                 <UserRoundPlus class="icon" />
                                 {lang["general:link.requests"]}
                             </a>
@@ -284,12 +284,12 @@
                         <div class="inner">
                             <b class="title">{lang["general:title.account"]}</b>
 
-                            <a href="/login">
+                            <a href="/login" data-sveltekit-reload>
                                 <LogIn class="icon" />
                                 {lang["general:link.login"]}
                             </a>
 
-                            <a href="/sign_up">
+                            <a href="/sign_up" data-sveltekit-reload>
                                 <UserRoundPlus class="icon" />
                                 {lang["general:link.sign_up"]}
                             </a>

@@ -32,15 +32,7 @@
         }, 100);
     });
 
-    const {
-        question,
-        response,
-        comment,
-        replies,
-        reactions,
-        is_helper,
-        is_powerful
-    } = page;
+    const { question, response, comment, replies, reactions, is_helper, is_powerful } = page;
 </script>
 
 <svelte:head>
@@ -53,11 +45,7 @@
         {#if !comment[0].reply}
             <h5 id="response" class="flex items-center gap-2">
                 Response
-                <a
-                    title="Previous in thread"
-                    href="/response/{response.id}"
-                    class="button icon-only border"
-                >
+                <a title="Previous in thread" href="/response/{response.id}" class="button icon-only border">
                     <ArrowUp class="icon" />
                 </a>
             </h5>
@@ -80,11 +68,7 @@
             {@const reply = comment[0].reply}
             <h5 id="comment" class="flex items-center gap-2">
                 Replying to
-                <a
-                    title="Previous in thread"
-                    href="/comment/{reply[0].id}"
-                    class="button icon-only border"
-                >
+                <a title="Previous in thread" href="/comment/{reply[0].id}" class="button icon-only border">
                     <ArrowUp class="icon" />
                 </a>
             </h5>
@@ -125,18 +109,12 @@
 
         <hr />
         <div class="pillmenu convertible true">
-            <a href="#/replies" class="active" data-tab-button="replies"
-                ><span>{lang["views:text.replies"]}</span></a
-            >
-            <a href="#/reactions" data-tab-button="reactions"
-                ><span>{lang["views:text.reactions"]}</span></a
-            >
+            <a href="#/replies" class="active" data-tab-button="replies"><span>{lang["views:text.replies"]}</span></a>
+            <a href="#/reactions" data-tab-button="reactions"><span>{lang["views:text.reactions"]}</span></a>
             {#if user.is_some()}
                 {@const profile = user.unwrap()}
                 {#if profile.id === comment[0].author.id}
-                    <a href="#/edit" data-tab-button="edit"
-                        ><span>{lang["general:action.edit"]}</span></a
-                    >
+                    <a href="#/edit" data-tab-button="edit"><span>{lang["general:action.edit"]}</span></a>
                 {/if}
             {/if}
         </div>
@@ -175,17 +153,10 @@
 
                         <div class="flex justify-between w-full gap-1">
                             <div class="flex gap-2 items-center">
-                                <span
-                                    id="content:counter"
-                                    class="notification item"
-                                ></span>
+                                <span id="content:counter" class="notification item"></span>
 
                                 <div class="checkbox_container item">
-                                    <input
-                                        type="checkbox"
-                                        name="anonymous"
-                                        id="anonymous"
-                                    />
+                                    <input type="checkbox" name="anonymous" id="anonymous" />
 
                                     <label for="anonymous" class="normal">
                                         {lang["general:action.hide_your_name"]}
@@ -194,14 +165,8 @@
 
                                 <script>
                                     function ls_anon_check() {
-                                        if (
-                                            window.localStorage.getItem(
-                                                "always_anon"
-                                            ) === "true"
-                                        ) {
-                                            document.getElementById(
-                                                "anonymous"
-                                            ).checked = true;
+                                        if (window.localStorage.getItem("always_anon") === "true") {
+                                            document.getElementById("anonymous").checked = true;
                                         }
                                     }
 
@@ -209,9 +174,7 @@
                                 </script>
                             </div>
 
-                            <button class="primary bold"
-                                >{lang["general:form.submit"]}</button
-                            >
+                            <button class="primary bold">{lang["general:form.submit"]}</button>
                         </div>
                     </form>
                 </div>
@@ -231,11 +194,7 @@
 
             <div class="flex justify-between gap-2 w-full">
                 {#if page.page > 0}
-                    <a
-                        class="button secondary"
-                        href="?page={page.page - 1}"
-                        data-sveltekit-reload
-                    >
+                    <a class="button secondary" href="?page={page.page - 1}" data-sveltekit-reload>
                         {lang["general:link.previous"]}
                     </a>
                 {:else}
@@ -243,11 +202,7 @@
                 {/if}
 
                 {#if replies.length != 0}
-                    <a
-                        class="button secondary"
-                        href="?page={page.page + 1}"
-                        data-sveltekit-reload
-                    >
+                    <a class="button secondary" href="?page={page.page + 1}" data-sveltekit-reload>
                         {lang["general:link.next"]}
                     </a>
                 {/if}
@@ -257,10 +212,7 @@
         <div data-tab="reactions" class="hidden">
             <div id="reactions" class="card shadow flex gap-2 flex-col w-full">
                 {#each reactions as reaction}
-                    <a
-                        href="/@{reaction.user.username}"
-                        class="card w-full flex items-center gap-2"
-                    >
+                    <a href="/@{reaction.user.username}" class="card w-full flex items-center gap-2">
                         <img
                             title="{reaction.user.username}'s avatar"
                             src="/api/v0/auth/profile/{reaction.user.id}/avatar"
@@ -276,30 +228,18 @@
         </div>
 
         {#if user.is_some()}
-            <script
-                src="https://unpkg.com/codemirror@5.39.2/lib/codemirror.js"
-            ></script>
-            <script
-                src="https://unpkg.com/codemirror@5.39.2/addon/display/placeholder.js"
-            ></script>
-            <script
-                src="https://unpkg.com/codemirror@5.39.2/mode/markdown/markdown.js"
-            ></script>
+            <script src="https://unpkg.com/codemirror@5.39.2/lib/codemirror.js"></script>
+            <script src="https://unpkg.com/codemirror@5.39.2/addon/display/placeholder.js"></script>
+            <script src="https://unpkg.com/codemirror@5.39.2/mode/markdown/markdown.js"></script>
 
-            <link
-                rel="stylesheet"
-                href="https://unpkg.com/codemirror@5.39.2/lib/codemirror.css"
-            />
+            <link rel="stylesheet" href="https://unpkg.com/codemirror@5.39.2/lib/codemirror.css" />
 
             <div class="hidden flex flex-col gap-2" data-tab="edit">
                 <form
                     class="flex flex-col gap-2 w-full card shadow"
                     onsubmit={(e) => {
                         e.preventDefault();
-                        trigger("comments:edit", [
-                            comment[0].id,
-                            (globalThis as any).comment_editor_.getValue()
-                        ]);
+                        trigger("comments:edit", [comment[0].id, (globalThis as any).comment_editor_.getValue()]);
                     }}
                 >
                     <label for="edit_content">New content</label>

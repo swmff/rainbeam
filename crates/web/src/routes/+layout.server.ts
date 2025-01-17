@@ -58,6 +58,10 @@ export const load: LayoutServerLoad = async ({ cookies, url, request }): Promise
         query[param[0]] = param[1];
     }
 
+    if (!query.page) {
+        query.page = 0;
+    }
+
     // fetch unread data
     const unread = await db.get_unread(request.headers);
 
