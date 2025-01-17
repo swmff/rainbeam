@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { Option } from "$lib/classes/Option";
     import type { Question } from "$lib/bindings/Question";
-    import { Flag, Heart, Reply } from "lucide-svelte";
+    import { Flag, Heart, Reply, Trash } from "lucide-svelte";
     import type { Profile } from "$lib/bindings/Profile";
     import QuestionComponent from "$lib/components/Question.svelte";
 
@@ -63,6 +63,15 @@
                 >
                     <Flag class="icon" />
                 </a>
+            {:else}
+                <button
+                    class="red"
+                    onclick={() => {
+                        trigger("questions:delete", [question.id]);
+                    }}
+                >
+                    <Trash class="icon" />
+                </button>
             {/if}
         {/if}
     </div>

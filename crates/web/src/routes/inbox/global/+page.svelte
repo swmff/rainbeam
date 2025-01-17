@@ -12,6 +12,7 @@
 
     const lang = data.lang;
     const page = data.data;
+    const config = data.config;
     const questions = page.questions;
 
     onMount(async () => {
@@ -31,21 +32,13 @@
     <main class="flex flex-col gap-2">
         <div class="pillmenu convertible">
             <a href="/"><span>{lang["timelines:link.timeline"]}</span></a>
-            <a href="/inbox/posts"
-                ><span>{lang["timelines:link.posts"]}</span></a
-            >
-            <a href="/inbox/global" class="active"
-                ><span>{lang["timelines:link.global"]}</span></a
-            >
+            <a href="/inbox/posts"><span>{lang["timelines:link.posts"]}</span></a>
+            <a href="/inbox/global" class="active"><span>{lang["timelines:link.global"]}</span></a>
         </div>
 
         <div class="pillmenu convertible">
-            <a href="/inbox/global" class="active"
-                ><span>{lang["timelines:link.public"]}</span></a
-            >
-            <a href="/inbox/global/following"
-                ><span>{lang["timelines:link.following"]}</span></a
-            >
+            <a href="/inbox/global" class="active"><span>{lang["timelines:link.public"]}</span></a>
+            <a href="/inbox/global/following"><span>{lang["timelines:link.following"]}</span></a>
         </div>
 
         <div id="feed" class="flex flex-col gap-2">

@@ -398,6 +398,16 @@ pub struct ProfileQuery {
     pub q: Option<String>,
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct CleanProfileQuery {
+    #[serde(default)]
+    pub page: i32,
+    pub tag: Option<String>,
+    pub q: Option<String>,
+    #[serde(default)]
+    pub clean: bool,
+}
+
 /// Escape profile colors
 pub fn color_escape(color: &&&String) -> String {
     remove_tags(

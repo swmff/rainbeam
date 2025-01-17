@@ -21,11 +21,7 @@ export type LayoutData = {
     layout_skip: boolean;
 };
 
-export const load: LayoutServerLoad = async ({
-    cookies,
-    url,
-    request
-}): Promise<LayoutData> => {
+export const load: LayoutServerLoad = async ({ cookies, url, request }): Promise<LayoutData> => {
     if (url.pathname.startsWith("/_")) {
         // @ts-ignore
         return { user: { inner: null }, layout_skip: true };
@@ -37,9 +33,7 @@ export const load: LayoutServerLoad = async ({
     // get user
     const user = await aclosure(async () => {
         if (token) {
-            return Some(
-                (await db.get_profile_from_token(token)).payload as Profile
-            );
+            return Some((await db.get_profile_from_token(token)).payload as Profile);
         }
 
         return Option.None(); // for some reason just using None here will return a random profile...
@@ -86,10 +80,7 @@ export const load: LayoutServerLoad = async ({
         user: user.serialize(),
         notifs: (unread.payload || [0, 0])[1],
         unread: (unread.payload || [0, 0])[0],
-        lang: (
-            langs[lang || "net.rainbeam.langs:en-US"] ||
-            langs["net.rainbeam.langs:en-US"]
-        ).data,
+        lang: (langs[lang || "net.rainbeam.langs:en-US"] || langs["net.rainbeam.langs:en-US"]).data,
         lang_name: lang || "net.rainbeam.langs:en-US",
         config: {
             name: db.config.name,
@@ -101,7 +92,7 @@ export const load: LayoutServerLoad = async ({
             }
         },
         data:
-            payload.is_powerful === true
+            (payload || { is_powerful: false }).is_powerful === true
                 ? clean(payload, BAD_ITEMS_POWERFUL)
                 : clean(payload, BAD_ITEMS),
         query,

@@ -37,7 +37,6 @@
     const lang = data.lang;
     const page_data = data.data;
     const user = Option.from(data.user);
-    const profile = user.unwrap();
     const config = data.config;
     const search_query = data.query;
 
@@ -56,7 +55,8 @@
         lock_profile,
         other,
         relationship,
-        require_account
+        require_account,
+        metadata
     } = page_data;
 
     const banner_fit = other.metadata.kv["sparkler:banner_fit"];
@@ -71,6 +71,51 @@
 
             if (form) {
                 form.innerHTML += `<p class="fade">Replying to <a href="/response/${search_query.reply_intent}" target="_blank">${search_query.reply_intent}</a> (<a href="?" class="red">cancel</a>)</p>`;
+            }
+        }
+
+        if (user.is_some()) {
+            const profile = user.unwrap();
+
+            if (profile.id === other.id) {
+                (globalThis as any).save_metadata = async function () {
+                    const res = await (
+                        await fetch(`/api/v0/auth/profile/${profile.id}/metadata`, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                metadata: profile.metadata
+                            })
+                        })
+                    ).json();
+
+                    trigger("app:toast", [
+                        res.success ? "success" : "error",
+                        res.success ? "Settings saved!" : res.message
+                    ]);
+                };
+
+                (globalThis as any).pin_response = function (id: string) {
+                    if (!profile.metadata.kv["sparkler:pinned"]) {
+                        profile.metadata.kv["sparkler:pinned"] = "";
+                    }
+
+                    profile.metadata.kv["sparkler:pinned"] += `${id},`;
+                    (globalThis as any).save_metadata();
+                    trigger("app:toast", ["success", "Response pinned!"]);
+                };
+
+                (globalThis as any).unpin_response = function (id: string) {
+                    profile.metadata.kv["sparkler:pinned"] = profile.metadata.kv["sparkler:pinned"].replace(
+                        `${id},`,
+                        ""
+                    );
+
+                    (globalThis as any).save_metadata();
+                    trigger("app:toast", ["success", "Response unpinned!"]);
+                };
             }
         }
     });
@@ -170,10 +215,6 @@
     <div id="profile_box" class="flex flex-collapse gap-4 {layout === '1' ? 'flex-rev-row' : ''}">
         <div class="flex flex-col gap-4 sm:w-full profile_container" style="width: 25rem; height: max-content">
             <style>
-                .profile_avatar {
-                    --size: 160px;
-                }
-
                 .profile_avatar_container {
                     margin: -80px auto 0;
                 }
@@ -202,6 +243,7 @@
                                 src="/api/v0/auth/profile/{other.id}/avatar"
                                 alt=""
                                 class="avatar shadow-md profile_avatar"
+                                style="--size: 160px"
                             />
                         </div>
 
@@ -534,7 +576,7 @@
         </div>
 
         <!-- locked message -->
-        {#if (relationship != "Friends" && other.metadata["sparkler:private_profile"] === "true") || other.group === -1}
+        {#if (relationship != "Friends" && other.metadata.kv["sparkler:private_profile"] === "true") || other.group === -1}
             <div class="card padded shadow flex flex-col w-full gap-4 items-center justify-center">
                 <LockKeyhole class="icon" />
                 <h4>{lang["profile:base.html:text.private"]}</h4>
@@ -554,7 +596,7 @@
 
                     <div class="card">
                         {#if !lock_profile && other.group != -1}
-                            {#if (require_account && profile.is_some()) || (disallow_anonymous && profile.is_some()) || (!require_account && !disallow_anonymous)}
+                            {#if (require_account && user.is_some()) || (disallow_anonymous && user.is_some()) || (!require_account && !disallow_anonymous)}
                                 <form
                                     id="question_form"
                                     class="flex flex-col gap-2"
@@ -618,7 +660,7 @@
                                         </div>
 
                                         <div class="flex gap-2">
-                                            {#if other.metadata["sparkler:allow_drawings"] === "true"}
+                                            {#if other.metadata.kv["sparkler:allow_drawings"] === "true"}
                                                 <button
                                                     onclick={(e) => {
                                                         (e.target as any).innerText = "Remove drawing";

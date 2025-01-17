@@ -51,9 +51,7 @@
     const [question, response, comment_count, reaction_count] = res;
 </script>
 
-<div
-    class="flex justify-between items-center flex-collapse sm:items-start gap-1 response_title"
->
+<div class="flex justify-between items-center flex-collapse sm:items-start gap-1 response_title">
     <div class="footernav items-center flex-wrap">
         <b class="flex items-center gap-2">
             <img
@@ -65,11 +63,7 @@
                 style="--size: 20px"
             />
 
-            <a
-                href="/@{response.author.username}"
-                style="color: inherit"
-                class="username short"
-            >
+            <a href="/@{response.author.username}" style="color: inherit" class="username short">
                 {#if response.author.metadata.kv["sparkler:display_name"]}
                     {response.author.metadata.kv["sparkler:display_name"]}
                 {:else}
@@ -88,13 +82,9 @@
         </span>
 
         {#if is_pinned}
-            <a
-                class="item flex items-center justify-center icon-only button primary small"
-                title="This question/response is pinned"
-                href="/@{response.author.username}"
-            >
+            <div class="item flex items-center justify-center" title="This question/response is pinned">
                 <Pin class="icon" />
-            </a>
+            </div>
         {/if}
 
         {#if response.context.circle}
@@ -104,8 +94,7 @@
                 title="Posted in circle"
                 style="
                             --size: 20px;
-                            background: url('/api/v1/circles/{response.context
-                    .circle}/avatar');
+                            background: url('/api/v1/circles/{response.context.circle}/avatar');
                             border-radius: var(--radius);
                             background-size: cover;
                             padding: 0 !important;
@@ -127,11 +116,7 @@
                 title="{reaction_count} reactions"
                 class="camo"
                 onclick={(event) => {
-                    trigger("reactions:toggle", [
-                        response.id,
-                        "Response",
-                        event.target
-                    ]);
+                    trigger("reactions:toggle", [response.id, "Response", event.target]);
                 }}
                 data-hook="check_reaction"
                 data-hook-arg_id={response.id}
@@ -165,13 +150,8 @@
                     {#if profile.is_some()}
                         <button
                             onclick={() => {
-                                trigger("responses:create", [
-                                    "0",
-                                    `✨ Boost\n/+r/${response.id}`
-                                ]).then((p: any) => {
-                                    p.success
-                                        ? (window.location.href = `/response/${p.payload.id}`)
-                                        : "";
+                                trigger("responses:create", ["0", `✨ Boost\n/+r/${response.id}`]).then((p: any) => {
+                                    p.success ? (window.location.href = `/response/${p.payload.id}`) : "";
                                 });
                             }}
                         >
@@ -179,17 +159,14 @@
                             {lang["response_title.html:action.boost"]}
                         </button>
 
-                        <a
-                            href="/intents/post?reply={response.id}&title=Quote%20post"
-                        >
+                        <a href="/intents/post?reply={response.id}&title=Quote%20post">
                             <Quote class="icon" />
                             {lang["response_title.html:action.quote"]}
                         </a>
                     {/if}
 
                     <a
-                        href="/@{response.author
-                            .username}?reply_intent={response.id}#top"
+                        href="/@{response.author.username}?reply_intent={response.id}#top"
                         data-turbo="false"
                         target="_blank"
                     >
@@ -211,11 +188,7 @@
                     <button
                         onclick={(event) => {
                             trigger("app:copy_text", [
-                                trigger("responses:gen_share", [
-                                    event.target,
-                                    response.id,
-                                    280
-                                ])
+                                trigger("responses:gen_share", [event.target, response.id, 280])
                             ]);
                         }}
                     >
@@ -226,12 +199,7 @@
                     <button
                         onclick={(event) => {
                             trigger("app:intent_twitter", [
-                                trigger("responses:gen_share", [
-                                    event.target,
-                                    response.id,
-                                    280,
-                                    false
-                                ]),
+                                trigger("responses:gen_share", [event.target, response.id, 280, false]),
                                 `${config.host}/+r/${response.id}`
                             ]);
                         }}
@@ -242,12 +210,7 @@
                     <button
                         onclick={(event) => {
                             trigger("app:intent_bluesky", [
-                                trigger("responses:gen_share", [
-                                    event.target,
-                                    response.id,
-                                    280,
-                                    false
-                                ]),
+                                trigger("responses:gen_share", [event.target, response.id, 280, false]),
                                 `${config.host}/+r/${response.id}`
                             ]);
                         }}
@@ -257,9 +220,7 @@
 
                     <button
                         onclick={() => {
-                            trigger("app:copy_text", [
-                                `${config.host}/+r/${response.id}`
-                            ]);
+                            trigger("app:copy_text", [`${config.host}/+r/${response.id}`]);
                         }}
                     >
                         <Copy class="icon" />
@@ -276,9 +237,7 @@
                             {#if show_pin_button === true && is_pinned === false}
                                 <button
                                     onclick={() => {
-                                        (globalThis as any).pin_response(
-                                            response.id
-                                        );
+                                        (globalThis as any).pin_response(response.id);
                                     }}
                                 >
                                     <Pin class="icon" />
@@ -287,9 +246,7 @@
                             {:else if show_pin_button}
                                 <button
                                     onclick={() => {
-                                        (globalThis as any).unpin_response(
-                                            response.id
-                                        );
+                                        (globalThis as any).unpin_response(response.id);
                                     }}
                                 >
                                     <PinOff class="icon" />
@@ -298,18 +255,12 @@
                             {/if}
 
                             <!-- ... -->
-                            <a
-                                href="/@{response.author
-                                    .username}/r/{response.id}#/edit"
-                            >
+                            <a href="/@{response.author.username}/r/{response.id}#/edit">
                                 <Pen class="icon" />
                                 {lang["general:action.edit"]}
                             </a>
 
-                            <a
-                                href="/@{response.author
-                                    .username}/r/{response.id}#/tags"
-                            >
+                            <a href="/@{response.author.username}/r/{response.id}#/tags">
                                 <Tag class="icon" />
                                 {lang["response_title.html:action.edit_tags"]}
                             </a>
@@ -317,16 +268,12 @@
                             {#if response.context.is_post === false}
                                 <button
                                     onclick={() => {
-                                        trigger("responses:unsend", [
-                                            response.id
-                                        ]);
+                                        trigger("responses:unsend", [response.id]);
                                     }}
                                     class="red"
                                 >
                                     <Undo2 class="icon" />
-                                    {lang[
-                                        "response_title.html:action.return_to_inbox"
-                                    ]}
+                                    {lang["response_title.html:action.return_to_inbox"]}
                                 </button>
                             {/if}
 
@@ -370,10 +317,7 @@
                             <!-- actions for users that ARE NOT the author -->
                             <button
                                 onclick={() => {
-                                    trigger("reports:bootstrap", [
-                                        "responses",
-                                        response.id
-                                    ]);
+                                    trigger("reports:bootstrap", ["responses", response.id]);
                                 }}
                             >
                                 <Flag class="icon" />

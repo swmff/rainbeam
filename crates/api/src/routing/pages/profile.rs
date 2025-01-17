@@ -14,7 +14,7 @@ use databeam::DefaultReturn;
 use crate::database::Database;
 use crate::model::{Chat, DatabaseError, FullResponse, Question, RelationshipStatus};
 
-use super::{clean_metadata, PaginatedQuery, ProfileQuery};
+use super::{clean_metadata, CleanProfileQuery, PaginatedQuery, ProfileQuery};
 
 #[derive(Serialize, Deserialize)]
 struct ProfileTemplate {
@@ -103,7 +103,7 @@ pub async fn profile_request(
             for id in pinned.split(",") {
                 match database.get_response(id.to_string()).await {
                     Ok(response) => {
-                        if response.1.author.id != other.id {
+                        if (response.1.author.id != other.id) | !pinned.contains(&response.1.id) {
                             // don't allow us to pin responses from other users
                             continue;
                         }
@@ -242,7 +242,7 @@ pub async fn partial_profile_request(
     jar: CookieJar,
     Path(username): Path<String>,
     State(database): State<Database>,
-    Query(query): Query<ProfileQuery>,
+    Query(query): Query<CleanProfileQuery>,
 ) -> impl IntoResponse {
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
@@ -265,7 +265,7 @@ pub async fn partial_profile_request(
         Err(_) => return Json(DatabaseError::NotFound.to_json()),
     };
 
-    let responses = if let Some(ref tag) = query.tag {
+    let responses_original = if let Some(ref tag) = query.tag {
         // tagged
         match database
             .get_responses_by_author_tagged_paginated(
@@ -303,6 +303,19 @@ pub async fn partial_profile_request(
             }
         }
     };
+
+    let mut responses = Vec::new();
+    if query.clean {
+        for mut response in responses_original {
+            response.0.author.clean();
+            response.0.recipient.clean();
+            response.1.author.clean();
+
+            responses.push(response)
+        }
+    } else {
+        responses = responses_original;
+    }
 
     let mut is_helper: bool = false;
     let is_powerful = if let Some(ref ua) = auth_user {
@@ -748,7 +761,7 @@ pub async fn profile_embed_request(
             for id in pinned.split(",") {
                 match database.get_response(id.to_string()).await {
                     Ok(response) => {
-                        if response.1.author.id != other.id {
+                        if (response.1.author.id != other.id) | !pinned.contains(&response.1.id) {
                             // don't allow us to pin responses from other users
                             continue;
                         }

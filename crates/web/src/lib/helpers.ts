@@ -2,9 +2,7 @@ import { None, type Option } from "./classes/Option";
 import type { Serialized } from "./proc/tserde";
 
 /// https://swmff.github.io/rainbeam/authbeam/model/struct.Profile.html#method.anonymous_tag
-export function anonymous_tag(
-    input: string
-): [boolean, string, string, string] {
+export function anonymous_tag(input: string): [boolean, string, string, string] {
     if (input !== "anonymous" && !input.startsWith("anonymous#")) {
         // not anonymous
         return [false, "", "", input];
@@ -16,8 +14,9 @@ export function anonymous_tag(
 }
 
 import { marked } from "marked";
+import DOMPurify from "isomorphic-dompurify";
 export function render_markdown(input: string): string {
-    return marked.parse(input) as string;
+    return marked.parse(DOMPurify.sanitize(input, {})) as string;
 }
 
 export function closure<T>(run: () => T): T {
@@ -48,8 +47,6 @@ export function clean(s: Serialized, bad: Array<string> = BAD_ITEMS) {
         return s;
     }
 
-    const metadata_allowed = ["sparkler:display_name"];
-
     for (const field of Object.entries(s)) {
         const field_type = typeof field[1];
 
@@ -57,9 +54,9 @@ export function clean(s: Serialized, bad: Array<string> = BAD_ITEMS) {
             if (field[0] === "kv") {
                 const f: Serialized = {};
                 for (const f_ of Object.entries(field[1])) {
-                    if (!metadata_allowed.includes(field[0])) {
-                        continue;
-                    }
+                    // if (!metadata_allowed.includes(field[0])) {
+                    //     continue;
+                    // }
 
                     f[f_[0]] = f_[1];
                 }
