@@ -4,11 +4,14 @@ use serde::{Deserialize, Serialize};
 use std::io::Result;
 use std::env::current_dir;
 
+use ts_rs::TS;
+
 use authbeam::database::HCaptchaConfig;
 use rainbeam_shared::fs;
 
 /// Premium features
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(TS, Clone, Serialize, Deserialize, Debug)]
+#[ts(export)]
 pub struct Tiers {
     /// Doubled character limits for everything
     ///
@@ -38,8 +41,25 @@ impl Default for Tiers {
     }
 }
 
+/// Client (web) configuration file
+#[derive(TS, Clone, Serialize, Deserialize, Debug)]
+#[ts(export)]
+pub struct ClientConfig {
+    /// The root URL of the API
+    pub api: String,
+}
+
+impl Default for ClientConfig {
+    fn default() -> Self {
+        Self {
+            api: "http://localhost:80".to_string(),
+        }
+    }
+}
+
 /// Configuration file
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(TS, Clone, Serialize, Deserialize, Debug)]
+#[ts(export)]
 pub struct Config {
     /// The port to serve the server on
     pub port: u16,
@@ -49,12 +69,16 @@ pub struct Config {
     pub description: String,
     /// The location of the static directory, should not be supplied manually as it will be overwritten with `./.config/static`
     #[serde(default)]
+    #[ts(type = "string")]
     pub static_dir: PathBufD,
     /// The location of media uploads on the file system
     #[serde(default)]
+    #[ts(type = "string")]
     pub media_dir: PathBufD,
     /// HCaptcha configuration
     pub captcha: HCaptchaConfig,
+    /// Client configuration
+    pub client: ClientConfig,
     /// The name of the header used for reading user IP address
     pub real_ip_header: Option<String>,
     /// If new profile registration is enabled
@@ -87,6 +111,7 @@ impl Default for Config {
             static_dir: PathBufD::new(),
             media_dir: PathBufD::new(),
             captcha: HCaptchaConfig::default(),
+            client: ClientConfig::default(),
             real_ip_header: Option::None,
             registration_enabled: true,
             host: String::new(),

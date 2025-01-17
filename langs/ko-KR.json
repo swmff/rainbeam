@@ -78,7 +78,6 @@
 
         "profile:link.feed": "피드",
         "profile:link.posts": "Posts",
-        "profile:link.comments": "Comments",
         "profile:link.questions": "질문",
         "profile:link.manage": "관리",
         "profile:link.outbox": "보낼 편지함",

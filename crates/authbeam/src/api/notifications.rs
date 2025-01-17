@@ -41,11 +41,7 @@ pub async fn delete_request(
 
     // return
     if let Err(e) = database.delete_notification(id, auth_user).await {
-        return Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: (),
-        });
+        return Json(e.to_json());
     }
 
     Json(DefaultReturn {
@@ -89,11 +85,7 @@ pub async fn delete_all_request(
         .delete_notifications_by_recipient(auth_user.id.clone(), auth_user)
         .await
     {
-        return Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: (),
-        });
+        return Json(e.to_json());
     }
 
     Json(DefaultReturn {

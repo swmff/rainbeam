@@ -1,0 +1,191 @@
+@import url("root.css");
+@import url("interactable.css");
+@import url("blocks.css");
+@import url("components.css");
+
+/* utility */
+.flex {
+    display: flex;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+.flex-rev-col {
+    flex-direction: column-reverse;
+}
+
+.flex-row {
+    flex-direction: row !important;
+}
+
+.flex-rev-row {
+    flex-direction: row-reverse;
+}
+
+.flex-wrap {
+    flex-wrap: wrap;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.justify-right {
+    justify-content: right;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.gap-1 {
+    gap: 0.25rem;
+}
+
+.gap-2 {
+    gap: 0.5rem;
+}
+
+.gap-4 {
+    gap: 1rem;
+}
+
+.mobile {
+    display: none !important;
+}
+
+@media screen and (max-width: 650px) {
+    .desktop {
+        display: none !important;
+    }
+
+    .mobile {
+        display: flex !important;
+    }
+}
+
+@media screen and (max-width: 900px) {
+    .sm\:static {
+        position: static !important;
+    }
+
+    .mobile.flex {
+        display: flex !important;
+    }
+
+    .sm\:w-full {
+        width: 100% !important;
+    }
+
+    .sm\:mt-2 {
+        margin-top: 2rem !important;
+    }
+
+    .sm\:items-start {
+        align-items: flex-start !important;
+    }
+
+    .sm\:contents {
+        display: contents !important;
+    }
+}
+
+.shadow {
+    box-shadow: 0 0 8px var(--color-shadow);
+}
+
+.shadow-md {
+    box-shadow: 0 8px 16px var(--color-shadow);
+}
+
+.round-sm {
+    border-radius: calc(var(--radius) / 2) !important;
+}
+
+.round {
+    border-radius: var(--radius) !important;
+}
+
+.round-md {
+    border-radius: calc(var(--radius) * 2) !important;
+}
+
+.round-lg {
+    border-radius: calc(var(--radius) * 4) !important;
+}
+
+.w-full {
+    width: 100% !important;
+}
+
+.w-content {
+    width: max-content !important;
+}
+
+.invert {
+    filter: invert(1);
+}
+
+.grayscale {
+    filter: grayscale(1);
+}
+
+.bold {
+    font-weight: bold;
+}
+
+[disabled="fully"] {
+    opacity: 75%;
+    pointer-events: visible;
+    cursor: not-allowed;
+    user-select: none;
+}
+
+.fade,
+.CodeMirror-placeholder {
+    opacity: 75%;
+    transition: opacity 0.15s;
+}
+
+.ff-inherit {
+    font-family: inherit;
+}
+
+.fs-md {
+    font-size: 12px;
+}
+
+[align="center"] {
+    text-align: center;
+}
+
+[align="right"] {
+    text-align: right;
+}
+
+.red {
+    color: var(--color-red) !important;
+}
+
+.hidden {
+    display: none;
+}
+
+align {
+    width: 100%;
+    display: block;
+}
+
+align.center {
+    text-align: center;
+}
+
+align.right {
+    text-align: right;
+}

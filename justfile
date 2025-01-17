@@ -2,18 +2,27 @@
 
 # build release
 build database="sqlite":
-    just build-assets
     cargo build -r --no-default-features --features {{database}} --bin rainbeam
 
 mimalloc-build database="sqlite":
-    just build-assets
     cargo build -r --no-default-features --features {{database}},mimalloc --bin rainbeam
 
-init-builder:
-    cd crates/builder && npm i && cd ../../
+build-bundle:
+    cargo build -r --bin rainbundle
 
-build-assets:
-    node ./crates/builder/index.js
+init-web:
+    cd crates/web && npm i && cd ../../
+
+web-dev:
+    just web-bindings
+    cd crates/web && bun run dev
+
+web-build:
+    just web-bindings
+    cd crates/web && bun run build
+
+web-bindings:
+    cargo test
 
 # build debug
 build-d:
@@ -22,8 +31,20 @@ build-d:
 
 # test
 test:
-    just build-assets
+    cargo run --bin rainbundle -- ./ dev
+
+test-api:
     cargo run --bin rainbeam
+
+# prod
+run:
+    ./target/release/rainbundle ./ prod
+
+api:
+    ./target/release/rainbeam
+
+web:
+    cd crates/web && bun run ./build/index.js
 
 # ...
 doc:

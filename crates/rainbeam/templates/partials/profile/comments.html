@@ -1,6 +1,0 @@
-<!-- prettier-ignore -->
-{% let response = rainbeam::model::QuestionResponse::empty() %}
-{% for comment in comments %}
-    {% let show_replies = true %}
-    {% include "components/comment.html" %}
-{% endfor %}

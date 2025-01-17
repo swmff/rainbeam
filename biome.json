@@ -14,7 +14,11 @@
             },
             "style": {
                 "useTemplate": "off",
-                "noParameterAssign": "off"
+                "noParameterAssign": "off",
+                "useConst": "off"
+            },
+            "suspicious": {
+                "noExplicitAny": "off"
             }
         }
     }

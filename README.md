@@ -31,14 +31,26 @@ The Rainbeam server is built for Linux systems. Development is possible on Windo
 
 You'll need [just](https://just.systems/man/en/introduction.html) for many steps of our build process. You'll also need cargo with rustc version 1.83 minimum. Any recent Node.js version will also be needed.
 
-To initialize the build system, you'll need to run `just init-builder`. This will install all JavaScript dependencies needed to build Rainbeam.
+To start, you'll need to build the website:
 
-After you've initialized the builder, you can run `just build sqlite(/mysql/postgres)` to build the main server binary:
+```bash
+cd crates/web && bun i && cd ../../
+just web-build
+```
+
+After the website has been built, you can build the backend binary:
 
 ```bash
 just build sqlite
 ```
+
 Instead of “sqlite”, you can also use “mysql" or "postgres” for MySQL/MariaDB and PostgreSQL respectively!
+
+Then, you must build the main binary which run the website and API backend:
+
+```bash
+just build-bundle
+```
 
 To configure Rainbeam, create a `config.toml` file in `./.config` and `./.config/databeam`. You can copy the example files and edit them to your needs.
 
@@ -48,6 +60,8 @@ cp ./.config/databeam/config.example.toml ./.config/databeam/config.toml
 ```
 
 All configuration files for `./.config/config.toml` (the main configuration file) are available [here](https://swmff.github.io/rainbeam/rainbeam/config/struct.Config.html). You can find the databeam (database connection) configuration file options [here](https://swmff.github.io/rainbeam/databeam/sql/struct.DatabaseOpts.html).
+
+Once everything has been built and configured, you can start the server with `just run`.
 
 ### Configuration
 

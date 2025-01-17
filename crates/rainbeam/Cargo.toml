@@ -1,6 +1,6 @@
 [package]
 name = "rainbeam"
-version = "1.21.4"
+version = "2.0.0"
 edition = "2021"
 authors = ["trisuaso", "swmff"]
 description = "Ask, share, socialize!"
@@ -10,10 +10,10 @@ license = "MIT"
 rust-version = "1.83"
 
 [features]
-postgres = ["databeam/postgres", "authbeam/postgres", "rb/postgres"]
-mysql = ["databeam/mysql", "authbeam/mysql", "rb/mysql"]
-sqlite = ["databeam/sqlite", "authbeam/sqlite", "rb/sqlite"]
-default = ["databeam/sqlite", "authbeam/sqlite", "rb/sqlite"]
+postgres = ["databeam/postgres", "authbeam/postgres", "api/postgres"]
+mysql = ["databeam/mysql", "authbeam/mysql", "api/mysql"]
+sqlite = ["databeam/sqlite", "authbeam/sqlite", "api/sqlite"]
+default = ["databeam/sqlite", "authbeam/sqlite", "api/sqlite"]
 mimalloc = []
 
 [dependencies]
@@ -23,7 +23,7 @@ axum = { version = "0.8.1", features = ["macros", "form"] }
 axum-extra = { version = "0.10.0", features = ["cookie"] }
 reqwest = { version = "0.12.12", features = ["json", "stream"] }
 serde = { version = "1.0.217", features = ["derive"] }
-tokio = { version = "1.42.0", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.43.0", features = ["macros", "rt-multi-thread"] }
 toml = "0.8.19"
 tower-http = { version = "0.6.2", features = ["fs", "trace"] }
 serde_json = "1.0.135"
@@ -38,7 +38,7 @@ databeam = { version = "0.2.7", default-features = false }
 # databeam = { path = "../databeam", default-features = false }
 authbeam = { path = "../authbeam", default-features = false }
 langbeam = { path = "../langbeam" }
-rb = { path = "../rb", default-features = false }
+api = { path = "../api", default-features = false }
 mimalloc = "0.1.43"
 mime_guess = "2.0.5"
 pathbufd = "0.1.4"

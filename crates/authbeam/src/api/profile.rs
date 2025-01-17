@@ -278,6 +278,31 @@ pub async fn get_request(
     })
 }
 
+/// View a profile's information from auth token (no cleaning)
+pub async fn get_from_token_request(
+    Path(token): Path<String>,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    // get user
+    let auth_user = match database.get_profile_by_unhashed(token).await {
+        Ok(ua) => ua,
+        Err(e) => {
+            return Json(DefaultReturn {
+                success: false,
+                message: e.to_string(),
+                payload: None,
+            });
+        }
+    };
+
+    // return
+    Json(DefaultReturn {
+        success: true,
+        message: auth_user.username.to_string(),
+        payload: Some(auth_user),
+    })
+}
+
 /// Change a profile's tier
 pub async fn update_tier_request(
     jar: CookieJar,
@@ -767,11 +792,7 @@ pub async fn update_tokens_request(
         .update_profile_tokens(other.id, req.tokens, other.ips, other.token_context)
         .await
     {
-        return Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: (),
-        });
+        return Json(e.to_json());
     }
 
     Json(DefaultReturn {
@@ -1335,11 +1356,7 @@ pub async fn update_metdata_request(
             message: "Acceptable".to_string(),
             payload: (),
         }),
-        Err(e) => Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: (),
-        }),
+        Err(e) => Json(e.to_json()),
     }
 }
 
@@ -1476,11 +1493,7 @@ pub async fn patch_metdata_request(
             message: "Acceptable".to_string(),
             payload: (),
         }),
-        Err(e) => Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: (),
-        }),
+        Err(e) => Json(e.to_json()),
     }
 }
 
@@ -1594,11 +1607,7 @@ pub async fn update_badges_request(
             message: "Acceptable".to_string(),
             payload: (),
         }),
-        Err(e) => Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: (),
-        }),
+        Err(e) => Json(e.to_json()),
     }
 }
 
@@ -1712,11 +1721,7 @@ pub async fn update_labels_request(
             message: "Acceptable".to_string(),
             payload: (),
         }),
-        Err(e) => Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: (),
-        }),
+        Err(e) => Json(e.to_json()),
     }
 }
 
@@ -1845,10 +1850,6 @@ pub async fn delete_request(
             message: "Acceptable".to_string(),
             payload: (),
         }),
-        Err(e) => Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: (),
-        }),
+        Err(e) => Json(e.to_json()),
     }
 }

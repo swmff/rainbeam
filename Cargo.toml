@@ -2,17 +2,19 @@
 resolver = "2"
 members = [
     "crates/rainbeam-core",
-    "crates/rb",
+    "crates/api",
     "crates/rainbeam",
     "crates/authbeam",
     "crates/databeam",
     "crates/shared",
     "crates/citrus-client",
     "crates/langbeam",
+    "crates/rainbundle",
 ]
 
 [profile.dev]
 incremental = true
+
 
 [profile.release]
 opt-level = "z"
