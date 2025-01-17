@@ -201,7 +201,10 @@ select {
 
 input.secondary,
 textarea.secondary,
-select.secondary {
+select.secondary,
+details input,
+details textarea,
+details select {
     background: var(--color-surface);
 }
 

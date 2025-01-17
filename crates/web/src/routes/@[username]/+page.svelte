@@ -1,37 +1,10 @@
 <script lang="ts">
-    import {
-        Award,
-        Bomb,
-        ChevronDown,
-        Code,
-        Copy,
-        Crown,
-        Ellipsis,
-        Flag,
-        LockKeyhole,
-        MailPlus,
-        MessageCirclePlus,
-        Pen,
-        Search,
-        Settings,
-        Shield,
-        ShieldBan,
-        Trash,
-        Lock
-    } from "lucide-svelte";
     import { onMount } from "svelte";
 
     import { active_page } from "$lib/stores.js";
     active_page.set("profile");
 
-    import Question from "$lib/components/Question.svelte";
-    import Dropdown from "$lib/components/Dropdown.svelte";
-    import MoreResponseOptions from "$lib/components/MoreResponseOptions.svelte";
     import { Option } from "$lib/classes/Option";
-    import Notification from "$lib/components/Notification.svelte";
-    import type { RelationshipStatus } from "$lib/bindings/RelationshipStatus";
-    import { render_markdown } from "$lib/helpers.js";
-    import UserNote from "$lib/components/UserNote.svelte";
     import Response from "$lib/components/Response.svelte";
     import Scroller from "$lib/components/Scroller.svelte";
 
@@ -79,13 +52,6 @@
         </a>
     {/if}
 </div>
-
-{#if other.metadata.kv["sparkler:private_comments"] !== "true" || is_helper}
-    <div class="pillmenu convertible shadow">
-        <a href="/@{other.username}" class="active"><span>{lang["profile:link.posts"]}</span></a>
-        <a href="/@{other.username}/comments"><span>{lang["profile:link.comments"]}</span></a>
-    </div>
-{/if}
 
 <div id="feed" class="flex flex-col gap-2">
     {#if pinned}

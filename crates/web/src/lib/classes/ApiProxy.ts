@@ -19,26 +19,16 @@ export type ApiRequest = {
 };
 
 export default class ApiProxy {
-    public async req(
-        method: ApiMethod | string,
-        params: ApiParams,
-        request: ApiRequest
-    ) {
-        return await fetch(
-            `${config.client.api}/api/${params.version}/${params.route}`,
-            {
-                method,
-                headers: request.headers,
-                body: request.body
-            }
-        );
+    public async req(method: ApiMethod | string, params: ApiParams, request: ApiRequest) {
+        return await fetch(`${config.client.api}/api/${params.version}/${params.route}`, {
+            method,
+            headers: request.headers,
+            body: request.body,
+            redirect: "manual"
+        });
     }
 
-    public async req_root(
-        method: ApiMethod | string,
-        params: ApiParams,
-        request: ApiRequest
-    ) {
+    public async req_root(method: ApiMethod | string, params: ApiParams, request: ApiRequest) {
         return await fetch(`${config.client.api}/${params.route}`, {
             method,
             headers: request.headers,

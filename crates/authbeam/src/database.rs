@@ -764,7 +764,6 @@ impl Database {
             "sparkler:require_account",
             "sparkler:private_social",
             "sparkler:disable_mailbox",
-            "sparkler:private_comments",
             "sparkler:filter",
             "sparkler:mail_signature",
             "rainbeam:verify_url",

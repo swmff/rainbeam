@@ -5,6 +5,7 @@
     const user = Option.from(data.user).unwrap();
     const lang = data.lang;
     const page = data.data;
+    const config = data.config;
 
     const { viewing_other_profile } = page;
 
@@ -119,6 +120,11 @@
         }, 100);
     });
 </script>
+
+<svelte:head>
+    <title>Settings - {config.name}</title>
+    <meta name="description" content={config.description} />
+</svelte:head>
 
 <article class="flex flex-collapse gap-2">
     <div
