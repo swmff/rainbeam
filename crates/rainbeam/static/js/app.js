@@ -100,7 +100,9 @@
     });
 
     app.define("me", async function (_) {
-        globalThis.__user = await (await fetch("/api/v0/auth/me")).json();
+        globalThis.__user = (
+            await (await fetch("/api/v0/auth/me")).json()
+        ).payload;
     });
 
     app.define("logout", async function (_) {
