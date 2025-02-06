@@ -43,7 +43,7 @@ block head %}
 
     <main class="flex flex-col gap-2">
         {% if profile.is_some() %}
-        <div class="pillmenu convertible shadow">
+        <div class="pillmenu convertible">
             <a href="/"><span>{{ text "timelines:link.timeline" }}</span></a>
             <a href="/inbox/posts" class="active"
                 ><span>{{ text "timelines:link.posts" }}</span></a
@@ -53,7 +53,7 @@ block head %}
             >
         </div>
 
-        <div class="pillmenu convertible shadow">
+        <div class="pillmenu convertible">
             <a href="/inbox/posts" class="active"
                 ><span>{{ text "timelines:link.public" }}</span></a
             >

@@ -45,12 +45,8 @@ publish-authbeam:
 publish-langbeam:
     cargo publish --package langbeam
 
-publish-citrus:
-    cargo publish --package citrus-client --no-verify
-
 publish:
     just publish-shared
     just publish-databeam
     just publish-authbeam
     just publish-langbeam
-    just publish-citrus

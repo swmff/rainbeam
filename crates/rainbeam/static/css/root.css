@@ -12,6 +12,15 @@
 
 :root {
     color-scheme: light dark;
+    --color-surface: hsl(0, 0%, 95%);
+    --color-lowered: hsl(0, 0%, 93%);
+    --color-raised: hsl(0, 0%, 98%);
+    --color-super-lowered: hsl(0, 0%, 85%);
+    --color-super-raised: hsl(0, 0%, 100%);
+    --color-primary: hsl(341, 59%, 49%);
+    --color-primary-hsl: 341, 59%, 49%;
+    --color-primary-lowered: hsl(341, 59%, 44%);
+    --color-primary-raised: var(--color-primary);
     --color-text: hsl(0, 0%, 0%);
     --color-text-raised: var(--color-text);
     --color-text-lowered: var(--color-text);
@@ -19,12 +28,22 @@
     --color-text-primary: hsl(0, 0%, 100%);
     --color-shadow: rgba(0, 0, 0, 0.15);
     --color-red: hsl(0, 84%, 60%);
-    --radius: 6px;
+    --radius: 12px;
     --circle: 360px;
 }
 
 .dark,
 .dark * {
+    --hue: 215;
+    /* --sat: 15%; */
+    --sat: 0%;
+    --lit: 12%;
+    --color-surface: hsl(var(--hue), var(--sat), calc(0% + var(--lit)));
+    --color-lowered: hsl(var(--hue), var(--sat), calc(6% + var(--lit)));
+    --color-raised: hsl(var(--hue), var(--sat), calc(2% + var(--lit)));
+    --color-super-lowered: hsl(var(--hue), var(--sat), calc(12% + var(--lit)));
+    --color-super-raised: hsl(var(--hue), var(--sat), calc(4% + var(--lit)));
+    --color-primary-raised: hsl(341, 59%, 64%);
     --color-text: hsl(0, 0%, 95%);
     --color-link: #93c5fd;
     --color-primary-raised: hsl(341, 59%, 55%);
@@ -47,8 +66,9 @@ html,
 body {
     line-height: 1.5;
     letter-spacing: 0.15px;
-    font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
-        "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    font-family: "Inter", "Poppins", "Roboto", ui-sans-serif, system-ui,
+        sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+        "Noto Color Emoji";
     color: var(--color-text);
     background: var(--color-surface);
     overflow: auto auto;
@@ -71,6 +91,7 @@ body {
 #page {
     background: var(--color-surface);
     padding: 0;
+    padding-top: 0.5rem;
     display: flex;
     justify-content: center;
     max-width: 100%;
@@ -96,7 +117,6 @@ article {
     margin: auto;
     max-width: 100%;
     padding: 0 0.75rem;
-    margin-bottom: 0.75rem;
 }
 
 .content_container {
@@ -111,10 +131,6 @@ article {
 }
 
 @media (min-width: 768px) {
-    #page {
-        padding: 0.5rem;
-    }
-
     .content_container {
         max-width: 720px;
     }
@@ -319,7 +335,7 @@ img.emoji {
 
 .avatar {
     --size: 50px;
-    border-radius: var(--radius);
+    border-radius: calc(var(--radius) / 2);
     width: var(--size);
     min-width: var(--size);
     max-width: var(--size);

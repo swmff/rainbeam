@@ -15,10 +15,10 @@ sqlite = []
 default = ["sqlite"]
 
 [dependencies]
-redis = "0.28.0"
+redis = "0.28.2"
 serde = { version = "1.0.217", features = ["derive"] }
-serde_json = "1.0.135"
-toml = "0.8.19"
+serde_json = "1.0.138"
+toml = "0.8.20"
 rainbeam-shared = "0.2.0"
 pathbufd = "0.1.4"
 

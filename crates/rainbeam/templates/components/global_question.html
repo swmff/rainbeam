@@ -1,6 +1,6 @@
 {% let responses = question.1 %} {% let reaction_count = question.2 %} {% let
 question = question.clone().0 %}
-<div class="card-nest shadow w-full" id="question:{{ question.id }}">
+<div class="card-nest w-full" id="question:{{ question.id }}">
     <div class="card flex flex-col gap-1">
         <div class="flex items-center justify-between gap-1 question_title">
             <div class="footernav">
@@ -62,7 +62,7 @@ question = question.clone().0 %}
                     {{ icon "ellipsis" }}
                 </button>
 
-                <div class="inner shadow-md w-content" exclude="dropdown">
+                <div class="inner w-content" exclude="dropdown">
                     <b class="title">Sharing</b>
 
                     <!-- prettier-ignore -->

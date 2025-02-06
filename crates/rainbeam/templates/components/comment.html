@@ -1,7 +1,7 @@
 {% let reply_count = comment.1 %} {% let reaction_count = comment.2 %} {% let
 comment = comment.0.clone() %}
 <div
-    class="card shadow flex flex-col gap-2 comment_body"
+    class="card flex flex-col gap-2 comment_body"
     id="comment:{{ comment.id }}"
 >
     <div class="footernav items-center comment_title">
@@ -122,7 +122,7 @@ comment = comment.0.clone() %}
                 {{ icon "ellipsis" }}
             </button>
 
-            <div class="inner shadow-md w-content" exclude="dropdown">
+            <div class="inner w-content" exclude="dropdown">
                 <b class="title">Sharing</b>
 
                 <!-- prettier-ignore -->

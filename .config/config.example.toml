@@ -1,7 +1,6 @@
 port = 8080
 secure = true
 host = "https://example.com"
-citrus_id = "example.com"
 snowflake_server_id = 1234567890
 blocked_hosts = ["https://example.com", "https://example2.com"]
 media_dir = "./media"

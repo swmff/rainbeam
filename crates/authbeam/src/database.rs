@@ -16,9 +16,12 @@ use serde::{Deserialize, Serialize};
 use databeam::{query as sqlquery, utility};
 use pathbufd::{PathBufD, pathd};
 
+use ts_rs::TS;
+
 pub type Result<T> = std::result::Result<T, DatabaseError>;
 
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(TS, Clone, Serialize, Deserialize, Debug)]
+#[ts(export)]
 pub struct HCaptchaConfig {
     /// HCaptcha site key
     ///
@@ -761,13 +764,13 @@ impl Database {
             "sparkler:require_account",
             "sparkler:private_social",
             "sparkler:disable_mailbox",
-            "sparkler:private_comments",
             "sparkler:filter",
             "sparkler:mail_signature",
             "rainbeam:verify_url",
             "rainbeam:verify_code",
             "rainbeam:market_theme_template",
             "rainbeam:nsfw_profile",
+            "rainbeam:share_hashtag",
         ]
     }
 
@@ -1640,12 +1643,12 @@ impl Database {
         {
             format!(
                 "SELECT * FROM \"xfollows\" WHERE \"following\" = ? LIMIT 12 OFFSET {}",
-                page * 50
+                page * 12
             )
         } else {
             format!(
                 "SELECT * FROM \"xfollows\" WHERE \"following\" = $1 LIMIT 12 OFFSET {}",
-                page * 50
+                page * 12
             )
         };
 
@@ -1800,12 +1803,12 @@ impl Database {
         {
             format!(
                 "SELECT * FROM \"xfollows\" WHERE \"user\" = ? LIMIT 12 OFFSET {}",
-                page * 50
+                page * 12
             )
         } else {
             format!(
                 "SELECT * FROM \"xfollows\" WHERE \"user\" = $1 LIMIT 12 OFFSET {}",
-                page * 50
+                page * 12
             )
         };
 

@@ -99,6 +99,10 @@
         }
     });
 
+    app.define("me", async function (_) {
+        globalThis.__user = await (await fetch("/api/v0/auth/me")).json();
+    });
+
     app.define("logout", async function (_) {
         if (
             !(await trigger("app:confirm", [
@@ -276,9 +280,9 @@
 
         // close all others
         for (const dropdown of Array.from(
-            document.querySelectorAll(".inner[open]"),
+            document.querySelectorAll(".inner.open"),
         )) {
-            dropdown.removeAttribute("open");
+            dropdown.classList.remove("open");
         }
 
         // open
@@ -312,9 +316,9 @@
                 }
 
                 // open
-                dropdown.toggleAttribute("open");
+                dropdown.classList.add("open");
 
-                if (dropdown.getAttribute("open")) {
+                if (dropdown.classList.contains("open")) {
                     dropdown.removeAttribute("aria-hidden");
                 } else {
                     dropdown.setAttribute("aria-hidden", "true");
@@ -339,9 +343,9 @@
             }
 
             for (const dropdown of Array.from(
-                document.querySelectorAll(".inner[open]"),
+                document.querySelectorAll(".inner.open"),
             )) {
-                dropdown.removeAttribute("open");
+                dropdown.classList.remove("open");
             }
         });
     });

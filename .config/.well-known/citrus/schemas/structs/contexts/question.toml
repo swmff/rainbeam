@@ -1,5 +1,0 @@
-id = "net.rainbeam.structs.QuestionContext"
-
-[struct]
-reply_intent = "data.String"
-media = "data.String"

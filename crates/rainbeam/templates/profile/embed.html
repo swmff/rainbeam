@@ -58,7 +58,7 @@
                     title="{{ other.username }}'s avatar"
                     src="/api/v0/auth/profile/{{ other.id }}/avatar"
                     alt=""
-                    class="avatar shadow round-sm"
+                    class="avatar round-sm"
                     style="--size: 20px"
                 />
 
@@ -81,7 +81,7 @@
                 <img
                     src="/static/images/ui/logo.svg"
                     alt="{{ config.name }} logo"
-                    class="avatar shadow round-sm title-content"
+                    class="avatar round-sm title-content"
                     style="--size: 20px"
                 />
             </a>
@@ -195,7 +195,7 @@
             <!-- locked message -->
             {% if other.metadata.is_true("sparkler:private_profile") %}
             <div
-                class="card padded shadow flex flex-col w-full gap-4 items-center justify-center"
+                class="card padded flex flex-col w-full gap-4 items-center justify-center"
             >
                 {{ icon "lock-keyhole" }}
 

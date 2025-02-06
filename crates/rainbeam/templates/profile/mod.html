@@ -20,7 +20,7 @@
     >
 </a>
 {% endif %} {% endblock %} {% block panel %}
-<div class="pillmenu convertible shadow true">
+<div class="pillmenu convertible true">
     <a href="#/info" class="active" data-tab-button="info"><span>Info</span></a>
 
     {% if is_powerful %}
@@ -36,7 +36,7 @@
 <!-- info -->
 <div data-tab="info">
     <div id="info" class="flex flex-col gap-4">
-        <div class="card w-full shadow">
+        <div class="card w-full">
             <!-- prettier-ignore -->
             <ul style="margin-bottom: 0">
                 <li>Joined: <span class="date">{{ other.joined }}</span></li>
@@ -76,7 +76,7 @@
 <!-- badges -->
 <div data-tab="badges" class="hidden">
     <div id="badges" class="flex flex-col gap-4">
-        <div class="card w-full shadow">
+        <div class="card w-full">
             <form class="flex flex-col gap-1" id="badges_form">
                 <label for="badges_data">Badges data</label>
 
@@ -132,7 +132,7 @@
     <div class="flex flex-col gap-4">
         <h3>Change password</h3>
 
-        <form class="card shadow flex flex-col gap-1" id="change_password">
+        <form class="card flex flex-col gap-1" id="change_password">
             <label for="new_password">New password</label>
             <input
                 type="password"
@@ -196,7 +196,7 @@
             </a>
         </div>
 
-        <div class="card w-full shadow" style="overflow: auto">
+        <div class="card w-full" style="overflow: auto">
             <table class="w-full">
                 <thead>
                     <tr>
@@ -363,7 +363,7 @@
 
 <!-- chats -->
 <div data-tab="chats" class="hidden">
-    <div id="chats" class="card shadow flex flex-col gap-4">
+    <div id="chats" class="card flex flex-col gap-4">
         {% for chat in chats %} {% include "chats/components/listing.html" %} {%
         endfor %}
     </div>
@@ -372,10 +372,10 @@
 <!-- warnings -->
 <div data-tab="warnings" class="hidden">
     <div class="flex flex-col gap-4">
-        <div class="card-nest shadow w-full" id="warning_field">
-            <div class="card shadow flex flex-col gap-1">Create a warning</div>
+        <div class="card-nest w-full" id="warning_field">
+            <div class="card flex flex-col gap-1">Create a warning</div>
 
-            <div class="card shadow">
+            <div class="card">
                 <form
                     class="flex flex-col gap-2"
                     onsubmit="warn_user(event, '{{ other.id }}')"

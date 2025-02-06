@@ -6,17 +6,16 @@ Rainbeam is a simple Q&A social network designed for community! On Rainbeam, use
 
 All core packages are contained in the `crates/` directory:
 
-* `crates/builder/` - Client asset builder/bundler
-* `crates/shared/` - Core shared utilities
-* `crates/langbeam/` - l10n service
-* `crates/databeam/` - Database connection manager
-* `crates/authbeam/` - Authentication backend and API routes
-* `crates/citrus/` - Citrus federation protocol client
-* **(v)** `crates/rainbeam-core/` - Rainbeam database connection and types
-    * `crates/rb/` - Rainbeam Axum routes (API and all pages)
-    * `crates/rainbeam/` - Rainbeam server binary
+- `crates/builder/` - Client asset builder/bundler
+- `crates/shared/` - Core shared utilities
+- `crates/langbeam/` - l10n service
+- `crates/databeam/` - Database connection manager
+- `crates/authbeam/` - Authentication backend and API routes
+- **(v)** `crates/rainbeam-core/` - Rainbeam database connection and types
+    - `crates/rb/` - Rainbeam Axum routes (API and all pages)
+    - `crates/rainbeam/` - Rainbeam server binary
 
-Packages labeled with `(v)` are *version-tied*. This means that it and all the packages nested under it in the list share the same crate version.
+Packages labeled with `(v)` are _version-tied_. This means that it and all the packages nested under it in the list share the same crate version.
 
 ## Usage
 
@@ -38,6 +37,7 @@ After you've initialized the builder, you can run `just build sqlite(/mysql/post
 ```bash
 just build sqlite
 ```
+
 Instead of “sqlite”, you can also use “mysql" or "postgres” for MySQL/MariaDB and PostgreSQL respectively!
 
 To configure Rainbeam, create a `config.toml` file in `./.config` and `./.config/databeam`. You can copy the example files and edit them to your needs.

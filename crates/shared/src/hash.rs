@@ -1,6 +1,6 @@
 //! Hashing and IDs
 use hex_fmt::HexFmt;
-use rand::{distributions::Alphanumeric, thread_rng, Rng};
+use rand::{distr::Alphanumeric, rng, Rng};
 use sha2::{Digest, Sha256};
 use uuid::Uuid;
 
@@ -27,7 +27,7 @@ pub fn hash_salted(input: String, salt: String) -> String {
 }
 
 pub fn salt() -> String {
-    thread_rng()
+    rng()
         .sample_iter(&Alphanumeric)
         .take(16)
         .map(char::from)

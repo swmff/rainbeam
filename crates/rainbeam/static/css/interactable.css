@@ -2,8 +2,8 @@ button,
 a.button {
     background: var(--color-lowered);
     color: var(--color-text);
-    padding: 0.25rem 0.85rem;
-    min-height: 32px;
+    padding: 0.25rem 1rem;
+    min-height: 34px;
     min-width: max-content;
     width: max-content;
     border: 0;
@@ -46,49 +46,7 @@ a.button.big {
 
 button:not(nav *):not(.dropdown *):active,
 a:not(nav *):not(.dropdown *).button:active {
-    transform: scale(0.95);
-}
-
-.icon-only,
-button.icon-only,
-a.button.icon-only {
-    position: relative;
-    width: 35px;
-    height: 35px;
-    aspect-ratio: 1 / 1;
-    border-radius: var(--circle);
-    font-size: 18px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.icon-only.small {
-    font-size: 14px;
-    width: 28px !important;
-    height: 28px !important;
-    min-width: 28px !important;
-    min-height: 28px !important;
-}
-
-.icon-only .icon {
-    width: 1em;
-    height: 1em;
-    position: absolute;
-    left: calc(50% - 1em / 2.12);
-}
-
-.icon-only:active .icon {
-    transform: scale(1.05); /* negate button transform */
-}
-
-.icon-only .notification {
-    position: absolute;
-    z-index: 1;
-    width: 35px;
-    bottom: -20px;
-    display: block;
-    margin-left: 0.12em;
+    transform: scale(0.98);
 }
 
 nav button,
@@ -175,6 +133,48 @@ button.floating:is(html[data-scroll-500="true"] *),
     transform: scale(1);
 }
 
+.icon-only,
+button.icon-only,
+a.button.icon-only {
+    position: relative;
+    width: 35px;
+    height: 35px;
+    aspect-ratio: 1 / 1;
+    border-radius: var(--circle);
+    font-size: 18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.icon-only.small {
+    font-size: 14px;
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    min-height: 28px !important;
+}
+
+.icon-only .icon {
+    width: 1em;
+    height: 1em;
+    position: absolute;
+    /* left: calc(50% - 1em / 2.12); */
+}
+
+.icon-only:active .icon {
+    transform: scale(1.05); /* negate button transform */
+}
+
+.icon-only .notification {
+    position: absolute;
+    z-index: 1;
+    width: 35px;
+    bottom: -20px;
+    display: block;
+    margin-left: 0.12em;
+}
+
 .card button.secondary,
 .card a.button.secondary {
     background: var(--color-raised);
@@ -243,7 +243,13 @@ select {
 
 input.secondary,
 textarea.secondary,
-select.secondary {
+select.secondary,
+details input,
+details textarea,
+details select,
+.card input,
+.card textarea,
+.card select {
     background: var(--color-surface);
 }
 

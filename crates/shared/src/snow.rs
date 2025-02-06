@@ -30,9 +30,9 @@ impl AlmostSnowflake {
         // generate random bytes
         let mut bytes = String::new();
 
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         for _ in 1..=SEED_LEN {
-            bytes.push_str(&rng.gen_range(0..10).to_string())
+            bytes.push_str(&rng.random_range(0..10).to_string())
         }
 
         // build id

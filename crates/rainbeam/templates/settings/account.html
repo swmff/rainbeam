@@ -221,6 +221,24 @@
         </div>
     </div>
 
+    <div class="flex flex-col gap-1">
+        <label for="rainbeam:share_hashtag">
+            {{ text "settings:account.html:label.share_hashtag" }}
+        </label>
+
+        <input
+            type="url"
+            name="rainbeam:share_hashtag"
+            id="rainbeam:share_hashtag"
+            onchange="update_kv('rainbeam:share_hashtag', event.target.value)"
+        />
+
+        <p class="fade">
+            A hashtag automatically added when sharing to external platforms. No
+            need to include the hashtag sign!
+        </p>
+    </div>
+
     <h4 class="title">{{ text "settings:account.html:title.my_account" }}</h4>
     <form class="flex flex-col gap-1" id="change_username">
         <b class="heading"

@@ -20,7 +20,7 @@
 <article>
     <main class="flex flex-col gap-2">
         {% if is_helper %}
-        <div class="pillmenu convertible shadow">
+        <div class="pillmenu convertible">
             <a href="/inbox" class="active"><span>My Inbox</span></a>
             <a href="/inbox/audit"><span>Audit Log</span></a>
             <a href="/inbox/reports"><span>Reports</span></a>
@@ -37,7 +37,7 @@
             </button>
         </div>
         {% endif %} {% for question in unread %}
-        <div class="card-nest w-full shadow" id="question:{{ question.id }}">
+        <div class="card-nest w-full" id="question:{{ question.id }}">
             <div class="card flex flex-col gap-1">
                 <div
                     class="flex items-center justify-between gap-1 question_title"
@@ -129,7 +129,7 @@
                             {{ icon "ellipsis" }}
                         </button>
 
-                        <div class="inner shadow-md" exclude="dropdown">
+                        <div class="inner" exclude="dropdown">
                             <b class="title">Manage</b>
                             <a
                                 href="#"

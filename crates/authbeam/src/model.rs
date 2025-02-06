@@ -10,8 +10,11 @@ use axum::{
 use serde::{Deserialize, Serialize};
 use databeam::DefaultReturn;
 
+use ts_rs::TS;
+
 /// Basic user structure
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(TS, Serialize, Deserialize, Clone, Debug)]
+#[ts(export)]
 pub struct Profile {
     /// User ID
     pub id: String,
@@ -173,7 +176,8 @@ impl Default for Profile {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(TS, Serialize, Deserialize, Clone, Debug)]
+#[ts(export)]
 pub struct TokenContext {
     #[serde(default)]
     pub app: Option<String>,
@@ -183,7 +187,8 @@ pub struct TokenContext {
     pub timestamp: u128,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(TS, Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[ts(export)]
 pub enum TokenPermission {
     /// Manage UGC (user-generated-content) uploaded by the user
     ManageAssets,
@@ -235,7 +240,8 @@ impl Default for TokenContext {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(TS, Serialize, Deserialize, Clone, Debug)]
+#[ts(export)]
 pub struct ProfileMetadata {
     #[serde(default)]
     pub email: String,
@@ -324,7 +330,8 @@ impl Default for ProfileMetadata {
 }
 
 /// Basic follow structure
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(TS, Serialize, Deserialize, Clone, Debug)]
+#[ts(export)]
 pub struct UserFollow {
     /// The ID of the user following
     pub user: String,
@@ -333,7 +340,8 @@ pub struct UserFollow {
 }
 
 /// Basic notification structure
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(TS, Serialize, Deserialize, Clone, Debug)]
+#[ts(export)]
 pub struct Notification {
     /// The title of the notification
     pub title: String,
@@ -350,7 +358,8 @@ pub struct Notification {
 }
 
 /// Basic warning structure
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(TS, Serialize, Deserialize, Clone, Debug)]
+#[ts(export)]
 pub struct Warning {
     /// The ID of the warning
     pub id: String,
@@ -365,7 +374,8 @@ pub struct Warning {
 }
 
 /// Basic IP ban
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(TS, Serialize, Deserialize, Clone, Debug)]
+#[ts(export)]
 pub struct IpBan {
     /// The ID of the ban
     pub id: String,
@@ -380,7 +390,8 @@ pub struct IpBan {
 }
 
 /// The state of a user's relationship with another user
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(TS, Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[ts(export)]
 pub enum RelationshipStatus {
     /// No relationship
     Unknown,
@@ -402,7 +413,8 @@ impl Default for RelationshipStatus {
 ///
 /// If a relationship already exists, user two cannot attempt to create a relationship with user one.
 /// The existing relation should be used.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(TS, Debug, Clone, Serialize, Deserialize)]
+#[ts(export)]
 pub struct Relationship {
     /// The first user in the relationship
     pub one: Profile,
@@ -415,7 +427,8 @@ pub struct Relationship {
 }
 
 /// An IP-based block
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(TS, Serialize, Deserialize, Clone, Debug)]
+#[ts(export)]
 pub struct IpBlock {
     /// The ID of the block
     pub id: String,
@@ -430,7 +443,8 @@ pub struct IpBlock {
 }
 
 /// Rainbeam system permission
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(TS, Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[ts(export)]
 pub enum Permission {
     /// Permission to manage the server and managers
     Admin,
@@ -441,7 +455,8 @@ pub enum Permission {
 }
 
 /// Basic permission group
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(TS, Serialize, Deserialize, Clone, Debug)]
+#[ts(export)]
 pub struct Group {
     pub name: String,
     pub id: i32,
@@ -459,7 +474,8 @@ impl Default for Group {
 }
 
 /// Mail state
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(TS, Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[ts(export)]
 pub enum MailState {
     /// The mail has been sent, but has never been opened by the recipient
     Unread,
@@ -468,7 +484,8 @@ pub enum MailState {
 }
 
 /// Basic mail structure
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(TS, Serialize, Deserialize, Clone, Debug)]
+#[ts(export)]
 pub struct Mail {
     /// The title of the mail
     pub title: String,
@@ -487,7 +504,8 @@ pub struct Mail {
 }
 
 /// A label which describes a user
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(TS, Serialize, Deserialize, Clone, Debug)]
+#[ts(export)]
 pub struct UserLabel {
     /// The ID of the label (unique)
     pub id: String,
@@ -500,7 +518,8 @@ pub struct UserLabel {
 }
 
 /// A coin transaction between two users
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(TS, Serialize, Deserialize, Clone, Debug)]
+#[ts(export)]
 pub struct Transaction {
     /// The ID of the transaction (unique)
     pub id: String,
@@ -517,7 +536,8 @@ pub struct Transaction {
 }
 
 /// A marketplace item type
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(TS, Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[ts(export)]
 pub enum ItemType {
     Text,
     UserTheme,
@@ -539,7 +559,8 @@ impl ToString for ItemType {
 }
 
 /// A marketplace item status
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(TS, Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[ts(export)]
 pub enum ItemStatus {
     /// The item has been reviewed by a site moderator and rejected
     Rejected,
@@ -569,7 +590,8 @@ impl ToString for ItemStatus {
 }
 
 /// A marketplace item (for [`Transaction`]s)
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(TS, Serialize, Deserialize, Clone, Debug)]
+#[ts(export)]
 pub struct Item {
     /// The ID of the item (unique)
     pub id: String,
@@ -753,6 +775,14 @@ impl DatabaseError {
             NotFound => String::from("No asset with this ID could be found. (NotFound)"),
             TooLong => String::from("Given data is too long. (TooLong)"),
             _ => String::from("An unspecified error has occured"),
+        }
+    }
+
+    pub fn to_json<T: Default>(&self) -> DefaultReturn<T> {
+        DefaultReturn {
+            success: false,
+            message: self.to_string(),
+            payload: T::default(),
         }
     }
 }

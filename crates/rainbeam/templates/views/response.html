@@ -71,7 +71,7 @@ block head %}
             | !response.author.metadata.is_true("sparkler:private_profile") %}
         <!-- tabs -->
         <hr />
-        <div class="pillmenu convertible shadow true">
+        <div class="pillmenu convertible true">
             <a href="#/comments" class="active" data-tab-button="comments"
                 ><span>{{ text "views:text.comments" }}</span></a
             >
@@ -91,7 +91,7 @@ block head %}
         </div>
 
         <div data-tab="comments" class="flex flex-col gap-4">
-            <div class="card-nest w-full shadow" id="comment_field">
+            <div class="card-nest w-full" id="comment_field">
                 <div class="card flex flex-col gap-1">Leave a comment</div>
 
                 <div class="card">
@@ -186,7 +186,7 @@ block head %}
 
         <!-- reactions -->
         <div data-tab="reactions" class="hidden">
-            <div id="reactions" class="card shadow flex gap-2 flex-col w-full">
+            <div id="reactions" class="card flex gap-2 flex-col w-full">
                 {% for reaction in reactions %}
                 <a href="/@{{ reaction.user.username }}" class="card w-full flex items-center gap-2">
                     <img
@@ -216,7 +216,7 @@ block head %}
 
         <div class="hidden flex flex-col gap-2" data-tab="edit">
             <form
-                class="flex flex-col gap-2 w-full card shadow"
+                class="flex flex-col gap-2 w-full card"
                 onsubmit="edit(event)"
             >
                 <!-- prettier-ignore -->
@@ -246,7 +246,7 @@ block head %}
                 </div>
             </form>
 
-            <form class="flex flex-col gap-2 w-full card shadow" onsubmit="edit_context_warning(event)">
+            <form class="flex flex-col gap-2 w-full card" onsubmit="edit_context_warning(event)">
                 <!-- prettier-ignore -->
                 <label for="warning">Warning</label>
 
@@ -269,7 +269,7 @@ block head %}
             </form>
         </div>
 
-        <div class="hidden card shadow" data-tab="tags">
+        <div class="hidden card" data-tab="tags">
             <form class="flex flex-col gap-2 w-full" onsubmit="edit_tags(event)">
                 <!-- prettier-ignore -->
                 <label for="tags">Tags</label>

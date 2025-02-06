@@ -43,13 +43,13 @@
                         title="{{ profile.username }}'s avatar"
                         src="/api/v0/auth/profile/{{ profile.id }}/avatar"
                         alt=""
-                        class="avatar shadow"
+                        class="avatar"
                         style="--size: 24px"
                     />
                     {% endif %} {{ icon "chevron-down" c(dropdown-arrow) }}
                 </button>
 
-                <div class="inner shadow-md" exclude="dropdown">
+                <div class="inner" exclude="dropdown">
                     {% if let Some(profile) = profile %}
                     <b class="title">{{ profile.username }}</b>
 

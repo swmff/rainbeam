@@ -118,7 +118,7 @@ config.name }}{% endblock %} {% block head %}
 
             <div
                 id="profile_card"
-                class="card shadow padded flex flex-col gap-2 w-full"
+                class="card padded flex flex-col gap-2 w-full"
                 style="padding-top: 0; height: max-content"
             >
                 <div class="flex flex-col gap-2 profile_card_section_1">
@@ -128,7 +128,7 @@ config.name }}{% endblock %} {% block head %}
                                 title="{{ other.username }}'s avatar"
                                 src="/api/v0/auth/profile/{{ other.id }}/avatar"
                                 alt=""
-                                class="avatar shadow-md profile_avatar"
+                                class="avatar profile_avatar"
                             />
 
                             <!-- profile crown -->
@@ -208,7 +208,7 @@ config.name }}{% endblock %} {% block head %}
                         <!-- prettier-ignore -->
                         {% if let Some(sidebar) = other.metadata.kv.get("sparkler:sidebar") %}
                         {% if !sidebar.is_empty() %}
-                        <div id="sidebar" class="card secondary shadow w-full">
+                        <div id="sidebar" class="card secondary w-full">
                             {{ rainbeam_shared::ui::render_markdown(sidebar)|safe }}
                         </div>
                         {% endif %} {% endif %}
@@ -274,7 +274,7 @@ config.name }}{% endblock %} {% block head %}
                         </button>
 
                         <div
-                            class="inner shadow-md w-content left"
+                            class="inner w-content left"
                             exclude="dropdown"
                         >
                             <a href="/settings">
@@ -393,7 +393,7 @@ config.name }}{% endblock %} {% block head %}
                         </button>
 
                         <div
-                            class="inner shadow-md w-content left"
+                            class="inner w-content left"
                             exclude="dropdown"
                         >
                             <b class="title">This user</b>
@@ -482,7 +482,7 @@ config.name }}{% endblock %} {% block head %}
                         </button>
 
                         <div
-                            class="inner shadow-md w-content left"
+                            class="inner w-content left"
                             exclude="dropdown"
                         >
                             <b class="title">{{ text "profile:base.html:title.this_user" }}</b>
@@ -505,7 +505,7 @@ config.name }}{% endblock %} {% block head %}
         {% if (relationship != crate::model::RelationshipStatus::Friends &&
         other.metadata.is_true("sparkler:private_profile")) | (other.group == -1) %}
         <div
-            class="card padded shadow flex flex-col w-full gap-4 items-center justify-center"
+            class="card padded flex flex-col w-full gap-4 items-center justify-center"
         >
             {{ icon "lock-keyhole" }}
             <h4>{{ text "profile:base.html:text.private" }}</h4>
@@ -514,7 +514,7 @@ config.name }}{% endblock %} {% block head %}
         <section id="feed" class="flex flex-col gap-4 w-full">
             <!-- upper -->
             <!-- new question -->
-            <div class="card-nest w-full shadow" id="question_box">
+            <div class="card-nest w-full" id="question_box">
                 <!-- prettier-ignore -->
                 <div class="card motivational_header">
                     {% if let Some(header) = other.metadata.kv.get("sparkler:motivational_header") %}
@@ -618,7 +618,7 @@ config.name }}{% endblock %} {% block head %}
             {% block upper %} {% endblock %}
 
             <!-- menu -->
-            <div class="pillmenu convertible shadow">
+            <div class="pillmenu convertible">
                 {% block pillmenu %}{% endblock %}
             </div>
 

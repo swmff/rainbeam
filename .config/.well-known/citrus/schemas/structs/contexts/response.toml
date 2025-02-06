@@ -1,7 +1,0 @@
-id = "net.rainbeam.structs.ResponseContext"
-
-[struct]
-is_post = "data.bool"
-unlisted = "data.bool"
-warning = "data.String"
-circle = "data.CitrusID"

@@ -526,18 +526,14 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            "SELECT * FROM \"xquestions\" WHERE \"id\" LIKE ?"
+            "SELECT * FROM \"xquestions\" WHERE \"id\" = ?"
         } else {
-            "SELECT * FROM \"xquestions\" WHERE \"id\" LIKE $1"
+            "SELECT * FROM \"xquestions\" WHERE \"id\" = $1"
         }
         .to_string();
 
         let c = &self.base.db.client;
-        let res = match sqlquery(&query)
-            .bind::<&String>(&format!("{id}%"))
-            .fetch_one(c)
-            .await
-        {
+        let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
             Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Ok(Question::unknown()),
         };
@@ -1798,18 +1794,14 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            "SELECT * FROM \"xresponses\" WHERE \"id\" LIKE ?"
+            "SELECT * FROM \"xresponses\" WHERE \"id\" = ?"
         } else {
-            "SELECT * FROM \"xresponses\" WHERE \"id\" LIKE $1"
+            "SELECT * FROM \"xresponses\" WHERE \"id\" = $1"
         }
         .to_string();
 
         let c = &self.base.db.client;
-        let res = match sqlquery(&query)
-            .bind::<&String>(&format!("{id}%"))
-            .fetch_one(c)
-            .await
-        {
+        let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
             Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
@@ -1872,18 +1864,14 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            "SELECT * FROM \"xresponses\" WHERE \"id\" LIKE ?"
+            "SELECT * FROM \"xresponses\" WHERE \"id\" = ?"
         } else {
-            "SELECT * FROM \"xresponses\" WHERE \"id\" LIKE $1"
+            "SELECT * FROM \"xresponses\" WHERE \"id\" = $1"
         }
         .to_string();
 
         let c = &self.base.db.client;
-        let res = match sqlquery(&query)
-            .bind::<&String>(&format!("{id}%"))
-            .fetch_one(c)
-            .await
-        {
+        let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
             Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
@@ -2431,18 +2419,18 @@ impl Database {
         page: i32,
     ) -> Result<Vec<FullResponse>> {
         // check in cache
-        match self
-            .base
-            .cachedb
-            .get_timed::<Vec<FullResponse>, String>(format!(
-                "rbeam.app.timeline_save.get_responses_by_following_paginated:{}:{}",
-                user, page
-            ))
-            .await
-        {
-            Some(c) => return Ok(c.1),
-            None => (),
-        };
+        // match self
+        //     .base
+        //     .cachedb
+        //     .get_timed::<Vec<FullResponse>, String>(format!(
+        //         "rbeam.app.timeline_save.get_responses_by_following_paginated:{}:{}",
+        //         user, page
+        //     ))
+        //     .await
+        // {
+        //     Some(c) => return Ok(c.1),
+        //     None => (),
+        // };
 
         // get following
         let following = match self.auth.get_following(user.clone()).await {
@@ -3392,18 +3380,14 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            "SELECT * FROM \"xcomments\" WHERE \"id\" LIKE ?"
+            "SELECT * FROM \"xcomments\" WHERE \"id\" = ?"
         } else {
-            "SELECT * FROM \"xcomments\" WHERE \"id\" LIKE $1"
+            "SELECT * FROM \"xcomments\" WHERE \"id\" = $1"
         }
         .to_string();
 
         let c = &self.base.db.client;
-        let res = match sqlquery(&query)
-            .bind::<&String>(&format!("{id}%"))
-            .fetch_one(c)
-            .await
-        {
+        let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
             Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
@@ -6249,9 +6233,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xmessages\" WHERE \"chat\" = ? ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+            format!("SELECT * FROM \"xmessages\" WHERE \"chat\" = ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
-            format!("SELECT * FROM \"xmessages\" WHERE \"chat\" = $1 ORDER BY \"timestamp\" DESC LIMIT 50 OFFSET {}", page * 50)
+            format!("SELECT * FROM \"xmessages\" WHERE \"chat\" = $1 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         };
 
         let c = &self.base.db.client;

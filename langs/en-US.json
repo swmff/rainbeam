@@ -78,8 +78,6 @@
         "profile:link.following": "Following",
 
         "profile:link.feed": "Feed",
-        "profile:link.posts": "Posts",
-        "profile:link.comments": "Comments",
         "profile:link.questions": "Questions",
         "profile:link.manage": "Manage",
         "profile:link.outbox": "Outbox",
@@ -162,6 +160,7 @@
         "settings:account.html:label.nsfw_profile": "Mark my profile as NSFW",
         "settings:account.html:label.limited_chats": "Only allow friends to add you to chats",
         "settings:account.html:label.allow_drawings": "Allow drawings in your questions",
+        "settings:account.html:label.share_hashtag": "Share hashtag",
 
         "settings:account.html:title.my_account": "My account",
 

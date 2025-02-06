@@ -28,7 +28,7 @@ other = profile.clone() %} {% if profile.username == other.username %}
 crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
 "components/theming.html" %} {% endif %} {% if let Some(user) = profile %}
 <article class="flex flex-col gap-4">
-    <div class="card w-full shadow flex justify-between flex-collapse gap-2">
+    <div class="card w-full flex justify-between flex-collapse gap-2">
         <div class="flex gap-2 sm:w-full">
             <a href="/market" class="button bold" title="Market home">
                 {{ icon "store" }}

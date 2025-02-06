@@ -60,7 +60,7 @@ block head %}
         {% endif %}
 
         {% if is_powerful %}
-        <div class="question_ip card shadow round">
+        <div class="question_ip card round">
             <a href="/+i/{{ comment.0.ip }}">{{ comment.0.ip }}</a>
         </div>
         {% endif %}
@@ -77,7 +77,7 @@ block head %}
 
         <!-- tabs -->
         <hr />
-        <div class="pillmenu convertible shadow true">
+        <div class="pillmenu convertible true">
             <a href="#/replies" class="active" data-tab-button="replies"><span>{{ text "views:text.replies" }}</span></a>
             <a href="#/reactions" data-tab-button="reactions"><span>{{ text "views:text.reactions" }}</span></a>
             {% if let Some(profile) = profile %}
@@ -186,7 +186,7 @@ block head %}
 
         <!-- reactions -->
         <div data-tab="reactions" class="hidden">
-            <div id="reactions" class="card shadow flex gap-2 flex-col w-full">
+            <div id="reactions" class="card flex gap-2 flex-col w-full">
                 {% for reaction in reactions %}
                 <a href="/@{{ reaction.user.username }}" class="card w-full flex items-center gap-2">
                     <img
@@ -214,7 +214,7 @@ block head %}
             href="https://unpkg.com/codemirror@5.39.2/lib/codemirror.css"
         />
 
-        <div class="hidden card shadow" data-tab="edit">
+        <div class="hidden card" data-tab="edit">
             <form
                 class="flex flex-col gap-2 w-full"
                 onsubmit="edit(event)"

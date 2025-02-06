@@ -1,9 +1,0 @@
-id = "net.rainbeam.structs.Mail"
-
-[struct]
-author = "data.CitrusID"
-recipient = "data.CitrusID"
-content = "data.String"
-state = "data.String"
-id = "data.CitrusID"
-timestamp = "data.u128"

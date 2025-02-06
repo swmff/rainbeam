@@ -2313,7 +2313,6 @@ pub async fn routes(database: Database) -> Router {
         .route("/@{username}/c/{id}", get(comment_request))
         // profiles
         .route("/@{username}/_app/warning", get(profile::warning_request))
-        .route("/@{username}/comments", get(profile::comments_request))
         .route("/@{username}/mod", get(profile::mod_request)) // staff
         .route("/@{username}/questions", get(profile::questions_request))
         .route("/@{username}/questions/inbox", get(profile::inbox_request)) // staff
@@ -2341,10 +2340,6 @@ pub async fn routes(database: Database) -> Router {
         .route(
             "/@{username}/_app/feed.html",
             get(profile::partial_profile_request),
-        )
-        .route(
-            "/@{username}/_app/comments.html",
-            get(profile::partial_comments_request),
         )
         .route("/@{username}", get(profile::profile_request))
         .route("/{id}", get(api::profiles::expand_request))

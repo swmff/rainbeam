@@ -109,11 +109,7 @@ pub async fn delete_request(
 
     // return
     if let Err(e) = database.delete_item(id, auth_user).await {
-        return Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: (),
-        });
+        return Json(e.to_json());
     }
 
     Json(DefaultReturn {
@@ -159,11 +155,7 @@ pub async fn update_status_request(
         .update_item_status(id, props.status, auth_user)
         .await
     {
-        return Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: (),
-        });
+        return Json(e.to_json());
     }
 
     Json(DefaultReturn {
@@ -206,11 +198,7 @@ pub async fn update_item_request(
 
     // return
     if let Err(e) = database.update_item(id, props, auth_user).await {
-        return Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: (),
-        });
+        return Json(e.to_json());
     }
 
     Json(DefaultReturn {
@@ -253,11 +241,7 @@ pub async fn update_item_content_request(
 
     // return
     if let Err(e) = database.update_item_content(id, props, auth_user).await {
-        return Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: (),
-        });
+        return Json(e.to_json());
     }
 
     Json(DefaultReturn {
@@ -341,11 +325,7 @@ pub async fn buy_request(
         )
         .await
     {
-        return Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: (),
-        });
+        return Json(e.to_json());
     }
 
     Json(DefaultReturn {

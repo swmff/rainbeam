@@ -1,4 +1,4 @@
-<div class="card-nest w-full shadow" id="notif:{{ notif.id }}">
+<div class="card-nest w-full" id="notif:{{ notif.id }}">
     <div class="card flex flex-wrap justify-between gap-2">
         <span class="notif_title" do="notif_title" data-id="{{ notif.id }}">
             {{ rainbeam_shared::ui::render_markdown(notif.title)|safe }}

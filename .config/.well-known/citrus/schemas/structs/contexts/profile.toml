@@ -1,4 +1,0 @@
-id = "net.rainbeam.structs.Profile.Metadata"
-
-[struct]
-kv = "data.KvAny" # HashMap<String, String>

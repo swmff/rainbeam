@@ -1,4 +1,4 @@
-<div class="card-nest w-full shadow" id="warning:{{ warning.id }}">
+<div class="card-nest w-full" id="warning:{{ warning.id }}">
     <div class="card flex flex-col gap-1">
         <div class="flex justify-between gap-1 warning_title">
             <div class="footernav items-center">
@@ -34,7 +34,7 @@
                         {{ icon "ellipsis" }}
                     </button>
 
-                    <div class="inner shadow-md w-content" exclude="dropdown">
+                    <div class="inner w-content" exclude="dropdown">
                         <!-- actions for warning moderator ONLY -->
                         {% if let Some(profile) = profile %} {% if profile.id ==
                         warning.moderator.id %}

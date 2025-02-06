@@ -45,7 +45,7 @@ note = user.metadata.soft_get("sparkler:status_note") %} {% if !note.is_empty()
                         {{ icon "ellipsis" }}
                     </button>
 
-                    <div class="inner shadow-md w-content" exclude="dropdown">
+                    <div class="inner w-content" exclude="dropdown">
                         {% if profile.id == user.id %}
                         <a
                             href="/settings?note_clear"

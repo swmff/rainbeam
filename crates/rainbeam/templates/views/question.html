@@ -37,7 +37,7 @@ block head %}
 
         <!-- ... -->
         {% if is_powerful %}
-        <div class="question_ip card shadow round">
+        <div class="question_ip card round">
             <a href="/+i/{{ question.ip }}">{{ question.ip }}</a>
         </div>
         {% endif %} {% if already_responded %}
@@ -86,7 +86,7 @@ block head %}
 
         <!-- tabs -->
         <hr />
-        <div class="pillmenu convertible shadow true">
+        <div class="pillmenu convertible true">
             <a href="#/responses" class="active" data-tab-button="responses"
                 ><span>{{ text "views:text.responses" }}</span></a
             >
@@ -112,7 +112,7 @@ block head %}
 
         <!-- reactions -->
         <div data-tab="reactions" class="hidden">
-            <div id="reactions" class="card shadow flex gap-2 flex-col w-full">
+            <div id="reactions" class="card flex gap-2 flex-col w-full">
                 {% for reaction in reactions %}
                 <a
                     href="/@{{ reaction.user.username }}"
