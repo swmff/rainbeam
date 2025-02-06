@@ -69,6 +69,20 @@
     <div class="checkbox_container">
         <input
             type="checkbox"
+            name="rainbeam:authenticated_only"
+            id="rainbeam:authenticated_only"
+            onchange="update_kv('rainbeam:authenticated_only', event.target.checked.toString())"
+        />
+
+        <label for="rainbeam:authenticated_only" class="normal">
+            {{ text
+            "settings:privacy_options.html:label.require_account_to_view" }}
+        </label>
+    </div>
+
+    <div class="checkbox_container">
+        <input
+            type="checkbox"
             name="sparkler:private_social"
             id="sparkler:private_social"
             onchange="update_kv('sparkler:private_social', event.target.checked.toString())"
@@ -77,19 +91,6 @@
         <label for="sparkler:private_social" class="normal">
             {{ text "settings:privacy_options.html:label.keep_socials_private"
             }}
-        </label>
-    </div>
-
-    <div class="checkbox_container">
-        <input
-            type="checkbox"
-            name="sparkler:private_comments"
-            id="sparkler:private_comments"
-            onchange="update_kv('sparkler:private_comments', event.target.checked.toString())"
-        />
-
-        <label for="sparkler:private_comments" class="normal">
-            {{ text "settings:privacy_options.html:label.private_comments" }}
         </label>
     </div>
 

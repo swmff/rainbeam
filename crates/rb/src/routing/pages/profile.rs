@@ -90,6 +90,11 @@ pub async fn profile_request(
         Err(_) => return Html(DatabaseError::NotFound.to_html(database)),
     };
 
+    if other.metadata.is_true("rainbeam:authenticated_only") & auth_user.is_none() {
+        // this profile only allows authenticated users to view their profile
+        return Html(DatabaseError::NotAllowed.to_html(database));
+    }
+
     if other.id == "0" {
         return Html(
             MarkdownTemplate {
@@ -531,6 +536,11 @@ pub async fn profile_embed_request(
         Err(_) => return Html(DatabaseError::NotFound.to_html(database)),
     };
 
+    if other.metadata.is_true("rainbeam:authenticated_only") & auth_user.is_none() {
+        // this profile only allows authenticated users to view their profile
+        return Html(DatabaseError::NotAllowed.to_html(database));
+    }
+
     let mut responses = match database
         .get_responses_by_author_paginated(other.id.to_owned(), 0)
         .await
@@ -755,6 +765,11 @@ pub async fn followers_request(
         Err(e) => return Html(e.to_string()),
     };
 
+    if other.metadata.is_true("rainbeam:authenticated_only") & auth_user.is_none() {
+        // this profile only allows authenticated users to view their profile
+        return Html(DatabaseError::NotAllowed.to_html(database));
+    }
+
     let is_helper = if let Some(ref ua) = auth_user {
         let group = match database.auth.get_group_by_id(ua.group).await {
             Ok(g) => g,
@@ -904,6 +919,11 @@ pub async fn following_request(
         Err(e) => return Html(e.to_string()),
     };
 
+    if other.metadata.is_true("rainbeam:authenticated_only") & auth_user.is_none() {
+        // this profile only allows authenticated users to view their profile
+        return Html(DatabaseError::NotAllowed.to_html(database));
+    }
+
     let is_helper = if let Some(ref ua) = auth_user {
         let group = match database.auth.get_group_by_id(ua.group).await {
             Ok(g) => g,
@@ -1052,6 +1072,11 @@ pub async fn friends_request(
         Ok(ua) => ua,
         Err(e) => return Html(e.to_string()),
     };
+
+    if other.metadata.is_true("rainbeam:authenticated_only") & auth_user.is_none() {
+        // this profile only allows authenticated users to view their profile
+        return Html(DatabaseError::NotAllowed.to_html(database));
+    }
 
     let is_helper = if let Some(ref ua) = auth_user {
         let group = match database.auth.get_group_by_id(ua.group).await {
@@ -1446,6 +1471,11 @@ pub async fn questions_request(
         Ok(ua) => ua,
         Err(e) => return Html(e.to_string()),
     };
+
+    if other.metadata.is_true("rainbeam:authenticated_only") & auth_user.is_none() {
+        // this profile only allows authenticated users to view their profile
+        return Html(DatabaseError::NotAllowed.to_html(database));
+    }
 
     let is_following = if let Some(ref ua) = auth_user {
         match database

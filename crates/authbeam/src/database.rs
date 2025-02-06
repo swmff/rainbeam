@@ -771,6 +771,7 @@ impl Database {
             "rainbeam:market_theme_template",
             "rainbeam:nsfw_profile",
             "rainbeam:share_hashtag",
+            "rainbeam:authenticated_only",
         ]
     }
 

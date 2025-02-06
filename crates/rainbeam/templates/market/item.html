@@ -87,7 +87,7 @@
     </div>
 
     <!-- item -->
-    <div class="flex w-full flex flex-col gap-2 card" data-tab="details">
+    <div class="flex w-full flex-col gap-2 card" data-tab="details">
         <h3>{{ item.name }}</h3>
         <div class="items-center footernav gap-2">
             <a
@@ -100,7 +100,7 @@
                     alt="@{{ creator.username }}"
                     class="avatar"
                     loading="lazy"
-                    style="--size: 20px"
+                    style="--size: 25px"
                 />
                 <span>{{ creator.username }}</span>
             </a>
@@ -230,10 +230,7 @@
 
     <!-- options -->
     {% if (user.id == creator.id) | is_helper %}
-    <div
-        data-tab="options"
-        class="hidden card w-full flex flex-col gap-2"
-    >
+    <div data-tab="options" class="hidden card w-full flex flex-col gap-2">
         <div class="card secondary flex gap-2 flex-wrap">
             <button
                 class="secondary"
