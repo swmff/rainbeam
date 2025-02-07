@@ -1,5 +1,4 @@
-{% extends "../base.html" %} {% block title %}{{ other.username }} - {{
-config.name }}{% endblock %} {% block head %}
+{% extends "../base.html" %} {% block title %}{{ other.username }}{% endblock %} {% block head %}
 <!-- prettier-ignore -->
 {% if let Some(biography) = other.metadata.kv.get("sparkler:biography") %}
 <meta name="og:title" content="{{ other.username }}" />

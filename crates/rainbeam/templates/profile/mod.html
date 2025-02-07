@@ -202,6 +202,7 @@
                     <tr>
                         <th>IP</th>
                         <th>App</th>
+                        <th>Created</th>
                         <th>Permissions</th>
                         <th>Actions</th>
                     </tr>
@@ -232,7 +233,15 @@
                         {{ name }}
                         {% endif %}
                     </td>
+
+                    <td style="white-space: nowrap">
+                        <span class="tag date">{{ ctx.timestamp }}</span>
+                    </td>
                     {% else %}
+                    <td style="white-space: nowrap">
+                        <span class="tag">None</span>
+                    </td>
+
                     <td style="white-space: nowrap">
                         <span class="tag">None</span>
                     </td>

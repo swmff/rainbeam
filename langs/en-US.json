@@ -228,6 +228,7 @@
         "settings:sessions.html:title.sessions": "My sessions",
         "settings:sessions.html:label.tag": "Tag",
         "settings:sessions.html:label.app": "App",
+        "settings:sessions.html:label.created": "Created",
         "settings:sessions.html:label.permissions": "Permisisons",
         "settings:sessions.html:label.actions": "Actions",
         "settings:sessions.html:text.active": "Active",

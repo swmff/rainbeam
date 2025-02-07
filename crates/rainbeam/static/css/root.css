@@ -28,7 +28,7 @@
     --color-text-primary: hsl(0, 0%, 100%);
     --color-shadow: rgba(0, 0, 0, 0.15);
     --color-red: hsl(0, 84%, 60%);
-    --radius: 10px;
+    --radius: 8px;
     --circle: 360px;
 }
 
@@ -90,7 +90,7 @@ body {
 
 #page {
     background: var(--color-surface);
-    padding: 0.5rem 0;
+    padding: 1rem 0;
     display: flex;
     justify-content: center;
     max-width: 100%;

@@ -294,7 +294,7 @@ dialog::backdrop {
     background: white;
     padding: 0.05rem 0.3rem;
     font-size: 12px;
-    border-radius: var(--radius);
+    border-radius: 6px;
     height: max-content;
 }
 
@@ -308,7 +308,6 @@ dialog::backdrop {
     /* background: var(--color-primary) !important;
     color: var(--color-text-primary) !important; */
     padding: 0.05rem 0.3rem !important;
-    border-radius: var(--radius);
 }
 
 .notification.camo {

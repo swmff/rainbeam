@@ -227,6 +227,7 @@
         "settings:sessions.html:title.sessions": "내 세션",
         "settings:sessions.html:label.tag": "태그",
         "settings:sessions.html:label.app": "앱",
+        "settings:sessions.html:label.created": "Created",
         "settings:sessions.html:label.permissions": "권한",
         "settings:sessions.html:label.actions": "동작",
         "settings:sessions.html:text.active": "활성회",

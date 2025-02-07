@@ -82,6 +82,15 @@
         outerhtml="true"
         id="initial_loader"
     ></include-partial>
+
+    {% if !tag.is_empty() %}
+    <!-- tag only buttons -->
+    <div class="flex w-full justify-center">
+        <a class="button secondary" href="?page={{ page + 1 }}&tag={{ tag }}">
+            {{ text "chats:chat.html:link.load_more" }}
+        </a>
+    </div>
+    {% endif %}
 </div>
 
 {% if tag.is_empty() && query.is_empty() %}

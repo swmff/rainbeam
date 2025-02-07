@@ -4851,9 +4851,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            "SELECT * FROM \"xcircle_memberships\" WHERE \"user\" = ? AND \"membership\" = '\"Active\"' OR \"membership\" = '\"Moderator\"'"
+            "SELECT * FROM \"xcircle_memberships\" WHERE \"user\" = ? AND (\"membership\" = '\"Active\"' OR \"membership\" = '\"Moderator\"')"
         } else {
-            "SELECT * FROM \"xcircle_memberships\" WHERE \"user\" = $1 AND \"membership\" = '\"Active\"' OR \"membership\" = '\"Moderator\"'"
+            "SELECT * FROM \"xcircle_memberships\" WHERE \"user\" = $1 AND (\"membership\" = '\"Active\"' OR \"membership\" = '\"Moderator\"')"
         }
         .to_string();
 
@@ -4892,9 +4892,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            "SELECT * FROM \"xcircle_memberships\" WHERE \"circle\" = ? AND \"membership\" = '\"Active\"' OR \"membership\" = '\"Moderator\"'"
+            "SELECT * FROM \"xcircle_memberships\" WHERE \"circle\" = ? AND (\"membership\" = '\"Active\"' OR \"membership\" = '\"Moderator\"')"
         } else {
-            "SELECT * FROM \"xcircle_memberships\" WHERE \"circle\" = $1 AND \"membership\" = '\"Active\"' OR \"membership\" = '\"Moderator\"'"
+            "SELECT * FROM \"xcircle_memberships\" WHERE \"circle\" = $1 AND (\"membership\" = '\"Active\"' OR \"membership\" = '\"Moderator\"')"
         }
         .to_string();
 
