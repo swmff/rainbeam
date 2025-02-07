@@ -476,9 +476,13 @@
             }
 
             if (group !== "-1" && group !== "0") {
-                return alert(
-                    "Cannot grant moderator permissions to other users.",
-                );
+                if (
+                    !confirm(
+                        "Are you sure you want to change this user to an arbitrary group value?",
+                    )
+                ) {
+                    return;
+                }
             }
 
             fetch("/api/v0/auth/profile/{{ other.id }}/group", {
