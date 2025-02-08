@@ -47,25 +47,23 @@ block head %}
             >
         </div>
 
-        <h5 id="friends">My Friends</h5>
-        <!-- prettier-ignore -->
-        <div class="flex flex-wrap w-full">
-            {% if let Some(other) = profile %}
-                <!-- show self -->
-                {% let user = other.clone() %}
-                {% include "components/big_friend.html" %}
-            {% for user in friends %} {% if
-            other.id != user.0.id %}
-                {% let user = user.0.clone() %}
-                {% include "components/big_friend.html" %}
-            {% else %}
-                {% let user = user.1.clone() %}
-                {% include "components/big_friend.html" %}
-            {% endif %} {% endfor %} {% endif %}
-        </div>
-
-        <div class="flex justify-between items-center gap-2">
-            <h5>Feed</h5>
+        <div class="card w-full flex flex-col gap-2">
+            <h5 id="friends">My Friends</h5>
+            <!-- prettier-ignore -->
+            <div class="flex flex-wrap w-full">
+                {% if let Some(other) = profile %}
+                    <!-- show self -->
+                    {% let user = other.clone() %}
+                    {% include "components/big_friend.html" %}
+                {% for user in friends %} {% if
+                other.id != user.0.id %}
+                    {% let user = user.0.clone() %}
+                    {% include "components/big_friend.html" %}
+                {% else %}
+                    {% let user = user.1.clone() %}
+                    {% include "components/big_friend.html" %}
+                {% endif %} {% endfor %} {% endif %}
+            </div>
         </div>
 
         <!-- pagination buttons -->

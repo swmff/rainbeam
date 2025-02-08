@@ -92,9 +92,6 @@
         "profile:base.html:text.warning_title": "This profile has published this warning:",
         "profile:base.html:text.warning_continue": "Press \"Continue\" if you wish to view this profile.",
 
-        "profile:base.html:link.follower": "follower",
-        "profile:base.html:link.following": "following",
-        "profile:base.html:link.friend": "friend",
         "profile:base.html:link.edit_profile": "Edit profile",
         "profile:base.html:link.account_settings": "Account settings",
         "profile:base.html:link.embed_profile": "Embed profile",

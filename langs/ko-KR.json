@@ -91,9 +91,6 @@
         "profile:base.html:text.warning_title": "이 프로필은 이 경고를 게시했습니다:",
         "profile:base.html:text.warning_continue": "이 프로필을 보고싶다면 \"계속\"을 클릭하세요 ",
 
-        "profile:base.html:link.follower": "팔로워",
-        "profile:base.html:link.following": "팔로잉",
-        "profile:base.html:link.friend": "친구",
         "profile:base.html:link.edit_profile": "프로필 수정",
         "profile:base.html:link.account_settings": "계정 설정",
         "profile:base.html:link.embed_profile": "프로필 삽입",

@@ -193,11 +193,11 @@
             });
     });
 
-    self.define("unsend", function ({ $, app }, id) {
+    self.define("unsend", async function ({ $, app }, id) {
         if (
-            !confirm(
+            !(await trigger("app:confirm", [
                 "Are you sure you want to do this? This will delete the response and allow you to answer the question again.",
-            )
+            ]))
         ) {
             return;
         }

@@ -12,11 +12,14 @@
 
 :root {
     color-scheme: light dark;
-    --color-surface: hsl(0, 0%, 95%);
-    --color-lowered: hsl(0, 0%, 93%);
-    --color-raised: hsl(0, 0%, 98%);
-    --color-super-lowered: hsl(0, 0%, 85%);
-    --color-super-raised: hsl(0, 0%, 100%);
+    --hue: 225;
+    --sat: 5%;
+    --lit: 0%;
+    --color-surface: hsl(var(--hue), var(--sat), calc(95% - var(--lit)));
+    --color-lowered: hsl(var(--hue), var(--sat), calc(93% - var(--lit)));
+    --color-raised: hsl(var(--hue), var(--sat), calc(98% - var(--lit)));
+    --color-super-lowered: hsl(var(--hue), var(--sat), calc(85% - var(--lit)));
+    --color-super-raised: hsl(var(--hue), var(--sat), calc(100% - var(--lit)));
     --color-primary: hsl(341, 59%, 49%);
     --color-primary-hsl: 341, 59%, 49%;
     --color-primary-lowered: hsl(341, 59%, 44%);
@@ -28,15 +31,13 @@
     --color-text-primary: hsl(0, 0%, 100%);
     --color-shadow: rgba(0, 0, 0, 0.15);
     --color-red: hsl(0, 84%, 60%);
-    --radius: 8px;
+    --radius: 4px;
     --circle: 360px;
 }
 
 .dark,
 .dark * {
-    --hue: 215;
-    /* --sat: 15%; */
-    --sat: 0%;
+    --sat: 5%;
     --lit: 12%;
     --color-surface: hsl(var(--hue), var(--sat), calc(0% + var(--lit)));
     --color-lowered: hsl(var(--hue), var(--sat), calc(6% + var(--lit)));

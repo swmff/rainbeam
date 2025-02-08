@@ -97,7 +97,7 @@
         <div class="flex flex-col gap-4 sm:w-full profile_container" style="width: 25rem; height: max-content">
             <style>
                 .profile_avatar {
-                    --size: 160px;
+                    --size: 180px;
                 }
 
                 .profile_avatar_container {
@@ -106,11 +106,11 @@
 
                 @media screen and (max-width: 900px) {
                     .profile_avatar {
-                        --size: 120px;
+                        --size: 160px;
                     }
 
                     .profile_avatar_container {
-                        margin: -40px auto 0;
+                        margin: -60px auto 0;
                     }
                 }
             </style>
@@ -211,38 +211,6 @@
                             {{ rainbeam_shared::ui::render_markdown(sidebar)|safe }}
                         </div>
                         {% endif %} {% endif %}
-
-                        <!-- social -->
-                        {% if !hide_social %}
-                        <div class="footernav flex-wrap justify-center profile_social" style="font-size: 13px;">
-                            <a
-                                href="/@{{ other.username }}/followers"
-                                class="item"
-                                style="color: var(--color-text)"
-                            >
-                                <b>{{ followers_count }}</b>
-                                <span class="fade">{{ text "profile:base.html:link.follower" }}{% if followers_count > 1 %}s{% endif %}</span>
-                            </a>
-
-                            <a
-                                href="/@{{ other.username }}/following"
-                                class="item"
-                                style="color: var(--color-text)"
-                            >
-                                <b>{{ following_count }}</b>
-                                <span class="fade">{{ text "profile:base.html:link.following" }}</span>
-                            </a>
-
-                            <a
-                                href="/@{{ other.username }}/friends"
-                                class="item"
-                                style="color: var(--color-text)"
-                            >
-                                <b>{{ friends_count }}</b>
-                                <span class="fade">{{ text "profile:base.html:link.friend" }}{% if (friends_count > 1) | (friends_count == 0) %}s{% endif %}</span>
-                            </a>
-                        </div>
-                        {% endif %}
                     </div>
                 </div>
 
@@ -617,6 +585,35 @@
             {% block upper %} {% endblock %}
 
             <!-- menu -->
+            {% if !hide_social %}
+            <!-- social menu -->
+            <div class="pillmenu convertible profile_social">
+                <a
+                    href="/@{{ other.username }}/followers"
+                    style="color: var(--color-text)"
+                >
+                    <span class="fade">{{ text "profile:link.followers" }}</span>
+                    <b class="notification">{{ followers_count }}</b>
+                </a>
+
+                <a
+                    href="/@{{ other.username }}/following"
+                    style="color: var(--color-text)"
+                >
+                    <span class="fade">{{ text "profile:link.following" }}</span>
+                    <b class="notification">{{ following_count }}</b>
+                </a>
+
+                <a
+                    href="/@{{ other.username }}/friends"
+                    style="color: var(--color-text)"
+                >
+                    <span class="fade">{{ text "general:link.friends" }}</span>
+                    <b class="notification">{{ friends_count }}</b>
+                </a>
+            </div>
+            {% endif %}
+
             <div class="pillmenu convertible">
                 {% block pillmenu %}{% endblock %}
             </div>

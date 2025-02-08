@@ -45,6 +45,7 @@ dialog::backdrop {
 }
 
 .dropdown .inner {
+    --horizontal-padding: 1.25rem;
     display: none;
     position: absolute;
     background: var(--color-raised);
@@ -57,8 +58,7 @@ dialog::backdrop {
     max-width: 100dvw;
     max-height: 80dvh;
     overflow: auto;
-    padding: 0.5rem 0.25rem;
-    border: solid 1px var(--color-super-lowered);
+    padding: 0.5rem 0;
     box-shadow: 0 0 8px 2px var(--color-shadow);
 }
 
@@ -78,8 +78,8 @@ dialog::backdrop {
 }
 
 .dropdown .inner .title {
-    padding: 0.25rem 1rem;
-    font-size: 14px;
+    padding: 0.25rem var(--horizontal-padding);
+    font-size: 13px;
     opacity: 50%;
     color: var(--color-text-raised);
     text-align: left;
@@ -96,7 +96,7 @@ dialog::backdrop {
 .dropdown .inner a,
 .dropdown .inner button {
     width: 100%;
-    padding: 0.25rem 1rem;
+    padding: 0.25rem var(--horizontal-padding);
     /* transition:
         background 0.1s,
         transform 0.15s; */
@@ -108,10 +108,10 @@ dialog::backdrop {
     color: var(--color-text-raised);
     box-shadow: none !important;
     background: transparent;
-    border-radius: var(--radius) !important;
-    font-size: 14px;
-    min-height: 32px !important;
-    height: 32px !important;
+    border-radius: 0 !important;
+    font-size: 13px;
+    min-height: 30px !important;
+    height: 30px !important;
     font-weight: 500 !important;
     position: relative;
 
@@ -124,7 +124,9 @@ dialog::backdrop {
 
 .dropdown .inner a:hover,
 .dropdown .inner button:hover {
-    background-color: var(--color-lowered);
+    /* background-color: var(--color-lowered); */
+    background-color: var(--color-primary);
+    color: var(--color-text-primary) !important;
 }
 
 .dropdown .inner a:focus,
@@ -438,6 +440,7 @@ dialog::backdrop {
     display: flex;
     border-radius: var(--radius);
     user-select: none;
+    box-shadow: 0 0 2px var(--color-shadow);
 }
 
 .pillmenu a {

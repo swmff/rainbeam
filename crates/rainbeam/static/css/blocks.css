@@ -75,6 +75,7 @@ a.card:hover {
 .actions_bar button {
     padding: 0.25rem 0.75rem;
     min-height: 26px !important;
+    height: 26px !important;
 }
 
 legend,
@@ -84,10 +85,6 @@ label {
 
 form button {
     width: max-content;
-}
-
-button {
-    height: max-content;
 }
 
 button:disabled {
@@ -122,8 +119,13 @@ nav {
     position: sticky;
     top: 0;
     z-index: 6374;
-    padding: 0.5rem;
+    padding: 0.25rem 0.5rem;
     transition: opacity 0.15s;
+    font-size: 13px;
+}
+
+nav .notification {
+    font-size: 10px;
 }
 
 nav .content_container,
