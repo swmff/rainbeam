@@ -121,7 +121,7 @@ nav {
     z-index: 6374;
     padding: 0.25rem 0.5rem;
     transition: opacity 0.15s;
-    font-size: 13px;
+    font-size: 16px;
 }
 
 nav .notification {
@@ -158,7 +158,7 @@ nav a.button:not(.inner *):hover {
 
 nav button:not(.title):not(.active),
 nav .button:not(.title):not(.active) {
-    opacity: 80%;
+    opacity: 75%;
 }
 
 nav button:not(.title):not(.active):hover,
