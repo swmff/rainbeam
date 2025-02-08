@@ -122,6 +122,8 @@
                 media_theme_pref();
             });
         </script>
+
+        {{ config.templates.header()|safe }}
     </head>
 
     <body>
@@ -517,6 +519,6 @@
                 }
             };
         </script>
-        {% endif %} {% endif %}
+        {% endif %} {% endif %} {{ config.templates.body()|safe }}
     </body>
 </html>

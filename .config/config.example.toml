@@ -11,6 +11,13 @@ description = "My Rainbeam instance"
 real_ip_header = "CF-Connecting-IP"
 registration_enabled = true
 
+[templates]
+# to change this, we automatically git ignore the `./.config/templates` dir
+# please place your custom templates in there :)
+#
+# this example uses `./header.html` so that it can be demoed using the example!
+header = "header.html" # this is relative to the config file, so `./.config`
+
 [captcha]
 # CHANGE THIS
 site_key = "10000000-ffff-ffff-ffff-000000000001"

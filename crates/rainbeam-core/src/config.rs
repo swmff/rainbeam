@@ -1,8 +1,9 @@
 //! Application config manager
 use pathbufd::PathBufD;
 use serde::{Deserialize, Serialize};
+use std::fs::read_to_string;
 use std::io::Result;
-use std::env::current_dir;
+use std::sync::{LazyLock, RwLock};
 
 use authbeam::database::HCaptchaConfig;
 use rainbeam_shared::fs;
@@ -36,6 +37,65 @@ impl Default for Tiers {
             profile_badge: 1,
         }
     }
+}
+
+/// File locations for template files. Relative to the config file's parent directory.
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct TemplatesConfig {
+    /// The `header.html` file. HTML `<head>`
+    pub header: String,
+    /// The `body.html` file. HTML `<body>`
+    pub body: String,
+}
+
+impl Default for TemplatesConfig {
+    fn default() -> Self {
+        Self {
+            header: String::new(),
+            body: String::new(),
+        }
+    }
+}
+
+pub static TEMPLATE_ADDONS: LazyLock<RwLock<TemplatesConfig>> = LazyLock::new(|| RwLock::default());
+
+macro_rules! get_tmpl {
+    ($name:ident) => {
+        /// Get the `$ident` template.
+        pub fn $name(&self) -> String {
+            let r = TEMPLATE_ADDONS.read().unwrap();
+            (*r).$name.to_string()
+        }
+    };
+}
+
+macro_rules! read_tmpl {
+    ($self:expr => $rel:ident->$name:ident) => {
+        Self::read_template(PathBufD::new().extend(&[$rel, &$self.$name]))
+    };
+}
+
+impl TemplatesConfig {
+    /// Read a template to string given its `path`.
+    pub fn read_template(path: PathBufD) -> String {
+        match read_to_string(path) {
+            Ok(s) => s,
+            Err(_) => String::new(),
+        }
+    }
+
+    /// Read the configuration and fill the static `template_addons`.
+    pub fn read_config(&self, relative: &str) -> () {
+        let mut w = TEMPLATE_ADDONS.write().unwrap();
+        *w = TemplatesConfig {
+            header: read_tmpl!(&self => relative->header),
+            body: read_tmpl!(&self => relative->body),
+        }
+    }
+
+    // ...
+    get_tmpl!(header);
+    get_tmpl!(body);
 }
 
 /// Configuration file
@@ -76,6 +136,9 @@ pub struct Config {
     /// A global site announcement shown at the top of the page
     #[serde(default)]
     pub alert: String,
+    /// Template configuration.
+    #[serde(default)]
+    pub templates: TemplatesConfig,
 }
 
 impl Default for Config {
@@ -94,6 +157,7 @@ impl Default for Config {
             blocked_hosts: Vec::new(),
             tiers: Tiers::default(),
             alert: String::new(),
+            templates: TemplatesConfig::default(),
         }
     }
 }
@@ -106,12 +170,19 @@ impl Config {
 
     /// Pull configuration file
     pub fn get_config() -> Self {
-        let mut path = current_dir().unwrap();
-        path.push(".config");
-        path.push("config.toml");
+        let path = PathBufD::current().extend(&[".config", "config.toml"]);
 
-        match fs::read(path) {
-            Ok(c) => Config::read(c),
+        match fs::read(&path) {
+            Ok(c) => {
+                let c = Config::read(c);
+
+                // populate TEMPLATE_ADDONS
+                c.templates
+                    .read_config(path.as_path().parent().unwrap().to_str().unwrap());
+
+                // ...
+                c
+            }
             Err(_) => {
                 Self::update_config(Self::default()).expect("failed to write default config");
                 Self::default()
