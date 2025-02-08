@@ -70,9 +70,15 @@ macro_rules! get_tmpl {
 }
 
 macro_rules! read_tmpl {
-    ($self:expr => $rel:ident->$name:ident) => {
-        Self::read_template(PathBufD::new().extend(&[$rel, &$self.$name]))
-    };
+    ($self:expr => $rel:ident->$name:ident) => {{
+        let v = &$self.$name;
+
+        if v.is_empty() {
+            String::new()
+        } else {
+            Self::read_template(PathBufD::new().extend(&[$rel, v]))
+        }
+    }};
 }
 
 impl TemplatesConfig {
