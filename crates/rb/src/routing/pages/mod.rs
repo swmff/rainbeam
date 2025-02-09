@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use askama_axum::Template;
+use reva_axum::Template;
 use axum::extract::{Path, Query};
 use axum::http::status::StatusCode;
 use axum::response::IntoResponse;

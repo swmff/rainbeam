@@ -1,4 +1,4 @@
-use askama_axum::Template;
+use reva_axum::Template;
 use axum::response::IntoResponse;
 use axum::Json;
 use axum::{

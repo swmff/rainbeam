@@ -17,7 +17,8 @@
     {{ icon "check" }}
     <span>{{ text "market:text.buy" }}</span>
 </button>
-{% endif %} {% endblock %} {% block panel %}
+{% endif %} {% endblock %} {% block panel %} {% let user =
+profile.as_ref().unwrap() %}
 <div class="flex flex-col gap-4">
     {% if is_helper %}
     <!-- status sorts -->

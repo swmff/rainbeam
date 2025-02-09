@@ -1,4 +1,4 @@
-use askama_axum::Template;
+use reva_axum::Template;
 use axum::extract::Path;
 use axum::response::IntoResponse;
 use axum::{

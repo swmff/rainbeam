@@ -17,8 +17,8 @@ default = ["databeam/sqlite", "authbeam/sqlite", "rb/sqlite"]
 mimalloc = []
 
 [dependencies]
-askama = { version = "0.12.1", features = ["with-axum"] }
-askama_axum = "0.4.0"
+reva = { version = "0.13.2", features = ["with-axum"] }
+reva_axum = "0.5.1"
 axum = { version = "0.8.1", features = ["macros", "form"] }
 axum-extra = { version = "0.10.0", features = ["cookie"] }
 reqwest = { version = "0.12.12", features = ["json", "stream"] }

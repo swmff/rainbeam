@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use ammonia::Builder;
-use askama_axum::Template;
+use reva_axum::Template;
 use axum::extract::{Path, Query};
 use axum::response::{IntoResponse, Redirect};
 use axum::{extract::State, response::Html};

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use askama_axum::Template;
+use reva_axum::Template;
 use axum::extract::Query;
 use axum::response::IntoResponse;
 use axum::{extract::State, response::Html};
