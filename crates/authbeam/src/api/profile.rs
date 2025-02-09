@@ -437,74 +437,64 @@ pub async fn update_group_request(
         {
             Ok(ua) => ua,
             Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: None,
-                });
+                return Json(e.to_json());
             }
         },
         None => {
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: None,
-            });
+            return Json(DatabaseError::NotAllowed.to_json());
         }
     };
 
     // check permission
-    let group = match database.get_group_by_id(auth_user.group).await {
+    let our_group = match database.get_group_by_id(auth_user.group).await {
         Ok(g) => g,
-        Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: None,
-            })
-        }
+        Err(e) => return Json(e.to_json()),
     };
 
-    if !group.permissions.contains(&Permission::Manager) {
+    if !our_group.permissions.contains(&Permission::Manager) {
         // we must have the "Manager" permission to edit other users
-        return Json(DefaultReturn {
-            success: false,
-            message: DatabaseError::NotAllowed.to_string(),
-            payload: None,
-        });
+        return Json(DatabaseError::NotAllowed.to_json());
     }
 
     // get other user
     let other_user = match database.get_profile(id.clone()).await {
         Ok(ua) => ua,
         Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: None,
-            });
+            return Json(e.to_json());
         }
     };
 
     // check permission
-    let group = match database.get_group_by_id(other_user.group).await {
+    let other_group = match database.get_group_by_id(other_user.group).await {
         Ok(g) => g,
-        Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: None,
-            })
-        }
+        Err(e) => return Json(e.to_json()),
     };
 
-    if group.permissions.contains(&Permission::Manager) {
+    if other_group.permissions.contains(&Permission::Manager) {
         // we cannot manager other managers
-        return Json(DefaultReturn {
-            success: false,
-            message: DatabaseError::NotAllowed.to_string(),
-            payload: None,
-        });
+        return Json(DatabaseError::NotAllowed.to_json());
+    }
+
+    // check group
+    if props.group != -1 {
+        let group = match database.get_group_by_id(props.group).await {
+            Ok(g) => g,
+            Err(e) => return Json(e.to_json()),
+        };
+
+        if group.permissions.contains(&Permission::Manager)
+            && !our_group.permissions.contains(&Permission::Admin)
+        {
+            // non-admins **cannot** promote people to manager
+            return Json(DatabaseError::NotAllowed.to_json());
+        }
+
+        if group.permissions.contains(&Permission::Helper)
+            && !our_group.permissions.contains(&Permission::Manager)
+        {
+            // non-managers **cannot** promote people to helper
+            return Json(DatabaseError::NotAllowed.to_json());
+        }
     }
 
     // push update
