@@ -291,8 +291,8 @@ impl Database {
 
     // util
 
-    /// Collect from `Split<&str>` while cloning everything
-    pub fn collect_split_without_stupid_reference(input: Split<&str>) -> Vec<String> {
+    /// Collect from `Split<&str>` while cloning everything to make everything owned.
+    pub fn collect_split_owned(input: Split<&str>) -> Vec<String> {
         let mut out = Vec::new();
 
         for section in input {
@@ -353,10 +353,12 @@ impl Database {
             group: row.get("gid").unwrap().parse::<i32>().unwrap_or(0),
             joined: row.get("joined").unwrap().parse::<u128>().unwrap(),
             tier: row.get("tier").unwrap().parse::<i32>().unwrap_or(0),
-            labels: Database::collect_split_without_stupid_reference(
-                row.get("labels").unwrap().split(","),
-            ),
+            labels: Database::collect_split_owned(row.get("labels").unwrap().split(",")),
             coins: row.get("coins").unwrap().parse::<i32>().unwrap_or(0),
+            links: match serde_json::from_str(row.get("links").unwrap()) {
+                Ok(m) => m,
+                Err(_) => return Err(DatabaseError::ValueError),
+            },
         }))
     }
 
@@ -678,9 +680,9 @@ impl Database {
 
         // ...
         let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
-            "INSERT INTO \"xprofiles\" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            "INSERT INTO \"xprofiles\" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xprofiles\" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)"
+            "INSERT INTO \"xprofiles\" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)"
         };
 
         let user_token_unhashed: String = databeam::utility::uuid();
@@ -710,6 +712,7 @@ impl Database {
             .bind::<&str>("[]")
             .bind::<&str>("")
             .bind::<i32>(100) // start with 100 coins
+            .bind::<&str>("{}")
             .execute(c)
             .await
         {
@@ -949,6 +952,51 @@ impl Database {
 
         match sqlquery(query)
             .bind::<&String>(labels)
+            .bind::<&String>(&id)
+            .execute(c)
+            .await
+        {
+            Ok(_) => {
+                self.base
+                    .cachedb
+                    .remove(format!("rbeam.auth.profile:{}", ua.username))
+                    .await;
+
+                self.base
+                    .cachedb
+                    .remove(format!("rbeam.auth.profile:{}", ua.id))
+                    .await;
+
+                Ok(())
+            }
+            Err(_) => Err(DatabaseError::Other),
+        }
+    }
+
+    /// Update a [`Profile`]'s links by its `id`
+    pub async fn update_profile_links(
+        &self,
+        id: String,
+        links: BTreeMap<String, String>,
+    ) -> Result<()> {
+        // make sure user exists
+        let ua = match self.get_profile(id.clone()).await {
+            Ok(ua) => ua,
+            Err(e) => return Err(e),
+        };
+
+        // update user
+        let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+            "UPDATE \"xprofiles\" SET \"links\" = ? WHERE \"id\" = ?"
+        } else {
+            "UPDATE \"xprofiles\" SET (\"links\") = ($1) WHERE \"id\" = $2"
+        };
+
+        let c = &self.base.db.client;
+        let badges = &serde_json::to_string(&links).unwrap();
+
+        match sqlquery(query)
+            .bind::<&String>(badges)
             .bind::<&String>(&id)
             .execute(c)
             .await

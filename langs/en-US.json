@@ -191,6 +191,8 @@
         "settings:profile_options.html:label.display_name": "Display name",
         "settings:profile_options.html:label.biography": "Biography",
         "settings:profile_options.html:label.sidebar": "Sidebar",
+        "settings:profile_options.html:label.links": "Links",
+        "settings:profile_options.html:text.add_link": "Add link",
         "settings:profile_options.html:label.avatar": "Avatar",
         "settings:profile_options.html:label.banner": "Banner",
         "settings:profile_options.html:label.advanced": "Advanced",

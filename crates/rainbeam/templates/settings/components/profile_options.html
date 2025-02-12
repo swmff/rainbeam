@@ -35,21 +35,91 @@
 
     <div class="flex flex-col gap-1">
         <label for="sparkler:sidebar" class="flex gap-2 items-center">
-            {{ text "settings:profile_options.html:label.sidebar" }}
+            {{ text "settings:profile_options.html:label.links" }}
         </label>
 
-        <textarea
-            name="sparkler:sidebar"
-            id="sparkler:sidebar"
-            onchange="update_kv('sparkler:sidebar', event.target.value)"
-        ></textarea>
+        <div class="flex gap-2">
+            <button class="primary" onclick="globalThis.save_links()">
+                {{ text "general:action.save" }}
+            </button>
 
-        <p class="fade">
-            A sidebar shown under your profile card on your profile. Use it to
-            display extra information separate from your biography. Supports
-            Markdown.
-        </p>
+            <button onclick="globalThis.add_link()">
+                {{ text "settings:profile_options.html:text.add_link" }}
+            </button>
+        </div>
+
+        <ul id="links_display"></ul>
     </div>
+
+    <!-- prettier-ignore -->
+    <script>
+        let links = {
+            {% for link in user.links %}
+            "{{ link.0 }}": "{{ link.1 }}",
+            {% endfor %}
+        };
+
+        globalThis.save_links = async () => {
+            await trigger("app:debounce", ["settings:save_settings"]);
+            const res = await (
+                await fetch("/api/v0/auth/profile/{{ user.id }}/links", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        links,
+                    }),
+                })
+            ).json();
+
+            trigger("app:toast", [
+                res.success ? "success" : "error",
+                res.success ? "Links saved!" : res.message,
+            ]);
+        };
+
+        globalThis.add_link = async () => {
+            const title = await trigger("app:prompt", ["Link label:"]);
+
+            if (!title) {
+                return
+            }
+
+            const url = await trigger("app:prompt", ["Link URL:"]);
+
+            if (!url) {
+                return
+            }
+
+            links[title] = url;
+            globalThis.render_links();
+        }
+
+        globalThis.render_links = () => {
+            document.getElementById("links_display").innerHTML = "";
+
+            for (const [i, link] of Object.entries(Object.entries(links))) {
+                document.getElementById("links_display").innerHTML +=
+                    `<li><b>${link[0]}</b>: <a href="${link[1]}">${link[1]}</a> (<a href="javascript:globalThis.remove_link(${i})">Remove</a>)</li>`;
+            }
+        }
+
+        globalThis.remove_link = (idx) => {
+            // turn links into array, remove idx, then turn array back to object
+            let arr = Object.entries(links);
+            arr.splice(idx, 1);
+            links = {};
+
+            for (const [k, v] of arr) {
+                links[k] = v;
+            }
+
+            globalThis.render_links();
+        }
+
+        globalThis.render_links();
+    </script>
 
     <h4 class="title">Images</h4>
     <div class="flex flex-col gap-1">

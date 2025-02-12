@@ -211,6 +211,16 @@
                             {{ rainbeam_shared::ui::render_markdown(sidebar)|safe }}
                         </div>
                         {% endif %} {% endif %}
+
+                        {% if other.links.len() > 0 %}
+                        <table id="links">
+                            <tbody>
+                                {% for (k, v) in other.links %}
+                                <tr><td><a href="{{ v }}" style="display: block; width: 100%">{{ k }}</a></td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% endif %}
                     </div>
                 </div>
 

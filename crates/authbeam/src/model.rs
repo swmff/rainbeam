@@ -1,5 +1,5 @@
 use hcaptcha_no_wasm::Hcaptcha;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 use axum::{
     http::StatusCode,
@@ -46,6 +46,8 @@ pub struct Profile {
     pub labels: Vec<String>,
     /// User coin balance
     pub coins: i32,
+    /// User links
+    pub links: BTreeMap<String, String>,
 }
 
 impl Profile {
@@ -66,6 +68,7 @@ impl Profile {
             tier: 0,
             labels: Vec::new(),
             coins: 0,
+            links: BTreeMap::new(),
         }
     }
 
@@ -86,6 +89,7 @@ impl Profile {
             tier: 0,
             labels: Vec::new(),
             coins: 0,
+            links: BTreeMap::new(),
         }
     }
 
@@ -106,6 +110,7 @@ impl Profile {
             tier: 0,
             labels: Vec::new(),
             coins: 0,
+            links: BTreeMap::new(),
         }
     }
 
@@ -172,6 +177,7 @@ impl Default for Profile {
             tier: 0,
             labels: Vec::new(),
             coins: 0,
+            links: BTreeMap::new(),
         }
     }
 }
@@ -647,6 +653,11 @@ pub struct SetProfileBadges {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SetProfileLabels {
     pub labels: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SetProfileLinks {
+    pub links: BTreeMap<String, String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

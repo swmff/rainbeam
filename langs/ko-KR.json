@@ -190,6 +190,8 @@
         "settings:profile_options.html:label.display_name": "표시 이름",
         "settings:profile_options.html:label.biography": "설명",
         "settings:profile_options.html:label.sidebar": "사이드바",
+        "settings:profile_options.html:label.links": "Links",
+        "settings:profile_options.html:text.add_link": "Add link",
         "settings:profile_options.html:label.avatar": "Avatar",
         "settings:profile_options.html:label.banner": "Banner",
         "settings:profile_options.html:label.advanced": "Advanced",

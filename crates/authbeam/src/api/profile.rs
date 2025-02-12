@@ -1,8 +1,8 @@
 use crate::database::Database;
 use crate::model::{
     DatabaseError, NotificationCreate, Permission, SetProfileBadges, SetProfileCoins,
-    SetProfileGroup, SetProfileLabels, SetProfileMetadata, SetProfilePassword, SetProfileTier,
-    SetProfileUsername, TokenContext, TokenPermission,
+    SetProfileGroup, SetProfileLabels, SetProfileLinks, SetProfileMetadata, SetProfilePassword,
+    SetProfileTier, SetProfileUsername, TokenContext, TokenPermission,
 };
 use databeam::DefaultReturn;
 use pathbufd::pathd;
@@ -1706,6 +1706,62 @@ pub async fn update_labels_request(
 
     // return
     match database.update_profile_labels(id, props.labels).await {
+        Ok(_) => Json(DefaultReturn {
+            success: true,
+            message: "Acceptable".to_string(),
+            payload: (),
+        }),
+        Err(e) => Json(e.to_json()),
+    }
+}
+
+/// Update a user's links
+pub async fn update_links_request(
+    jar: CookieJar,
+    Path(id): Path<String>,
+    State(database): State<Database>,
+    Json(props): Json<SetProfileLinks>,
+) -> impl IntoResponse {
+    // get user from token
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => {
+            let token = c.value_trimmed().to_string();
+
+            match database.get_profile_by_unhashed(token.clone()).await {
+                Ok(ua) => {
+                    // check token permission
+                    if !ua
+                        .token_context_from_token(&token)
+                        .can_do(TokenPermission::Moderator)
+                    {
+                        return Json(DatabaseError::NotAllowed.to_json());
+                    }
+
+                    // return
+                    ua
+                }
+                Err(e) => {
+                    return Json(e.to_json());
+                }
+            }
+        }
+        None => {
+            return Json(DatabaseError::NotAllowed.to_json());
+        }
+    };
+
+    // check permission
+    let group = match database.get_group_by_id(auth_user.group).await {
+        Ok(g) => g,
+        Err(e) => return Json(e.to_json()),
+    };
+
+    if (auth_user.id != id) && !group.permissions.contains(&Permission::Helper) {
+        return Json(DatabaseError::NotAllowed.to_json());
+    }
+
+    // return
+    match database.update_profile_links(id, props.links).await {
         Ok(_) => Json(DefaultReturn {
             success: true,
             message: "Acceptable".to_string(),
