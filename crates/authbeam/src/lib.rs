@@ -5,6 +5,7 @@ pub mod api;
 pub mod avif;
 pub mod database;
 pub mod model;
+pub mod permissions;
 
 pub use database::{Database, ServerOptions};
 pub use databeam::DatabaseOpts;

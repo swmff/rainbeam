@@ -7,7 +7,7 @@ use axum::http::{HeaderMap, HeaderValue, Response};
 use axum_extra::extract::CookieJar;
 use hcaptcha_no_wasm::Hcaptcha;
 
-use authbeam::model::{NotificationCreate, Permission};
+use authbeam::model::{FinePermission, NotificationCreate};
 use databeam::DefaultReturn;
 
 use axum::{
@@ -196,7 +196,7 @@ pub async fn export_request(
         }
     };
 
-    if !group.permissions.contains(&Permission::Helper) {
+    if !group.permissions.check(FinePermission::EXPORT_DATA) {
         return Json(DefaultReturn {
             success: false,
             message: DatabaseError::NotAllowed.to_string(),

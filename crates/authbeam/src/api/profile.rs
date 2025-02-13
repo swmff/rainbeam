@@ -1,6 +1,6 @@
 use crate::database::Database;
 use crate::model::{
-    DatabaseError, NotificationCreate, Permission, SetProfileBadges, SetProfileCoins,
+    DatabaseError, FinePermission, NotificationCreate, SetProfileBadges, SetProfileCoins,
     SetProfileGroup, SetProfileLabels, SetProfileLinks, SetProfileMetadata, SetProfilePassword,
     SetProfileTier, SetProfileUsername, TokenContext, TokenPermission,
 };
@@ -362,7 +362,7 @@ pub async fn update_tier_request(
         }
     };
 
-    if !group.permissions.contains(&Permission::Manager) {
+    if !group.permissions.check(FinePermission::MANAGE_PROFILE_TIER) {
         // we must have the "Manager" permission to edit other users
         return Json(DefaultReturn {
             success: false,
@@ -395,8 +395,7 @@ pub async fn update_tier_request(
         }
     };
 
-    if group.permissions.contains(&Permission::Manager) {
-        // we cannot manager other managers
+    if group.permissions.check(FinePermission::MANAGE_PROFILE_TIER) {
         return Json(DefaultReturn {
             success: false,
             message: DatabaseError::NotAllowed.to_string(),
@@ -451,7 +450,10 @@ pub async fn update_group_request(
         Err(e) => return Json(e.to_json()),
     };
 
-    if !our_group.permissions.contains(&Permission::Manager) {
+    if !our_group
+        .permissions
+        .check(FinePermission::MANAGE_PROFILE_GROUP)
+    {
         // we must have the "Manager" permission to edit other users
         return Json(DatabaseError::NotAllowed.to_json());
     }
@@ -470,28 +472,20 @@ pub async fn update_group_request(
         Err(e) => return Json(e.to_json()),
     };
 
-    if other_group.permissions.contains(&Permission::Manager) {
-        // we cannot manager other managers
+    if other_group
+        .permissions
+        .check(FinePermission::MANAGE_PROFILE_GROUP)
+    {
         return Json(DatabaseError::NotAllowed.to_json());
     }
 
     // check group
     if props.group != -1 {
-        let group = match database.get_group_by_id(props.group).await {
-            Ok(g) => g,
-            Err(e) => return Json(e.to_json()),
-        };
-
-        if group.permissions.contains(&Permission::Manager)
-            && !our_group.permissions.contains(&Permission::Admin)
-        {
-            // non-admins **cannot** promote people to manager
-            return Json(DatabaseError::NotAllowed.to_json());
+        if let Err(e) = database.get_group_by_id(props.group).await {
+            return Json(e.to_json());
         }
 
-        if group.permissions.contains(&Permission::Helper)
-            && !our_group.permissions.contains(&Permission::Manager)
-        {
+        if !our_group.permissions.check(FinePermission::PROMOTE_USERS) {
             // non-managers **cannot** promote people to helper
             return Json(DatabaseError::NotAllowed.to_json());
         }
@@ -578,7 +572,7 @@ pub async fn update_coins_request(
         }
     };
 
-    if !group.permissions.contains(&Permission::Manager) {
+    if !group.permissions.check(FinePermission::ECON_MASTER) {
         // we must have the "Manager" permission to edit other users
         return Json(DefaultReturn {
             success: false,
@@ -714,7 +708,7 @@ pub async fn update_tokens_request(
         }
     };
 
-    if !group.permissions.contains(&Permission::Manager) {
+    if !group.permissions.check(FinePermission::EDIT_USER) {
         // we must have the "Manager" permission to edit other users
         return Json(DefaultReturn {
             success: false,
@@ -735,7 +729,7 @@ pub async fn update_tokens_request(
         }
     };
 
-    if group.permissions.contains(&Permission::Manager) {
+    if group.permissions.check(FinePermission::ADMINISTRATOR) {
         // we cannot manager other managers
         return Json(DefaultReturn {
             success: false,
@@ -870,7 +864,7 @@ pub async fn generate_token_request(
         }
     };
 
-    if !group.permissions.contains(&Permission::Manager) {
+    if !group.permissions.check(FinePermission::EDIT_USER) {
         // we must have the "Manager" permission to edit other users
         return Json(DefaultReturn {
             success: false,
@@ -891,7 +885,7 @@ pub async fn generate_token_request(
         }
     };
 
-    if group.permissions.contains(&Permission::Manager) {
+    if group.permissions.check(FinePermission::ADMINISTRATOR) {
         // we cannot manager other managers
         return Json(DefaultReturn {
             success: false,
@@ -1010,7 +1004,7 @@ pub async fn update_password_request(
             }
         };
 
-        if !group.permissions.contains(&Permission::Manager) {
+        if !group.permissions.check(FinePermission::EDIT_USER) {
             // we must have the "Manager" permission to edit other users
             return Json(DefaultReturn {
                 success: false,
@@ -1019,39 +1013,6 @@ pub async fn update_password_request(
             });
         } else {
             is_manager = true;
-        }
-
-        // get other user
-        let other_user = match database.get_profile(id.clone()).await {
-            Ok(ua) => ua,
-            Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: None,
-                });
-            }
-        };
-
-        // check permission
-        let group = match database.get_group_by_id(other_user.group).await {
-            Ok(g) => g,
-            Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: None,
-                })
-            }
-        };
-
-        if group.permissions.contains(&Permission::Manager) {
-            // we cannot manager other managers
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: None,
-            });
         }
     }
 
@@ -1148,41 +1109,8 @@ pub async fn update_username_request(
             }
         };
 
-        if !group.permissions.contains(&Permission::Manager) {
+        if !group.permissions.check(FinePermission::EDIT_USER) {
             // we must have the "Manager" permission to edit other users
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: None,
-            });
-        }
-
-        // get other user
-        let other_user = match database.get_profile(id.clone()).await {
-            Ok(ua) => ua,
-            Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: None,
-                });
-            }
-        };
-
-        // check permission
-        let group = match database.get_group_by_id(other_user.group).await {
-            Ok(g) => g,
-            Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: None,
-                })
-            }
-        };
-
-        if group.permissions.contains(&Permission::Manager) {
-            // we cannot manager other managers
             return Json(DefaultReturn {
                 success: false,
                 message: DatabaseError::NotAllowed.to_string(),
@@ -1284,40 +1212,10 @@ pub async fn update_metdata_request(
             }
         };
 
-        if !group.permissions.contains(&Permission::Manager) {
-            // we must have the "Manager" permission to edit other users
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: (),
-            });
-        }
-
-        // get other user
-        let other_user = match database.get_profile(id.clone()).await {
-            Ok(ua) => ua,
-            Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: (),
-                });
-            }
-        };
-
-        // check permission
-        let group = match database.get_group_by_id(other_user.group).await {
-            Ok(g) => g,
-            Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: (),
-                })
-            }
-        };
-
-        if group.permissions.contains(&Permission::Manager) {
+        if !group
+            .permissions
+            .check(FinePermission::MANAGE_PROFILE_SETTINGS)
+        {
             // we cannot manager other managers
             return Json(DefaultReturn {
                 success: false,
@@ -1422,29 +1320,11 @@ pub async fn patch_metdata_request(
             }
         };
 
-        if !group.permissions.contains(&Permission::Manager) {
+        if !group
+            .permissions
+            .check(FinePermission::MANAGE_PROFILE_SETTINGS)
+        {
             // we must have the "Manager" permission to edit other users
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: (),
-            });
-        }
-
-        // check permission
-        let group = match database.get_group_by_id(other_user.group).await {
-            Ok(g) => g,
-            Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: (),
-                })
-            }
-        };
-
-        if group.permissions.contains(&Permission::Manager) {
-            // we cannot manager other managers
             return Json(DefaultReturn {
                 success: false,
                 message: DatabaseError::NotAllowed.to_string(),
@@ -1546,43 +1426,11 @@ pub async fn update_badges_request(
         }
     };
 
-    if !group.permissions.contains(&Permission::Helper) {
-        // we must have the "Helper" permission to edit other users' badges
-        return Json(DefaultReturn {
-            success: false,
-            message: DatabaseError::NotAllowed.to_string(),
-            payload: (),
-        });
-    }
-
-    // get other user
-    let other_user = match database.get_profile(id.clone()).await {
-        Ok(ua) => ua,
-        Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: (),
-            });
-        }
-    };
-
-    // check permission
-    let other_group = match database.get_group_by_id(other_user.group).await {
-        Ok(g) => g,
-        Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: (),
-            })
-        }
-    };
-
-    if other_group.permissions.contains(&Permission::Helper)
-        && !group.permissions.contains(&Permission::Manager)
+    if !group
+        .permissions
+        .check(FinePermission::MANAGE_PROFILE_SETTINGS)
     {
-        // we cannot manage other helpers without manager
+        // we must have the "Helper" permission to edit other users' badges
         return Json(DefaultReturn {
             success: false,
             message: DatabaseError::NotAllowed.to_string(),
@@ -1660,43 +1508,11 @@ pub async fn update_labels_request(
         }
     };
 
-    if !group.permissions.contains(&Permission::Helper) {
-        // we must have the "Helper" permission to edit other users' badges
-        return Json(DefaultReturn {
-            success: false,
-            message: DatabaseError::NotAllowed.to_string(),
-            payload: (),
-        });
-    }
-
-    // get other user
-    let other_user = match database.get_profile(id.clone()).await {
-        Ok(ua) => ua,
-        Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: (),
-            });
-        }
-    };
-
-    // check permission
-    let other_group = match database.get_group_by_id(other_user.group).await {
-        Ok(g) => g,
-        Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: (),
-            })
-        }
-    };
-
-    if other_group.permissions.contains(&Permission::Helper)
-        && !group.permissions.contains(&Permission::Manager)
+    if !group
+        .permissions
+        .check(FinePermission::MANAGE_PROFILE_SETTINGS)
     {
-        // we cannot manage other helpers without manager
+        // we must have the "Helper" permission to edit other users' badges
         return Json(DefaultReturn {
             success: false,
             message: DatabaseError::NotAllowed.to_string(),
@@ -1756,7 +1572,11 @@ pub async fn update_links_request(
         Err(e) => return Json(e.to_json()),
     };
 
-    if (auth_user.id != id) && !group.permissions.contains(&Permission::Helper) {
+    if (auth_user.id != id)
+        && !group
+            .permissions
+            .check(FinePermission::MANAGE_PROFILE_SETTINGS)
+    {
         return Json(DatabaseError::NotAllowed.to_json());
     }
 
@@ -1826,7 +1646,7 @@ pub async fn delete_request(
             }
         };
 
-        if !group.permissions.contains(&Permission::Manager) {
+        if !group.permissions.check(FinePermission::DELETE_USER) {
             // we must have the "Manager" permission to edit other users
             return Json(DefaultReturn {
                 success: false,
@@ -1867,7 +1687,7 @@ pub async fn delete_request(
             }
         };
 
-        if group.permissions.contains(&Permission::Manager) {
+        if group.permissions.check(FinePermission::DELETE_USER) {
             // we cannot manager other managers
             return Json(DefaultReturn {
                 success: false,

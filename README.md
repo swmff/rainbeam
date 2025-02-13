@@ -84,9 +84,7 @@ You can sign up for an hCaptcha account at <https://www.hcaptcha.com/>!
 
 ### Moderation
 
-After you have created your first account, you'll need to manually create a permissions group in the database so that you can mark the account as a `Manager`. The manager permission allows you to delete accounts, responses, comments, and questions. You can also view profile warnings and reports with this permission. You can view an example SQL query to do this [here](https://github.com/swmff/rainbeam/blob/master/sql/moderation.sql)!
-
-You can add additional moderators with the `Helper` role. They can also be given `Manager`, however `Helper` is much better if you want them to have limited moderation abilities.
+Permissions are expressed using groups and flags. You can read more about user permissions (and groups) in the [book](https://swmff.github.io/rainbeam_staff_guide/technical/permissions.html)!
 
 ### Account registration
 

@@ -6,7 +6,7 @@ use axum::{
 };
 use axum_extra::extract::CookieJar;
 
-use authbeam::model::{Item, ItemStatus, ItemType, Permission, Profile};
+use authbeam::model::{FinePermission, Item, ItemStatus, ItemType, Profile};
 
 use crate::config::Config;
 use crate::database::Database;
@@ -70,13 +70,13 @@ pub async fn homepage_request(
 
     if (props.status != ItemStatus::Approved) && (props.status != ItemStatus::Featured) {
         // check permission to see unapproved items
-        if !group.permissions.contains(&Permission::Manager) {
+        if !group.permissions.check(FinePermission::ECON_MASTER) {
             // we must have the "Manager" permission to edit other users
             return Html(DatabaseError::NotAllowed.to_string());
         }
     }
 
-    let is_helper = group.permissions.contains(&Permission::Helper);
+    let is_helper = group.permissions.check_helper();
 
     // data
     let items = if props.creator.is_empty() {
@@ -251,7 +251,7 @@ pub async fn item_request(
         Err(e) => return Html(e.to_string()),
     };
 
-    let is_helper = group.permissions.contains(&Permission::Helper);
+    let is_helper = group.permissions.check_helper();
 
     // data
     let item = match database.auth.get_item(id.clone()).await {

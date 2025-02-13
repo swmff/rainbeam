@@ -35,6 +35,24 @@
 
     <div class="flex flex-col gap-1">
         <label for="sparkler:sidebar" class="flex gap-2 items-center">
+            {{ text "settings:profile_options.html:label.sidebar" }}
+        </label>
+
+        <textarea
+            name="sparkler:sidebar"
+            id="sparkler:sidebar"
+            onchange="update_kv('sparkler:sidebar', event.target.value)"
+        ></textarea>
+
+        <p class="fade">
+            A sidebar shown under your profile card on your profile. Use it to
+            display extra information separate from your biography. Supports
+            Markdown.
+        </p>
+    </div>
+
+    <div class="flex flex-col gap-1">
+        <label class="flex gap-2 items-center">
             {{ text "settings:profile_options.html:label.links" }}
         </label>
 

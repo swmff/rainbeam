@@ -7,7 +7,7 @@ use axum::{
 };
 use axum_extra::extract::CookieJar;
 
-use authbeam::model::{Permission, Profile, RelationshipStatus};
+use authbeam::model::{Profile, RelationshipStatus};
 
 use crate::config::Config;
 use crate::database::Database;
@@ -152,7 +152,7 @@ pub async fn chat_request(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        group.permissions.contains(&Permission::Helper)
+        group.permissions.check_helper()
     };
 
     Html(
@@ -220,7 +220,7 @@ pub async fn render_message_request(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        group.permissions.contains(&Permission::Helper)
+        group.permissions.check_helper()
     };
 
     Html(

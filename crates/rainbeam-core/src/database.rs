@@ -6,7 +6,7 @@ use crate::config::Config;
 use crate::model::*;
 use crate::model::{DatabaseError, Question};
 
-use authbeam::model::{NotificationCreate, Permission, Profile, RelationshipStatus};
+use authbeam::model::{FinePermission, NotificationCreate, Profile, RelationshipStatus};
 use databeam::{utility, query as sqlquery};
 use langbeam::LangFile;
 
@@ -1543,7 +1543,7 @@ impl Database {
                 Err(_) => return Err(DatabaseError::Other),
             };
 
-            if !group.permissions.contains(&Permission::Helper) {
+            if !group.permissions.check(FinePermission::MANAGE_QUESTIONS) {
                 return Err(DatabaseError::NotAllowed);
             }
         }
@@ -1632,7 +1632,7 @@ impl Database {
                 Err(_) => return Err(DatabaseError::Other),
             };
 
-            if !group.permissions.contains(&Permission::Helper) {
+            if !group.permissions.check(FinePermission::MANAGE_QUESTIONS) {
                 return Err(DatabaseError::NotAllowed);
             }
         }
@@ -2935,7 +2935,7 @@ impl Database {
                 Err(_) => return Err(DatabaseError::Other),
             };
 
-            if !group.permissions.contains(&Permission::Manager) {
+            if !group.permissions.check(FinePermission::MANAGE_RESPONSES) {
                 return Err(DatabaseError::NotAllowed);
             } else {
                 if let Err(e) = self
@@ -3020,7 +3020,7 @@ impl Database {
                 Err(_) => return Err(DatabaseError::Other),
             };
 
-            if !group.permissions.contains(&Permission::Manager) {
+            if !group.permissions.check(FinePermission::MANAGE_RESPONSES) {
                 return Err(DatabaseError::NotAllowed);
             } else if let Err(e) = self
                 .audit(
@@ -3098,7 +3098,7 @@ impl Database {
                 Err(_) => return Err(DatabaseError::Other),
             };
 
-            if !group.permissions.contains(&Permission::Manager) {
+            if !group.permissions.check(FinePermission::MANAGE_RESPONSES) {
                 return Err(DatabaseError::NotAllowed);
             } else if let Err(e) = self
                 .audit(
@@ -3173,7 +3173,7 @@ impl Database {
                 Err(_) => return Err(DatabaseError::Other),
             };
 
-            if !group.permissions.contains(&Permission::Helper) {
+            if !group.permissions.check(FinePermission::MANAGE_RESPONSES) {
                 return Err(DatabaseError::NotAllowed);
             } else {
                 if let Err(e) = self
@@ -3284,7 +3284,7 @@ impl Database {
                 Err(_) => return Err(DatabaseError::Other),
             };
 
-            if !group.permissions.contains(&Permission::Manager) {
+            if !group.permissions.check(FinePermission::MANAGE_RESPONSES) {
                 return Err(DatabaseError::NotAllowed);
             } else {
                 if let Err(e) = self
@@ -4223,7 +4223,7 @@ impl Database {
                 Err(_) => return Err(DatabaseError::Other),
             };
 
-            if !group.permissions.contains(&Permission::Manager) {
+            if !group.permissions.check(FinePermission::MANAGE_REACTIONS) {
                 return Err(DatabaseError::NotAllowed);
             } else {
                 if let Err(e) = self
@@ -4307,7 +4307,7 @@ impl Database {
             // check if we're the response author
             if user.id != res.author.id {
                 // check if we're helper
-                if !group.permissions.contains(&Permission::Helper) {
+                if !group.permissions.check(FinePermission::MANAGE_COMMENTS) {
                     return Err(DatabaseError::NotAllowed);
                 } else {
                     if let Err(e) = self
@@ -4611,7 +4611,7 @@ impl Database {
                 Err(_) => return Err(DatabaseError::Other),
             };
 
-            if !group.permissions.contains(&Permission::Manager) {
+            if !group.permissions.check(FinePermission::MANAGE_REACTIONS) {
                 return Err(DatabaseError::NotAllowed);
             } else {
                 if let Err(e) = self
@@ -5266,7 +5266,7 @@ impl Database {
                 Err(_) => return Err(DatabaseError::Other),
             };
 
-            if !group.permissions.contains(&Permission::Manager) {
+            if !group.permissions.check(FinePermission::MANAGE_CIRCLES) {
                 return Err(DatabaseError::NotAllowed);
             }
         }
@@ -5338,7 +5338,7 @@ impl Database {
                 Err(_) => return Err(DatabaseError::Other),
             };
 
-            if !group.permissions.contains(&Permission::Manager) {
+            if !group.permissions.check(FinePermission::MANAGE_CIRCLES) {
                 return Err(DatabaseError::NotAllowed);
             } else {
                 if let Err(e) = self
@@ -6428,7 +6428,7 @@ impl Database {
                 Err(_) => return Err(DatabaseError::Other),
             };
 
-            if !group.permissions.contains(&Permission::Manager) {
+            if !group.permissions.check(FinePermission::MANAGE_MESSAGES) {
                 return Err(DatabaseError::NotAllowed);
             } else {
                 if let Err(e) = self
@@ -6504,7 +6504,7 @@ impl Database {
                 Err(_) => return Err(DatabaseError::Other),
             };
 
-            if !group.permissions.contains(&Permission::Helper) {
+            if !group.permissions.check(FinePermission::MANAGE_MESSAGES) {
                 return Err(DatabaseError::NotAllowed);
             }
         }

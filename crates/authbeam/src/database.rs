@@ -2,12 +2,12 @@ use std::collections::BTreeMap;
 use std::str::Split;
 
 use crate::model::{
-    DatabaseError, IpBan, IpBanCreate, IpBlock, IpBlockCreate, Item, ItemCreate, ItemEdit,
-    ItemEditContent, ItemStatus, ItemType, Mail, MailCreate, MailState, Profile, ProfileCreate,
-    ProfileMetadata, RelationshipStatus, TokenContext, Transaction, TransactionCreate, UserLabel,
-    Warning, WarningCreate,
+    DatabaseError, FinePermission, IpBan, IpBanCreate, IpBlock, IpBlockCreate, Item, ItemCreate,
+    ItemEdit, ItemEditContent, ItemStatus, ItemType, Mail, MailCreate, MailState, Profile,
+    ProfileCreate, ProfileMetadata, RelationshipStatus, TokenContext, Transaction,
+    TransactionCreate, UserLabel, Warning, WarningCreate,
 };
-use crate::model::{Group, Notification, NotificationCreate, Permission, UserFollow};
+use crate::model::{Group, Notification, NotificationCreate, UserFollow};
 use hcaptcha_no_wasm::Hcaptcha;
 use rainbeam_shared::snow::AlmostSnowflake;
 use reqwest::Client as HttpClient;
@@ -16,12 +16,10 @@ use serde::{Deserialize, Serialize};
 use databeam::{query as sqlquery, utility};
 use pathbufd::{PathBufD, pathd};
 
-use ts_rs::TS;
-
 pub type Result<T> = std::result::Result<T, DatabaseError>;
 
-#[derive(TS, Clone, Serialize, Deserialize, Debug)]
-#[ts(export)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
+
 pub struct HCaptchaConfig {
     /// HCaptcha site key
     ///
@@ -158,7 +156,7 @@ impl Database {
             "CREATE TABLE IF NOT EXISTS \"xgroups\" (
                 name        TEXT,
                 id          TEXT,
-                permissions TEXT
+                permissions INTEGER
             )",
         )
         .execute(c)
@@ -1530,7 +1528,7 @@ impl Database {
             Err(_) => return Err(DatabaseError::Other),
         };
 
-        if group.permissions.contains(&Permission::Manager) {
+        if group.permissions.check(FinePermission::DELETE_USER) {
             return Err(DatabaseError::NotAllowed);
         }
 
@@ -1571,6 +1569,7 @@ impl Database {
         };
 
         // store in cache
+        dbg!(&serde_json::from_str::<FinePermission>("3"),);
         let group = Group {
             name: row.get("name").unwrap().to_string(),
             id: row.get("id").unwrap().parse::<i32>().unwrap(),
@@ -2375,7 +2374,10 @@ impl Database {
                 Err(_) => return Err(DatabaseError::Other),
             };
 
-            if !group.permissions.contains(&Permission::Helper) {
+            if !group
+                .permissions
+                .check(FinePermission::MANAGE_NOTIFICATIONS)
+            {
                 return Err(DatabaseError::NotAllowed);
             }
         }
@@ -2438,7 +2440,10 @@ impl Database {
                 Err(_) => return Err(DatabaseError::Other),
             };
 
-            if !group.permissions.contains(&Permission::Helper) {
+            if !group
+                .permissions
+                .check(FinePermission::MANAGE_NOTIFICATIONS)
+            {
                 return Err(DatabaseError::NotAllowed);
             }
         }
@@ -2559,7 +2564,7 @@ impl Database {
             Err(_) => return Err(DatabaseError::Other),
         };
 
-        if !group.permissions.contains(&Permission::Helper) {
+        if !group.permissions.check(FinePermission::MANAGE_WARNINGS) {
             return Err(DatabaseError::NotAllowed);
         }
 
@@ -2620,7 +2625,7 @@ impl Database {
             Err(_) => return Err(DatabaseError::Other),
         };
 
-        if !group.permissions.contains(&Permission::Helper) {
+        if !group.permissions.check(FinePermission::MANAGE_WARNINGS) {
             return Err(DatabaseError::NotAllowed);
         }
 
@@ -2698,7 +2703,7 @@ impl Database {
                 Err(_) => return Err(DatabaseError::Other),
             };
 
-            if !group.permissions.contains(&Permission::Manager) {
+            if !group.permissions.check(FinePermission::MANAGE_WARNINGS) {
                 return Err(DatabaseError::NotAllowed);
             }
         }
@@ -2840,7 +2845,7 @@ impl Database {
             Err(_) => return Err(DatabaseError::Other),
         };
 
-        if !group.permissions.contains(&Permission::Helper) {
+        if !group.permissions.check(FinePermission::BAN_IP) {
             return Err(DatabaseError::NotAllowed);
         }
 
@@ -2897,7 +2902,7 @@ impl Database {
             Err(_) => return Err(DatabaseError::Other),
         };
 
-        if !group.permissions.contains(&Permission::Helper) {
+        if !group.permissions.check(FinePermission::BAN_IP) {
             return Err(DatabaseError::NotAllowed);
         } else {
             let actor_id = user.id.clone();
@@ -2975,7 +2980,7 @@ impl Database {
                 Err(_) => return Err(DatabaseError::Other),
             };
 
-            if !group.permissions.contains(&Permission::Manager) {
+            if !group.permissions.check(FinePermission::UNBAN_IP) {
                 return Err(DatabaseError::NotAllowed);
             } else {
                 let actor_id = user.id.clone();
@@ -3768,7 +3773,7 @@ impl Database {
                 Err(_) => return Err(DatabaseError::Other),
             };
 
-            if !group.permissions.contains(&Permission::Manager) {
+            if !group.permissions.check(FinePermission::UNBAN_IP) {
                 return Err(DatabaseError::NotAllowed);
             } else {
                 let actor_id = user.id.clone();
@@ -4160,7 +4165,7 @@ impl Database {
                 Err(_) => return Err(DatabaseError::Other),
             };
 
-            if !group.permissions.contains(&Permission::Helper) {
+            if !group.permissions.check(FinePermission::MANAGE_MAILS) {
                 return Err(DatabaseError::NotAllowed);
             }
         }
@@ -4216,7 +4221,7 @@ impl Database {
                 Err(_) => return Err(DatabaseError::Other),
             };
 
-            if !group.permissions.contains(&Permission::Helper) {
+            if !group.permissions.check(FinePermission::MANAGE_MAILS) {
                 return Err(DatabaseError::NotAllowed);
             }
         }
@@ -4338,7 +4343,7 @@ impl Database {
             Err(e) => return Err(e),
         };
 
-        if !group.permissions.contains(&Permission::Helper) {
+        if !group.permissions.check(FinePermission::CREATE_LABEL) {
             return Err(DatabaseError::NotAllowed);
         }
 
@@ -5080,7 +5085,7 @@ impl Database {
             Err(_) => return Err(DatabaseError::Other),
         };
 
-        if !group.permissions.contains(&Permission::Helper) {
+        if !group.permissions.check(FinePermission::ECON_MASTER) {
             return Err(DatabaseError::NotAllowed);
         }
 
@@ -5170,7 +5175,7 @@ impl Database {
         };
 
         if user.id != item.creator {
-            if !group.permissions.contains(&Permission::Helper) {
+            if !group.permissions.check(FinePermission::ECON_MASTER) {
                 return Err(DatabaseError::NotAllowed);
             }
         }
@@ -5241,7 +5246,7 @@ impl Database {
         };
 
         if user.id != item.creator {
-            if !group.permissions.contains(&Permission::Helper) {
+            if !group.permissions.check(FinePermission::ECON_MASTER) {
                 return Err(DatabaseError::NotAllowed);
             }
         }
@@ -5298,7 +5303,7 @@ impl Database {
                 Err(_) => return Err(DatabaseError::Other),
             };
 
-            if !group.permissions.contains(&Permission::Helper) {
+            if !group.permissions.check(FinePermission::ECON_MASTER) {
                 return Err(DatabaseError::NotAllowed);
             }
         }

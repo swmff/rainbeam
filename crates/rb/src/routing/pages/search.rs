@@ -6,7 +6,7 @@ use axum::response::IntoResponse;
 use axum::{extract::State, response::Html};
 use axum_extra::extract::CookieJar;
 
-use authbeam::model::{Permission, Profile, RelationshipStatus};
+use authbeam::model::{Profile, RelationshipStatus};
 
 use super::{SearchHomeQuery, SearchQuery};
 use crate::config::Config;
@@ -162,8 +162,8 @@ pub async fn search_responses_request(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        is_helper = group.permissions.contains(&Permission::Helper);
-        group.permissions.contains(&Permission::Manager)
+        is_helper = group.permissions.check_helper();
+        group.permissions.check_manager()
     } else {
         false
     };
@@ -300,8 +300,8 @@ pub async fn search_posts_request(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        is_helper = group.permissions.contains(&Permission::Helper);
-        group.permissions.contains(&Permission::Manager)
+        is_helper = group.permissions.check_helper();
+        group.permissions.check_manager()
     } else {
         false
     };
@@ -471,7 +471,7 @@ pub async fn search_questions_request(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        group.permissions.contains(&Permission::Helper)
+        group.permissions.check_helper()
     } else {
         false
     };

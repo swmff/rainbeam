@@ -12,7 +12,7 @@ use ammonia::Builder;
 use langbeam::LangFile;
 use serde::{Deserialize, Serialize};
 use authbeam::model::{
-    IpBan, ItemStatus, ItemType, Notification, Permission, Profile, ProfileMetadata,
+    FinePermission, IpBan, ItemStatus, ItemType, Notification, Profile, ProfileMetadata,
     RelationshipStatus,
 };
 
@@ -208,11 +208,11 @@ pub async fn partial_timeline_request(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        if group.permissions.contains(&Permission::Helper) {
+        if group.permissions.check_helper() {
             is_helper = true
         }
 
-        group.permissions.contains(&Permission::Manager)
+        group.permissions.check_manager()
     };
 
     // build relationships list
@@ -369,11 +369,11 @@ pub async fn partial_public_timeline_request(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        if group.permissions.contains(&Permission::Helper) {
+        if group.permissions.check_helper() {
             is_helper = true
         }
 
-        group.permissions.contains(&Permission::Manager)
+        group.permissions.check_manager()
     };
 
     // build relationships list
@@ -834,8 +834,8 @@ pub async fn question_request(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        is_helper = group.permissions.contains(&Permission::Helper);
-        group.permissions.contains(&Permission::Manager)
+        is_helper = group.permissions.check_helper();
+        group.permissions.check_manager()
     } else {
         false
     };
@@ -1041,11 +1041,11 @@ pub async fn partial_posts_request(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        if group.permissions.contains(&Permission::Helper) {
+        if group.permissions.check_helper() {
             is_helper = true
         }
 
-        group.permissions.contains(&Permission::Manager)
+        group.permissions.check_manager()
     } else {
         false
     };
@@ -1198,11 +1198,11 @@ pub async fn following_posts_timeline_request(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        if group.permissions.contains(&Permission::Helper) {
+        if group.permissions.check_helper() {
             is_helper = true
         }
 
-        group.permissions.contains(&Permission::Manager)
+        group.permissions.check_manager()
     };
 
     // ...
@@ -1311,8 +1311,8 @@ pub async fn response_request(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        is_helper = group.permissions.contains(&Permission::Helper);
-        group.permissions.contains(&Permission::Manager)
+        is_helper = group.permissions.check_helper();
+        group.permissions.check_manager()
     } else {
         false
     };
@@ -1416,8 +1416,8 @@ pub async fn partial_response_request(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        is_helper = group.permissions.contains(&Permission::Helper);
-        group.permissions.contains(&Permission::Manager)
+        is_helper = group.permissions.check_helper();
+        group.permissions.check_manager()
     } else {
         false
     };
@@ -1531,8 +1531,8 @@ pub async fn comment_request(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        is_helper = group.permissions.contains(&Permission::Helper);
-        group.permissions.contains(&Permission::Manager)
+        is_helper = group.permissions.check_helper();
+        group.permissions.check_manager()
     } else {
         false
     };
@@ -1616,7 +1616,7 @@ pub async fn inbox_request(jar: CookieJar, State(database): State<Database>) -> 
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        group.permissions.contains(&Permission::Helper)
+        group.permissions.check_helper()
     };
 
     Html(
@@ -1712,7 +1712,7 @@ pub async fn global_timeline_request(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        group.permissions.contains(&Permission::Helper)
+        group.permissions.check_helper()
     };
 
     // build relationships list
@@ -1818,7 +1818,7 @@ pub async fn public_global_timeline_request(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        group.permissions.contains(&Permission::Helper)
+        group.permissions.check_helper()
     };
 
     let mut questions = match database.get_global_questions_paginated(query.page).await {
@@ -1884,7 +1884,7 @@ pub async fn public_global_timeline_request(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        group.permissions.contains(&Permission::Helper)
+        group.permissions.check_helper()
     };
 
     Html(
@@ -1984,7 +1984,7 @@ pub async fn notifications_request(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        group.permissions.contains(&Permission::Helper)
+        group.permissions.check_helper()
     };
 
     let unread = match database
@@ -2064,7 +2064,7 @@ pub async fn reports_request(
         Err(_) => return Html(DatabaseError::NotFound.to_html(database)),
     };
 
-    if !group.permissions.contains(&Permission::Helper) {
+    if !group.permissions.check(FinePermission::VIEW_REPORTS) {
         // we must be a manager to do this
         return Html(DatabaseError::NotAllowed.to_html(database));
     }
@@ -2139,7 +2139,7 @@ pub async fn audit_log_request(
         Err(_) => return Html(DatabaseError::NotFound.to_html(database)),
     };
 
-    if !group.permissions.contains(&Permission::Helper) {
+    if !group.permissions.check(FinePermission::VIEW_AUDIT_LOG) {
         // we must be a manager to do this
         return Html(DatabaseError::NotAllowed.to_html(database));
     }
@@ -2210,7 +2210,7 @@ pub async fn ipbans_request(jar: CookieJar, State(database): State<Database>) ->
         Err(_) => return Html(DatabaseError::NotFound.to_html(database)),
     };
 
-    if !group.permissions.contains(&Permission::Helper) {
+    if !group.permissions.check(FinePermission::BAN_IP) {
         // we must be a manager to do this
         return Html(DatabaseError::NotAllowed.to_html(database));
     }

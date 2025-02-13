@@ -107,6 +107,10 @@ blockquote p:is(.dark *) {
     opacity: 50%;
 }
 
+ul {
+    list-style-position: initial;
+}
+
 /* nav */
 nav {
     background: var(--color-primary);

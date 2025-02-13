@@ -6,7 +6,7 @@ use axum::response::IntoResponse;
 use axum::{extract::State, response::Html};
 use axum_extra::extract::CookieJar;
 
-use authbeam::model::{Permission, Profile, UserFollow, Warning};
+use authbeam::model::{FinePermission, Profile, UserFollow, Warning};
 
 use crate::config::Config;
 use crate::database::Database;
@@ -199,8 +199,8 @@ All mail sent to this account can be viewed by any staff member with access.
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        is_helper = group.permissions.contains(&Permission::Helper);
-        group.permissions.contains(&Permission::Manager)
+        is_helper = group.permissions.check_helper();
+        group.permissions.check_manager()
     } else {
         false
     };
@@ -395,8 +395,8 @@ pub async fn partial_profile_request(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        is_helper = group.permissions.contains(&Permission::Helper);
-        group.permissions.contains(&Permission::Manager)
+        is_helper = group.permissions.check_helper();
+        group.permissions.check_manager()
     } else {
         false
     };
@@ -612,8 +612,8 @@ pub async fn profile_embed_request(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        is_helper = group.permissions.contains(&Permission::Helper);
-        group.permissions.contains(&Permission::Manager)
+        is_helper = group.permissions.check_helper();
+        group.permissions.check_manager()
     } else {
         false
     };
@@ -776,7 +776,7 @@ pub async fn followers_request(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        group.permissions.contains(&Permission::Helper)
+        group.permissions.check_helper()
     } else {
         false
     };
@@ -930,7 +930,7 @@ pub async fn following_request(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        group.permissions.contains(&Permission::Helper)
+        group.permissions.check_helper()
     } else {
         false
     };
@@ -1084,7 +1084,7 @@ pub async fn friends_request(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        group.permissions.contains(&Permission::Helper)
+        group.permissions.check_helper()
     } else {
         false
     };
@@ -1223,7 +1223,7 @@ pub async fn friend_requests_request(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        group.permissions.contains(&Permission::Helper)
+        group.permissions.check_helper()
     };
 
     let other = match database
@@ -1335,7 +1335,7 @@ pub async fn blocks_request(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        group.permissions.contains(&Permission::Helper)
+        group.permissions.check_helper()
     };
 
     if !is_helper {
@@ -1532,8 +1532,8 @@ pub async fn questions_request(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        is_helper = group.permissions.contains(&Permission::Helper);
-        group.permissions.contains(&Permission::Manager)
+        is_helper = group.permissions.check_helper();
+        group.permissions.check_manager()
     } else {
         false
     };
@@ -1731,20 +1731,21 @@ pub async fn mod_request(
     };
 
     let mut is_helper: bool = false;
-    let is_powerful = {
-        let group = match database.auth.get_group_by_id(auth_user.group).await {
-            Ok(g) => g,
-            Err(_) => return Html(DatabaseError::Other.to_html(database)),
-        };
 
-        if group.permissions.contains(&Permission::Helper) {
+    let group = match database.auth.get_group_by_id(auth_user.group).await {
+        Ok(g) => g,
+        Err(_) => return Html(DatabaseError::Other.to_html(database)),
+    };
+
+    let is_powerful = {
+        if group.permissions.check_helper() {
             is_helper = true;
         }
 
-        group.permissions.contains(&Permission::Manager)
+        group.permissions.check_manager()
     };
 
-    if !is_helper {
+    if !group.permissions.check(FinePermission::VIEW_PROFILE_MANAGE) {
         return Html(DatabaseError::NotAllowed.to_html(database));
     }
 
@@ -1946,11 +1947,11 @@ pub async fn inbox_request(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        if group.permissions.contains(&Permission::Helper) {
+        if group.permissions.check_helper() {
             is_helper = true;
         }
 
-        group.permissions.contains(&Permission::Manager)
+        group.permissions.check_manager()
     };
 
     if !is_powerful {
@@ -2146,11 +2147,11 @@ pub async fn outbox_request(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        if group.permissions.contains(&Permission::Helper) {
+        if group.permissions.check_helper() {
             is_helper = true;
         }
 
-        group.permissions.contains(&Permission::Manager)
+        group.permissions.check_manager()
     };
 
     let is_self = auth_user.id == other.id;

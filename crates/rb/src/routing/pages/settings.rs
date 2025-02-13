@@ -6,7 +6,7 @@ use axum::{
 };
 use axum_extra::extract::CookieJar;
 
-use authbeam::model::{IpBlock, Item, Permission, Profile, Transaction};
+use authbeam::model::{IpBlock, Item, Profile, Transaction};
 
 use crate::config::Config;
 use crate::database::Database;
@@ -79,7 +79,7 @@ pub async fn account_settings(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        group.permissions.contains(&Permission::Helper)
+        group.permissions.check_helper()
     };
 
     if viewing_other_profile && !is_helper {
@@ -185,7 +185,7 @@ pub async fn profile_settings(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        group.permissions.contains(&Permission::Helper)
+        group.permissions.check_helper()
     };
 
     if viewing_other_profile && !is_helper {
@@ -275,7 +275,7 @@ pub async fn privacy_settings(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        group.permissions.contains(&Permission::Helper)
+        group.permissions.check_helper()
     };
 
     if viewing_other_profile && !is_helper {
@@ -368,7 +368,7 @@ pub async fn sessions_settings(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        group.permissions.contains(&Permission::Helper)
+        group.permissions.check_helper()
     };
 
     if viewing_other_profile && !is_helper {
@@ -468,7 +468,7 @@ pub async fn coins_settings(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        group.permissions.contains(&Permission::Helper)
+        group.permissions.check_helper()
     };
 
     if viewing_other_profile && !is_helper {

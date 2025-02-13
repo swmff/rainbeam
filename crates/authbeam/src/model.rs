@@ -7,14 +7,11 @@ use axum::{
     Json,
 };
 
-use serde::{Deserialize, Serialize};
+use serde::{Serialize, Deserialize};
 use databeam::DefaultReturn;
 
-use ts_rs::TS;
-
 /// Basic user structure
-#[derive(TS, Serialize, Deserialize, Clone, Debug)]
-#[ts(export)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Profile {
     /// User ID
     pub id: String,
@@ -182,8 +179,7 @@ impl Default for Profile {
     }
 }
 
-#[derive(TS, Serialize, Deserialize, Clone, Debug)]
-#[ts(export)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct TokenContext {
     #[serde(default)]
     pub app: Option<String>,
@@ -193,8 +189,7 @@ pub struct TokenContext {
     pub timestamp: u128,
 }
 
-#[derive(TS, Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
-#[ts(export)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub enum TokenPermission {
     /// Manage UGC (user-generated-content) uploaded by the user
     ManageAssets,
@@ -246,8 +241,7 @@ impl Default for TokenContext {
     }
 }
 
-#[derive(TS, Serialize, Deserialize, Clone, Debug)]
-#[ts(export)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ProfileMetadata {
     #[serde(default)]
     pub email: String,
@@ -336,8 +330,7 @@ impl Default for ProfileMetadata {
 }
 
 /// Basic follow structure
-#[derive(TS, Serialize, Deserialize, Clone, Debug)]
-#[ts(export)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct UserFollow {
     /// The ID of the user following
     pub user: String,
@@ -346,8 +339,7 @@ pub struct UserFollow {
 }
 
 /// Basic notification structure
-#[derive(TS, Serialize, Deserialize, Clone, Debug)]
-#[ts(export)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Notification {
     /// The title of the notification
     pub title: String,
@@ -364,8 +356,7 @@ pub struct Notification {
 }
 
 /// Basic warning structure
-#[derive(TS, Serialize, Deserialize, Clone, Debug)]
-#[ts(export)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Warning {
     /// The ID of the warning
     pub id: String,
@@ -380,8 +371,7 @@ pub struct Warning {
 }
 
 /// Basic IP ban
-#[derive(TS, Serialize, Deserialize, Clone, Debug)]
-#[ts(export)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct IpBan {
     /// The ID of the ban
     pub id: String,
@@ -396,8 +386,7 @@ pub struct IpBan {
 }
 
 /// The state of a user's relationship with another user
-#[derive(TS, Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[ts(export)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub enum RelationshipStatus {
     /// No relationship
     Unknown,
@@ -419,8 +408,7 @@ impl Default for RelationshipStatus {
 ///
 /// If a relationship already exists, user two cannot attempt to create a relationship with user one.
 /// The existing relation should be used.
-#[derive(TS, Debug, Clone, Serialize, Deserialize)]
-#[ts(export)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Relationship {
     /// The first user in the relationship
     pub one: Profile,
@@ -433,8 +421,7 @@ pub struct Relationship {
 }
 
 /// An IP-based block
-#[derive(TS, Serialize, Deserialize, Clone, Debug)]
-#[ts(export)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct IpBlock {
     /// The ID of the block
     pub id: String,
@@ -448,25 +435,14 @@ pub struct IpBlock {
     pub timestamp: u128,
 }
 
-/// Rainbeam system permission
-#[derive(TS, Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
-#[ts(export)]
-pub enum Permission {
-    /// Permission to manage the server and managers
-    Admin,
-    /// Permission to manage the server and assets
-    Manager,
-    /// Permission to create warnings and do small moderator tasks
-    Helper,
-}
+pub use crate::permissions::FinePermission;
 
 /// Basic permission group
-#[derive(TS, Serialize, Deserialize, Clone, Debug)]
-#[ts(export)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Group {
     pub name: String,
     pub id: i32,
-    pub permissions: Vec<Permission>,
+    pub permissions: FinePermission,
 }
 
 impl Default for Group {
@@ -474,14 +450,13 @@ impl Default for Group {
         Self {
             name: "default".to_string(),
             id: 0,
-            permissions: Vec::new(),
+            permissions: FinePermission::default(),
         }
     }
 }
 
 /// Mail state
-#[derive(TS, Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
-#[ts(export)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub enum MailState {
     /// The mail has been sent, but has never been opened by the recipient
     Unread,
@@ -490,8 +465,7 @@ pub enum MailState {
 }
 
 /// Basic mail structure
-#[derive(TS, Serialize, Deserialize, Clone, Debug)]
-#[ts(export)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Mail {
     /// The title of the mail
     pub title: String,
@@ -510,8 +484,7 @@ pub struct Mail {
 }
 
 /// A label which describes a user
-#[derive(TS, Serialize, Deserialize, Clone, Debug)]
-#[ts(export)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct UserLabel {
     /// The ID of the label (unique)
     pub id: String,
@@ -524,8 +497,7 @@ pub struct UserLabel {
 }
 
 /// A coin transaction between two users
-#[derive(TS, Serialize, Deserialize, Clone, Debug)]
-#[ts(export)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Transaction {
     /// The ID of the transaction (unique)
     pub id: String,
@@ -542,8 +514,7 @@ pub struct Transaction {
 }
 
 /// A marketplace item type
-#[derive(TS, Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
-#[ts(export)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub enum ItemType {
     Text,
     UserTheme,
@@ -565,8 +536,7 @@ impl ToString for ItemType {
 }
 
 /// A marketplace item status
-#[derive(TS, Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
-#[ts(export)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub enum ItemStatus {
     /// The item has been reviewed by a site moderator and rejected
     Rejected,
@@ -596,8 +566,7 @@ impl ToString for ItemStatus {
 }
 
 /// A marketplace item (for [`Transaction`]s)
-#[derive(TS, Serialize, Deserialize, Clone, Debug)]
-#[ts(export)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Item {
     /// The ID of the item (unique)
     pub id: String,

@@ -7,7 +7,7 @@ use axum::{
 };
 use axum_extra::extract::CookieJar;
 
-use authbeam::model::{DatabaseError as AuthError, Mail, Permission, Profile};
+use authbeam::model::{DatabaseError as AuthError, FinePermission, Mail, Profile};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
@@ -71,7 +71,7 @@ pub async fn inbox_request(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        group.permissions.contains(&Permission::Helper)
+        group.permissions.check_helper()
     };
 
     if violating_usc18_1702 && !is_helper {
@@ -176,7 +176,7 @@ pub async fn outbox_request(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        group.permissions.contains(&Permission::Helper)
+        group.permissions.check_helper()
     };
 
     if violating_usc18_1702 && !is_helper {
@@ -343,7 +343,7 @@ pub async fn view_request(
         Err(e) => return Html(e.to_string()),
     };
 
-    if !group.permissions.contains(&Permission::Manager) {
+    if !group.permissions.check(FinePermission::MANAGE_MAILS) {
         // make sure we're a recipient or the author
         if !letter.recipient.contains(&auth_user.id) && auth_user.id != author.id {
             return Html(AuthError::NotAllowed.to_string());
@@ -357,7 +357,7 @@ pub async fn view_request(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        group.permissions.contains(&Permission::Helper)
+        group.permissions.check_helper()
     };
 
     // ...
@@ -430,7 +430,7 @@ pub async fn partial_mail_request(
         Err(e) => return Html(e.to_string()),
     };
 
-    if !group.permissions.contains(&Permission::Manager) {
+    if !group.permissions.check(FinePermission::MANAGE_MAILS) {
         // make sure we're a recipient or the author
         if !letter.recipient.contains(&auth_user.id) && auth_user.id != author.id {
             return Html(AuthError::NotAllowed.to_string());
@@ -444,7 +444,7 @@ pub async fn partial_mail_request(
             Err(_) => return Html(DatabaseError::Other.to_html(database)),
         };
 
-        group.permissions.contains(&Permission::Helper)
+        group.permissions.check_helper()
     };
 
     // ...
