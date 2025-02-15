@@ -1,6 +1,6 @@
 [package]
 name = "databeam"
-version = "0.2.7"
+version = "1.0.0"
 edition = "2021"
 description = "Database connection library"
 authors = ["trisuaso", "swmff"]
@@ -12,10 +12,13 @@ license = "MIT"
 postgres = []
 mysql = []
 sqlite = []
-default = ["sqlite"]
+redis = ["dep:redis"]
+moka = ["dep:moka"]
+default = ["sqlite", "redis"]
 
 [dependencies]
-redis = "0.28.2"
+redis = { version = "0.28.2", optional = true }
+moka = { version = "0.12.10", features = ["future"], optional = true }
 serde = { version = "1.0.217", features = ["derive"] }
 serde_json = "1.0.138"
 toml = "0.8.20"

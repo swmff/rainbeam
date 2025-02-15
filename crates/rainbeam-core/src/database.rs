@@ -7,7 +7,7 @@ use crate::model::*;
 use crate::model::{DatabaseError, Question};
 
 use authbeam::model::{FinePermission, NotificationCreate, Profile, RelationshipStatus};
-use databeam::{utility, query as sqlquery};
+use databeam::{utility, query as sqlquery, prelude::*};
 use langbeam::LangFile;
 
 pub type Result<T> = std::result::Result<T, DatabaseError>;
@@ -15,7 +15,7 @@ pub type Result<T> = std::result::Result<T, DatabaseError>;
 /// Database connector
 #[derive(Clone)]
 pub struct Database {
-    pub base: databeam::StarterDatabase,
+    pub base: StarterDatabase,
     pub auth: authbeam::Database,
     pub config: Config,
     langs: HashMap<String, LangFile>,
@@ -28,7 +28,7 @@ impl Database {
         config: Config,
     ) -> Self {
         Self {
-            base: databeam::StarterDatabase::new(opts).await,
+            base: StarterDatabase::new(opts).await,
             auth,
             config,
             langs: langbeam::read_langs(),

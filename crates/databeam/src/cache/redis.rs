@@ -1,51 +1,36 @@
 //! Redis connection manager
-use redis::{Commands, ToRedisArgs};
+use redis::Commands;
 use serde::{de::DeserializeOwned, Serialize};
 
-#[allow(type_alias_bounds)]
-pub type TimedObject<T: Serialize + DeserializeOwned> = (i64, T);
-
-pub const EXPIRE_AT: i64 = 3_600_000;
+use super::{Cache, TimedObject, EXPIRE_AT};
 
 #[derive(Clone)]
-pub struct CacheDB {
+pub struct RedisCache {
     pub client: redis::Client,
 }
 
-impl CacheDB {
-    pub async fn new() -> CacheDB {
-        return CacheDB {
+impl Cache for RedisCache {
+    type Item = String;
+    type Client = redis::Connection;
+
+    async fn new() -> Self {
+        return Self {
             client: redis::Client::open("redis://127.0.0.1:6379").unwrap(),
         };
     }
 
-    pub async fn get_con(&self) -> redis::Connection {
+    async fn get_con(&self) -> Self::Client {
         self.client.get_connection().unwrap()
     }
 
-    /// Get a cache object by its identifier
-    ///
-    /// # Arguments:
-    /// * `id` - `String` of the object's id
-    pub async fn get<I>(&self, id: I) -> Option<String>
-    where
-        I: ToRedisArgs,
-    {
+    async fn get(&self, id: Self::Item) -> Option<String> {
         match self.get_con().await.get(id) {
             Ok(d) => Some(d),
             Err(_) => None,
         }
     }
 
-    /// Set a cache object by its identifier and content
-    ///
-    /// # Arguments:
-    /// * `id` - `String` of the object's id
-    /// * `content` - `String` of the object's content
-    pub async fn set<I>(&self, id: String, content: I) -> bool
-    where
-        I: ToRedisArgs,
-    {
+    async fn set(&self, id: Self::Item, content: Self::Item) -> bool {
         let mut c = self.get_con().await;
         let res: Result<String, redis::RedisError> = c.set(id, content);
 
@@ -55,26 +40,11 @@ impl CacheDB {
         }
     }
 
-    /// Update a cache object by its identifier and content
-    ///
-    /// # Arguments:
-    /// * `id` - `String` of the object's id
-    /// * `content` - `String` of the object's content
-    pub async fn update<I>(&self, id: String, content: I) -> bool
-    where
-        I: ToRedisArgs,
-    {
+    async fn update(&self, id: Self::Item, content: Self::Item) -> bool {
         self.set(id, content).await
     }
 
-    /// Remove a cache object by its identifier
-    ///
-    /// # Arguments:
-    /// * `id` - `String` of the object's id
-    pub async fn remove<I>(&self, id: I) -> bool
-    where
-        I: ToRedisArgs,
-    {
+    async fn remove(&self, id: Self::Item) -> bool {
         let mut c = self.get_con().await;
         let res: Result<String, redis::RedisError> = c.del(id);
 
@@ -84,14 +54,7 @@ impl CacheDB {
         }
     }
 
-    /// Remove a cache object by its identifier('s start)
-    ///
-    /// # Arguments:
-    /// * `id` - `String` of the object's id('s start)
-    pub async fn remove_starting_with<I>(&self, id: I) -> bool
-    where
-        I: ToRedisArgs,
-    {
+    async fn remove_starting_with(&self, id: Self::Item) -> bool {
         let mut c = self.get_con().await;
 
         // get keys
@@ -111,14 +74,7 @@ impl CacheDB {
         }
     }
 
-    /// Increment a cache object by its identifier
-    ///
-    /// # Arguments:
-    /// * `id` - `String` of the object's id
-    pub async fn incr<I>(&self, id: I) -> bool
-    where
-        I: ToRedisArgs,
-    {
+    async fn incr(&self, id: Self::Item) -> bool {
         let mut c = self.get_con().await;
         let res: Result<String, redis::RedisError> = c.incr(id, 1);
 
@@ -128,14 +84,7 @@ impl CacheDB {
         }
     }
 
-    /// Decrement a cache object by its identifier
-    ///
-    /// # Arguments:
-    /// * `id` - `String` of the object's id
-    pub async fn decr<I>(&self, id: I) -> bool
-    where
-        I: ToRedisArgs,
-    {
+    async fn decr(&self, id: Self::Item) -> bool {
         let mut c = self.get_con().await;
         let res: Result<String, redis::RedisError> = c.decr(id, 1);
 
@@ -145,15 +94,10 @@ impl CacheDB {
         }
     }
 
-    /// Get a cache object by its identifier
-    ///
-    /// # Arguments:
-    /// * `id` - `String` of the object's id
-    pub async fn get_timed<T, I>(&self, id: I) -> Option<TimedObject<T>>
-    where
-        T: Serialize + DeserializeOwned,
-        I: ToRedisArgs,
-    {
+    async fn get_timed<T: Serialize + DeserializeOwned>(
+        &self,
+        id: Self::Item,
+    ) -> Option<TimedObject<T>> {
         let mut c = self.get_con().await;
         let res: Result<String, redis::RedisError> = c.get(&id);
 
@@ -178,16 +122,7 @@ impl CacheDB {
         }
     }
 
-    /// Set a cache object by its identifier and content
-    ///
-    /// # Arguments:
-    /// * `id` - `String` of the object's id
-    /// * `content` - `String` of the object's content
-    pub async fn set_timed<T, I>(&self, id: I, content: T) -> bool
-    where
-        T: Serialize + DeserializeOwned,
-        I: ToRedisArgs,
-    {
+    async fn set_timed<T: Serialize + DeserializeOwned>(&self, id: Self::Item, content: T) -> bool {
         let mut c = self.get_con().await;
         let res: Result<String, redis::RedisError> = c.set(
             id,

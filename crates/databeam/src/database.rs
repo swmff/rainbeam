@@ -1,6 +1,6 @@
 //! Database handler
 use super::{
-    cachedb::CacheDB,
+    prelude::*,
     sql::{create_db, Database, DatabaseOpts},
 };
 
@@ -27,7 +27,10 @@ pub struct DatabaseReturn(pub BTreeMap<String, String>);
 pub struct StarterDatabase {
     pub db: Database<sqlx::PgPool>,
     pub options: DatabaseOpts,
-    pub cachedb: CacheDB,
+    #[cfg(feature = "redis")]
+    pub cachedb: RedisCache,
+    #[cfg(feature = "moka")]
+    pub cachedb: MokaCache,
 }
 
 /// Basic database
@@ -36,7 +39,10 @@ pub struct StarterDatabase {
 pub struct StarterDatabase {
     pub db: Database<sqlx::MySqlPool>,
     pub options: DatabaseOpts,
-    pub cachedb: CacheDB,
+    #[cfg(feature = "redis")]
+    pub cachedb: RedisCache,
+    #[cfg(feature = "moka")]
+    pub cachedb: MokaCache,
 }
 
 /// Basic database
@@ -45,7 +51,10 @@ pub struct StarterDatabase {
 pub struct StarterDatabase {
     pub db: Database<sqlx::SqlitePool>,
     pub options: DatabaseOpts,
-    pub cachedb: CacheDB,
+    #[cfg(feature = "redis")]
+    pub cachedb: RedisCache,
+    #[cfg(feature = "moka")]
+    pub cachedb: MokaCache,
 }
 
 impl StarterDatabase {
@@ -53,7 +62,10 @@ impl StarterDatabase {
         StarterDatabase {
             db: create_db(options.clone()).await,
             options,
-            cachedb: CacheDB::new().await,
+            #[cfg(feature = "redis")]
+            cachedb: RedisCache::new().await,
+            #[cfg(feature = "moka")]
+            cachedb: MokaCache::new().await,
         }
     }
 

@@ -2,7 +2,7 @@ use crate::database::Database;
 use crate::model::{anonymous_profile, DatabaseError, QuestionCreate};
 use axum::http::{HeaderMap, HeaderValue};
 use authbeam::model::{IpBlockCreate, NotificationCreate};
-use databeam::DefaultReturn;
+use databeam::prelude::DefaultReturn;
 
 use axum::response::{IntoResponse, Redirect};
 use axum::{

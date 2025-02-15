@@ -15,6 +15,8 @@ mysql = ["databeam/mysql", "authbeam/mysql", "rainbeam-core/mysql"]
 sqlite = ["databeam/sqlite", "authbeam/sqlite", "rainbeam-core/sqlite"]
 default = ["databeam/sqlite", "authbeam/sqlite", "rainbeam-core/sqlite"]
 mimalloc = []
+redis = ["databeam/redis", "authbeam/redis", "rainbeam-core/redis"]
+moka = ["databeam/moka", "authbeam/moka", "rainbeam-core/moka"]
 
 [dependencies]
 reva = { version = "0.13.2", features = ["with-axum"] }
@@ -36,11 +38,10 @@ tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
 rainbeam-shared = { path = "../shared" }
 # databeam = { path = "../databeam", default-features = false }
-databeam = { version = "0.2.7", default-features = false }
+databeam = { version = "1.0.0", default-features = false }
 authbeam = { path = "../authbeam", default-features = false }
 langbeam = { path = "../langbeam" }
 rainbeam-core = { path = "../rainbeam-core", default-features = false }
-mimalloc = "0.1.43"
 mime_guess = "2.0.5"
 pathbufd = "0.1.4"
 # pathbufd = { path = "../../../pathbufd" }

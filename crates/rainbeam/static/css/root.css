@@ -38,7 +38,7 @@
 .dark,
 .dark * {
     --sat: 5%;
-    --lit: 12%;
+    --lit: 10%;
     --color-surface: hsl(var(--hue), var(--sat), calc(0% + var(--lit)));
     --color-lowered: hsl(var(--hue), var(--sat), calc(6% + var(--lit)));
     --color-raised: hsl(var(--hue), var(--sat), calc(2% + var(--lit)));
@@ -67,8 +67,9 @@ html,
 body {
     line-height: 1.5;
     letter-spacing: 0.15px;
-    font-family: "Inter", "Poppins", "Roboto", ui-sans-serif, system-ui,
-        sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    font-family:
+        "Inter", "Poppins", "Roboto", ui-sans-serif, system-ui, sans-serif,
+        "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
         "Noto Color Emoji";
     color: var(--color-text);
     background: var(--color-surface);

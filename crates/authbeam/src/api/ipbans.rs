@@ -1,6 +1,6 @@
 use crate::database::Database;
 use crate::model::{DatabaseError, IpBanCreate};
-use databeam::DefaultReturn;
+use databeam::prelude::DefaultReturn;
 
 use axum::response::IntoResponse;
 use axum::{

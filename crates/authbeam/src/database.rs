@@ -13,7 +13,7 @@ use rainbeam_shared::snow::AlmostSnowflake;
 use reqwest::Client as HttpClient;
 use serde::{Deserialize, Serialize};
 
-use databeam::{query as sqlquery, utility};
+use databeam::{query as sqlquery, utility, prelude::*};
 use pathbufd::{PathBufD, pathd};
 
 pub type Result<T> = std::result::Result<T, DatabaseError>;
@@ -88,7 +88,7 @@ impl Default for ServerOptions {
 /// Database connector
 #[derive(Clone)]
 pub struct Database {
-    pub base: databeam::StarterDatabase,
+    pub base: StarterDatabase,
     pub config: ServerOptions,
     pub http: HttpClient,
 }
@@ -99,7 +99,7 @@ impl Database {
         database_options: databeam::DatabaseOpts,
         server_options: ServerOptions,
     ) -> Self {
-        let base = databeam::StarterDatabase::new(database_options).await;
+        let base = StarterDatabase::new(database_options).await;
 
         Self {
             base: base.clone(),

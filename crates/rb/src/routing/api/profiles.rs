@@ -8,7 +8,7 @@ use axum_extra::extract::CookieJar;
 use hcaptcha_no_wasm::Hcaptcha;
 
 use authbeam::model::{FinePermission, NotificationCreate};
-use databeam::DefaultReturn;
+use databeam::prelude::DefaultReturn;
 
 use axum::{
     extract::{Path, State},

@@ -837,4 +837,5 @@ canvas {
 
 .date {
     display: none;
+    text-decoration: underline dotted;
 }

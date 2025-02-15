@@ -1,7 +1,7 @@
 use crate::database::Database;
 use crate::model::{AssetType, DatabaseError, ReactionCreate};
 use authbeam::model::{NotificationCreate, RelationshipStatus};
-use databeam::DefaultReturn;
+use databeam::prelude::DefaultReturn;
 
 use axum::response::IntoResponse;
 use axum::{

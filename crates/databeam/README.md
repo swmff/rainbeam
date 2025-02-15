@@ -1,3 +1,3 @@
 # databeam
 
-Database connection manager.
+Rainbeam database connection manager.

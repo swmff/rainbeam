@@ -3,7 +3,7 @@ use crate::model::{DatabaseError, MessageCreate, ResponseEdit};
 use axum::http::{HeaderMap, HeaderValue};
 use hcaptcha_no_wasm::Hcaptcha;
 use authbeam::model::NotificationCreate;
-use databeam::DefaultReturn;
+use databeam::prelude::DefaultReturn;
 
 use axum::response::IntoResponse;
 use axum::{

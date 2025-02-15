@@ -1,7 +1,7 @@
 use crate::database::Database;
 use crate::model::{DatabaseError, TokenContext, TokenPermission};
 use serde::{Deserialize, Serialize};
-use databeam::DefaultReturn;
+use databeam::prelude::DefaultReturn;
 
 use axum::http::{HeaderMap, HeaderValue};
 use axum::response::{IntoResponse, Redirect};

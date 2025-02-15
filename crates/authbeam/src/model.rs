@@ -8,7 +8,7 @@ use axum::{
 };
 
 use serde::{Serialize, Deserialize};
-use databeam::DefaultReturn;
+use databeam::prelude::DefaultReturn;
 
 /// Basic user structure
 #[derive(Serialize, Deserialize, Clone, Debug)]

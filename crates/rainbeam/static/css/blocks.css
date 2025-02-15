@@ -57,6 +57,10 @@ include-partial:has(.response) {
     cursor: pointer;
 }
 
+.card include-partial .card-nest:nth-child(1) {
+    border: solid 1px var(--color-super-lowered);
+}
+
 .card.secondary {
     background: var(--color-lowered);
     color: var(--color-text-lowered) !important;

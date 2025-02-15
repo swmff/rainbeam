@@ -3,7 +3,7 @@ use crate::model::{CircleCreate, DatabaseError, EditCircleMetadata, MembershipSt
 use axum::http::{HeaderMap, HeaderValue};
 use hcaptcha_no_wasm::Hcaptcha;
 use authbeam::model::NotificationCreate;
-use databeam::DefaultReturn;
+use databeam::prelude::DefaultReturn;
 use pathbufd::pathd;
 
 use axum::response::{IntoResponse, Redirect};

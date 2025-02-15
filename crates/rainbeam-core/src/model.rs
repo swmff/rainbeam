@@ -10,7 +10,7 @@ use hcaptcha_no_wasm::Hcaptcha;
 use serde::{Deserialize, Serialize};
 
 use authbeam::model::{IpBlock, Profile, UserFollow};
-use databeam::DefaultReturn;
+use databeam::prelude::*;
 pub use authbeam::model::RelationshipStatus;
 
 /// Trait for simple asset contexts
@@ -698,8 +698,8 @@ impl IntoResponse for DatabaseError {
     }
 }
 
-impl<T: Default> Into<databeam::DefaultReturn<T>> for DatabaseError {
-    fn into(self) -> databeam::DefaultReturn<T> {
+impl<T: Default> Into<DefaultReturn<T>> for DatabaseError {
+    fn into(self) -> DefaultReturn<T> {
         DefaultReturn {
             success: false,
             message: self.to_string(),

@@ -4,7 +4,7 @@ use crate::model::{
     SetProfileGroup, SetProfileLabels, SetProfileLinks, SetProfileMetadata, SetProfilePassword,
     SetProfileTier, SetProfileUsername, TokenContext, TokenPermission,
 };
-use databeam::DefaultReturn;
+use databeam::prelude::DefaultReturn;
 use pathbufd::pathd;
 
 use axum::body::Body;

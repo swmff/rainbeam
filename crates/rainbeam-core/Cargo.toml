@@ -14,6 +14,8 @@ postgres = ["databeam/postgres", "authbeam/postgres"]
 mysql = ["databeam/mysql", "authbeam/mysql"]
 sqlite = ["databeam/sqlite", "authbeam/sqlite"]
 default = ["databeam/sqlite", "authbeam/sqlite"]
+redis = ["databeam/redis", "authbeam/redis"]
+moka = ["databeam/moka", "authbeam/moka"]
 
 [dependencies]
 axum = { version = "0.8.1", features = ["macros", "form"] }
@@ -31,7 +33,7 @@ async-recursion = "1.1.1"
 tracing = "0.1.41"
 rainbeam-shared = { path = "../shared" }
 # databeam = { path = "../databeam", default-features = false }
-databeam = { version = "0.2.7", default-features = false }
+databeam = { version = "1.0.0", default-features = false }
 authbeam = { path = "../authbeam", default-features = false }
 langbeam = { path = "../langbeam" }
 mime_guess = "2.0.5"

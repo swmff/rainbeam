@@ -3,7 +3,7 @@ use crate::model::{
     DatabaseError, ItemCreate, ItemEdit, ItemEditContent, SetItemStatus, TokenPermission,
     TransactionCreate,
 };
-use databeam::DefaultReturn;
+use databeam::prelude::DefaultReturn;
 
 use axum::response::IntoResponse;
 use axum::{

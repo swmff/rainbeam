@@ -13,6 +13,8 @@ postgres = ["databeam/postgres"]
 mysql = ["databeam/mysql"]
 sqlite = ["databeam/sqlite"]
 default = ["databeam/sqlite"]    # for development
+redis = ["databeam/redis"]
+moka = ["databeam/moka"]
 
 [dependencies]
 axum = { version = "0.8.1", features = ["macros"] }
@@ -28,7 +30,7 @@ hcaptcha-no-wasm = { version = "3.0.1" }
 mime_guess = "2.0.5"
 rainbeam-shared = { version = "0.2.0" }
 # databeam = { path = "../databeam", default-features = false }
-databeam = { version = "0.2.7", default-features = false }
+databeam = { version = "1.0.0", default-features = false }
 image = "0.25.5"
 pathbufd = "0.1.4"
 bitflags = "2.8.0"
