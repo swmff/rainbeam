@@ -71,9 +71,22 @@ pub async fn external_image_request(
 
     match database.auth.http.get(image_url).send().await {
         Ok(stream) => {
+            let size = stream.content_length();
+            if size.is_none() | (size.unwrap() > 10485760) {
+                // return defualt image (content too big)
+                return (
+                    [("Content-Type", "image/svg+xml")],
+                    Body::from(read_image(
+                        pathd!("{}/images", database.config.static_dir),
+                        "default-banner.svg".to_string(),
+                    )),
+                );
+            }
+
             if let Some(ct) = stream.headers().get("Content-Type") {
+                let ct = ct.to_str().unwrap();
                 let bad_ct = vec!["text/html", "text/plain"];
-                if bad_ct.contains(&ct.to_str().unwrap()) {
+                if !ct.starts_with("image/") | bad_ct.contains(&ct) {
                     // if we got html, return default banner (likely an error page)
                     return (
                         [("Content-Type", "image/svg+xml")],

@@ -102,16 +102,28 @@ pub async fn avatar_request(
 
     match database.http.get(avatar_url).send().await {
         Ok(stream) => {
+            let size = stream.content_length();
+            if size.is_none() | (size.unwrap() > 10485760) {
+                // return defualt image (content too big)
+                return (
+                    [("Content-Type", "image/svg+xml")],
+                    Body::from(read_image(
+                        pathd!("{}/images", database.config.static_dir),
+                        "default-banner.svg".to_string(),
+                    )),
+                );
+            }
+
             if let Some(ct) = stream.headers().get("Content-Type") {
-                if !ct.to_str().unwrap().starts_with("image/") {
-                    // if we failed to load the image, we might get back text/html or something
-                    // we're going to return the default image if we got something that isn't
-                    // an image (or has an incorrect mime)
+                let ct = ct.to_str().unwrap();
+                let bad_ct = vec!["text/html", "text/plain"];
+                if !ct.starts_with("image/") | bad_ct.contains(&ct) {
+                    // if we got html, return default banner (likely an error page)
                     return (
                         [("Content-Type", "image/svg+xml")],
                         Body::from(read_image(
                             pathd!("{}/images", database.config.static_dir),
-                            "default-avatar.svg".to_string(),
+                            "default-banner.svg".to_string(),
                         )),
                     );
                 }
@@ -213,11 +225,23 @@ pub async fn banner_request(
 
     match database.http.get(banner_url).send().await {
         Ok(stream) => {
+            let size = stream.content_length();
+            if size.is_none() | (size.unwrap() > 10485760) {
+                // return defualt image (content too big)
+                return (
+                    [("Content-Type", "image/svg+xml")],
+                    Body::from(read_image(
+                        pathd!("{}/images", database.config.static_dir),
+                        "default-banner.svg".to_string(),
+                    )),
+                );
+            }
+
             if let Some(ct) = stream.headers().get("Content-Type") {
-                if !ct.to_str().unwrap().starts_with("image/") {
-                    // if we failed to load the image, we might get back text/html or something
-                    // we're going to return the default image if we got something that isn't
-                    // an image (or has an incorrect mime)
+                let ct = ct.to_str().unwrap();
+                let bad_ct = vec!["text/html", "text/plain"];
+                if !ct.starts_with("image/") | bad_ct.contains(&ct) {
+                    // if we got html, return default banner (likely an error page)
                     return (
                         [("Content-Type", "image/svg+xml")],
                         Body::from(read_image(
