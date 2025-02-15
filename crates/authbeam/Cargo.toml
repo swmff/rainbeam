@@ -1,6 +1,6 @@
 [package]
 name = "authbeam"
-version = "3.0.0"
+version = "3.0.1"
 edition = "2021"
 description = "Authentication manager"
 authors = ["trisuaso", "swmff"]
@@ -12,7 +12,7 @@ license = "MIT"
 postgres = ["databeam/postgres"]
 mysql = ["databeam/mysql"]
 sqlite = ["databeam/sqlite"]
-default = ["databeam/sqlite"]    # for development
+default = ["databeam/sqlite", "redis"]    # for development
 redis = ["databeam/redis"]
 moka = ["databeam/moka"]
 
@@ -25,7 +25,7 @@ tokio = { version = "1.43.0", features = ["macros", "rt-multi-thread"] }
 dotenv = "0.15.0"
 axum-extra = { version = "0.10.0", features = ["cookie", "multipart"] }
 regex = "1.11.1"
-reqwest = "0.12.12"
+reqwest = { version = "0.12.12", features = ["stream"] }
 hcaptcha-no-wasm = { version = "3.0.1" }
 mime_guess = "2.0.5"
 rainbeam-shared = { version = "0.2.0" }
