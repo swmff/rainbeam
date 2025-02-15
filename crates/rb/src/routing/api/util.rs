@@ -86,7 +86,7 @@ pub async fn external_image_request(
             if let Some(ct) = stream.headers().get("Content-Type") {
                 let ct = ct.to_str().unwrap();
                 let bad_ct = vec!["text/html", "text/plain"];
-                if !ct.starts_with("image/") | bad_ct.contains(&ct) {
+                if (!ct.starts_with("image/") && !ct.starts_with("font/")) | bad_ct.contains(&ct) {
                     // if we got html, return default banner (likely an error page)
                     return (
                         [("Content-Type", "image/svg+xml")],
