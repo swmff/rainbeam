@@ -407,25 +407,8 @@
         <p class="fade">This is the base theme used on your profile.</p>
     </div>
 
-    <h4 class="title">Layout</h4>
-    <div class="flex flex-col gap-1">
-        <label for="sparkler:layout">Profile layout</label>
-
-        <select
-            type="url"
-            name="sparkler:layout"
-            id="sparkler:layout"
-            onchange="update_kv('sparkler:layout', event.target.options[event.target.selectedIndex].value)"
-        >
-            <option value="0" id="0">Sidebar on left (default)</option>
-            <option value="1" id="1">Sidebar on right</option>
-        </select>
-
-        <p class="fade">The layout used on your profile.</p>
-    </div>
 
     <h4 class="title">Colors</h4>
-
     <div
         class="markdown-alert-important flex flex-col gap-2"
         style="align-items: flex-start"

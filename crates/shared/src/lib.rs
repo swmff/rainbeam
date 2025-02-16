@@ -6,6 +6,7 @@ pub mod hash;
 pub mod process;
 pub mod snow;
 pub mod ui;
+pub mod config;
 
 // ...
 use std::time::{SystemTime, UNIX_EPOCH};

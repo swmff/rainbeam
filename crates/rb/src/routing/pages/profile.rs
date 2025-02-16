@@ -42,7 +42,6 @@ struct ProfileTemplate {
     disallow_anonymous: bool,
     require_account: bool,
     hide_social: bool,
-    layout: String,
     is_powerful: bool, // at least "manager"
     is_helper: bool,   // at least "helper"
     is_self: bool,
@@ -267,12 +266,6 @@ All mail sent to this account can be viewed by any staff member with access.
             query: query.q.unwrap_or(String::new()),
             // ...
             relationship,
-            layout: other
-                .metadata
-                .kv
-                .get("sparkler:layout")
-                .unwrap_or(&String::new())
-                .to_owned(),
             lock_profile: other
                 .metadata
                 .kv
@@ -1416,7 +1409,6 @@ struct ProfileQuestionsTemplate {
     query: String,
     // ...
     relationship: RelationshipStatus,
-    layout: String,
     lock_profile: bool,
     disallow_anonymous: bool,
     require_account: bool,
@@ -1598,12 +1590,6 @@ pub async fn questions_request(
             query: query.q.unwrap_or(String::new()),
             // ...
             relationship,
-            layout: other
-                .metadata
-                .kv
-                .get("sparkler:layout")
-                .unwrap_or(&String::new())
-                .to_owned(),
             lock_profile: other
                 .metadata
                 .kv
@@ -1662,7 +1648,6 @@ struct ModTemplate {
     tokens_src: Vec<String>,
     // ...
     relationship: RelationshipStatus,
-    layout: String,
     lock_profile: bool,
     disallow_anonymous: bool,
     require_account: bool,
@@ -1804,12 +1789,6 @@ pub async fn mod_request(
             tokens_src: other.tokens.clone(),
             // ...
             relationship,
-            layout: other
-                .metadata
-                .kv
-                .get("sparkler:layout")
-                .unwrap_or(&String::new())
-                .to_owned(),
             lock_profile: other
                 .metadata
                 .kv
@@ -1864,7 +1843,6 @@ struct ProfileQuestionsInboxTemplate {
     metadata: String,
     // ...
     relationship: RelationshipStatus,
-    layout: String,
     lock_profile: bool,
     disallow_anonymous: bool,
     require_account: bool,
@@ -2002,12 +1980,6 @@ pub async fn inbox_request(
             metadata: clean_metadata(&other.metadata),
             // ...
             relationship,
-            layout: other
-                .metadata
-                .kv
-                .get("sparkler:layout")
-                .unwrap_or(&String::new())
-                .to_owned(),
             lock_profile: other
                 .metadata
                 .kv
@@ -2063,7 +2035,6 @@ struct ProfileQuestionsOutboxTemplate {
     page: i32,
     // ...
     relationship: RelationshipStatus,
-    layout: String,
     lock_profile: bool,
     disallow_anonymous: bool,
     require_account: bool,
@@ -2203,12 +2174,6 @@ pub async fn outbox_request(
             page: query.page,
             // ...
             relationship,
-            layout: other
-                .metadata
-                .kv
-                .get("sparkler:layout")
-                .unwrap_or(&String::new())
-                .to_owned(),
             lock_profile: other
                 .metadata
                 .kv

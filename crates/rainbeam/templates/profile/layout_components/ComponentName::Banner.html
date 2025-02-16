@@ -1,0 +1,17 @@
+{% if let Some(fit) = other.metadata.kv.get("sparkler:banner_fit") %}
+<img
+    title="{{ other.username }}'s banner"
+    src="/api/v0/auth/profile/{{ other.id }}/banner"
+    alt=""
+    class="shadow round banner {{ fit }}"
+    style="width: 100%; min-height: 150px; max-height: 440px"
+/>
+{% else %}
+<img
+    title="{{ other.username }}'s banner"
+    src="/api/v0/auth/profile/{{ other.id }}/banner"
+    alt=""
+    class="shadow round banner cover"
+    style="width: 100%; min-height: 150px; max-height: 440px; object-fit: cover"
+/>
+{% endif %}

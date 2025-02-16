@@ -1,0 +1,43 @@
+{
+    "component": "flex",
+    "options": {
+        "direction": "col",
+        "gap": "4"
+    },
+    "children": [
+        {
+            "component": "banner"
+        },
+        {
+            "component": "flex",
+            "options": {
+                "collapse": "yes",
+                "gap": "4"
+            },
+            "children": [
+                {
+                    "component": "box"
+                },
+                {
+                    "component": "flex",
+                    "options": {
+                        "direction": "col",
+                        "gap": "4",
+                        "width": "full"
+                    },
+                    "children": [
+                        {
+                            "component": "ask"
+                        },
+                        {
+                            "component": "tabs"
+                        },
+                        {
+                            "component": "feed"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

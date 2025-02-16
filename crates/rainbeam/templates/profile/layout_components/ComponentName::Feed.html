@@ -1,0 +1,16 @@
+<section id="feed" class="flex flex-col gap-4 w-full">
+    <!-- panel -->
+    <div id="panel" style="display: contents">
+        <script>
+            (() => {
+                const iter = document.getElementById("use:panel").childNodes;
+
+                while (iter.length > 0) {
+                    document.currentScript.parentElement.appendChild(iter[0]);
+                }
+
+                document.currentScript.remove();
+            })();
+        </script>
+    </div>
+</section>

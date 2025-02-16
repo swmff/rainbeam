@@ -1,0 +1,27 @@
+<!-- menu -->
+{% if !hide_social %}
+<!-- social menu -->
+<div class="pillmenu convertible profile_social">
+    <a href="/@{{ other.username }}/followers" style="color: var(--color-text)">
+        <span class="fade">{{ text "profile:link.followers" }}</span>
+        <b class="notification">{{ followers_count }}</b>
+    </a>
+
+    <a href="/@{{ other.username }}/following" style="color: var(--color-text)">
+        <span class="fade">{{ text "profile:link.following" }}</span>
+        <b class="notification">{{ following_count }}</b>
+    </a>
+
+    <a href="/@{{ other.username }}/friends" style="color: var(--color-text)">
+        <span class="fade">{{ text "general:link.friends" }}</span>
+        <b class="notification">{{ friends_count }}</b>
+    </a>
+</div>
+{% endif %}
+
+<script>
+    document.currentScript.parentElement.replaceChild(
+        document.getElementById("use:tabs").children[0],
+        document.currentScript,
+    );
+</script>

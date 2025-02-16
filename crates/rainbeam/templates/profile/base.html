@@ -1,4 +1,5 @@
-{% extends "../base.html" %} {% block title %}{{ other.username }}{% endblock %} {% block head %}
+{% extends "../base.html" %} {% block title %}{{ other.username }}{% endblock %}
+{% block head %}
 <!-- prettier-ignore -->
 {% if let Some(biography) = other.metadata.kv.get("sparkler:biography") %}
 <meta name="og:title" content="{{ other.username }}" />
@@ -45,8 +46,7 @@
 </a>
 {% endif %} {% endblock %} {% block nav_right %} {% if profile.is_some() %}
 <a class="button" href="/inbox/notifications" title="My notifications">
-    {{ icon "bell" }}
-    {% if notifs != 0 %}
+    {{ icon "bell" }} {% if notifs != 0 %}
     <span class="notification tr">{{ notifs }}</span>
     {% endif %}
 </a>
@@ -58,429 +58,21 @@
         }
     </style>
 
-    <button onclick="document.getElementById('search_dialog').showModal()" title="Search" class="primary floating right">
+    <button
+        onclick="document.getElementById('search_dialog').showModal()"
+        title="Search"
+        class="primary floating right"
+    >
         {{ icon "search" }}
     </button>
 
     <div id="is_profile_page"></div>
-    {% if let Some(fit) = other.metadata.kv.get("sparkler:banner_fit") %}
-    <img
-        title="{{ other.username }}'s banner"
-        src="/api/v0/auth/profile/{{ other.id }}/banner"
-        alt=""
-        class="shadow round banner {{ fit }}"
-        style="
-            width: 100%;
-            min-height: 150px;
-            max-height: 440px;
-        "
-    />
-    {% else %}
-     <img
-        title="{{ other.username }}'s banner"
-        src="/api/v0/auth/profile/{{ other.id }}/banner"
-        alt=""
-        class="shadow round banner cover"
-        style="
-            width: 100%;
-            min-height: 150px;
-            max-height: 440px;
-            object-fit: cover;
-        "
-    />
-    {% endif %}
 
-    <div
-        id="profile_box"
-        class="flex flex-collapse gap-4 {% if layout == "1" %}flex-rev-row{% endif %}"
-    >
-        <div class="flex flex-col gap-4 sm:w-full profile_container" style="width: 25rem; height: max-content">
-            <style>
-                .profile_avatar {
-                    --size: 180px;
-                }
-
-                .profile_avatar_container {
-                    margin: -80px auto 0;
-                }
-
-                @media screen and (max-width: 900px) {
-                    .profile_avatar {
-                        --size: 160px;
-                    }
-
-                    .profile_avatar_container {
-                        margin: -60px auto 0;
-                    }
-                }
-            </style>
-
-            <div
-                id="profile_card"
-                class="card padded flex flex-col gap-2 w-full"
-                style="padding-top: 0; height: max-content"
-            >
-                <div class="flex flex-col gap-2 profile_card_section_1">
-                    <div class="flex flex-col gap-2 w-full">
-                        <div style="position: relative" class="profile_avatar_container">
-                            <img
-                                title="{{ other.username }}'s avatar"
-                                src="/api/v0/auth/profile/{{ other.id }}/avatar"
-                                alt=""
-                                class="avatar profile_avatar"
-                            />
-
-                            <!-- profile crown -->
-                            {% if other.tier >= config.tiers.avatar_crown %}
-                            <div class="avatar_crown" title="Supporter ❤️">👑</div>
-                            {% endif %}
-                        </div>
-
-                        <!-- prettier-ignore -->
-                        <div id="names">
-                            <div class="flex gap-2 items-center" style="max-width: 100%">
-                                <h3 class="no-margin username">
-                                    {% if let Some(display_name) = other.metadata.kv.get("sparkler:display_name") %}
-                                        {% if !display_name.trim().is_empty() %}
-                                            {{ crate::routing::pages::escape_username(display_name) }}
-                                        {% else %}
-                                            {{ other.username }}
-                                        {% endif %}
-                                    {% else %}
-                                        {{ other.username }}
-                                    {% endif %}
-                                </h3>
-
-                                {% let use_static = true %}
-                                {% let user = other.clone() %}
-                                {% include "components/user_note.html" %}
-                            </div>
-
-                            <h4 class="no-margin username" style="font-weight: normal; opacity: 50%">{{ other.username }}</h4>
-
-                            {% if is_following_you == true %}
-                            <span class="notification notif-invert ff-inherit fs-md bold">Follows you</span>
-                            {% endif %}
-
-                            <div class="flex flex-wrap w-full gap-2">
-                                {% for badge in other.badges %}
-                                <span
-                                    class="notification ff-inherit fs-md bold flex items-center justify-center"
-                                    style="background: {{ badge.1 }}; color: {{ badge.2 }}; gap: 5px"
-                                >
-                                    {{ icon "award" }}
-                                    {{ badge.0 }}
-                                </span>
-                                {% endfor %}
-
-                                {% if other.tier >= config.tiers.profile_badge %}
-                                <span
-                                    class="notification ff-inherit fs-md bold flex items-center justify-center"
-                                    style="background: var(--color-primary); color: var(--color-text-primary); gap: 5px"
-                                >
-                                    {{ icon "crown" }}
-                                    Supporter
-                                </span>
-                                {% endif %}
-
-                                {% if other.group == -1 %}
-                                <span
-                                    class="notification ff-inherit fs-md bold flex items-center justify-center"
-                                    style="background: var(--color-lowered); color: var(--color-text-lowered); gap: 5px"
-                                >
-                                    {{ icon "shield-ban" }}
-                                    Banned
-                                </span>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="flex flex-col gap-2 profile_card_section_1_1">
-                        <!-- prettier-ignore -->
-                        <div id="biography">
-                            {% if let Some(biography) = other.metadata.kv.get("sparkler:biography") %}
-                                {{ rainbeam_shared::ui::render_markdown(biography)|safe }}
-                            {% endif %}
-                        </div>
-
-                        <!-- prettier-ignore -->
-                        {% if let Some(sidebar) = other.metadata.kv.get("sparkler:sidebar") %}
-                        {% if !sidebar.is_empty() %}
-                        <div id="sidebar" class="card secondary w-full">
-                            {{ rainbeam_shared::ui::render_markdown(sidebar)|safe }}
-                        </div>
-                        {% endif %} {% endif %}
-
-                        {% if other.links.len() > 0 %}
-                        <table id="links">
-                            <tbody>
-                                {% for (k, v) in other.links %}
-                                <tr><td><a href="{{ v }}" style="display: block; width: 100%">{{ k }}</a></td></tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="flex flex-col gap-2 profile_card_section_2">
-                    <!-- buttons -->
-                    {% if let Some(profile) = profile %} {% if profile.username ==
-                    other.username %}
-                    <!-- options for account owner -->
-                    <!-- <hr /> -->
-                    <a
-                        title="Edit Profile"
-                        class="button w-full bold primary"
-                        href="/settings/profile"
-                    >
-                        <span class="possible_text">{{ text "profile:base.html:link.edit_profile" }}</span>
-                        {{ icon "pen" }}
-                    </a>
-
-                    <div class="dropdown">
-                        <button
-                            title="More"
-                            onclick="trigger('app:hook.dropdown', [event])"
-                            exclude="dropdown"
-                            class="w-full"
-                        >
-                            <span class="possible_text">{{ text "general:link.more" }}</span>
-                            {{ icon "chevron-down" c(dropdown-arrow) }}
-                        </button>
-
-                        <div
-                            class="inner w-content left"
-                            exclude="dropdown"
-                        >
-                            <a href="/settings">
-                                {{ icon "settings" }}
-                                {{ text "profile:base.html:link.account_settings" }}
-                            </a>
-
-                            <a
-                                href="javascript:document.getElementById('embed_dialog').showModal()"
-                            >
-                                {{ icon "code" }}
-                                {{ text "profile:base.html:link.embed_profile" }}
-                            </a>
-                        </div>
-                    </div>
-                    {% else %}
-                    <div class="flex gap-2">
-                    <!-- follow, unfollow -->
-                    {% if !is_following %}
-                    <button
-                        class="w-full bold primary"
-                        onclick="follow()"
-                        id="follow_button"
-                    >
-                        {{ text "profile:base.html:action.follow" }}
-                    </button>
-                    {% else %}
-                    <button
-                        class="w-full"
-                        onclick="follow()"
-                        id="follow_button"
-                    >
-                        {{ text "profile:base.html:action.unfollow" }}
-                    </button>
-                    {% endif %}
-
-                    {% if relationship == crate::model::RelationshipStatus::Unknown %}
-                    <button class="w-full primary bold" onclick="friend()">
-                        {{ text "profile:base.html:action.friend" }}
-                    </button>
-
-                    <script>
-                        globalThis.friend = function (username) {
-                            fetch("/api/v0/auth/relationships/friend/{{ other.id }}", {
-                                method: "POST",
-                            })
-                                .then((res) => res.json())
-                                .then((res) => {
-                                    trigger("app:toast", [
-                                        res.success ? "success" : "error",
-                                        res.success ? "Friend request sent!" : res.message,
-                                    ]);
-                                });
-                        };
-                    </script>
-                    {% else if relationship == crate::model::RelationshipStatus::Friends %}
-                    <button class="w-full" onclick="unfriend()">
-                        {{ text "profile:base.html:action.unfriend" }}
-                    </button>
-
-                    <script>
-                        globalThis.unfriend = async function (username) {
-                            if (!await trigger("app:confirm", ["Are you sure you want to do this?"])) {
-                                return;
-                            }
-
-                            fetch("/api/v0/auth/relationships/current/{{ other.id }}", {
-                                method: "DELETE",
-                            })
-                                .then((res) => res.json())
-                                .then((res) => {
-                                    trigger("app:toast", [
-                                        res.success ? "success" : "error",
-                                        res.success ? "User unfriended!" : res.message,
-                                    ]);
-                                });
-                        };
-                    </script>
-                    {% else if relationship == crate::model::RelationshipStatus::Pending %}
-                    <button class="w-full" onclick="cancel_fr()" title="Cancel friend request">
-                        {{ text "general:dialog.cancel" }}
-                    </button>
-
-                    <script>
-                        globalThis.cancel_fr = async function () {
-                            if (!await trigger("app:confirm", ["Are you sure you want to do this?"])) {
-                                return;
-                            }
-
-                            fetch("/api/v0/auth/relationships/current/{{ other.id }}", {
-                                method: "DELETE",
-                            })
-                                .then((res) => res.json())
-                                .then((res) => {
-                                    trigger("app:toast", [
-                                        res.success ? "success" : "error",
-                                        res.success ? "Request cancelled!" : res.message,
-                                    ]);
-
-                                    window.close();
-                                });
-                        };
-                    </script>
-                    {% endif %}
-                    </div>
-
-                    <!-- actions -->
-                    <div class="dropdown">
-                        <button
-                            onclick="trigger('app:hook.dropdown', [event])"
-                            exclude="dropdown"
-                            class="w-full"
-                        >
-                            <span class="possible_text">Actions</span>
-                            {{ icon "chevron-down" c(dropdown-arrow) }}
-                        </button>
-
-                        <div
-                            class="inner w-content left"
-                            exclude="dropdown"
-                        >
-                            <b class="title">This user</b>
-                            <button
-                                onclick="trigger('chats:create', ['{{ other.id }}'])"
-                            >
-                                {{ icon "message-circle-plus" }}
-                                {{ text "general:link.chat" }}
-                            </button>
-                            <a
-                                href="/inbox/mail/compose?to={{ other.id }}"
-                            >
-                                {{ icon "mail-plus" }}
-                                {{ text "general:service.mail" }}
-                            </a>
-                            <a
-                                href="/settings?block={{ other.username }}#sparkler:block_somebody"
-                                target="_blank"
-                            >
-                                {{ icon "shield" }}
-                                {{ text "general:action.block" }}
-                            </a>
-                            <a
-                                href="javascript:trigger('reports:bootstrap', ['profiles', '{{ other.username }}'])"
-                            >
-                                {{ icon "flag" }}
-                                {{ text "general:action.report" }}
-                            </a>
-                            <a
-                                href="#"
-                                onclick="trigger('app:copy_text', ['{{ other.id }}'])"
-                            >
-                                {{ icon "copy" }}
-                                {{ text "general:action.copy_id" }}
-                            </a>
-                            {% if is_powerful %}
-                            <!-- for managers ONLY -->
-                            <a href="javascript:delete_account()">
-                                {{ icon "trash" }}
-                                {{ text "general:action.delete" }}
-                            </a>
-
-                            <script>
-                                function delete_account() {
-                                    if (
-                                        !confirm(
-                                            "Are you sure you want to do this?",
-                                        )
-                                    ) {
-                                        return;
-                                    }
-
-                                    fetch("/api/v0/auth/profile/{{ other.id }}", {
-                                        method: "DELETE",
-                                    })
-                                        .then((res) => res.json())
-                                        .then((res) => {
-                                            trigger("app:shout", [
-                                                res.success ? "tip" : "caution",
-                                                res.message ||
-                                                    "Profile deleted! Thanks for keeping {{ config.name }} clean!",
-                                            ]);
-
-                                            e.target.reset();
-                                        });
-                                }
-                            </script>
-                            {% endif %}
-                            <b class="title">Your account</b>
-                            <a href="/settings#sparkler:blocks">
-                                {{ icon "lock" }}
-                                {{ text "profile:base.html:link.manage_blocks" }}
-                            </a>
-                        </div>
-                    </div>
-                    {% endif %} {% else %}
-                    <!-- anonymous actions -->
-                    <div class="dropdown">
-                        <button
-                            onclick="trigger('app:hook.dropdown', [event])"
-                            exclude="dropdown"
-                            class="w-full"
-                        >
-                            {{ text "general:link.actions" }}
-                            {{ icon "chevron-down" c(dropdown-arrow) }}
-                        </button>
-
-                        <div
-                            class="inner w-content left"
-                            exclude="dropdown"
-                        >
-                            <b class="title">{{ text "profile:base.html:title.this_user" }}</b>
-                            <a
-                                href="javascript:trigger('reports:bootstrap', ['profiles', '{{ other.username }}'])"
-                            >
-                                {{ icon "flag" }}
-                                {{ text "general:action.report" }}
-                            </a>
-                        </div>
-                    </div>
-                {% endif %}
-                </div>
-            </div>
-
-            <hr class="mobile small" />
-        </div>
-
+    <div id="profile_box" class="flex flex-collapse gap-4">
         <!-- locked message -->
         {% if (relationship != crate::model::RelationshipStatus::Friends &&
-        other.metadata.is_true("sparkler:private_profile")) | (other.group == -1) %}
+        other.metadata.is_true("sparkler:private_profile")) | (other.group ==
+        -1) %}
         <div
             class="card padded flex flex-col w-full gap-4 items-center justify-center"
         >
@@ -488,151 +80,23 @@
             <h4>{{ text "profile:base.html:text.private" }}</h4>
         </div>
         {% else %}
-        <section id="feed" class="flex flex-col gap-4 w-full">
-            <!-- upper -->
-            <!-- new question -->
-            <div class="card-nest w-full" id="question_box">
-                <!-- prettier-ignore -->
-                <div class="card motivational_header">
-                    {% if let Some(header) = other.metadata.kv.get("sparkler:motivational_header") %}
-                        {{ rainbeam_shared::ui::render_markdown(header)|safe }}
-                    {% else %}
-                        Ask a question
-                    {% endif %}
-                </div>
-
-                <div class="card">
-                    <!-- prettier-ignore -->
-                    {% if !lock_profile && (other.group != -1) %}
-                    {% if (require_account && profile.is_some()) | (disallow_anonymous && profile.is_some()) | (!require_account && !disallow_anonymous) %}
-                    <form
-                        id="question_form"
-                        class="flex flex-col gap-2"
-                        onsubmit="ask(event)"
-                    >
-                        <div id="carp_context"></div>
-                        <input name="carp_context" id="carp_content" type="text" style="display: none" />
-
-                        {% if let Some(profile) = profile %}
-                        <textarea
-                            class="w-full"
-                            placeholder="Type your question!"
-                            minlength="1"
-                            maxlength="{% if (profile.tier >= config.tiers.double_limits) | (other.tier >= config.tiers.double_limits) %}4096{% else %}2048{% endif %}"
-                            required
-                            name="content"
-                            id="content"
-                            hook="counter"
-                        ></textarea>
-                        {% else %}
-                        <textarea
-                            class="w-full"
-                            placeholder="Type your question!"
-                            minlength="1"
-                            maxlength="{% if other.tier >= config.tiers.double_limits %}4096{% else %}2048{% endif %}"
-                            required
-                            name="content"
-                            id="content"
-                            hook="counter"
-                        ></textarea>
-                        {% endif %}
-
-                        <!-- prettier-ignore -->
-                        <div class="flex justify-between w-full gap-1 flex-wrap">
-                            <div class="footernav items-center gap-2">
-                                <span id="content:counter" class="notification item"></span>
-                                {% if profile.is_some() && (disallow_anonymous == false) %}
-                                <div class="checkbox_container item">
-                                    <input
-                                        type="checkbox"
-                                        name="anonymous"
-                                        id="anonymous"
-                                    />
-
-                                    <label for="anonymous" class="normal">
-                                        {{ text "general:action.hide_your_name" }}
-                                    </label>
-                                </div>
-
-                                <script>
-                                function ls_anon_check() {
-                                    if (window.localStorage.getItem("always_anon") === "true") {
-                                        document.getElementById("anonymous").checked = true
-                                    }
-                                }
-
-                                ls_anon_check();
-                                </script>
-                                {% else %}
-                                <div></div>
-                                {% endif %}
-                            </div>
-
-                            <div class="flex gap-2">
-                                {% if other.metadata.is_true("sparkler:allow_drawings") %}
-                                <button onclick="attach_carp(event)" type="button">Draw</button>
-                                {% endif %}
-
-                                <button class="primary bold">
-                                    {{ text "profile:base.html:action.ask" }}
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                    {% else %}
-                    <b>{{ text "profile:base.html:text.no_anonymous_questions" }}</b>
-                    {% endif %} {% else %}
-                    <b>{{ text "profile:base.html:text.no_questions" }}</b>
-
-                    <style>
-                        #question_box {
-                            display: none;
-                        }
-                    </style>
-                    {% endif %}
-                </div>
-            </div>
-            {% block upper %} {% endblock %}
-
-            <!-- menu -->
-            {% if !hide_social %}
-            <!-- social menu -->
-            <div class="pillmenu convertible profile_social">
-                <a
-                    href="/@{{ other.username }}/followers"
-                    style="color: var(--color-text)"
-                >
-                    <span class="fade">{{ text "profile:link.followers" }}</span>
-                    <b class="notification">{{ followers_count }}</b>
-                </a>
-
-                <a
-                    href="/@{{ other.username }}/following"
-                    style="color: var(--color-text)"
-                >
-                    <span class="fade">{{ text "profile:link.following" }}</span>
-                    <b class="notification">{{ following_count }}</b>
-                </a>
-
-                <a
-                    href="/@{{ other.username }}/friends"
-                    style="color: var(--color-text)"
-                >
-                    <span class="fade">{{ text "general:link.friends" }}</span>
-                    <b class="notification">{{ friends_count }}</b>
-                </a>
-            </div>
-            {% endif %}
-
-            <div class="pillmenu convertible">
-                {% block pillmenu %}{% endblock %}
-            </div>
-
-            <!-- panel -->
-            <div id="panel" style="display: contents">
+        <div style="display: none" aria-hidden="true">
+            <div id="use:panel" aria-hidden="true">
                 {% block panel %}{% endblock %}
             </div>
-        </section>
+
+            <div id="use:tabs" aria-hidden="true">
+                <div class="pillmenu convertible">
+                    {% block pillmenu %}{% endblock %}
+                </div>
+            </div>
+        </div>
+
+        <!-- prettier-ignore -->
+        <div style="display: contents" id="custom">
+            {% let component = other.layout.as_ref() %}
+            {% include "layout_components/renderer.html" %}
+        </div>
         {% endif %}
     </div>
 </article>
@@ -694,7 +158,11 @@
         dialogs.add("warning_dialog");
 
         const warnings = ns("warnings");
-        warnings.open("{{ other.id }}", "{{ warning_hash }}", "/@{{ other.username }}/_app/warning");
+        warnings.open(
+            "{{ other.id }}",
+            "{{ warning_hash }}",
+            "/@{{ other.username }}/_app/warning",
+        );
     }, 100);
 </script>
 {% endif %} {% endif %} {% endif %}
@@ -707,8 +175,7 @@
         const form = document.getElementById("question_form");
 
         if (form) {
-            form.innerHTML +=
-                `<p class="fade">Replying to <a href="/response/${reply_intent}" target="_blank">${reply_intent.substring(0, 10)}</a> (<a href="?" class="red">cancel</a>)</p>`;
+            form.innerHTML += `<p class="fade">Replying to <a href="/response/${reply_intent}" target="_blank">${reply_intent.substring(0, 10)}</a> (<a href="?" class="red">cancel</a>)</p>`;
         }
     }
 
@@ -732,7 +199,7 @@
             (e.target.anonymous || { checked: false }).checked,
             e.target.carp_content.value.length != 0
                 ? e.target.carp_content.value
-                : ""
+                : "",
         ]).then((_) => {
             // reset if successful
             e.target.reset();
@@ -750,7 +217,11 @@
     function attach_carp(e) {
         e.target.innerText = "Remove drawing";
         e.target.onclick = async (e) => {
-            if (!await trigger("app:confirm", ["Are you sure you want to do this?"])) {
+            if (
+                !(await trigger("app:confirm", [
+                    "Are you sure you want to do this?",
+                ]))
+            ) {
                 return;
             }
 
@@ -763,7 +234,7 @@
             sammy.create_canvas();
             sammy.onedit = (text) => {
                 document.getElementById("carp_content").value = `--CARP${text}`;
-            }
+            };
 
             globalThis.sammy = sammy;
         });
@@ -819,18 +290,15 @@
 
         globalThis.save_metadata = async function () {
             const res = await (
-                await fetch(
-                    "/api/v0/auth/profile/{{ profile.id }}/metadata",
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({
-                            metadata,
-                        }),
+                await fetch("/api/v0/auth/profile/{{ profile.id }}/metadata", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
                     },
-                )
+                    body: JSON.stringify({
+                        metadata,
+                    }),
+                })
             ).json();
 
             trigger("app:toast", [
@@ -862,9 +330,7 @@
 {% endif %} {% endif %}
 <!-- prettier-ignore -->
 {% if is_self %}
-    <div id="is_self"></div>
-{% endif %}
-
-{% let raw_metadata = crate::routing::pages::clean_metadata_raw(other.metadata) %}
-{% include "components/theming.html" %}
-{% call super() %} {% endblock %}
+<div id="is_self"></div>
+{% endif %} {% let raw_metadata =
+crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
+"components/theming.html" %} {% call super() %} {% endblock %}

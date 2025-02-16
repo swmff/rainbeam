@@ -10,6 +10,8 @@ use axum::{
 use serde::{Serialize, Deserialize};
 use databeam::prelude::DefaultReturn;
 
+use crate::layout::LayoutComponent;
+
 /// Basic user structure
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Profile {
@@ -45,6 +47,8 @@ pub struct Profile {
     pub coins: i32,
     /// User links
     pub links: BTreeMap<String, String>,
+    /// User layout
+    pub layout: LayoutComponent,
 }
 
 impl Profile {
@@ -66,6 +70,7 @@ impl Profile {
             labels: Vec::new(),
             coins: 0,
             links: BTreeMap::new(),
+            layout: LayoutComponent::default(),
         }
     }
 
@@ -87,6 +92,7 @@ impl Profile {
             labels: Vec::new(),
             coins: 0,
             links: BTreeMap::new(),
+            layout: LayoutComponent::default(),
         }
     }
 
@@ -108,6 +114,7 @@ impl Profile {
             labels: Vec::new(),
             coins: 0,
             links: BTreeMap::new(),
+            layout: LayoutComponent::default(),
         }
     }
 
@@ -175,6 +182,7 @@ impl Default for Profile {
             labels: Vec::new(),
             coins: 0,
             links: BTreeMap::new(),
+            layout: LayoutComponent::default(),
         }
     }
 }
@@ -627,6 +635,11 @@ pub struct SetProfileLabels {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SetProfileLinks {
     pub links: BTreeMap<String, String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SetProfileLayout {
+    pub layout: LayoutComponent,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

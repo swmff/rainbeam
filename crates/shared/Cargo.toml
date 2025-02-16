@@ -1,9 +1,9 @@
 [package]
 name = "rainbeam-shared"
-version = "0.2.1"
+version = "1.0.0"
 edition = "2021"
 authors = ["trisuaso", "swmff"]
-description = "Basic utilities"
+description = "Shared utilities for Rainbeam"
 homepage = "https://rainbeam.net"
 repository = "https://github.com/swmff/rainbeam"
 license = "MIT"
@@ -18,6 +18,8 @@ rand = "0.9.0"
 serde = { version = "1.0.217", features = ["derive"] }
 sha2 = "0.10.8"
 uuid = { version = "1.13.1", features = ["v4"] }
+pathbufd = "0.1.4"
+toml = "0.8.20"
 
 [lib]
 doctest = false

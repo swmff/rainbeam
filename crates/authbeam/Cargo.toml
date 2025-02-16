@@ -12,7 +12,7 @@ license = "MIT"
 postgres = ["databeam/postgres"]
 mysql = ["databeam/mysql"]
 sqlite = ["databeam/sqlite"]
-default = ["databeam/sqlite", "redis"]    # for development
+default = ["databeam/sqlite", "redis"] # for development
 redis = ["databeam/redis"]
 moka = ["databeam/moka"]
 
@@ -28,13 +28,16 @@ regex = "1.11.1"
 reqwest = { version = "0.12.12", features = ["stream"] }
 hcaptcha-no-wasm = { version = "3.0.1" }
 mime_guess = "2.0.5"
-rainbeam-shared = { version = "0.2.0" }
+rainbeam-shared = { version = "1.0.0" }
 # databeam = { path = "../databeam", default-features = false }
 databeam = { version = "1.0.0", default-features = false }
 image = "0.25.5"
 pathbufd = "0.1.4"
 bitflags = "2.8.0"
 # pathbufd = { path = "../../../pathbufd" }
+reva = { version = "0.13.2", features = ["with-axum"] }
+reva_axum = "0.5.1"
+langbeam = { path = "../langbeam" }
 
 [lib]
 doctest = false

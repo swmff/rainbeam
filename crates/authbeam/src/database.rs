@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 use std::str::Split;
 
+use crate::layout::LayoutComponent;
 use crate::model::{
     DatabaseError, FinePermission, IpBan, IpBanCreate, IpBlock, IpBlockCreate, Item, ItemCreate,
     ItemEdit, ItemEditContent, ItemStatus, ItemType, Mail, MailCreate, MailState, Profile,
@@ -18,28 +19,7 @@ use pathbufd::{PathBufD, pathd};
 
 pub type Result<T> = std::result::Result<T, DatabaseError>;
 
-#[derive(Clone, Serialize, Deserialize, Debug)]
-
-pub struct HCaptchaConfig {
-    /// HCaptcha site key
-    ///
-    /// Testing: 10000000-ffff-ffff-ffff-000000000001
-    pub site_key: String,
-    /// HCaptcha secret
-    ///
-    /// Testing: 0x0000000000000000000000000000000000000000
-    pub secret: String,
-}
-
-impl Default for HCaptchaConfig {
-    fn default() -> Self {
-        Self {
-            // these are testing keys - do NOT use them in production!
-            site_key: "10000000-ffff-ffff-ffff-000000000001".to_string(),
-            secret: "0x0000000000000000000000000000000000000000".to_string(),
-        }
-    }
-}
+pub use rainbeam_shared::config::HCaptchaConfig;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ServerOptions {
@@ -354,6 +334,10 @@ impl Database {
             labels: Database::collect_split_owned(row.get("labels").unwrap().split(",")),
             coins: row.get("coins").unwrap().parse::<i32>().unwrap_or(0),
             links: match serde_json::from_str(row.get("links").unwrap()) {
+                Ok(m) => m,
+                Err(_) => return Err(DatabaseError::ValueError),
+            },
+            layout: match serde_json::from_str(row.get("layout").unwrap()) {
                 Ok(m) => m,
                 Err(_) => return Err(DatabaseError::ValueError),
             },
@@ -678,9 +662,9 @@ impl Database {
 
         // ...
         let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
-            "INSERT INTO \"xprofiles\" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            "INSERT INTO \"xprofiles\" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xprofiles\" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)"
+            "INSERT INTO \"xprofiles\" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)"
         };
 
         let user_token_unhashed: String = databeam::utility::uuid();
@@ -711,6 +695,7 @@ impl Database {
             .bind::<&str>("")
             .bind::<i32>(100) // start with 100 coins
             .bind::<&str>("{}")
+            .bind::<&str>("{\"json\":\"default.json\"}")
             .execute(c)
             .await
         {
@@ -742,8 +727,6 @@ impl Database {
             "sparkler:pinned",
             "sparkler:profile_theme",
             "sparkler:desktop_tl_logo",
-            "sparkler:layout",
-            "sparkler:nav_layout",
             "sparkler:custom_css",
             "sparkler:color_surface",
             "sparkler:color_lowered",
@@ -991,10 +974,51 @@ impl Database {
         };
 
         let c = &self.base.db.client;
-        let badges = &serde_json::to_string(&links).unwrap();
+        let links = &serde_json::to_string(&links).unwrap();
 
         match sqlquery(query)
-            .bind::<&String>(badges)
+            .bind::<&String>(links)
+            .bind::<&String>(&id)
+            .execute(c)
+            .await
+        {
+            Ok(_) => {
+                self.base
+                    .cachedb
+                    .remove(format!("rbeam.auth.profile:{}", ua.username))
+                    .await;
+
+                self.base
+                    .cachedb
+                    .remove(format!("rbeam.auth.profile:{}", ua.id))
+                    .await;
+
+                Ok(())
+            }
+            Err(_) => Err(DatabaseError::Other),
+        }
+    }
+
+    /// Update a [`Profile`]'s links by its `id`
+    pub async fn update_profile_layout(&self, id: String, layout: LayoutComponent) -> Result<()> {
+        // make sure user exists
+        let ua = match self.get_profile(id.clone()).await {
+            Ok(ua) => ua,
+            Err(e) => return Err(e),
+        };
+
+        // update user
+        let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+            "UPDATE \"xprofiles\" SET \"layout\" = ? WHERE \"id\" = ?"
+        } else {
+            "UPDATE \"xprofiles\" SET (\"layout\") = ($1) WHERE \"id\" = $2"
+        };
+
+        let c = &self.base.db.client;
+        let layout = &serde_json::to_string(&layout).unwrap();
+
+        match sqlquery(query)
+            .bind::<&String>(layout)
             .bind::<&String>(&id)
             .execute(c)
             .await

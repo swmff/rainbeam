@@ -1,0 +1,36 @@
+<!-- prettier-ignore -->
+{% let rendered = component.render(
+    other,
+    config,
+    profile,
+    lang,
+    response_count.to_owned(),
+    questions_count.to_owned(),
+    followers_count.to_owned(),
+    following_count.to_owned(),
+    friends_count.to_owned(),
+    is_following.to_owned(),
+    is_following_you.to_owned(),
+    relationship.to_owned(),
+    lock_profile.to_owned(),
+    disallow_anonymous.to_owned(),
+    require_account.to_owned(),
+    hide_social.to_owned(),
+    is_powerful.to_owned(),
+    is_helper.to_owned(),
+    is_self.to_owned()
+) %}
+
+{% if rendered == "ComponentName::Banner" %}
+    {% include "profile/layout_components/ComponentName::Banner.html" %}
+{% else if rendered == "ComponentName::Box" %}
+    {% include "profile/layout_components/ComponentName::Box.html" %}
+{% else if rendered == "ComponentName::Feed" %}
+    {% include "profile/layout_components/ComponentName::Feed.html" %}
+{% else if rendered == "ComponentName::Tabs" %}
+    {% include "profile/layout_components/ComponentName::Tabs.html" %}
+{% else if rendered == "ComponentName::Ask" %}
+    {% include "profile/layout_components/ComponentName::Ask.html" %}
+{% else %}
+    {{ rendered|safe }}
+{% endif %}

@@ -11,5 +11,5 @@ license = "MIT"
 [dependencies]
 serde = { version = "1.0.217", features = ["serde_derive"] }
 serde_json = "1.0.138"
-rainbeam-shared = "0.2.0"
+rainbeam-shared = "1.0.0"
 pathbufd = "0.1.4"

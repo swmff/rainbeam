@@ -49,6 +49,12 @@ cp ./.config/databeam/config.example.toml ./.config/databeam/config.toml
 
 All configuration files for `./.config/config.toml` (the main configuration file) are available [here](https://swmff.github.io/rainbeam/rainbeam/config/struct.Config.html). You can find the databeam (database connection) configuration file options [here](https://swmff.github.io/rainbeam/databeam/sql/struct.DatabaseOpts.html).
 
+### Updating
+
+Most updates are as easy as just running `git pull`, however some require some manual work. Any update that changes the database stucture will require you to manually replicate these changes in your database.
+
+All commits which do this will have an associated `.sql` file in `sql/` which will replicate this change. Some of these files may specify different SQL for PostgreSQL/MySQL/SQLite, however most won't. The name of each file specifies what it does, so use that to figure out which one to use after pulling.
+
 ### Configuration
 
 You can configure Rainbeam in the configuration file located at `./.config/config.toml`. This file will be created for you when the server is first run.
