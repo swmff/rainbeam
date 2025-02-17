@@ -147,6 +147,7 @@
                 await fetch(`/static/build/icons/${icon_name}.svg`)
             ).text();
 
+            $.ICONS[icon_name] = icon;
             const parser = new DOMParser().parseFromString(icon, "text/xml");
 
             const icon_element = parser.firstChild;

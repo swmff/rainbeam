@@ -14,6 +14,9 @@
         "general:link.post": "Post",
         "general:link.previous": "Previous",
         "general:link.next": "Next",
+        "general:link.import": "Import",
+        "general:link.export": "Export",
+        "general:link.render": "Render",
 
         "general:link.login": "Login",
         "general:link.sign_up": "Sign up",

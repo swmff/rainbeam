@@ -53,6 +53,7 @@ crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
 </style>
 
 <article class="flex flex-collapse gap-2">
+    {% let profile = profile.as_ref().unwrap() %}
     <div
         id="settings_nav"
         class="flex flex-col gap-4 sm:static sm:w-full"
@@ -64,13 +65,16 @@ crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
             position: sticky;
         "
     >
-        <div class="sidenav">{% block sidenav %}{% endblock %}</div>
+        <div class="sidenav">
+            {% block sidenav %}{% endblock %}
+            <a href="/@{{ profile.username }}/layout">
+                {{ icon "layout-template" }} {{ text
+                "profile:base.html:link.layout" }}
+            </a>
+        </div>
     </div>
 
-    <section
-        id="settings_content"
-        class="card flex flex-col gap-2 w-full"
-    >
+    <section id="settings_content" class="card flex flex-col gap-2 w-full">
         {% if viewing_other_profile %}
         <div class="markdown-alert-warning">
             <span>

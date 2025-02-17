@@ -276,7 +276,17 @@ dialog::backdrop {
     }
 
     to {
-        transform: translateY(0);
+        transform: translateX(0);
+    }
+}
+
+@keyframes to_left {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(-100%);
     }
 }
 
@@ -286,7 +296,7 @@ dialog::backdrop {
     }
 
     to {
-        transform: translateY(0);
+        transform: translateX(0);
     }
 }
 
@@ -833,9 +843,4 @@ canvas {
     left: -10px;
     font-size: 25px;
     transform: rotateZ(-25deg);
-}
-
-.date {
-    display: none;
-    text-decoration: underline dotted;
 }

@@ -491,8 +491,6 @@ struct ProfileLayoutEditorTemplate {
     config: Config,
     lang: langbeam::LangFile,
     profile: Option<Box<Profile>>,
-    unread: usize,
-    notifs: usize,
     other: Box<Profile>,
     is_self: bool,
 }
@@ -513,24 +511,6 @@ pub async fn profile_layout_editor_request(
             Err(_) => None,
         },
         None => None,
-    };
-
-    let unread = if let Some(ref ua) = auth_user {
-        match database.get_questions_by_recipient(ua.id.to_owned()).await {
-            Ok(unread) => unread.len(),
-            Err(_) => 0,
-        }
-    } else {
-        0
-    };
-
-    let notifs = if let Some(ref ua) = auth_user {
-        database
-            .auth
-            .get_notification_count_by_recipient(ua.id.to_owned())
-            .await
-    } else {
-        0
     };
 
     let other = match database.auth.get_profile(username.clone()).await {
@@ -570,8 +550,6 @@ pub async fn profile_layout_editor_request(
                 ""
             }),
             profile: auth_user.clone(),
-            unread,
-            notifs,
             other: other.clone(),
             is_self,
         }

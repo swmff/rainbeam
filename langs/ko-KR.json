@@ -14,6 +14,9 @@
         "general:link.post": "게시",
         "general:link.previous": "이전",
         "general:link.next": "다음",
+        "general:link.import": "Import",
+        "general:link.export": "Export",
+        "general:link.render": "Render",
 
         "general:link.login": "로그인",
         "general:link.sign_up": "회원가입",

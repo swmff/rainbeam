@@ -122,16 +122,42 @@ class LayoutEditor {
         self.current = ptr.resolve(self.json);
         self.pointer = ptr;
 
-        self.dialog("element");
+        for (const element of document.querySelectorAll(
+            ".layout_editor_block.active",
+        )) {
+            element.classList.remove("active");
+        }
+
+        e.target.classList.add("active");
+        self.screen("element");
+    }
+
+    /// Open sidebar.
+    open() {
+        document.getElementById("editor_sidebar").classList.add("open");
+        document.getElementById("editor").style.transform = "scale(0.8)";
+    }
+
+    /// Close sidebar.
+    close() {
+        document.getElementById("editor_sidebar").style.animation =
+            "0.2s ease-in-out forwards to_left";
+
+        setTimeout(() => {
+            document.getElementById("editor_sidebar").classList.remove("open");
+            document.getElementById("editor_sidebar").style.animation =
+                "0.2s ease-in-out forwards from_right";
+        }, 250);
+
+        document.getElementById("editor").style.transform = "scale(1)";
     }
 
     /// Render editor dialog.
-    dialog(page = "element") {
+    screen(page = "element") {
         this.current.component = this.current.component.toLowerCase();
-        const dialog = document.getElementById("editor_dialog");
 
-        const inner = dialog.querySelector(".inner");
-        inner.innerHTML = "";
+        const sidebar = document.getElementById("editor_sidebar");
+        sidebar.innerHTML = "";
 
         // render page
         if (
@@ -139,7 +165,7 @@ class LayoutEditor {
             (page === "element" && this.current.component === "empty")
         ) {
             // add element
-            inner.appendChild(
+            sidebar.appendChild(
                 (() => {
                     const heading = document.createElement("h3");
                     heading.innerText = "Add component";
@@ -245,7 +271,7 @@ class LayoutEditor {
                             }
 
                             this.render();
-                            dialog.close();
+                            this.close();
                         });
 
                         return button;
@@ -253,10 +279,10 @@ class LayoutEditor {
                 );
             }
 
-            inner.appendChild(container);
+            sidebar.appendChild(container);
         } else if (page === "element") {
             // edit element
-            inner.appendChild(
+            sidebar.appendChild(
                 (() => {
                     const heading = document.createElement("h3");
                     heading.innerText = `Edit ${this.current.component}`;
@@ -312,7 +338,7 @@ class LayoutEditor {
 
                 card.appendChild(label);
                 card.appendChild(input);
-                inner.appendChild(card);
+                sidebar.appendChild(card);
             };
 
             if (this.current.component === "flex") {
@@ -350,8 +376,7 @@ class LayoutEditor {
                         );
 
                         button.addEventListener("click", () => {
-                            dialog.close();
-                            this.dialog("add");
+                            this.screen("add");
                         });
 
                         return button;
@@ -376,8 +401,6 @@ class LayoutEditor {
                     );
 
                     button.addEventListener("click", () => {
-                        dialog.close();
-
                         const idx = this.pointer.get().pop();
                         const parent_ref = this.pointer.resolve(
                             this.json,
@@ -396,6 +419,7 @@ class LayoutEditor {
                         copy_fields(clone, parent_ref[idx - 1]); // move here to here
                         copy_fields(other_clone, parent_ref[idx]); // move there to here
 
+                        this.close();
                         this.render();
                     });
 
@@ -420,8 +444,6 @@ class LayoutEditor {
                     );
 
                     button.addEventListener("click", () => {
-                        dialog.close();
-
                         const idx = this.pointer.get().pop();
                         const parent_ref = this.pointer.resolve(
                             this.json,
@@ -440,6 +462,7 @@ class LayoutEditor {
                         copy_fields(clone, parent_ref[idx + 1]); // move here to here
                         copy_fields(other_clone, parent_ref[idx]); // move there to here
 
+                        this.close();
                         this.render();
                     });
 
@@ -486,39 +509,37 @@ class LayoutEditor {
                         }
 
                         this.render();
-                        dialog.close();
+                        this.close();
                     });
 
                     return button;
                 })(),
             );
 
-            inner.appendChild(buttons);
+            sidebar.appendChild(buttons);
         }
 
-        inner.appendChild(document.createElement("hr"));
-        inner.appendChild(
+        sidebar.appendChild(document.createElement("hr"));
+        sidebar.appendChild(
             (() => {
                 const button = document.createElement("button");
+                button.className = "red secondary";
 
-                button.classList.add("button");
-                button.classList.add("green");
-
-                trigger("app:icon", ["check", "icon"]).then((icon) => {
+                trigger("app:icon", ["x", "icon"]).then((icon) => {
                     button.prepend(icon);
                 });
 
                 button.appendChild(
                     (() => {
                         const span = document.createElement("span");
-                        span.innerText = "Save";
+                        span.innerText = "Close";
                         return span;
                     })(),
                 );
 
                 button.addEventListener("click", () => {
                     this.render();
-                    dialog.close();
+                    this.close();
                 });
 
                 return button;
@@ -526,7 +547,7 @@ class LayoutEditor {
         );
 
         // ...
-        dialog.showModal();
+        this.open();
     }
 }
 

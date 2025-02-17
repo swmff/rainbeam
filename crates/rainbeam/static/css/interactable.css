@@ -93,8 +93,7 @@ button.secondary:hover,
     background: var(--color-raised);
 }
 
-button.floating,
-.button.floating {
+.floating {
     position: fixed;
     bottom: 0.5rem;
     left: 0.5rem;
@@ -109,34 +108,29 @@ button.floating,
     z-index: 3;
 }
 
-button.floating.big,
-.button.floating.big {
+.floating.big {
     font-size: 24px;
     width: 64px !important;
     height: 64px !important;
 }
 
-button.floating.permanent,
-.button.floating.permanent {
+.floating.permanent {
     transform: scale(1);
     opacity: 100%;
 }
 
-button.floating.right,
-.button.floating.right {
+.floating.right {
     left: unset;
     right: 0.5rem;
 }
 
-button.floating svg,
-.button.floating svg {
+.floating svg {
     margin: 0;
     width: 1em;
     height: 1em;
 }
 
-button.floating:is(html[data-scroll-500="true"] *),
-.button.floating:is(html[data-scroll-500="true"] *) {
+.floating:is(html[data-scroll-500="true"] *) {
     opacity: 100%;
     transform: scale(1);
 }

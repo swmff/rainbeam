@@ -1,18 +1,18 @@
 {% extends "base.html" %} {% block sidenav %}
 <a class="active" href="/settings?profile={{ user.id }}"
-    >{{ text "settings:link.account" }}</a
+    >{{ icon "smile" }}{{ text "settings:link.account" }}</a
 >
 <a href="/settings/sessions?profile={{ user.id }}"
-    >{{ text "settings:link.sessions" }}</a
+    >{{ icon "cookie" }}{{ text "settings:link.sessions" }}</a
 >
 <a href="/settings/profile?profile={{ user.id }}"
-    >{{ text "settings:link.profile" }}</a
+    >{{ icon "user-round-pen" }}{{ text "settings:link.profile" }}</a
 >
 <a href="/settings/privacy?profile={{ user.id }}"
-    >{{ text "settings:link.privacy" }}</a
+    >{{ icon "lock" }}{{ text "settings:link.privacy" }}</a
 >
 <a href="/settings/coins?profile={{ user.id }}"
-    >{{ text "settings:link.coins" }}</a
+    >{{ icon "store" }}{{ text "settings:link.coins" }}</a
 >
 {% endblock %} {% block panel %}
 

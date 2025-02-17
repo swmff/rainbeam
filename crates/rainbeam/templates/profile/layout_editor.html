@@ -1,4 +1,4 @@
-{% extends "../base.html" %} {% block title %}{{ other.username }} - {{
+{% extends "../raw_base.html" %} {% block title %}{{ other.username }} - {{
 config.name }}{% endblock %} {% block head %}
 <!-- prettier-ignore -->
 {% if let Some(biography) = other.metadata.kv.get("sparkler:biography") %}
@@ -28,32 +28,16 @@ config.name }}{% endblock %} {% block head %}
 {% let biography = biography.replace("\"", "\\\\\"") %}
 <meta name="description" content="{{ biography }}" />
 <meta name="og:description" content="{{ biography }}" />
-{% endif %} {% endblock %} {% block nav_left %} {% if profile.is_some() %}
-<a class="button" href="/" title="Timeline">
-    {{ icon "house" }}
-    <span class="desktop">{{ text "general:link.timeline" }}</span>
-    <span class="mobile">{{ text "general:link.home" }}</span>
-</a>
+{% endif %} {% endblock %} {% block base %}
+<div id="toast_zone"></div>
 
-<a class="button" href="/inbox" title="My inbox">
-    {{ icon "inbox" }}
-    <span class="flex items-center gap-2">
-        <span>{{ text "general:link.inbox" }}</span>
-        {% if unread != 0 %}
-        <span class="notification tr">{{ unread }}</span>
-        {% endif %}
-    </span>
-</a>
-{% endif %} {% endblock %} {% block nav_right %} {% if profile.is_some() %}
-<a class="button" href="/inbox/notifications" title="My notifications">
-    {{ icon "bell" }} {% if notifs != 0 %}
-    <span class="notification tr">{{ notifs }}</span>
-    {% endif %}
-</a>
-{% endif %} {% endblock %} {% block content %}
-<article id="editor">
-    {{ other.layout.fill().as_ref().render_block()|safe }}
-</article>
+<div id="page">
+    <div class="content_container" id="page_content">
+        <article id="editor">
+            {{ other.layout.fill().as_ref().render_block()|safe }}
+        </article>
+    </div>
+</div>
 
 <!-- prettier-ignore -->
 {% let as_json = serde_json::to_string(other.layout.fill().as_ref()).unwrap() %}
@@ -75,9 +59,11 @@ config.name }}{% endblock %} {% block head %}
         cursor: pointer !important;
         user-select: none;
         border-radius: var(--radius);
+        transform: box-shadow 0.15s;
     }
 
-    .layout_editor_block:hover {
+    .layout_editor_block:hover,
+    .layout_editor_block.active {
         box-shadow: 0 0 0 2px var(--color-primary);
     }
 </style>
@@ -91,14 +77,81 @@ config.name }}{% endblock %} {% block head %}
     {{ icon "save" }}
 </button>
 
-<button
-    class="big floating permanent red"
-    title="Reset"
-    id="reset"
-    onclick="reset_layout()"
->
-    {{ icon "trash" }}
-</button>
+<div class="dropdown">
+    <button
+        class="big floating permanent"
+        title="Menu"
+        onclick="trigger('app:hook.dropdown', [event])"
+        exclude="dropdown"
+    >
+        {{ icon "menu" }}
+    </button>
+
+    <div class="inner left" exclude="dropdown">
+        <a href="javascript:history.back()">
+            {{ icon "arrow-left" }} {{ text "chats:chat.html:link.go_back" }}
+        </a>
+
+        <button onclick="globalThis.editor.render()">
+            {{ icon "refresh-ccw" }} {{ text "general:link.render" }}
+        </button>
+
+        <button onclick="import_layout()">
+            {{ icon "upload" }} {{ text "general:link.import" }}
+        </button>
+
+        <button onclick="export_layout()">
+            {{ icon "download" }} {{ text "general:link.export" }}
+        </button>
+
+        <button onclick="reset_layout()" class="red">
+            {{ icon "trash" }} {{ text "general:action.clear" }}
+        </button>
+    </div>
+</div>
+
+<style>
+    @media screen and (min-width: 901px) {
+        .dropdown:has(.floating) .inner.open {
+            bottom: calc(64px + 1rem);
+            left: 0.5rem !important;
+        }
+    }
+
+    #editor {
+        transition: transform 0.15s;
+    }
+
+    .sidebar {
+        position: fixed;
+        z-index: 3;
+        top: 0;
+        left: 0;
+        flex-direction: column;
+        border-right: solid 1px var(--color-super-lowered);
+        box-shadow: 0 0 2px var(--color-shadow);
+        background: var(--color-lowered);
+        overflow: auto;
+        display: none;
+        width: 25rem;
+        height: 100dvh;
+        padding: 1rem;
+        animation: 0.2s ease-in-out forwards from_right;
+    }
+
+    .sidebar.open {
+        display: flex;
+    }
+
+    @media screen and (max-width: 900px) {
+        .sidebar {
+            width: 100dvw;
+            border-right: none;
+        }
+    }
+</style>
+
+<div class="sidebar gap-4" id="editor_sidebar"></div>
 
 {% let user = profile.as_ref().unwrap() %}
 <script>
@@ -140,22 +193,27 @@ config.name }}{% endblock %} {% block head %}
             globalThis.editor.json = { json: "default.json" };
             globalThis.editor.render();
 
-            trigger("app:toast", [
-                res.success ? "success" : "error",
-                res.success ? "Layout reset!" : res.message,
-            ]);
+            trigger("app:toast", ["success", "Layout reset!"]);
+        };
+
+        globalThis.import_layout = async () => {
+            const json = await trigger("app:prompt", ["Layout JSON:"]);
+
+            if (!json) {
+                return;
+            }
+
+            globalThis.editor.json = JSON.parse(json) || {
+                json: "default.json",
+            };
+            globalThis.editor.render();
+        };
+
+        globalThis.export_layout = () => {
+            trigger("app:copy_text", [JSON.stringify(globalThis.editor.json)]);
         };
     });
-
-    window.addEventListener("beforeunload", (event) => {
-        event.preventDefault();
-        event.returnValue = true;
-    });
 </script>
-
-<dialog id="editor_dialog">
-    <div class="inner flex flex-col gap-2"></div>
-</dialog>
 
 <!-- prettier-ignore -->
 {% if is_self %}
