@@ -245,6 +245,7 @@ class LayoutEditor {
                 container.appendChild(
                     (() => {
                         const button = document.createElement("button");
+                        button.classList.add("secondary");
 
                         trigger("app:icon", ["shapes", "icon"]).then((icon) => {
                             button.prepend(icon);

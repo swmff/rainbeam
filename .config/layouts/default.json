@@ -2,7 +2,8 @@
     "component": "flex",
     "options": {
         "direction": "col",
-        "gap": "4"
+        "gap": "4",
+        "class": "w-full"
     },
     "children": [
         {
