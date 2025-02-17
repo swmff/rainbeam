@@ -175,12 +175,6 @@ class LayoutEditor {
                     },
                 ],
                 [
-                    "Profile card",
-                    {
-                        component: "box",
-                    },
-                ],
-                [
                     "Profile feeds",
                     {
                         component: "feed",
@@ -226,10 +220,18 @@ class LayoutEditor {
                     (() => {
                         const button = document.createElement("button");
 
-                        button.classList.add("card");
-                        button.style.justifyContent = "left";
+                        trigger("app:icon", ["shapes", "icon"]).then((icon) => {
+                            button.prepend(icon);
+                        });
 
-                        button.innerHTML = component[0];
+                        button.appendChild(
+                            (() => {
+                                const span = document.createElement("span");
+                                span.innerText = component[0];
+                                return span;
+                            })(),
+                        );
+
                         button.addEventListener("click", () => {
                             if (
                                 page === "element" &&
@@ -334,7 +336,18 @@ class LayoutEditor {
                 buttons.appendChild(
                     (() => {
                         const button = document.createElement("button");
-                        button.innerText = "Add child";
+
+                        trigger("app:icon", ["plus", "icon"]).then((icon) => {
+                            button.prepend(icon);
+                        });
+
+                        button.appendChild(
+                            (() => {
+                                const span = document.createElement("span");
+                                span.innerText = "Add child";
+                                return span;
+                            })(),
+                        );
 
                         button.addEventListener("click", () => {
                             dialog.close();
@@ -349,7 +362,18 @@ class LayoutEditor {
             buttons.appendChild(
                 (() => {
                     const button = document.createElement("button");
-                    button.innerText = "Move up";
+
+                    trigger("app:icon", ["move-up", "icon"]).then((icon) => {
+                        button.prepend(icon);
+                    });
+
+                    button.appendChild(
+                        (() => {
+                            const span = document.createElement("span");
+                            span.innerText = "Move up";
+                            return span;
+                        })(),
+                    );
 
                     button.addEventListener("click", () => {
                         dialog.close();
@@ -382,7 +406,18 @@ class LayoutEditor {
             buttons.appendChild(
                 (() => {
                     const button = document.createElement("button");
-                    button.innerText = "Move down";
+
+                    trigger("app:icon", ["move-down", "icon"]).then((icon) => {
+                        button.prepend(icon);
+                    });
+
+                    button.appendChild(
+                        (() => {
+                            const span = document.createElement("span");
+                            span.innerText = "Move down";
+                            return span;
+                        })(),
+                    );
 
                     button.addEventListener("click", () => {
                         dialog.close();
@@ -417,7 +452,18 @@ class LayoutEditor {
                     const button = document.createElement("button");
 
                     button.classList.add("red");
-                    button.innerText = "Delete";
+
+                    trigger("app:icon", ["trash", "icon"]).then((icon) => {
+                        button.prepend(icon);
+                    });
+
+                    button.appendChild(
+                        (() => {
+                            const span = document.createElement("span");
+                            span.innerText = "Delete";
+                            return span;
+                        })(),
+                    );
 
                     button.addEventListener("click", async () => {
                         if (
@@ -458,7 +504,18 @@ class LayoutEditor {
                 button.classList.add("button");
                 button.classList.add("green");
 
-                button.innerText = "Save";
+                trigger("app:icon", ["check", "icon"]).then((icon) => {
+                    button.prepend(icon);
+                });
+
+                button.appendChild(
+                    (() => {
+                        const span = document.createElement("span");
+                        span.innerText = "Save";
+                        return span;
+                    })(),
+                );
+
                 button.addEventListener("click", () => {
                     this.render();
                     dialog.close();

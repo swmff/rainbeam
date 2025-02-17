@@ -41,14 +41,14 @@
     {% if following_count != 0 %}
     <div class="flex justify-between gap-2 w-full">
         {% if page > 0 %}
-        <a class="button secondary" href="?page={{ page - 1 }}"
-            >{{ text "general:link.previous" }}</a
+        <a class="button camo" href="?page={{ page - 1 }}"
+            >{{ icon "arrow-left" }}{{ text "general:link.previous" }}</a
         >
         {% else %}
         <div></div>
         {% endif %} {% if following.len() != 0 %}
-        <a class="button secondary" href="?page={{ page + 1 }}"
-            >{{ text "general:link.next" }}</a
+        <a class="button camo" href="?page={{ page + 1 }}"
+            >{{ text "general:link.next" }}{{ icon "arrow-right" }}</a
         >
         {% endif %}
     </div>

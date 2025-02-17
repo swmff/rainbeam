@@ -16,6 +16,12 @@
         "paint-bucket",
         "download",
         "upload",
-        "loader-circle"
+        "loader-circle",
+        "shapes",
+        "check",
+        "trash",
+        "move-up",
+        "move-down",
+        "plus"
     ]
 }

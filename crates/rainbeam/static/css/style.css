@@ -173,6 +173,10 @@
     color: var(--color-red) !important;
 }
 
+.green {
+    color: var(--color-green) !important;
+}
+
 .hidden {
     display: none;
 }

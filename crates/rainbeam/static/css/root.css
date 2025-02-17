@@ -31,14 +31,15 @@
     --color-text-primary: hsl(0, 0%, 100%);
     --color-shadow: rgba(0, 0, 0, 0.15);
     --color-red: hsl(0, 84%, 60%);
-    --radius: 4px;
+    --color-green: hsl(100, 84%, 60%);
+    --radius: 8px;
     --circle: 360px;
 }
 
 .dark,
 .dark * {
     --sat: 5%;
-    --lit: 10%;
+    --lit: 12%;
     --color-surface: hsl(var(--hue), var(--sat), calc(0% + var(--lit)));
     --color-lowered: hsl(var(--hue), var(--sat), calc(6% + var(--lit)));
     --color-raised: hsl(var(--hue), var(--sat), calc(2% + var(--lit)));
@@ -49,6 +50,7 @@
     --color-link: #93c5fd;
     --color-primary-raised: hsl(341, 59%, 55%);
     --color-red: hsl(0, 94%, 82%);
+    --color-green: hsl(100, 94%, 82%);
 }
 
 /* fun themes */

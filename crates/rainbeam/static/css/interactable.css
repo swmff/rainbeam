@@ -2,7 +2,7 @@ button,
 .button {
     background: var(--color-lowered);
     color: var(--color-text);
-    padding: 0.25rem 1rem;
+    padding: 0.25rem 1.25rem;
     min-height: 32px;
     min-width: max-content;
     width: max-content;
@@ -21,8 +21,7 @@ button,
         transform 0.1s; */
     transition:
         transform 0.1s,
-        opacity 0.15s,
-        backgound 0.15s;
+        opacity 0.15s;
     user-select: none;
     display: flex;
     justify-content: center;
