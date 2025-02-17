@@ -643,6 +643,11 @@ pub struct SetProfileLayout {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct RenderLayout {
+    pub layout: LayoutComponent,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct SetProfileGroup {
     pub group: i32,
 }

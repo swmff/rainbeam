@@ -1,0 +1,28 @@
+<!-- prettier-ignore -->
+<div id="biography">
+    {% if let Some(biography) = other.metadata.kv.get("sparkler:biography") %}
+        {{ rainbeam_shared::ui::render_markdown(biography)|safe }}
+    {% endif %}
+</div>
+
+<!-- prettier-ignore -->
+{% if let Some(sidebar) = other.metadata.kv.get("sparkler:sidebar") %}
+{% if !sidebar.is_empty() %}
+<div id="sidebar" class="card secondary w-full">
+    {{ rainbeam_shared::ui::render_markdown(sidebar)|safe }}
+</div>
+{% endif %} {% endif %} {% if other.links.len() > 0 %}
+<table id="links">
+    <tbody>
+        {% for (k, v) in other.links %}
+        <tr>
+            <td>
+                <a href="{{ v }}" style="display: block; width: 100%"
+                    >{{ k }}</a
+                >
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}

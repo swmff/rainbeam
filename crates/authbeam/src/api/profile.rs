@@ -1,15 +1,16 @@
 use crate::database::Database;
 use crate::model::{
-    DatabaseError, FinePermission, NotificationCreate, SetProfileBadges, SetProfileCoins,
-    SetProfileGroup, SetProfileLabels, SetProfileLayout, SetProfileLinks, SetProfileMetadata,
-    SetProfilePassword, SetProfileTier, SetProfileUsername, TokenContext, TokenPermission,
+    DatabaseError, FinePermission, NotificationCreate, RenderLayout, SetProfileBadges,
+    SetProfileCoins, SetProfileGroup, SetProfileLabels, SetProfileLayout, SetProfileLinks,
+    SetProfileMetadata, SetProfilePassword, SetProfileTier, SetProfileUsername, TokenContext,
+    TokenPermission,
 };
 use databeam::prelude::DefaultReturn;
 use pathbufd::pathd;
 
 use axum::body::Body;
 use axum::http::{HeaderMap, HeaderValue};
-use axum::response::IntoResponse;
+use axum::response::{Html, IntoResponse};
 use axum::{
     extract::{Path, State},
     Json,
@@ -1673,6 +1674,11 @@ pub async fn update_layout_request(
         }),
         Err(e) => Json(e.to_json()),
     }
+}
+
+/// Render a layout (in block form).
+pub async fn render_layout_request(Json(props): Json<RenderLayout>) -> impl IntoResponse {
+    Html(props.layout.render_block())
 }
 
 /// Delete another user

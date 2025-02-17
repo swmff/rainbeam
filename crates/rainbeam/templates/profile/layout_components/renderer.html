@@ -23,14 +23,18 @@
 
 {% if rendered == "ComponentName::Banner" %}
     {% include "profile/layout_components/ComponentName::Banner.html" %}
-{% else if rendered == "ComponentName::Box" %}
-    {% include "profile/layout_components/ComponentName::Box.html" %}
 {% else if rendered == "ComponentName::Feed" %}
     {% include "profile/layout_components/ComponentName::Feed.html" %}
 {% else if rendered == "ComponentName::Tabs" %}
     {% include "profile/layout_components/ComponentName::Tabs.html" %}
 {% else if rendered == "ComponentName::Ask" %}
     {% include "profile/layout_components/ComponentName::Ask.html" %}
+{% else if rendered == "ComponentName::Name" %}
+    {% include "profile/layout_components/ComponentName::Name.html" %}
+{% else if rendered == "ComponentName::About" %}
+    {% include "profile/layout_components/ComponentName::About.html" %}
+{% else if rendered == "ComponentName::Actions" %}
+    {% include "profile/layout_components/ComponentName::Actions.html" %}
 {% else %}
     {{ rendered|safe }}
 {% endif %}

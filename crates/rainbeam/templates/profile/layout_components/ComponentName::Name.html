@@ -1,0 +1,74 @@
+<div class="flex flex-col gap-2 w-full">
+    <div style="position: relative" class="profile_avatar_container">
+        <img
+            title="{{ other.username }}'s avatar"
+            src="/api/v0/auth/profile/{{ other.id }}/avatar"
+            alt=""
+            class="avatar profile_avatar"
+        />
+
+        <!-- profile crown -->
+        {% if other.tier >= config.tiers.avatar_crown %}
+        <div class="avatar_crown" title="Supporter ❤️">👑</div>
+        {% endif %}
+    </div>
+
+    <!-- prettier-ignore -->
+    <div id="names">
+        <div class="flex gap-2 items-center" style="max-width: 100%">
+            <h3 class="no-margin username">
+                {% if let Some(display_name) = other.metadata.kv.get("sparkler:display_name") %}
+                    {% if !display_name.trim().is_empty() %}
+                        {{ display_name }}
+                    {% else %}
+                        {{ other.username }}
+                    {% endif %}
+                {% else %}
+                    {{ other.username }}
+                {% endif %}
+            </h3>
+
+            {% let use_static = true %}
+            {% let user = other.clone() %}
+            {% include "components/user_note.html" %}
+        </div>
+
+        <h4 class="no-margin username" style="font-weight: normal; opacity: 50%">{{ other.username }}</h4>
+
+        {% if is_following_you == true %}
+        <span class="notification notif-invert ff-inherit fs-md bold">Follows you</span>
+        {% endif %}
+
+        <div class="flex flex-wrap w-full gap-2">
+            {% for badge in other.badges %}
+            <span
+                class="notification ff-inherit fs-md bold flex items-center justify-center"
+                style="background: {{ badge.1 }}; color: {{ badge.2 }}; gap: 5px"
+            >
+                {{ icon "award" }}
+                {{ badge.0 }}
+            </span>
+            {% endfor %}
+
+            {% if other.tier >= config.tiers.profile_badge %}
+            <span
+                class="notification ff-inherit fs-md bold flex items-center justify-center"
+                style="background: var(--color-primary); color: var(--color-text-primary); gap: 5px"
+            >
+                {{ icon "crown" }}
+                Supporter
+            </span>
+            {% endif %}
+
+            {% if other.group == -1 %}
+            <span
+                class="notification ff-inherit fs-md bold flex items-center justify-center"
+                style="background: var(--color-lowered); color: var(--color-text-lowered); gap: 5px"
+            >
+                {{ icon "shield-ban" }}
+                Banned
+            </span>
+            {% endif %}
+        </div>
+    </div>
+</div>

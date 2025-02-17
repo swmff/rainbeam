@@ -127,5 +127,6 @@ pub fn routes(database: Database) -> Router {
         .route("/logout", post(general::logout_request))
         .route("/untag", post(general::remove_tag))
         // ...
+        .route("/render_layout", post(profile::render_layout_request))
         .with_state(database)
 }

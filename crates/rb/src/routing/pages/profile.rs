@@ -486,6 +486,101 @@ pub async fn partial_profile_request(
 }
 
 #[derive(Template)]
+#[template(path = "profile/layout_editor.html")]
+struct ProfileLayoutEditorTemplate {
+    config: Config,
+    lang: langbeam::LangFile,
+    profile: Option<Box<Profile>>,
+    unread: usize,
+    notifs: usize,
+    other: Box<Profile>,
+    is_self: bool,
+}
+
+/// GET /@{username}/layout
+pub async fn profile_layout_editor_request(
+    jar: CookieJar,
+    Path(username): Path<String>,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => Some(ua),
+            Err(_) => None,
+        },
+        None => None,
+    };
+
+    let unread = if let Some(ref ua) = auth_user {
+        match database.get_questions_by_recipient(ua.id.to_owned()).await {
+            Ok(unread) => unread.len(),
+            Err(_) => 0,
+        }
+    } else {
+        0
+    };
+
+    let notifs = if let Some(ref ua) = auth_user {
+        database
+            .auth
+            .get_notification_count_by_recipient(ua.id.to_owned())
+            .await
+    } else {
+        0
+    };
+
+    let other = match database.auth.get_profile(username.clone()).await {
+        Ok(ua) => ua,
+        Err(_) => return Html(DatabaseError::NotFound.to_html(database)),
+    };
+
+    // ...
+    let is_helper = if let Some(ref ua) = auth_user {
+        let group = match database.auth.get_group_by_id(ua.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        group.permissions.check_helper()
+    } else {
+        false
+    };
+
+    let is_self = if let Some(ref profile) = auth_user {
+        profile.id == other.id
+    } else {
+        false
+    };
+
+    if !is_helper && !is_self {
+        return Html(DatabaseError::NotAllowed.to_html(database));
+    }
+
+    // ...
+    Html(
+        ProfileLayoutEditorTemplate {
+            config: database.config.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
+            profile: auth_user.clone(),
+            unread,
+            notifs,
+            other: other.clone(),
+            is_self,
+        }
+        .render()
+        .unwrap(),
+    )
+}
+
+#[derive(Template)]
 #[template(path = "profile/embed.html")]
 struct ProfileEmbedTemplate {
     config: Config,

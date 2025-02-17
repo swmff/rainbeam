@@ -39,7 +39,7 @@ pub struct RendererTemplate<'a> {
     pub is_self: bool,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub enum ComponentName {
     /// An empty element.
     #[serde(alias = "empty")]
@@ -56,15 +56,24 @@ pub enum ComponentName {
     /// The profile's feed (responses, questions, etc.).
     #[serde(alias = "feed")]
     Feed,
-    /// The profile's `profile_card` (avatar, biography, sidebar, links, actions).
-    #[serde(alias = "box")]
-    Box,
     /// The profile's tabs (social, feed/questions/mod, etc.).
     #[serde(alias = "tabs")]
     Tabs,
     /// The profile's ask box.
     #[serde(alias = "ask")]
     Ask,
+    /// The profile's name and avatar.
+    #[serde(alias = "name")]
+    Name,
+    /// The profile's about section (about and biography).
+    #[serde(alias = "about")]
+    About,
+    /// The profile's action buttons.
+    #[serde(alias = "actions")]
+    Actions,
+    /// A `<hr>` element.
+    #[serde(alias = "divider")]
+    Divider,
 }
 
 impl Default for ComponentName {
@@ -98,6 +107,42 @@ impl Default for LayoutComponent {
 }
 
 impl LayoutComponent {
+    /// Follow component template to get full template.
+    pub fn fill(&self) -> LayoutComponent {
+        if !self.json.is_empty() {
+            let reader = match LAYOUTS.read() {
+                Ok(r) => r,
+                Err(_) => {
+                    LAYOUTS.clear_poison();
+                    return LayoutComponent::default();
+                }
+            };
+
+            return {
+                if let Some(l) = (*reader).get(&self.json) {
+                    serde_json::from_str::<LayoutComponent>(l)
+                } else {
+                    let l = match std::fs::read_to_string(PathBufD::current().extend(&[
+                        ".config",
+                        "layouts",
+                        self.json.as_str(),
+                    ])) {
+                        Ok(l) => l,
+                        Err(_) => return LayoutComponent::default(),
+                    };
+
+                    drop(reader); // drop the reader so we can create a writer
+                    let mut writer = LAYOUTS.write().unwrap();
+                    (*writer).insert(self.json.clone(), l.clone());
+
+                    serde_json::from_str::<LayoutComponent>(&l)
+                }
+                .unwrap()
+            };
+        }
+
+        self.to_owned()
+    }
     /// Get the value of an option in the `options` map. Accepts a default substitute.
     pub fn option(&self, k: &str, d: Option<String>) -> String {
         match self.options.get(k) {
@@ -197,7 +242,7 @@ impl LayoutComponent {
         // regular
         match self.component {
             T::Flex => format!(
-                "<div class=\"flex {} {} {} {}\">{}</div>",
+                "<div class=\"flex {} {} {} {} {}\" style=\"{}\">{}</div>",
                 // extra classes
                 {
                     let direction = self.option("direction", None);
@@ -227,6 +272,22 @@ impl LayoutComponent {
                     let width = self.option("width", None);
                     if !width.is_empty() {
                         format!("w-{width}")
+                    } else {
+                        String::new()
+                    }
+                },
+                {
+                    let class = self.option("class", None);
+                    if !class.is_empty() {
+                        class
+                    } else {
+                        String::new()
+                    }
+                },
+                {
+                    let style = self.option("style", None);
+                    if !style.is_empty() {
+                        style
                     } else {
                         String::new()
                     }
@@ -268,11 +329,106 @@ impl LayoutComponent {
                     children
                 }
             ),
+            T::Divider => format!("<hr class=\"{}\" />", {
+                let class = self.option("class", None);
+                if !class.is_empty() {
+                    class
+                } else {
+                    String::new()
+                }
+            }),
             T::Markdown => format!(
-                "<div class=\"card\">{}</div>",
+                "<div class=\"card w-full\">{}</div>",
                 rainbeam_shared::ui::render_markdown(&self.option("text", None))
             ),
+            T::Empty => String::new(),
             _ => format!("ComponentName::{:?}", self.component),
+        }
+    }
+
+    /// Render the component to block format. This format doesn't show the fully
+    /// rendered form of the layout, but instead just blocks which represent the
+    /// component.
+    ///
+    /// This rendering is used in the editor because it saves so many server resources.
+    /// The normal rendering eats memory, as it recursively renders the same HTML template.
+    ///
+    /// The only component rendered halfway normally as a block is [`ComponentName::Flex`] components.
+    pub fn render_block(&self) -> String {
+        use ComponentName as T;
+
+        match self.component {
+            T::Flex => format!(
+                "<div data-component-name=\"{:?}\" class=\"layout_editor_block flex {} {} {} {} {}\">{}</div>",
+                self.component,
+                // extra classes
+                {
+                    let direction = self.option("direction", None);
+                    if !direction.is_empty() {
+                        format!("flex-{direction}")
+                    } else {
+                        String::new()
+                    }
+                },
+                {
+                    let gap = self.option("gap", None);
+                    if !gap.is_empty() {
+                        format!("gap-{gap}")
+                    } else {
+                        String::new()
+                    }
+                },
+                {
+                    let collapse = self.option("collapse", None);
+                    if !collapse.is_empty() {
+                        "flex-collapse"
+                    } else {
+                        ""
+                    }
+                },
+                {
+                    let width = self.option("width", None);
+                    if !width.is_empty() {
+                        format!("w-{width}")
+                    } else {
+                        String::new()
+                    }
+                },
+                {
+                    let mobile = self.option("mobile", None);
+                    if !mobile.is_empty() {
+                        format!("sm:{mobile}")
+                    } else {
+                        String::new()
+                    }
+                },
+                {
+                    let mut children: String = String::new();
+
+                    for child in &self.children {
+                        children.push_str(&child.render_block());
+                    }
+
+                    children
+                }
+            ),
+            _ => format!(
+                "<div class=\"layout_editor_block {}\" data-component-name=\"{:?}\">{:?} ({}b)</div>",
+                if self.component == T::Markdown {
+                    "w-full"
+                } else {
+                    ""
+                },
+                self.component, self.component, {
+                    let mut size: usize = 0;
+
+                    for option in &self.options {
+                        size += option.0.len() + option.1.len()
+                    }
+
+                    size
+                }
+            ),
         }
     }
 }

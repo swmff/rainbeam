@@ -1,5 +1,5 @@
 button,
-a.button {
+.button {
     background: var(--color-lowered);
     color: var(--color-text);
     padding: 0.25rem 1rem;
@@ -34,63 +34,63 @@ a.button {
 }
 
 button.small,
-a.button.small {
+.button.small {
     min-height: 24px;
 }
 
 button.big,
-a.button.big {
+.button.big {
     padding: 12px 20px;
     min-height: 40px;
 }
 
 nav button,
-nav a.button {
+nav .button {
     font-size: unset;
 }
 
 button:has(.notification),
-a.button:has(.notification) {
+.button:has(.notification) {
     gap: 0.5rem;
 }
 
 button:hover,
-a.button:hover {
+.button:hover {
     background: var(--color-super-lowered);
 }
 
 button.camo,
-a.button.camo {
+.button.camo {
     background: transparent;
     opacity: 85%;
 }
 
 button.camo:hover,
-a.button.camo:hover {
+.button.camo:hover {
     box-shadow: none;
     background: var(--color-lowered);
     opacity: 100%;
 }
 
 button.primary,
-a.button.primary {
+.button.primary {
     background: var(--color-primary);
     border-color: var(--color-primary) !important;
     color: var(--color-text-primary);
 }
 
 button.primary:hover,
-a.button.primary:hover {
+.button.primary:hover {
     background: var(--color-primary-lowered);
 }
 
 button.secondary,
-a.button.secondary {
+.button.secondary {
     background: var(--color-super-raised);
 }
 
 button.secondary:hover,
-a.button.secondary:hover {
+.button.secondary:hover {
     background: var(--color-raised);
 }
 
@@ -100,7 +100,6 @@ button.floating,
     bottom: 0.5rem;
     left: 0.5rem;
     border-radius: var(--circle);
-    width: 48px !important;
     transition: all 0.15s;
     opacity: 0%;
     transform: scale(0);
@@ -109,6 +108,19 @@ button.floating,
     width: 48px !important;
     height: 48px !important;
     z-index: 3;
+}
+
+button.floating.big,
+.button.floating.big {
+    font-size: 24px;
+    width: 64px !important;
+    height: 64px !important;
+}
+
+button.floating.permanent,
+.button.floating.permanent {
+    transform: scale(1);
+    opacity: 100%;
 }
 
 button.floating.right,
@@ -120,6 +132,8 @@ button.floating.right,
 button.floating svg,
 .button.floating svg {
     margin: 0;
+    width: 1em;
+    height: 1em;
 }
 
 button.floating:is(html[data-scroll-500="true"] *),
@@ -130,7 +144,7 @@ button.floating:is(html[data-scroll-500="true"] *),
 
 .icon-only,
 button.icon-only,
-a.button.icon-only {
+.button.icon-only {
     position: relative;
     width: 35px;
     height: 35px;
@@ -171,12 +185,12 @@ a.button.icon-only {
 }
 
 .card button.secondary,
-.card a.button.secondary {
+.card .button.secondary {
     background: var(--color-raised);
 }
 
 .card button.secondary:hover,
-.card a.button.secondary:hover {
+.card .button.secondary:hover {
     background: var(--color-super-raised);
 }
 

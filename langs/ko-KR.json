@@ -92,6 +92,7 @@
         "profile:base.html:text.warning_continue": "이 프로필을 보고싶다면 \"계속\"을 클릭하세요 ",
 
         "profile:base.html:link.edit_profile": "프로필 수정",
+        "profile:base.html:link.layout": "Layout",
         "profile:base.html:link.account_settings": "계정 설정",
         "profile:base.html:link.embed_profile": "프로필 삽입",
         "profile:base.html:link.manage_blocks": "차단 관리",

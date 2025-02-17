@@ -2341,6 +2341,10 @@ pub async fn routes(database: Database) -> Router {
             "/@{username}/_app/feed.html",
             get(profile::partial_profile_request),
         )
+        .route(
+            "/@{username}/layout",
+            get(profile::profile_layout_editor_request),
+        )
         .route("/@{username}", get(profile::profile_request))
         .route("/{id}", get(api::profiles::expand_request))
         // circles

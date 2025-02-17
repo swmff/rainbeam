@@ -92,6 +92,26 @@
             </div>
         </div>
 
+        <style>
+            .profile_avatar {
+                --size: 180px;
+            }
+
+            .profile_avatar_container {
+                margin: -80px auto 0;
+            }
+
+            @media screen and (max-width: 900px) {
+                .profile_avatar {
+                    --size: 160px;
+                }
+
+                .profile_avatar_container {
+                    margin: -60px auto 0;
+                }
+            }
+        </style>
+
         <!-- prettier-ignore -->
         <div style="display: contents" id="custom">
             {% let component = other.layout.as_ref() %}

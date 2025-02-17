@@ -66,16 +66,18 @@ include-partial:has(.response) {
     color: var(--color-text-lowered) !important;
 }
 
-a.card {
+a.card,
+button.card {
     border: solid 1px var(--color-super-lowered);
 }
 
-a.card:hover {
+a.card:hover,
+button.card:hover {
     text-decoration: none;
     border-color: var(--color-primary);
 }
 
-.actions_bar a.button,
+.actions_bar .button,
 .actions_bar button {
     padding: 0.25rem 0.75rem;
     min-height: 26px !important;
@@ -144,7 +146,7 @@ footer .content_container {
 }
 
 nav button:not(.inner *),
-nav a.button:not(.inner *) {
+nav .button:not(.inner *) {
     border-radius: var(--radius);
     color: inherit;
     padding: 0.75rem 0.75rem;
@@ -158,7 +160,7 @@ nav a.button:not(.inner *) {
 }
 
 nav button:not(.inner *):hover,
-nav a.button:not(.inner *):hover {
+nav .button:not(.inner *):hover {
     background: transparent !important;
     outline: none;
     opacity: 100%;
@@ -196,13 +198,13 @@ footer .header {
     font-weight: 600;
 }
 
-footer a.button,
+footer .button,
 footer button,
 footer .header {
     padding: 0.25rem 0.5rem;
 }
 
-footer a.button,
+footer .button,
 footer button {
     justify-content: flex-start;
     font-size: 14px;
@@ -210,7 +212,7 @@ footer button {
     gap: 8px;
 }
 
-footer a.button svg,
+footer .button svg,
 footer button svg {
     width: calc(1em + 2px);
 }
@@ -227,7 +229,7 @@ footer section {
         width: 100%;
     }
 
-    footer a.button,
+    footer .button,
     footer button,
     footer .header {
         padding: 0;

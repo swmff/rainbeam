@@ -162,7 +162,7 @@ dialog::backdrop {
     }
 
     nav button:not(.dropdown *),
-    nav a.button:not(.dropdown *) {
+    nav .button:not(.dropdown *) {
         font-size: 12px;
         flex-direction: column;
         width: 60px;
@@ -173,12 +173,12 @@ dialog::backdrop {
     }
 
     nav button.active,
-    nav a.button.active {
+    nav .button.active {
         animation: grow 1 0.25s 0.1s forwards running;
     }
 
     nav button .notification.tr,
-    nav a.button .notification.tr {
+    nav .button .notification.tr {
         font-size: 12px;
     }
 
