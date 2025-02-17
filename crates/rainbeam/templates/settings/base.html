@@ -53,7 +53,6 @@ crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
 </style>
 
 <article class="flex flex-collapse gap-2">
-    {% let profile = profile.as_ref().unwrap() %}
     <div
         id="settings_nav"
         class="flex flex-col gap-4 sm:static sm:w-full"
@@ -67,7 +66,7 @@ crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
     >
         <div class="sidenav">
             {% block sidenav %}{% endblock %}
-            <a href="/@{{ profile.username }}/layout">
+            <a href="/@{{ user.username }}/layout">
                 {{ icon "layout-template" }} {{ text
                 "profile:base.html:link.layout" }}
             </a>

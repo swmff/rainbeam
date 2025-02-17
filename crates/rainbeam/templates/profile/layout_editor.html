@@ -153,7 +153,6 @@ config.name }}{% endblock %} {% block head %}
 
 <div class="sidebar gap-4" id="editor_sidebar"></div>
 
-{% let user = profile.as_ref().unwrap() %}
 <script>
     require("LayoutEditor", (LayoutEditor) => {
         globalThis.editor = new LayoutEditor(
@@ -164,7 +163,7 @@ config.name }}{% endblock %} {% block head %}
         globalThis.save_layout = async () => {
             await trigger("app:debounce", ["settings:save_settings"]);
             const res = await (
-                await fetch("/api/v0/auth/profile/{{ user.id }}/layout", {
+                await fetch("/api/v0/auth/profile/{{ other.id }}/layout", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
