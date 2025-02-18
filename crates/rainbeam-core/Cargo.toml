@@ -31,7 +31,7 @@ ammonia = "4.0.0"
 futures-util = "0.3.31"
 async-recursion = "1.1.1"
 tracing = "0.1.41"
-rainbeam-shared = "1.0.0"
+rainbeam-shared = "1.0.1"
 # databeam = { path = "../databeam", default-features = false }
 databeam = { version = "1.0.0", default-features = false }
 authbeam = { path = "../authbeam", default-features = false }

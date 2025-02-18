@@ -1,15 +1,15 @@
 [package]
-name = "langbeam"
-version = "0.1.2"
+name = "rainbeam-plugins"
+version = "0.1.0"
 edition = "2021"
-description = "Rainbeam language file manager"
 authors = ["trisuaso", "swmff"]
+description = "WASM plugin loader for Rainbeam"
 homepage = "https://rainbeam.net"
 repository = "https://github.com/swmff/rainbeam"
 license = "MIT"
+rust-version = "1.83"
 
 [dependencies]
-serde = { version = "1.0.217", features = ["serde_derive"] }
-serde_json = "1.0.138"
-rainbeam-shared = "1.0.1"
 pathbufd = "0.1.4"
+serde = { version = "1.0.217", features = ["derive"] }
+toml = "0.8.20"

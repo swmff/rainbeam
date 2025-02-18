@@ -1,6 +1,6 @@
 use crate::database::Database;
 use crate::model::{
-    DatabaseError, ItemCreate, ItemEdit, ItemEditContent, SetItemStatus, TokenPermission,
+    DatabaseError, ItemCreate, ItemEdit, ItemEditContent, ItemType, SetItemStatus, TokenPermission,
     TransactionCreate,
 };
 use databeam::prelude::DefaultReturn;
@@ -11,6 +11,30 @@ use axum::{
     Json,
 };
 use axum_extra::extract::cookie::CookieJar;
+
+/// Get an item
+pub async fn get_request(
+    State(database): State<Database>,
+    Path(id): Path<String>,
+) -> impl IntoResponse {
+    // get item
+    let item = match database.get_item(id).await {
+        Ok(i) => i,
+        Err(e) => return Json(e.to_json()),
+    };
+
+    // we can only view the content of modules through the api :)
+    if item.r#type != ItemType::Module {
+        return Json(DatabaseError::NotAllowed.to_json());
+    }
+
+    // return
+    Json(DefaultReturn {
+        success: true,
+        message: item.id.to_string(),
+        payload: Some(item),
+    })
+}
 
 /// Create an item
 pub async fn create_request(
@@ -30,31 +54,19 @@ pub async fn create_request(
                         .token_context_from_token(&token)
                         .can_do(TokenPermission::ManageAssets)
                     {
-                        return Json(DefaultReturn {
-                            success: false,
-                            message: DatabaseError::NotAllowed.to_string(),
-                            payload: None,
-                        });
+                        return Json(DatabaseError::NotAllowed.to_json());
                     }
 
                     // return
                     ua
                 }
                 Err(e) => {
-                    return Json(DefaultReturn {
-                        success: false,
-                        message: e.to_string(),
-                        payload: None,
-                    });
+                    return Json(e.to_json());
                 }
             }
         }
         None => {
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: None,
-            });
+            return Json(DatabaseError::NotAllowed.to_json());
         }
     };
 

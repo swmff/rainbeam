@@ -298,7 +298,7 @@ pub async fn get_request(
     // return
     Json(DefaultReturn {
         success: true,
-        message: auth_user.username.to_string(),
+        message: auth_user.id.to_string(),
         payload: Some(auth_user),
     })
 }
@@ -347,31 +347,19 @@ pub async fn update_tier_request(
                         .token_context_from_token(&token)
                         .can_do(TokenPermission::Moderator)
                     {
-                        return Json(DefaultReturn {
-                            success: false,
-                            message: DatabaseError::NotAllowed.to_string(),
-                            payload: None,
-                        });
+                        return Json(DatabaseError::NotAllowed.to_json());
                     }
 
                     // return
                     ua
                 }
                 Err(e) => {
-                    return Json(DefaultReturn {
-                        success: false,
-                        message: e.to_string(),
-                        payload: None,
-                    });
+                    return Json(e.to_json());
                 }
             }
         }
         None => {
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: None,
-            });
+            return Json(DatabaseError::NotAllowed.to_json());
         }
     };
 
@@ -577,11 +565,7 @@ pub async fn update_coins_request(
             }
         },
         None => {
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: None,
-            });
+            return Json(DatabaseError::NotAllowed.to_json());
         }
     };
 
@@ -831,31 +815,19 @@ pub async fn generate_token_request(
                         .token_context_from_token(&token)
                         .can_do(TokenPermission::Moderator)
                     {
-                        return Json(DefaultReturn {
-                            success: false,
-                            message: DatabaseError::NotAllowed.to_string(),
-                            payload: None,
-                        });
+                        return Json(DatabaseError::NotAllowed.to_json());
                     }
 
                     // return
                     ua
                 }
                 Err(e) => {
-                    return Json(DefaultReturn {
-                        success: false,
-                        message: e.to_string(),
-                        payload: None,
-                    });
+                    return Json(e.to_json());
                 }
             }
         }
         None => {
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: None,
-            });
+            return Json(DatabaseError::NotAllowed.to_json());
         }
     };
 
@@ -987,31 +959,19 @@ pub async fn update_password_request(
                         .token_context_from_token(&token)
                         .can_do(TokenPermission::ManageAccount)
                     {
-                        return Json(DefaultReturn {
-                            success: false,
-                            message: DatabaseError::NotAllowed.to_string(),
-                            payload: None,
-                        });
+                        return Json(DatabaseError::NotAllowed.to_json());
                     }
 
                     // return
                     ua
                 }
                 Err(e) => {
-                    return Json(DefaultReturn {
-                        success: false,
-                        message: e.to_string(),
-                        payload: None,
-                    });
+                    return Json(e.to_json());
                 }
             }
         }
         None => {
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: None,
-            });
+            return Json(DatabaseError::NotAllowed.to_json());
         }
     };
 
@@ -1031,11 +991,7 @@ pub async fn update_password_request(
 
         if !group.permissions.check(FinePermission::EDIT_USER) {
             // we must have the "Manager" permission to edit other users
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: None,
-            });
+            return Json(DatabaseError::NotAllowed.to_json());
         } else {
             is_manager = true;
         }
@@ -1093,31 +1049,19 @@ pub async fn update_username_request(
                         .token_context_from_token(&token)
                         .can_do(TokenPermission::ManageAccount)
                     {
-                        return Json(DefaultReturn {
-                            success: false,
-                            message: DatabaseError::NotAllowed.to_string(),
-                            payload: None,
-                        });
+                        return Json(DatabaseError::NotAllowed.to_json());
                     }
 
                     // return
                     ua
                 }
                 Err(e) => {
-                    return Json(DefaultReturn {
-                        success: false,
-                        message: e.to_string(),
-                        payload: None,
-                    });
+                    return Json(e.to_json());
                 }
             }
         }
         None => {
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: None,
-            });
+            return Json(DatabaseError::NotAllowed.to_json());
         }
     };
 
@@ -1136,11 +1080,7 @@ pub async fn update_username_request(
 
         if !group.permissions.check(FinePermission::EDIT_USER) {
             // we must have the "Manager" permission to edit other users
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: None,
-            });
+            return Json(DatabaseError::NotAllowed.to_json());
         }
     }
 

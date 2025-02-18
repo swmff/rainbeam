@@ -5006,6 +5006,11 @@ impl Database {
             return Err(DatabaseError::TooLong);
         }
 
+        // if we're creating a module, the cost HAS to be -1 (offsale)
+        if props.r#type == ItemType::Module && props.cost != -1 {
+            return Err(DatabaseError::NotAllowed);
+        }
+
         // ...
         if props.cost.is_negative() && props.cost != -1 {
             return Err(DatabaseError::NotAllowed);
@@ -5187,6 +5192,11 @@ impl Database {
             return Err(DatabaseError::TooLong);
         }
 
+        // if we're creating a module, the cost HAS to be -1 (offsale)
+        if item.r#type == ItemType::Module && props.cost != -1 {
+            return Err(DatabaseError::NotAllowed);
+        }
+
         // ...
         if props.cost.is_negative() && props.cost != -1 {
             return Err(DatabaseError::NotAllowed);
@@ -5253,6 +5263,15 @@ impl Database {
             Ok(i) => i,
             Err(e) => return Err(e),
         };
+
+        // we cannot change the content of a module
+        // this would allow people to lie about the checksum of their wasm package
+        //
+        // doing this also ensures that people create a new asset for each version of their package,
+        // meaning old versions will still verify properly
+        if item.r#type == ItemType::Module {
+            return Err(DatabaseError::NotAllowed);
+        }
 
         // check values
         if props.content.len() > (64 * 128 * 2) {

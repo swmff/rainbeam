@@ -165,6 +165,15 @@ pub struct Config {
     /// Template configuration.
     #[serde(default)]
     pub templates: TemplatesConfig,
+    /// If plugins are verified through [Neospring](https://neospring.org) assets.
+    /// Disabling this removed plugin verification, but will ensure your server
+    /// doesn't communicate with the main Neospring server at all.
+    #[serde(default = "default_plugin_verify")]
+    pub plugin_verify: bool,
+}
+
+fn default_plugin_verify() -> bool {
+    true
 }
 
 impl Default for Config {
@@ -184,6 +193,7 @@ impl Default for Config {
             tiers: Tiers::default(),
             alert: String::new(),
             templates: TemplatesConfig::default(),
+            plugin_verify: default_plugin_verify(),
         }
     }
 }

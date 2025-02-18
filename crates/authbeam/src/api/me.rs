@@ -29,11 +29,7 @@ pub async fn get_request(jar: CookieJar, State(database): State<Database>) -> im
             }
         },
         None => {
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: None,
-            });
+            return Json(DatabaseError::NotAllowed.to_json());
         }
     };
 
@@ -126,31 +122,19 @@ pub async fn generate_token_request(
                     }
 
                     if !token.can_do(TokenPermission::GenerateTokens) {
-                        return Json(DefaultReturn {
-                            success: false,
-                            message: DatabaseError::NotAllowed.to_string(),
-                            payload: None,
-                        });
+                        return Json(DatabaseError::NotAllowed.to_json());
                     }
 
                     // return
                     ua
                 }
                 Err(e) => {
-                    return Json(DefaultReturn {
-                        success: false,
-                        message: e.to_string(),
-                        payload: None,
-                    });
+                    return Json(e.to_json());
                 }
             }
         }
         None => {
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: None,
-            });
+            return Json(DatabaseError::NotAllowed.to_json());
         }
     };
 

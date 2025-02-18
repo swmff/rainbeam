@@ -18,4 +18,6 @@ crates/rainbeam/templates_build/
 .config/config.toml
 .config/databeam/config.toml
 .config/templates/
+.config/plugins/**/*
+!.config/plugins/.gitkeep
 media/

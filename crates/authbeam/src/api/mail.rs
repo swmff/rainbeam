@@ -27,31 +27,19 @@ pub async fn create_request(
                         .token_context_from_token(&token)
                         .can_do(TokenPermission::SendMail)
                     {
-                        return Json(DefaultReturn {
-                            success: false,
-                            message: DatabaseError::NotAllowed.to_string(),
-                            payload: None,
-                        });
+                        return Json(DatabaseError::NotAllowed.to_json());
                     }
 
                     // return
                     ua
                 }
                 Err(e) => {
-                    return Json(DefaultReturn {
-                        success: false,
-                        message: e.to_string(),
-                        payload: None,
-                    });
+                    return Json(e.to_json());
                 }
             }
         }
         None => {
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: None,
-            });
+            return Json(DatabaseError::NotAllowed.to_json());
         }
     };
 

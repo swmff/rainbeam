@@ -99,10 +99,10 @@ pub async fn get_request(
     Path(id): Path<String>,
     State(database): State<Database>,
 ) -> impl IntoResponse {
-    Json(match database.get_circle(id).await {
+    Json(match database.get_circle(id.clone()).await {
         Ok(mut r) => DefaultReturn {
             success: true,
-            message: String::new(),
+            message: id,
             payload: {
                 r.owner.clean();
                 Some(r)

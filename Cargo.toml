@@ -8,7 +8,7 @@ members = [
     "crates/databeam",
     "crates/shared",
     "crates/langbeam",
-    "crates/rainbeam-sys",
+    "crates/rainbeam-plugins",
 ]
 
 [profile.dev]

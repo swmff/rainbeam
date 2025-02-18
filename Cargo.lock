@@ -214,7 +214,7 @@ dependencies = [
  "langbeam",
  "mime_guess",
  "pathbufd",
- "rainbeam-shared 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rainbeam-shared 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex",
  "reqwest",
  "reva",
@@ -834,7 +834,7 @@ version = "1.0.0"
 dependencies = [
  "moka",
  "pathbufd",
- "rainbeam-shared 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rainbeam-shared 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "redis 0.29.0",
  "serde",
  "serde_json",
@@ -1804,7 +1804,7 @@ name = "langbeam"
 version = "0.1.2"
 dependencies = [
  "pathbufd",
- "rainbeam-shared 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rainbeam-shared 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde",
  "serde_json",
 ]
@@ -1991,15 +1991,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "78ca9ab1a0babb1e7d5695e3530886289c18cf2f87ec19a575a0abdce112e3a3"
 
 [[package]]
-name = "memoffset"
-version = "0.9.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "488016bfae457b036d996092f6cb448677611ce4449e970ceaf42695203f218a"
-dependencies = [
- "autocfg",
-]
-
-[[package]]
 name = "mimalloc"
 version = "0.1.43"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2112,19 +2103,6 @@ name = "new_debug_unreachable"
 version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "650eef8c711430f1a879fdd01d4745a7deea475becfb90269c06775983bbf086"
-
-[[package]]
-name = "nix"
-version = "0.29.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "71e2746dc3a24dd78b3cfcb7be93368c6de9963d30f43a6a73998a9cf4b17b46"
-dependencies = [
- "bitflags 2.8.0",
- "cfg-if",
- "cfg_aliases",
- "libc",
- "memoffset",
-]
 
 [[package]]
 name = "nom"
@@ -2692,7 +2670,7 @@ dependencies = [
  "mimalloc",
  "mime_guess",
  "pathbufd",
- "rainbeam-shared 1.0.0",
+ "rainbeam-shared 1.0.1",
  "rb",
  "regex",
  "reqwest",
@@ -2722,7 +2700,7 @@ dependencies = [
  "langbeam",
  "mime_guess",
  "pathbufd",
- "rainbeam-shared 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rainbeam-shared 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex",
  "reqwest",
  "serde",
@@ -2730,6 +2708,15 @@ dependencies = [
  "tokio",
  "toml",
  "tracing",
+]
+
+[[package]]
+name = "rainbeam-plugins"
+version = "0.1.0"
+dependencies = [
+ "pathbufd",
+ "serde",
+ "toml",
 ]
 
 [[package]]
@@ -2751,7 +2738,7 @@ dependencies = [
 
 [[package]]
 name = "rainbeam-shared"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "ammonia",
  "chrono",
@@ -2768,9 +2755,9 @@ dependencies = [
 
 [[package]]
 name = "rainbeam-shared"
-version = "1.0.0"
+version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d3230b18e4dbb50e99584d28fa9ef3fd466dfc9f3a29d1f31fe803ab425ca20e"
+checksum = "eec83839b59a6485448ad1abf2e1227c6d32a2b6ba872ab0562d86f75de9f4db"
 dependencies = [
  "ammonia",
  "chrono",
@@ -2783,13 +2770,6 @@ dependencies = [
  "sha2",
  "toml",
  "uuid",
-]
-
-[[package]]
-name = "rainbeam-sys"
-version = "0.1.0"
-dependencies = [
- "nix",
 ]
 
 [[package]]
@@ -2939,7 +2919,7 @@ dependencies = [
  "mime_guess",
  "pathbufd",
  "rainbeam-core",
- "rainbeam-shared 1.0.0",
+ "rainbeam-shared 1.0.1",
  "regex",
  "reqwest",
  "reva",
@@ -4349,9 +4329,9 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 
 [[package]]
 name = "uuid"
-version = "1.13.1"
+version = "1.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ced87ca4be083373936a67f8de945faa23b6b42384bd5b64434850802c6dccd0"
+checksum = "8c1f41ffb7cf259f1ecc2876861a17e7142e63ead296f671f81f6ae85903e0d6"
 dependencies = [
  "getrandom 0.3.1",
 ]

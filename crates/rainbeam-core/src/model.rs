@@ -623,7 +623,7 @@ pub struct ChatAdd {
 }
 
 /// General API errors
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum DatabaseError {
     AnonymousNotAllowed,
     InvalidNameUnique,
@@ -659,6 +659,14 @@ impl DatabaseError {
             Blocked => String::from("You're blocked."),
             Banned => String::from("You're banned for suspected systems abuse or violating TOS."),
             _ => String::from("An unspecified error has occured"),
+        }
+    }
+
+    pub fn to_json<T: Default>(&self) -> DefaultReturn<T> {
+        DefaultReturn {
+            success: false,
+            message: self.to_string(),
+            payload: T::default(),
         }
     }
 }

@@ -1,9 +1,0 @@
-[package]
-name = "rainbeam-sys"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-
-# [target.'cfg(target_os = "linux")'.dependencies]
-nix = { version = "0.29.0", features = ["net"] }

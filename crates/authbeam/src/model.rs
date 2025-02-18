@@ -524,8 +524,12 @@ pub struct Transaction {
 /// A marketplace item type
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub enum ItemType {
+    #[serde(alias = "text")]
     Text,
+    #[serde(alias = "usertheme")]
     UserTheme,
+    #[serde(alias = "module")]
+    Module,
 }
 
 impl Default for ItemType {
@@ -539,6 +543,7 @@ impl ToString for ItemType {
         match self {
             ItemType::Text => "Text".to_string(),
             ItemType::UserTheme => "UserTheme".to_string(),
+            ItemType::Module => "Module".to_string(),
         }
     }
 }
@@ -747,8 +752,9 @@ pub struct SetItemStatus {
 }
 
 /// General API errors
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum DatabaseError {
+    ModulesMustBeOffsale,
     TooExpensive,
     MustBeUnique,
     OutOfScope,
@@ -763,6 +769,7 @@ impl DatabaseError {
     pub fn to_string(&self) -> String {
         use DatabaseError::*;
         match self {
+            ModulesMustBeOffsale => String::from("Modules must be off-sale. (ModulesMustBeOffsale)"),
             TooExpensive => String::from("You cannot afford to do this. (TooExpensive)"),
             MustBeUnique => String::from("One of the given values must be unique. (MustBeUnique)"),
             OutOfScope => String::from(

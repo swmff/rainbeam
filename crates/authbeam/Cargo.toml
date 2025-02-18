@@ -28,7 +28,7 @@ regex = "1.11.1"
 reqwest = { version = "0.12.12", features = ["stream"] }
 hcaptcha-no-wasm = { version = "3.0.1" }
 mime_guess = "2.0.5"
-rainbeam-shared = { version = "1.0.0" }
+rainbeam-shared = { version = "1.0.1" }
 # databeam = { path = "../databeam", default-features = false }
 databeam = { version = "1.0.0", default-features = false }
 image = "0.25.5"

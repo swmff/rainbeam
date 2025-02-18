@@ -86,6 +86,14 @@
             if (!content) {
                 return;
             }
+        } else if (type === "Module") {
+            content = await app.prompt(
+                "WASM module checksum (this cannot be changed):",
+            );
+
+            if (!content) {
+                return;
+            }
         } else {
             return;
         }

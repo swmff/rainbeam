@@ -274,6 +274,7 @@
         "market:label.select_an_item_type": "Select an item type",
         "market:text.user_theme": "User theme",
         "market:text.text": "Text",
+        "market:text.module": "Module",
         "market:text.not_for_sale": "Not for sale",
         "market:text.rejected": "Rejected",
         "market:text.pending": "Pending",
