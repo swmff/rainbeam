@@ -104,7 +104,7 @@ pub async fn avatar_request(
     match database.http.get(avatar_url).send().await {
         Ok(stream) => {
             let size = stream.content_length();
-            if size.is_none() | (size.unwrap() > 10485760) {
+            if size.unwrap_or(10485761_u64) > 10485760 {
                 // return defualt image (content too big)
                 return (
                     [("Content-Type", "image/svg+xml")],
@@ -227,7 +227,7 @@ pub async fn banner_request(
     match database.http.get(banner_url).send().await {
         Ok(stream) => {
             let size = stream.content_length();
-            if size.is_none() | (size.unwrap() > 10485760) {
+            if size.unwrap_or(10485761_u64) > 10485760 {
                 // return defualt image (content too big)
                 return (
                     [("Content-Type", "image/svg+xml")],
