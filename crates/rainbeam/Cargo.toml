@@ -45,6 +45,7 @@ mimalloc = { version = "0.1.43", optional = true }
 mime_guess = "2.0.5"
 pathbufd = "0.1.4"
 # pathbufd = { path = "../../../pathbufd" }
+rainbeam-plugins = { path = "../rainbeam-plugins" }
 
 [[bin]]
 path = "src/main.rs"

@@ -1,58 +1,32 @@
-use serde::{Serialize, Deserialize};
-use std::fs::{read_to_string, read_dir};
-use pathbufd::PathBufD;
+pub mod config;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct PluginConfig {
-    /// The name of the plugin.
-    pub name: String,
-    /// The name of the plugin author.
-    pub author: String,
-    /// The version of the plugin.
-    pub version: String,
-    /// The homepage of the plugin.
-    #[serde(default)]
-    pub homepage: String,
-    /// The path to the `.wasm` file.
-    pub wasm: PathBufD,
-    /// The ID of a [Neospring](https://neospring.org) module asset to verify the plugin.
-    /// Can be left blank if the server has `plugin_verify` set to `false`.
-    #[serde(default)]
-    pub asset: String,
-}
+use wasmtime::{Linker, Engine, Module, Store};
+use std::io::{Error, ErrorKind, Result};
 
-/// Get all plugins in `.config/plugins`.
-pub fn get_plugins() -> Vec<PluginConfig> {
-    let mut plugins = Vec::new();
+pub fn run(cnf: config::PluginConfig) -> Result<()> {
+    let engine = Engine::default();
+    let module = match Module::from_file(&engine, cnf.wasm) {
+        Ok(m) => m,
+        Err(e) => panic!("{e}"),
+    };
 
-    for plugin in read_dir(PathBufD::current().join("plugins")).unwrap() {
-        match plugin {
-            Ok(p) => {
-                let path = p.path();
+    let linker = Linker::new(&engine);
 
-                if path.extension().unwrap() != "toml" {
-                    // can only load toml files
-                    continue;
-                }
+    // create store and pull "plugin" function
+    let mut store: Store<u32> = Store::new(&engine, 4);
+    let instance = match linker.instantiate(&mut store, &module) {
+        Ok(i) => i,
+        Err(e) => panic!("{e}"),
+    };
 
-                match read_to_string(path) {
-                    Ok(f) => {
-                        let config = toml::from_str(&f).unwrap();
-                        // TODO: verify plugin here
-                        plugins.push(config)
-                    }
-                    Err(_) => {
-                        panic!("Invalid plugin: {}", p.path().to_str().unwrap());
-                        continue;
-                    }
-                }
-            }
-            Err(_) => {
-                panic!("Invalid plugin: {}", p.path().to_str().unwrap());
-                continue;
-            }
-        }
-    }
+    let plugin_entry = match instance.get_typed_func::<(), ()>(&mut store, "plugin") {
+        Ok(f) => f,
+        Err(e) => panic!("{e}"),
+    };
 
-    plugins
+    if let Err(e) = plugin_entry.call(&mut store, ()) {
+        return Err(Error::new(ErrorKind::Other, e.to_string()));
+    };
+
+    Ok(())
 }
