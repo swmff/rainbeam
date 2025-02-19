@@ -860,6 +860,7 @@ pub async fn followers_request(
             .get("sparkler:private_social")
             .unwrap_or(&"false".to_string())
             == "true")
+        && !is_helper
     {
         // hide social if not self and private_social is true
         return Html(DatabaseError::NotAllowed.to_html(database));
@@ -1014,6 +1015,7 @@ pub async fn following_request(
             .get("sparkler:private_social")
             .unwrap_or(&"false".to_string())
             == "true")
+        && !is_helper
     {
         // hide social if not self and private_social is true
         return Html(DatabaseError::NotAllowed.to_html(database));
@@ -1168,6 +1170,7 @@ pub async fn friends_request(
             .get("sparkler:private_social")
             .unwrap_or(&"false".to_string())
             == "true")
+        && !is_helper
     {
         // hide social if not self and private_social is true
         return Html(DatabaseError::NotAllowed.to_html(database));

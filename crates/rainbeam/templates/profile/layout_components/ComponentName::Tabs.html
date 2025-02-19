@@ -1,5 +1,5 @@
 <!-- menu -->
-{% if !hide_social %}
+{% if !hide_social | is_helper %}
 <!-- social menu -->
 <div class="pillmenu convertible profile_social">
     <a href="/@{{ other.username }}/followers" style="color: var(--color-text)">
