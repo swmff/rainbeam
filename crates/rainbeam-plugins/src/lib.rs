@@ -1,30 +1,38 @@
 pub mod config;
 
-use wasmtime::{Linker, Engine, Module, Store};
+use wasmtime::{
+    Engine, Store,
+    component::{Linker, Component, Val},
+};
 use std::io::{Error, ErrorKind, Result};
 
 pub fn run(cnf: config::PluginConfig) -> Result<()> {
     let engine = Engine::default();
-    let module = match Module::from_file(&engine, cnf.wasm) {
-        Ok(m) => m,
-        Err(e) => panic!("{e}"),
-    };
+    let mut store = Store::new(&engine, ());
 
-    let linker = Linker::new(&engine);
+    let bytes = std::fs::read(&cnf.wasm)?;
+    let component = Component::new(&engine, bytes).expect("failed to load wasm component");
+
+    // linker
+    let mut linker = Linker::new(&engine);
+    linker
+        .root()
+        .func_wrap("name", move |_store, _params: ()| {
+            Ok((String::from(cnf.name.clone()),))
+        })
+        .unwrap();
 
     // create store and pull "plugin" function
-    let mut store: Store<u32> = Store::new(&engine, 4);
-    let instance = match linker.instantiate(&mut store, &module) {
-        Ok(i) => i,
-        Err(e) => panic!("{e}"),
-    };
+    let instance = linker
+        .instantiate(&mut store, &component)
+        .expect("failed to create instance");
 
-    let plugin_entry = match instance.get_typed_func::<(), ()>(&mut store, "plugin") {
-        Ok(f) => f,
-        Err(e) => panic!("{e}"),
-    };
+    let plugin_entry = instance
+        .get_func(&mut store, "plugin")
+        .expect("plugin entry not found");
 
-    if let Err(e) = plugin_entry.call(&mut store, ()) {
+    let mut result = [Val::List(Vec::new())];
+    if let Err(e) = plugin_entry.call(&mut store, &[], &mut result) {
         return Err(Error::new(ErrorKind::Other, e.to_string()));
     };
 
