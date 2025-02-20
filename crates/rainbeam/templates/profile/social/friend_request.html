@@ -31,10 +31,13 @@
             </div>
 
             <div class="card flex gap-2">
-                <button class="primary bold round-lg" onclick="accept()">
-                    Yes
+                <button class="primary bold" onclick="accept()">
+                    {{ text "general:dialog.yes" }}
                 </button>
-                <button class="bold round-lg" onclick="decline()">No</button>
+
+                <button class="bold" onclick="decline()">
+                    {{ text "general:dialog.no" }}
+                </button>
             </div>
         </div>
     </main>

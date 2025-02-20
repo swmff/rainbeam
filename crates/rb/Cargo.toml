@@ -1,6 +1,6 @@
 [package]
 name = "rb"
-version = "4.0.0"
+version = "4.1.0"
 edition = "2021"
 authors = ["trisuaso", "swmff"]
 description = "Rainbeam Axum"
@@ -24,15 +24,14 @@ reva_axum = "0.5.1"
 axum = { version = "0.8.1", features = ["macros", "form"] }
 axum-extra = { version = "0.10.0", features = ["cookie"] }
 reqwest = { version = "0.12.12", features = ["json", "stream"] }
-serde = { version = "1.0.217", features = ["derive"] }
+serde = { version = "1.0.218", features = ["derive"] }
 tokio = { version = "1.43.0", features = ["macros", "rt-multi-thread"] }
 toml = "0.8.20"
 tower-http = { version = "0.6.2", features = ["fs", "trace"] }
-serde_json = "1.0.138"
+serde_json = "1.0.139"
 regex = "1.11.1"
 hcaptcha-no-wasm = { version = "3.0.1" }
 ammonia = "4.0.0"
-futures-util = "0.3.31"
 async-recursion = "1.1.1"
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }

@@ -126,7 +126,9 @@ impl Database {
                 tier          TEXT,
                 token_context TEXT,
                 labels        TEXT,
-                coins         TEXT DEFAULT '100'
+                coins         TEXT DEFAULT '0',
+                links         TEXT DEFAULT '{}',
+                layout        TEXT DEFAULT '{\"json\":\"default.json\"}'
             )",
         )
         .execute(c)
@@ -693,7 +695,7 @@ impl Database {
             .bind::<i32>(0)
             .bind::<&str>("[]")
             .bind::<&str>("")
-            .bind::<i32>(100) // start with 100 coins
+            .bind::<i32>(0) // start with 100 coins
             .bind::<&str>("{}")
             .bind::<&str>("{\"json\":\"default.json\"}")
             .execute(c)

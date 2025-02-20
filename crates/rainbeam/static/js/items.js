@@ -94,6 +94,29 @@
             if (!content) {
                 return;
             }
+        } else if (type === "Layout") {
+            if (
+                !(await app.confirm(
+                    "Are you sure you would like to create an item using your current profile layout?\n\nYou can press no to input JSON directly instead.",
+                ))
+            ) {
+                content = await app.prompt("Exported layout JSON:");
+
+                if (!content) {
+                    return;
+                }
+
+                return content;
+            }
+
+            // fetch current user profile
+            const me = await (await fetch("/api/v0/auth/me")).json();
+
+            if (!me.success) {
+                return alert(me.message || "Failed to fetch self.");
+            }
+
+            content = JSON.stringify(me.payload.layout);
         } else {
             return;
         }

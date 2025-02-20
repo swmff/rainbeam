@@ -57,7 +57,7 @@ config.name }}{% endblock %} {% block head %}
 </div>
 
 <!-- prettier-ignore -->
-{% let as_json = serde_json::to_string(other.layout.fill().as_ref()).unwrap() %}
+{% let as_json = serde_json::to_string(layout.fill().as_ref()).unwrap() %}
 <script type="application/json" id="editor_json">
     {{ as_json|safe }}
 </script>

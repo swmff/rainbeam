@@ -2405,6 +2405,10 @@ pub async fn routes(database: Database) -> Router {
             "/market/_app/theme_playground.html/{id}",
             get(market::theme_playground_request),
         )
+        .route(
+            "/market/_app/layout_playground.html/{id}",
+            get(market::layout_playground_request),
+        )
         // auth
         .route("/login", get(login_request))
         .route("/sign_up", get(sign_up_request))

@@ -530,6 +530,8 @@ pub enum ItemType {
     UserTheme,
     #[serde(alias = "module")]
     Module,
+    #[serde(alias = "layout")]
+    Layout,
 }
 
 impl Default for ItemType {
@@ -540,11 +542,13 @@ impl Default for ItemType {
 
 impl ToString for ItemType {
     fn to_string(&self) -> String {
-        match self {
-            ItemType::Text => "Text".to_string(),
-            ItemType::UserTheme => "UserTheme".to_string(),
-            ItemType::Module => "Module".to_string(),
-        }
+        // match self {
+        //     ItemType::Text => "Text".to_string(),
+        //     ItemType::UserTheme => "UserTheme".to_string(),
+        //     ItemType::Module => "Module".to_string(),
+        //     ItemType::Layout => "Layout".to_string(),
+        // }
+        format!("{:?}", self)
     }
 }
 

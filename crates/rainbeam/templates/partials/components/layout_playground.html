@@ -1,0 +1,26 @@
+{% extends "raw_base.html" %} {% block title %}Layout Playground{% endblock %}
+{% block base %}
+<style>
+    .layout_editor_block {
+        width: 100%;
+        padding: 1rem;
+        background: var(--color-lowered);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 0 0 2px var(--color-super-lowered);
+        font-family: monospace;
+        font-size: 16px;
+        cursor: text !important;
+        user-select: none;
+        border-radius: var(--radius);
+        transform: box-shadow 0.15s;
+    }
+</style>
+
+<div id="page">
+    <div class="content_container" id="page_content">
+        <article>{{ layout.render_block()|safe }}</article>
+    </div>
+</div>
+{% call super() %} {% endblock %}

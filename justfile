@@ -37,6 +37,10 @@ clean-deps:
     cargo upgrade -i
     cargo machete
 
+help-rust-analyzer-wont-work:
+    # ...yeah I bet it doesn't with 236,366 files (175 GB) sitting about in target
+    cargo clean
+
 publish-shared:
     cargo publish --package rainbeam-shared
 

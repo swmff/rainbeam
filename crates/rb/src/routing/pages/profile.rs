@@ -1,12 +1,14 @@
 use std::collections::HashMap;
 
+use authbeam::layout::LayoutComponent;
 use reva_axum::Template;
 use axum::extract::{Path, Query};
 use axum::response::IntoResponse;
 use axum::{extract::State, response::Html};
 use axum_extra::extract::CookieJar;
 
-use authbeam::model::{FinePermission, Profile, UserFollow, Warning};
+use authbeam::model::{FinePermission, ItemType, Profile, UserFollow, Warning};
+use serde::Deserialize;
 
 use crate::config::Config;
 use crate::database::Database;
@@ -492,7 +494,14 @@ struct ProfileLayoutEditorTemplate {
     lang: langbeam::LangFile,
     profile: Option<Box<Profile>>,
     other: Box<Profile>,
+    layout: LayoutComponent,
     is_self: bool,
+}
+
+#[derive(Deserialize)]
+pub struct ProfileLayoutEditorQuery {
+    #[serde(default)]
+    id: String,
 }
 
 /// GET /@{username}/layout
@@ -500,6 +509,7 @@ pub async fn profile_layout_editor_request(
     jar: CookieJar,
     Path(username): Path<String>,
     State(database): State<Database>,
+    Query(props): Query<ProfileLayoutEditorQuery>,
 ) -> impl IntoResponse {
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
@@ -551,6 +561,37 @@ pub async fn profile_layout_editor_request(
             }),
             profile: auth_user.clone(),
             other: other.clone(),
+            layout: if props.id.is_empty() {
+                other.layout.clone()
+            } else {
+                // fetch market item
+                let item = match database.auth.get_item(props.id.clone()).await {
+                    Ok(i) => i,
+                    Err(e) => return Html(e.to_string()),
+                };
+
+                if item.r#type != ItemType::Layout {
+                    return Html(DatabaseError::ValueError.to_string());
+                }
+
+                if !database
+                    .auth
+                    .get_transaction_by_customer_item(
+                        auth_user.unwrap().id.clone(),
+                        item.id.clone(),
+                    )
+                    .await
+                    .is_ok()
+                {
+                    // not owned
+                    return Html(DatabaseError::NotAllowed.to_string());
+                }
+
+                match serde_json::from_str(&item.content) {
+                    Ok(l) => l,
+                    Err(_) => return Html(DatabaseError::ValueError.to_string()),
+                }
+            },
             is_self,
         }
         .render()

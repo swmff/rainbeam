@@ -283,11 +283,7 @@
 
     self.define("click", function (_, id, do_render_nested) {
         // close dropdowns
-        for (const dropdown of Array.from(
-            document.querySelectorAll(".inner[open]"),
-        )) {
-            dropdown.removeAttribute("open");
-        }
+        trigger("app:hook.dropdown.close");
 
         // check for warning
         const warning = document.querySelector(

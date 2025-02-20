@@ -193,7 +193,7 @@ profile.as_ref().unwrap() %}
         </script>
 
         {% if (user.id == creator.id) %}
-         <!-- use decompiled -->
+        <!-- use decompiled -->
         <button class="primary bold" onclick="copy_to_profile()">
             {{ icon "paint-bucket" }}
             <span>{{ text "market:action.copy_to_profile" }}</span>
@@ -226,6 +226,17 @@ profile.as_ref().unwrap() %}
         {% endif %}
         <hr />
         <iframe src="/market/_app/theme_playground.html/{{ item.id }}" frameborder="0" class="card w-full" style="padding: 0; min-height: 45rem"></iframe>
+        {% else if item.type == authbeam::model::ItemType::Layout %}
+        <!-- layout item -->
+        {% if is_owned %}
+        <a class="button primary bold" href="/@{{ user.username }}/layout?id={{ item.id }}">
+            {{ icon "layout-template" }}
+            <span>{{ text "market:action.use_layout" }}</span>
+        </a>
+        {% endif %}
+
+        <hr />
+        <iframe src="/market/_app/layout_playground.html/{{ item.id }}" frameborder="0" class="card w-full" style="padding: 0; min-height: 45rem"></iframe>
         {% endif %}
     </div>
 

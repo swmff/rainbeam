@@ -277,6 +277,7 @@
         "market:text.user_theme": "User theme",
         "market:text.text": "Text",
         "market:text.module": "Module",
+        "market:text.layout": "Layout",
         "market:text.not_for_sale": "Not for sale",
         "market:text.rejected": "Rejected",
         "market:text.pending": "Pending",
@@ -290,6 +291,7 @@
         "market:text.buy": "Buy",
         "market:action.edit_content": "Edit content",
         "market:action.use_theme": "Use theme base",
-        "market:action.copy_to_profile": "Copy to profile"
+        "market:action.copy_to_profile": "Copy to profile",
+        "market:action.use_layout": "Use layout"
     }
 }

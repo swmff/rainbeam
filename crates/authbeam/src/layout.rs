@@ -39,6 +39,17 @@ pub struct RendererTemplate<'a> {
     pub is_self: bool,
 }
 
+/// Renderer which does not require a bunch of junk to render.
+///
+/// Does not render profile-specific components properly. They will be replaced with
+/// their name.
+#[derive(Template)]
+#[template(path = "profile/layout_components/free_renderer.html")]
+pub struct FreeRendererTemplate<'a> {
+    pub other: &'a Profile,
+    pub component: &'a LayoutComponent,
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub enum ComponentName {
     /// An empty element.
@@ -108,6 +119,8 @@ impl Default for LayoutComponent {
 
 impl LayoutComponent {
     /// Follow component template to get full template.
+    ///
+    /// All imports are relative to `./.config/layouts`.
     pub fn fill(&self) -> LayoutComponent {
         if !self.json.is_empty() {
             let reader = match LAYOUTS.read() {
@@ -143,6 +156,7 @@ impl LayoutComponent {
 
         self.to_owned()
     }
+
     /// Get the value of an option in the `options` map. Accepts a default substitute.
     pub fn option(&self, k: &str, d: Option<String>) -> String {
         match self.options.get(k) {
@@ -157,9 +171,82 @@ impl LayoutComponent {
         }
     }
 
+    /// Render the component as HTML. Skips rendering with extra junk.
+    ///
+    /// See [`FreeRendererTemplate`].
+    /// See [`LayoutComponent::render_with_junk`] to include junk.
+    pub fn render(&self, user: &Profile) -> String {
+        use ComponentName as T;
+
+        // json import
+        if !self.json.is_empty() {
+            return self.fill().render(user);
+        }
+
+        // regular
+        match self.component {
+            T::Flex => format!(
+                "<div class=\"flex {} {} {} {} {}\" style=\"{}\">{}</div>",
+                // extra classes
+                {
+                    let direction = self.option("direction", None);
+                    if !direction.is_empty() {
+                        format!("flex-{direction}")
+                    } else {
+                        String::new()
+                    }
+                },
+                {
+                    let gap = self.option("gap", None);
+                    if !gap.is_empty() {
+                        format!("gap-{gap}")
+                    } else {
+                        String::new()
+                    }
+                },
+                {
+                    let collapse = self.option("collapse", None);
+                    if !collapse.is_empty() {
+                        "flex-collapse"
+                    } else {
+                        ""
+                    }
+                },
+                {
+                    let width = self.option("width", None);
+                    if !width.is_empty() {
+                        format!("w-{width}")
+                    } else {
+                        String::new()
+                    }
+                },
+                self.option("class", None),
+                self.option("style", None),
+                // children
+                {
+                    let mut children: String = String::new();
+
+                    for child in &self.children {
+                        children.push_str(&child.render(user));
+                    }
+
+                    children
+                }
+            ),
+            T::Divider => format!("<hr class=\"{}\" />", self.option("class", None)),
+            T::Markdown => format!(
+                "<div class=\"{}\">{}</div>",
+                self.option("class", None),
+                rainbeam_shared::ui::render_markdown(&self.option("text", None))
+            ),
+            T::Empty => String::new(),
+            _ => format!("ComponentName::{:?}", self.component),
+        }
+    }
+
     /// Render the component as HTML. Since this is a profile layout, we require
     /// a reference to the [`Profile`] this layout is being rendered for.
-    pub fn render(
+    pub fn render_with_junk(
         &self,
         user: &Profile,
         // this is absurd
@@ -185,58 +272,28 @@ impl LayoutComponent {
         use ComponentName as T;
 
         // json import
-        // all imports are relative to `.config/layouts/default.json`
         if !self.json.is_empty() {
-            let reader = match LAYOUTS.read() {
-                Ok(r) => r,
-                Err(_) => {
-                    LAYOUTS.clear_poison();
-                    return String::new();
-                }
-            };
-
-            return {
-                if let Some(l) = (*reader).get(&self.json) {
-                    serde_json::from_str::<LayoutComponent>(l)
-                } else {
-                    let l = match std::fs::read_to_string(PathBufD::current().extend(&[
-                        ".config",
-                        "layouts",
-                        self.json.as_str(),
-                    ])) {
-                        Ok(l) => l,
-                        Err(_) => return String::new(),
-                    };
-
-                    drop(reader); // drop the reader so we can create a writer
-                    let mut writer = LAYOUTS.write().unwrap();
-                    (*writer).insert(self.json.clone(), l.clone());
-
-                    serde_json::from_str::<LayoutComponent>(&l)
-                }
-                .unwrap()
-                .render(
-                    user,
-                    config,
-                    profile,
-                    lang,
-                    response_count,
-                    questions_count,
-                    followers_count,
-                    following_count,
-                    friends_count,
-                    is_following,
-                    is_following_you,
-                    relationship,
-                    lock_profile,
-                    disallow_anonymous,
-                    require_account,
-                    hide_social,
-                    is_powerful,
-                    is_helper,
-                    is_self,
-                )
-            };
+            return self.fill().render_with_junk(
+                user,
+                config,
+                profile,
+                lang,
+                response_count,
+                questions_count,
+                followers_count,
+                following_count,
+                friends_count,
+                is_following,
+                is_following_you,
+                relationship,
+                lock_profile,
+                disallow_anonymous,
+                require_account,
+                hide_social,
+                is_powerful,
+                is_helper,
+                is_self,
+            );
         }
 
         // regular

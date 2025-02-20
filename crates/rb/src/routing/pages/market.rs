@@ -1,3 +1,4 @@
+use authbeam::layout::LayoutComponent;
 use reva_axum::Template;
 use axum::response::IntoResponse;
 use axum::{
@@ -346,6 +347,63 @@ pub async fn theme_playground_request(
             }),
             profile: Some(auth_user),
             css: item.content,
+        }
+        .render()
+        .unwrap(),
+    )
+}
+
+#[derive(Template)]
+#[template(path = "partials/components/layout_playground.html")]
+struct LayoutPlaygroundTemplate {
+    config: Config,
+    lang: langbeam::LangFile,
+    profile: Option<Box<Profile>>,
+    layout: LayoutComponent,
+}
+
+/// GET /market/_app/layout_playground.html
+pub async fn layout_playground_request(
+    jar: CookieJar,
+    Path(id): Path<String>,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => return Html(DatabaseError::NotAllowed.to_html(database)),
+        },
+        None => return Html(DatabaseError::NotAllowed.to_html(database)),
+    };
+
+    // data
+    let item = match database.auth.get_item(id.clone()).await {
+        Ok(i) => i,
+        Err(e) => return Html(e.to_string()),
+    };
+
+    if item.r#type != ItemType::Layout {
+        return Html(DatabaseError::ValueError.to_string());
+    }
+
+    // ...
+    Html(
+        LayoutPlaygroundTemplate {
+            config: database.config.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
+            profile: Some(auth_user),
+            layout: match serde_json::from_str(&item.content) {
+                Ok(l) => l,
+                Err(_) => return Html(DatabaseError::ValueError.to_string()),
+            },
         }
         .render()
         .unwrap(),
