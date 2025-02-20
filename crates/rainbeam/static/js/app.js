@@ -273,7 +273,15 @@
         });
     });
 
-    app.define("hook.dropdown", function (_, event) {
+    app.define("hook.dropdown.close", function (_) {
+        for (const dropdown of Array.from(
+            document.querySelectorAll(".inner.open"),
+        )) {
+            dropdown.classList.remove("open");
+        }
+    });
+
+    app.define("hook.dropdown", function ({ $ }, event) {
         event.stopImmediatePropagation();
         let target = event.target;
 
@@ -282,11 +290,7 @@
         }
 
         // close all others
-        for (const dropdown of Array.from(
-            document.querySelectorAll(".inner.open"),
-        )) {
-            dropdown.classList.remove("open");
-        }
+        $["hook.dropdown.close"]();
 
         // open
         setTimeout(() => {

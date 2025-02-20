@@ -17,6 +17,7 @@
         "general:link.import": "Import",
         "general:link.export": "Export",
         "general:link.render": "Render",
+        "general:link.tree": "Tree",
 
         "general:link.login": "Login",
         "general:link.sign_up": "Sign up",

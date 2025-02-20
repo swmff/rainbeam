@@ -10,12 +10,13 @@ use pathbufd::pathd;
 
 use axum::body::Body;
 use axum::http::{HeaderMap, HeaderValue};
-use axum::response::{Html, IntoResponse};
+use axum::response::IntoResponse;
 use axum::{
     extract::{Path, State},
     Json,
 };
 use axum_extra::extract::cookie::CookieJar;
+use serde::Serialize;
 
 use std::{fs::File, io::Read};
 
@@ -1616,9 +1617,18 @@ pub async fn update_layout_request(
     }
 }
 
+#[derive(Serialize)]
+struct LayoutRenderResult {
+    pub block: String,
+    pub tree: String,
+}
+
 /// Render a layout (in block form).
 pub async fn render_layout_request(Json(props): Json<RenderLayout>) -> impl IntoResponse {
-    Html(props.layout.render_block())
+    Json(LayoutRenderResult {
+        block: props.layout.render_block(),
+        tree: props.layout.render_tree(),
+    })
 }
 
 /// Delete another user

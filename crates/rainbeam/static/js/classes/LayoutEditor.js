@@ -1,3 +1,125 @@
+/// Copy all the fields from one object to another.
+function copy_fields(from, to) {
+    for (const field of Object.entries(from)) {
+        to[field[0]] = field[1];
+    }
+
+    return to;
+}
+
+/// Simple template components.
+const COMPONENT_TEMPLATES = {
+    EMPTY_COMPONENT: { component: "empty", options: {}, children: [] },
+    FLEX_DEFAULT: {
+        component: "flex",
+        options: {
+            direction: "row",
+            gap: "2",
+        },
+        children: [],
+    },
+    FLEX_SIMPLE_ROW: {
+        component: "flex",
+        options: {
+            direction: "row",
+            gap: "2",
+            width: "full",
+        },
+        children: [],
+    },
+    FLEX_SIMPLE_COL: {
+        component: "flex",
+        options: {
+            direction: "col",
+            gap: "2",
+            width: "full",
+        },
+        children: [],
+    },
+    MARKDOWN_DEFAULT: {
+        component: "markdown",
+        options: {
+            text: "Hello, world!",
+        },
+    },
+    MARKDOWN_CARD: {
+        component: "markdown",
+        options: {
+            class: "card w-full",
+            text: "Hello, world!",
+        },
+    },
+};
+
+/// All available components with their label and JSON representation.
+const COMPONENTS = [
+    [
+        "Markdown block",
+        COMPONENT_TEMPLATES.MARKDOWN_DEFAULT,
+        [["Card", COMPONENT_TEMPLATES.MARKDOWN_CARD]],
+    ],
+    [
+        "Flex container",
+        COMPONENT_TEMPLATES.FLEX_DEFAULT,
+        [
+            ["Simple rows", COMPONENT_TEMPLATES.FLEX_SIMPLE_ROW],
+            ["Simple columns", COMPONENT_TEMPLATES.FLEX_SIMPLE_COL],
+        ],
+    ],
+    [
+        "Profile tabs",
+        {
+            component: "tabs",
+        },
+    ],
+    [
+        "Profile feeds",
+        {
+            component: "feed",
+        },
+    ],
+    [
+        "Profile banner",
+        {
+            component: "banner",
+        },
+    ],
+    [
+        "Question box",
+        {
+            component: "ask",
+        },
+    ],
+    [
+        "Name & avatar",
+        {
+            component: "name",
+        },
+    ],
+    [
+        "About section",
+        {
+            component: "about",
+        },
+    ],
+    [
+        "Action buttons",
+        {
+            component: "actions",
+        },
+    ],
+];
+
+// preload icons
+trigger("app:icon", ["shapes"]);
+trigger("app:icon", ["type"]);
+trigger("app:icon", ["plus"]);
+trigger("app:icon", ["move-up"]);
+trigger("app:icon", ["move-down"]);
+trigger("app:icon", ["trash"]);
+trigger("app:icon", ["arrow-left"]);
+trigger("app:icon", ["x"]);
+
 /// The location of an element as represented by array indexes.
 class ElementPointer {
     position = [];
@@ -59,20 +181,12 @@ class ElementPointer {
     }
 }
 
-const EMPTY_COMPONENT = { component: "empty", options: {}, children: [] };
-
-function copy_fields(from, to) {
-    for (const field of Object.entries(from)) {
-        to[field[0]] = field[1];
-    }
-
-    return to;
-}
-
+/// The layout editor controller.
 class LayoutEditor {
     element;
     json;
-    current = {};
+    tree = "";
+    current = { component: "empty" };
     pointer = new ElementPointer();
 
     /// Create a new [`LayoutEditor`].
@@ -86,6 +200,22 @@ class LayoutEditor {
         }
 
         element.addEventListener("click", (e) => this.click(e, this));
+        element.addEventListener("mouseover", (e) => {
+            e.stopImmediatePropagation();
+            const ptr = new ElementPointer(e.target);
+
+            if (document.getElementById("position")) {
+                document.getElementById(
+                    "position",
+                ).parentElement.style.display = "flex";
+
+                document.getElementById("position").innerText = ptr
+                    .get()
+                    .join(".");
+            }
+        });
+
+        this.render();
     }
 
     /// Render layout.
@@ -99,9 +229,10 @@ class LayoutEditor {
                 "Content-Type": "application/json",
             },
         })
-            .then((r) => r.text())
+            .then((r) => r.json())
             .then((r) => {
-                this.element.innerHTML = r;
+                this.element.innerHTML = r.block;
+                this.tree = r.tree;
 
                 if (this.json.component !== "empty") {
                     // remove all "empty" components (if the root component isn't an empty)
@@ -117,10 +248,21 @@ class LayoutEditor {
     /// Editor clicked.
     click(e, self) {
         e.stopImmediatePropagation();
+        trigger("app:hook.dropdown.close");
 
         const ptr = new ElementPointer(e.target);
         self.current = ptr.resolve(self.json);
         self.pointer = ptr;
+
+        if (document.getElementById("current_position")) {
+            document.getElementById(
+                "current_position",
+            ).parentElement.style.display = "flex";
+
+            document.getElementById("current_position").innerText = ptr
+                .get()
+                .join(".");
+        }
 
         for (const element of document.querySelectorAll(
             ".layout_editor_block.active",
@@ -153,7 +295,7 @@ class LayoutEditor {
     }
 
     /// Render editor dialog.
-    screen(page = "element") {
+    screen(page = "element", data = {}) {
         this.current.component = this.current.component.toLowerCase();
 
         const sidebar = document.getElementById("editor_sidebar");
@@ -168,98 +310,52 @@ class LayoutEditor {
             sidebar.appendChild(
                 (() => {
                     const heading = document.createElement("h3");
-                    heading.innerText = "Add component";
+                    heading.innerText = data.add_title || "Add component";
                     return heading;
                 })(),
             );
 
-            const components = [
-                [
-                    "Markdown block",
-                    {
-                        component: "markdown",
-                        options: {
-                            text: "Hello, world!",
-                        },
-                    },
-                ],
-                [
-                    "Flex container",
-                    {
-                        component: "flex",
-                        options: {
-                            direction: "row",
-                            gap: "2",
-                        },
-                        children: [],
-                    },
-                ],
-                [
-                    "Profile tabs",
-                    {
-                        component: "tabs",
-                    },
-                ],
-                [
-                    "Profile feeds",
-                    {
-                        component: "feed",
-                    },
-                ],
-                [
-                    "Profile banner",
-                    {
-                        component: "banner",
-                    },
-                ],
-                [
-                    "Question box",
-                    {
-                        component: "ask",
-                    },
-                ],
-                [
-                    "Name & avatar",
-                    {
-                        component: "name",
-                    },
-                ],
-                [
-                    "About section",
-                    {
-                        component: "about",
-                    },
-                ],
-                [
-                    "Action buttons",
-                    {
-                        component: "actions",
-                    },
-                ],
-            ];
+            sidebar.appendChild(document.createElement("hr"));
 
             const container = document.createElement("div");
             container.className = "flex w-full gap-2 flex-wrap";
 
-            for (const component of components) {
+            for (const component of data.components || COMPONENTS) {
                 container.appendChild(
                     (() => {
                         const button = document.createElement("button");
                         button.classList.add("secondary");
 
-                        trigger("app:icon", ["shapes", "icon"]).then((icon) => {
+                        trigger("app:icon", [
+                            data.icon || "shapes",
+                            "icon",
+                        ]).then((icon) => {
                             button.prepend(icon);
                         });
 
                         button.appendChild(
                             (() => {
                                 const span = document.createElement("span");
-                                span.innerText = component[0];
+                                span.innerText = `${component[0]}${component[2] ? ` (${component[2].length + 1})` : ""}`;
                                 return span;
                             })(),
                         );
 
                         button.addEventListener("click", () => {
+                            if (component[2]) {
+                                // render presets
+                                return this.screen(page, {
+                                    back: ["add", {}],
+                                    add_title: "Select preset",
+                                    components: [
+                                        ["Default", component[1]],
+                                        ...component[2],
+                                    ],
+                                    icon: "type",
+                                });
+                            }
+
+                            // no presets
                             if (
                                 page === "element" &&
                                 this.current.component === "empty"
@@ -283,7 +379,10 @@ class LayoutEditor {
             sidebar.appendChild(container);
         } else if (page === "element") {
             // edit element
-            sidebar.appendChild(
+            const name = document.createElement("div");
+            name.className = "flex flex-col gap-2";
+
+            name.appendChild(
                 (() => {
                     const heading = document.createElement("h3");
                     heading.innerText = `Edit ${this.current.component}`;
@@ -291,22 +390,52 @@ class LayoutEditor {
                 })(),
             );
 
+            name.appendChild(
+                (() => {
+                    const pos = document.createElement("div");
+                    pos.className = "notification w-content";
+                    pos.innerText = this.pointer.get().join(".");
+                    return pos;
+                })(),
+            );
+
+            sidebar.appendChild(name);
+            sidebar.appendChild(document.createElement("hr"));
+
             // options
+            const options = document.createElement("div");
+            options.className = "card flex flex-col gap-2 w-full";
+
             const add_option = (
                 label_text,
                 name,
                 valid = [],
                 input_element = "input",
             ) => {
-                const card = document.createElement("div");
-                card.className = "card w-full flex flex-col gap-2";
+                const card = document.createElement("details");
+                card.className = "w-full";
+
+                const summary = document.createElement("summary");
+                summary.className = "w-full";
 
                 const label = document.createElement("label");
                 label.setAttribute("for", name);
                 label.className = "w-full";
                 label.innerText = label_text;
+                label.style.cursor = "pointer";
+
+                label.addEventListener("click", () => {
+                    // bubble to summary click
+                    summary.click();
+                });
+
+                const input_box = document.createElement("div");
+                input_box.style.paddingLeft = "1rem";
+                input_box.style.borderLeft =
+                    "solid 2px var(--color-super-lowered)";
 
                 const input = document.createElement(input_element);
+                input.id = name;
                 input.setAttribute("name", name);
                 input.setAttribute("type", "text");
 
@@ -317,6 +446,11 @@ class LayoutEditor {
                     );
                 } else {
                     input.innerHTML = (this.current.options || {})[name] || "";
+                }
+
+                if ((this.current.options || {})[name]) {
+                    // open details if a value is set
+                    card.setAttribute("open", "");
                 }
 
                 input.addEventListener("change", (e) => {
@@ -337,10 +471,14 @@ class LayoutEditor {
                         e.target.value === "no" ? "" : e.target.value;
                 });
 
-                card.appendChild(label);
-                card.appendChild(input);
-                sidebar.appendChild(card);
+                summary.appendChild(label);
+                card.appendChild(summary);
+                input_box.appendChild(input);
+                card.appendChild(input_box);
+                options.appendChild(card);
             };
+
+            sidebar.appendChild(options);
 
             if (this.current.component === "flex") {
                 add_option("Gap", "gap", ["1", "2", "3", "4"]);
@@ -351,8 +489,11 @@ class LayoutEditor {
                 add_option("Style", "style", [], "textarea");
             } else if (this.current.component === "markdown") {
                 add_option("Content", "text", [], "textarea");
+                add_option("Class name", "class");
             } else if (this.current.component === "divider") {
                 add_option("Class name", "class");
+            } else {
+                options.remove();
             }
 
             // action buttons
@@ -474,7 +615,6 @@ class LayoutEditor {
             buttons.appendChild(
                 (() => {
                     const button = document.createElement("button");
-
                     button.classList.add("red");
 
                     trigger("app:icon", ["trash", "icon"]).then((icon) => {
@@ -500,7 +640,10 @@ class LayoutEditor {
 
                         if (this.json === this.current) {
                             // this is the root element; replace with empty
-                            copy_fields(EMPTY_COMPONENT, this.current);
+                            copy_fields(
+                                COMPONENT_TEMPLATES.EMPTY_COMPONENT,
+                                this.current,
+                            );
                         } else {
                             // get parent
                             const idx = this.pointer.get().pop();
@@ -518,10 +661,43 @@ class LayoutEditor {
             );
 
             sidebar.appendChild(buttons);
+        } else if (page === "tree") {
+            sidebar.innerHTML = this.tree;
         }
 
         sidebar.appendChild(document.createElement("hr"));
-        sidebar.appendChild(
+
+        const buttons = document.createElement("div");
+        buttons.className = "flex gap-2 flex-wrap";
+
+        if (data.back) {
+            buttons.appendChild(
+                (() => {
+                    const button = document.createElement("button");
+                    button.className = "secondary";
+
+                    trigger("app:icon", ["arrow-left", "icon"]).then((icon) => {
+                        button.prepend(icon);
+                    });
+
+                    button.appendChild(
+                        (() => {
+                            const span = document.createElement("span");
+                            span.innerText = "Back";
+                            return span;
+                        })(),
+                    );
+
+                    button.addEventListener("click", () => {
+                        this.screen(...data.back);
+                    });
+
+                    return button;
+                })(),
+            );
+        }
+
+        buttons.appendChild(
             (() => {
                 const button = document.createElement("button");
                 button.className = "red secondary";
@@ -546,6 +722,8 @@ class LayoutEditor {
                 return button;
             })(),
         );
+
+        sidebar.appendChild(buttons);
 
         // ...
         this.open();

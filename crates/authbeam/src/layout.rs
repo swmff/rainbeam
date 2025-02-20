@@ -276,22 +276,8 @@ impl LayoutComponent {
                         String::new()
                     }
                 },
-                {
-                    let class = self.option("class", None);
-                    if !class.is_empty() {
-                        class
-                    } else {
-                        String::new()
-                    }
-                },
-                {
-                    let style = self.option("style", None);
-                    if !style.is_empty() {
-                        style
-                    } else {
-                        String::new()
-                    }
-                },
+                self.option("class", None),
+                self.option("style", None),
                 // children
                 {
                     let mut children: String = String::new();
@@ -338,7 +324,8 @@ impl LayoutComponent {
                 }
             }),
             T::Markdown => format!(
-                "<div class=\"card w-full\">{}</div>",
+                "<div class=\"{}\">{}</div>",
+                self.option("class", None),
                 rainbeam_shared::ui::render_markdown(&self.option("text", None))
             ),
             T::Empty => String::new(),
@@ -430,6 +417,43 @@ impl LayoutComponent {
                 }
             ),
         }
+    }
+
+    /// Render the component to tree format (using HTML `<details>`).
+    pub fn render_tree(&self) -> String {
+        // rustfmt has left as, as usual
+        let tag = if self.children.len() == 0 {
+            "div"
+        } else {
+            "details"
+        };
+
+        format!(
+            "<{tag} class=\"layout_editor_tree_block flex flex-col gap-2 w-full\" data-component-name=\"{:?}\">
+                <summary><b>{:?} ({}b)</b></summary>
+                {}
+            </{tag}>",
+            self.component,
+            self.component,
+            {
+                let mut size: usize = 0;
+
+                for option in &self.options {
+                    size += option.0.len() + option.1.len()
+                }
+
+                size
+            },
+            {
+                let mut children: String = String::new();
+
+                for child in &self.children {
+                    children.push_str(&child.render_tree());
+                }
+
+                children
+            }
+        )
     }
 }
 

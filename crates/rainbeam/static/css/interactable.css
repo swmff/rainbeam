@@ -105,6 +105,7 @@ button.secondary:hover,
     aspect-ratio: 1 / 1 !important;
     width: 48px !important;
     height: 48px !important;
+    font-size: 18px; /* width / 2.66666666667 */
     z-index: 3;
 }
 

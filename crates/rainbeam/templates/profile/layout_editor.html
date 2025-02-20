@@ -30,12 +30,29 @@ config.name }}{% endblock %} {% block head %}
 <meta name="og:description" content="{{ biography }}" />
 {% endif %} {% endblock %} {% block base %}
 <div id="toast_zone"></div>
+<div class="layout_editor_stats desktop">
+    <div
+        class="layout_editor_stat"
+        title="Current element JSON position"
+        style="display: none"
+    >
+        {{ icon "mouse-pointer-click" }}
+        <b id="current_position"></b>
+    </div>
+
+    <div
+        class="layout_editor_stat hidden"
+        title="Hovered element JSON position"
+        style="display: none"
+    >
+        {{ icon "mouse-pointer-2" }}
+        <b id="position"></b>
+    </div>
+</div>
 
 <div id="page">
     <div class="content_container" id="page_content">
-        <article id="editor">
-            {{ other.layout.fill().as_ref().render_block()|safe }}
-        </article>
+        <article id="editor"></article>
     </div>
 </div>
 
@@ -46,6 +63,30 @@ config.name }}{% endblock %} {% block head %}
 </script>
 
 <style>
+    .layout_editor_stats {
+        position: fixed;
+        top: 0.5rem;
+        right: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.5rem;
+        user-select: none;
+    }
+
+    .layout_editor_stats .layout_editor_stat {
+        background: var(--color-lowered);
+        border: solid 1px var(--color-super-lowered);
+        box-shadow: 0 0 2px var(--color-shadow);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius);
+        width: max-content;
+    }
+
     .layout_editor_block {
         width: 100%;
         padding: 1rem;
@@ -65,6 +106,32 @@ config.name }}{% endblock %} {% block head %}
     .layout_editor_block:hover,
     .layout_editor_block.active {
         box-shadow: 0 0 0 2px var(--color-primary);
+    }
+
+    .layout_editor_tree_block summary {
+        background: var(--color-super-raised);
+        width: 100%;
+    }
+
+    .layout_editor_tree_block[open] summary {
+        background: var(--color-lowered);
+    }
+
+    .layout_editor_tree_block[open] > summary {
+        background: var(--color-super-raised);
+    }
+
+    .layout_editor_tree_block summary:hover {
+        background: var(--color-super-lowered);
+    }
+
+    .layout_editor_tree_block[open] > summary:hover {
+        background: var(--color-raised);
+    }
+
+    .layout_editor_tree_block .layout_editor_tree_block {
+        padding-left: 1rem;
+        border-left: solid 2px var(--color-super-lowered);
     }
 </style>
 
@@ -91,6 +158,10 @@ config.name }}{% endblock %} {% block head %}
         <a href="javascript:history.back()">
             {{ icon "arrow-left" }} {{ text "chats:chat.html:link.go_back" }}
         </a>
+
+        <button onclick="globalThis.editor.screen('tree')">
+            {{ icon "list-tree" }} {{ text "general:link.tree" }}
+        </button>
 
         <button onclick="globalThis.editor.render()">
             {{ icon "refresh-ccw" }} {{ text "general:link.render" }}
