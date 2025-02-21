@@ -743,6 +743,12 @@ pub fn clean_metadata_raw(metadata: &ProfileMetadata) -> ProfileMetadata {
 pub fn clean_metadata_short(metadata: &ProfileMetadata) -> String {
     remove_tags(&serde_json::to_string(&clean_metadata_short_raw(metadata)).unwrap())
         .replace("\u{200d}", "")
+        // how do you end up with these in your settings?
+        .replace("\u{0010}", "")
+        .replace("\u{0011}", "")
+        .replace("\u{0012}", "")
+        .replace("\u{0013}", "")
+        .replace("\u{0014}", "")
 }
 
 /// Clean profile metadata short row
