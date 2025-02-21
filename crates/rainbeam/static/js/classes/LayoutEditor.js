@@ -36,6 +36,15 @@ const COMPONENT_TEMPLATES = {
         },
         children: [],
     },
+    FLEX_MOBILE_COL: {
+        component: "flex",
+        options: {
+            collapse: "yes",
+            gap: "2",
+            width: "full",
+        },
+        children: [],
+    },
     MARKDOWN_DEFAULT: {
         component: "markdown",
         options: {
@@ -64,6 +73,7 @@ const COMPONENTS = [
         [
             ["Simple rows", COMPONENT_TEMPLATES.FLEX_SIMPLE_ROW],
             ["Simple columns", COMPONENT_TEMPLATES.FLEX_SIMPLE_COL],
+            ["Mobile columns", COMPONENT_TEMPLATES.FLEX_MOBILE_COL],
         ],
     ],
     [
@@ -106,6 +116,15 @@ const COMPONENTS = [
         "Action buttons",
         {
             component: "actions",
+        },
+    ],
+    [
+        "CSS stylesheet",
+        {
+            component: "style",
+            options: {
+                data: "",
+            },
         },
     ],
 ];
@@ -364,7 +383,9 @@ class LayoutEditor {
                                 copy_fields(component[1], this.current);
                             } else {
                                 // add component to children
-                                this.current.children.push(component[1]);
+                                this.current.children.push(
+                                    structuredClone(component[1]),
+                                );
                             }
 
                             this.render();
@@ -486,12 +507,15 @@ class LayoutEditor {
                 add_option("Do collapse", "collapse", ["yes", "no"]);
                 add_option("Width", "width", ["full", "content"]);
                 add_option("Class name", "class");
+                add_option("Unique ID", "id");
                 add_option("Style", "style", [], "textarea");
             } else if (this.current.component === "markdown") {
                 add_option("Content", "text", [], "textarea");
                 add_option("Class name", "class");
             } else if (this.current.component === "divider") {
                 add_option("Class name", "class");
+            } else if (this.current.component === "style") {
+                add_option("Style data", "data", [], "textarea");
             } else {
                 options.remove();
             }

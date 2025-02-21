@@ -292,6 +292,6 @@
         "market:action.edit_content": "Edit content",
         "market:action.use_theme": "Use theme base",
         "market:action.copy_to_profile": "Copy to profile",
-        "market:action.use_layout": "Use layout"
+        "market:action.clone_layout": "Clone layout"
     }
 }

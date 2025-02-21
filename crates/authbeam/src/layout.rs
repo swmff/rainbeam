@@ -85,6 +85,9 @@ pub enum ComponentName {
     /// A `<hr>` element.
     #[serde(alias = "divider")]
     Divider,
+    /// A `<style>` element.
+    #[serde(alias = "style")]
+    Style,
 }
 
 impl Default for ComponentName {
@@ -186,7 +189,7 @@ impl LayoutComponent {
         // regular
         match self.component {
             T::Flex => format!(
-                "<div class=\"flex {} {} {} {} {}\" style=\"{}\">{}</div>",
+                "<div class=\"flex {} {} {} {} {}\" style=\"{}\" id=\"{}\">{}</div>",
                 // extra classes
                 {
                     let direction = self.option("direction", None);
@@ -222,6 +225,7 @@ impl LayoutComponent {
                 },
                 self.option("class", None),
                 self.option("style", None),
+                self.option("id", None),
                 // children
                 {
                     let mut children: String = String::new();
@@ -238,6 +242,10 @@ impl LayoutComponent {
                 "<div class=\"{}\">{}</div>",
                 self.option("class", None),
                 rainbeam_shared::ui::render_markdown(&self.option("text", None))
+            ),
+            T::Style => format!(
+                "<style>{}</style>",
+                self.option("data", None).replace("</", "")
             ),
             T::Empty => String::new(),
             _ => format!("ComponentName::{:?}", self.component),
@@ -299,7 +307,7 @@ impl LayoutComponent {
         // regular
         match self.component {
             T::Flex => format!(
-                "<div class=\"flex {} {} {} {} {}\" style=\"{}\">{}</div>",
+                "<div class=\"flex {} {} {} {} {}\" style=\"{}\" id=\"{}\">{}</div>",
                 // extra classes
                 {
                     let direction = self.option("direction", None);
@@ -335,6 +343,7 @@ impl LayoutComponent {
                 },
                 self.option("class", None),
                 self.option("style", None),
+                self.option("id", None),
                 // children
                 {
                     let mut children: String = String::new();
@@ -384,6 +393,10 @@ impl LayoutComponent {
                 "<div class=\"{}\">{}</div>",
                 self.option("class", None),
                 rainbeam_shared::ui::render_markdown(&self.option("text", None))
+            ),
+            T::Style => format!(
+                "<style>{}</style>",
+                self.option("data", None).replace("</", "")
             ),
             T::Empty => String::new(),
             _ => format!("ComponentName::{:?}", self.component),
