@@ -587,10 +587,18 @@ pub async fn profile_layout_editor_request(
                     return Html(DatabaseError::NotAllowed.to_string());
                 }
 
-                match serde_json::from_str(&item.content) {
+                let mut layout: LayoutComponent = match serde_json::from_str(&item.content) {
                     Ok(l) => l,
                     Err(_) => return Html(DatabaseError::ValueError.to_string()),
-                }
+                };
+
+                // mark that this layout came from this item
+                layout
+                    .options
+                    .insert("#rainbeam:market_id".to_string(), props.id.clone());
+
+                // return
+                layout
             },
             is_self,
         }
