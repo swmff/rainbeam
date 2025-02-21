@@ -85,7 +85,7 @@
 
                     <!-- prettier-ignore -->
                     {% if let Some(profile) = profile %}
-                            {% if author_tag.0 && author_tag.1 == profile.id %}
+                    {% if author_tag.0 && author_tag.1 == profile.id %}
                     <span class="notification">You</span>
                     {% endif %} {% endif %}
 
@@ -190,6 +190,27 @@
         <!-- prettier-ignore -->
         {% if (do_not_render_question == false) && (response.context.is_post == false) %}
             {% include "components/response_title.html" %}
+        {% endif %}
+
+        {% if show_comments != false %}
+        <div
+            id="comments:{{ response.id }}"
+            class="card secondary flex flex-col gap-4 round"
+            style="display: none"
+        >
+            <include-partial
+                src="/_app/components/response_comments.html?id={{ response.id }}&page=0"
+                uses="app:clean_date_codes,app:link_filter,app:hook.alt,app:hook.partial_embeds"
+            ></include-partial>
+
+            <a
+                href="/@{{ response.author.username }}/r/{{ response.id }}"
+                title="Show more"
+                class="button secondary sm:w-full"
+            >
+                {{ text "general:link.open" }} {{ icon "external-link" }}
+            </a>
+        </div>
         {% endif %}
     </div>
 </div>

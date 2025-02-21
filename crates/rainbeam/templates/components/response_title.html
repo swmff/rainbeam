@@ -87,17 +87,24 @@
         </button>
 
         <!-- comments -->
-        {% if show_comments != false %}
-        <a
-            href="/@{{ response.author.username }}/r/{{ response.id }}"
+        {% if show_comments != false %} {% if comment_count > 0 %}
+        <button
             title="{{ comment_count }} comments"
-            class="button camo"
+            class="circle button camo sm:w-full"
+            onclick="trigger('app:toggle_flex', [document.getElementById('comments:{{ response.id }}')])"
         >
-            {{ icon "message-circle" }} {% if comment_count > 0 %}
+            {{ icon "message-circle" }}
             <span class="notification camo">{{ comment_count }}</span>
-            {% endif %}
+        </button>
+        {% else %}
+        <a
+            title="{{ comment_count }} comments"
+            class="circle button camo sm:w-full"
+            href="/@{{ response.author.username }}/r/{{ response.id }}"
+        >
+            {{ icon "message-circle" }}
         </a>
-        {% endif %}
+        {% endif %} {% endif %}
 
         <!-- quote -->
         <div class="dropdown">

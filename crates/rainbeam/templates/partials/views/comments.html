@@ -1,5 +1,7 @@
-<!-- prettier-ignore -->
-{% for comment in comments %}
-    {% let show_replies = true %}
-    {% include "components/comment.html" %}
-{% endfor %}
+<div class="flex flex-col gap-4">
+    <!-- prettier-ignore -->
+    {% for comment in comments %}
+        {% let show_replies = true %}
+        {% include "components/comment.html" %}
+    {% endfor %}
+</div>

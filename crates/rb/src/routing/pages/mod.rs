@@ -1670,6 +1670,83 @@ pub async fn partial_comments_request(
 }
 
 #[derive(Template)]
+#[template(path = "partials/views/comments.html")]
+struct ResponseCommentsPartialTemplate {
+    config: Config,
+    lang: langbeam::LangFile,
+    profile: Option<Box<Profile>>,
+    response: QuestionResponse,
+    comments: Vec<(ResponseComment, usize, usize)>,
+    open_replies_in_tab: bool,
+    is_powerful: bool,
+    is_helper: bool,
+}
+
+/// GET /_app/components/response_comments.html
+pub async fn partial_response_comments_request(
+    jar: CookieJar,
+    State(database): State<Database>,
+    Query(props): Query<PartialCommentsProps>,
+) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => Some(ua),
+            Err(_) => None,
+        },
+        None => None,
+    };
+
+    let response = match database.get_response(props.id.clone()).await {
+        Ok(r) => r.1,
+        Err(e) => return Html(e.to_html(database)),
+    };
+
+    let comments = match database
+        .get_comments_by_response_paginated(response.id.clone(), props.page.clone())
+        .await
+    {
+        Ok(r) => r,
+        Err(_) => Vec::new(),
+    };
+
+    let mut is_helper: bool = false;
+    let is_powerful = if let Some(ref ua) = auth_user {
+        let group = match database.auth.get_group_by_id(ua.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        is_helper = group.permissions.check_helper();
+        group.permissions.check_manager()
+    } else {
+        false
+    };
+
+    Html(
+        ResponseCommentsPartialTemplate {
+            config: database.config.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
+            profile: auth_user,
+            response,
+            comments,
+            open_replies_in_tab: true,
+            is_powerful,
+            is_helper,
+        }
+        .render()
+        .unwrap(),
+    )
+}
+
+#[derive(Template)]
 #[template(path = "inbox.html")]
 struct InboxTemplate {
     config: Config,
@@ -2525,6 +2602,10 @@ pub async fn routes(database: Database) -> Router {
         .route(
             "/_app/components/comments.html",
             get(partial_comments_request),
+        )
+        .route(
+            "/_app/components/response_comments.html",
+            get(partial_response_comments_request),
         )
         .route(
             "/_app/components/response.html",
