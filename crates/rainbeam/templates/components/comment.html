@@ -58,10 +58,10 @@ comment = comment.0.clone() %}
                 {% endif %}
                 <!-- prettier-ignore -->
                 {% if author_tag.1.len() >= 10 %}
-                        {{ author_tag.1[..10] }}
-                    {% else %}
-                        {{ author_tag.1 }}
-                    {% endif %}
+                    {{ author_tag.1[..10] }}
+                {% else %}
+                    {{ author_tag.1 }}
+                {% endif %}
             </a>
             {% endif %} {% endif %} {% endif %}
         </b>
@@ -79,8 +79,8 @@ comment = comment.0.clone() %}
 
     <!-- prettier-ignore -->
     <span class="comment_content" hook="long">
-            {{ rainbeam_shared::ui::render_markdown(comment.content)|safe }}
-        </span>
+        {{ rainbeam_shared::ui::render_markdown(comment.content)|safe }}
+    </span>
 
     <!-- actions -->
     <div class="flex w-full gap-2 actions_bar justify-between">
@@ -99,17 +99,24 @@ comment = comment.0.clone() %}
             </button>
 
             <!-- replies -->
-            {% if show_replies != false %}
-            <a
-                href="/@{{ comment.author.username }}/c/{{ comment.id }}"
+            {% if show_replies != false %} {% if reply_count > 0 %}
+            <button
                 title="{{ reply_count }} replies"
                 class="circle button camo sm:w-full"
+                onclick="trigger('app:toggle_flex', [document.getElementById('replies:{{ comment.id }}')])"
             >
-                {{ icon "message-circle" }} {% if reply_count > 0 %}
+                {{ icon "message-circle" }}
                 <span class="notification camo">{{ reply_count }}</span>
-                {% endif %}
+            </button>
+            {% else %}
+            <a
+                title="{{ reply_count }} replies"
+                class="circle button camo sm:w-full"
+                href="/@{{ comment.author.username }}/c/{{ comment.id }}"
+            >
+                {{ icon "message-circle" }}
             </a>
-            {% endif %}
+            {% endif %} {% endif %}
         </div>
 
         <!-- options -->
@@ -190,6 +197,27 @@ comment = comment.0.clone() %}
             </div>
         </div>
     </div>
+
+    {% if show_replies != false %}
+    <div
+        id="replies:{{ comment.id }}"
+        class="card secondary flex flex-col gap-2"
+        style="display: none"
+    >
+        <include-partial
+            src="/_app/components/comments.html?id={{ comment.id }}&page=0"
+            uses="app:clean_date_codes,app:link_filter,app:hook.alt,app:hook.partial_embeds"
+        ></include-partial>
+
+        <a
+            href="/@{{ comment.author.username }}/c/{{ comment.id }}?page=1"
+            title="Show more"
+            class="button secondary sm:w-full"
+        >
+            {{ text "general:link.more" }} {{ icon "arrow-right" }}
+        </a>
+    </div>
+    {% endif %}
 </div>
 
 <style>

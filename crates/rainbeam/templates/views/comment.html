@@ -165,12 +165,8 @@ block head %}
                 </div>
             </div>
 
-            <!-- prettier-ignore -->
-            {% for reply in replies %}
-                {% let comment = reply %}
-                {% let show_replies = true %}
-                {% include "components/comment.html" %}
-            {% endfor %}
+            {% let comments = replies.clone() %}
+            {% include "partials/views/comments.html" %}
 
             <!-- pagination buttons -->
             <div class="flex justify-between gap-2 w-full">

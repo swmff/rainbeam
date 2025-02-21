@@ -254,6 +254,14 @@
         },
     );
 
+    app.define("toggle_flex", function (_, element) {
+        if (element.style.display === "none") {
+            element.style.display = "flex";
+        } else {
+            element.style.display = "none";
+        }
+    });
+
     // hooks
     app.define("hook.scroll", function (_, scroll_element, track_element) {
         const goals = [150, 250, 500, 1000];

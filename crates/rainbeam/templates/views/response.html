@@ -165,11 +165,7 @@ block head %}
                 </div>
             </div>
 
-            <!-- prettier-ignore -->
-            {% for comment in comments %}
-                {% let show_replies = true %}
-                {% include "components/comment.html" %}
-            {% endfor %}
+            {% include "partials/views/comments.html" %}
 
             <!-- pagination buttons -->
             <div class="flex justify-between gap-2 w-full">

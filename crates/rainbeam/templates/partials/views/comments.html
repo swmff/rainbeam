@@ -1,0 +1,5 @@
+<!-- prettier-ignore -->
+{% for comment in comments %}
+    {% let show_replies = true %}
+    {% include "components/comment.html" %}
+{% endfor %}

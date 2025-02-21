@@ -29,6 +29,7 @@
         "general:service.chats": "채팅",
         "general:service.mail": "메일",
         "general:service.circles": "서클",
+        "general:service.market": "Market",
 
         "general:title.services": "서비스",
         "general:title.social": "소셜",

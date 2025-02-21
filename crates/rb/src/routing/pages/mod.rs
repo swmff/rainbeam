@@ -1387,7 +1387,7 @@ struct PartialResponseTemplate {
     do_render_nested: bool,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct PartialResponseProps {
     pub id: String,
     pub do_render_nested: bool,
@@ -1569,6 +1569,92 @@ pub async fn comment_request(
             reaction_count: response.3,
             anonymous_username: Some("anonymous".to_string()), // TODO: fetch recipient setting
             anonymous_avatar: None,
+            is_powerful,
+            is_helper,
+        }
+        .render()
+        .unwrap(),
+    )
+}
+
+#[derive(Template)]
+#[template(path = "partials/views/comments.html")]
+struct CommentsPartialTemplate {
+    config: Config,
+    lang: langbeam::LangFile,
+    profile: Option<Box<Profile>>,
+    response: QuestionResponse,
+    comments: Vec<(ResponseComment, usize, usize)>,
+    is_powerful: bool,
+    is_helper: bool,
+}
+
+#[derive(Deserialize)]
+pub struct PartialCommentsProps {
+    pub id: String,
+    pub page: i32,
+}
+
+/// GET /_app/components/comments.html
+pub async fn partial_comments_request(
+    jar: CookieJar,
+    State(database): State<Database>,
+    Query(props): Query<PartialCommentsProps>,
+) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => Some(ua),
+            Err(_) => None,
+        },
+        None => None,
+    };
+
+    let comment = match database.get_comment(props.id.clone(), true).await {
+        Ok(r) => r,
+        Err(e) => return Html(e.to_html(database)),
+    };
+
+    let comments = match database
+        .get_replies_by_comment_paginated(comment.0.id.clone(), props.page.clone())
+        .await
+    {
+        Ok(r) => r,
+        Err(_) => Vec::new(),
+    };
+
+    let response = match database.get_response(comment.0.response.clone()).await {
+        Ok(r) => r.1,
+        Err(e) => return Html(e.to_html(database)),
+    };
+
+    let mut is_helper: bool = false;
+    let is_powerful = if let Some(ref ua) = auth_user {
+        let group = match database.auth.get_group_by_id(ua.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        is_helper = group.permissions.check_helper();
+        group.permissions.check_manager()
+    } else {
+        false
+    };
+
+    Html(
+        CommentsPartialTemplate {
+            config: database.config.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
+            profile: auth_user,
+            response,
+            comments,
             is_powerful,
             is_helper,
         }
@@ -2430,6 +2516,10 @@ pub async fn routes(database: Database) -> Router {
         .route("/+i/{ip}", get(api::profiles::expand_ip_request))
         .route("/+g/{id}", get(api::circles::expand_request))
         // partials
+        .route(
+            "/_app/components/comments.html",
+            get(partial_comments_request),
+        )
         .route(
             "/_app/components/response.html",
             get(partial_response_request),
