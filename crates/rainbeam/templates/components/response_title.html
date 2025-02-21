@@ -90,7 +90,7 @@
         {% if show_comments != false %} {% if comment_count > 0 %}
         <button
             title="{{ comment_count }} comments"
-            class="circle button camo sm:w-full"
+            class="circle button camo"
             onclick="trigger('app:toggle_flex', [document.getElementById('comments:{{ response.id }}')])"
         >
             {{ icon "message-circle" }}
@@ -99,7 +99,7 @@
         {% else %}
         <a
             title="{{ comment_count }} comments"
-            class="circle button camo sm:w-full"
+            class="circle button camo"
             href="/@{{ response.author.username }}/r/{{ response.id }}"
         >
             {{ icon "message-circle" }}

@@ -88,7 +88,7 @@ comment = comment.0.clone() %}
             <!-- reactions -->
             <button
                 title="{{ reaction_count }} reactions"
-                class="circle camo sm:w-full"
+                class="circle camo"
                 onclick="trigger('reactions:toggle', ['{{ comment.id }}', 'Comment', event.target])"
                 hook="check_reaction"
                 hook-arg:id="{{ comment.id }}"
@@ -102,7 +102,7 @@ comment = comment.0.clone() %}
             {% if show_replies != false %} {% if open_replies_in_tab %}
             <a
                 title="{{ reply_count }} replies"
-                class="circle button camo sm:w-full"
+                class="circle button camo"
                 href="/@{{ comment.author.username }}/c/{{ comment.id }}"
             >
                 {{ icon "message-circle" }} {% if reply_count > 0 %}<span
@@ -113,7 +113,7 @@ comment = comment.0.clone() %}
             {% else %} {% if reply_count > 0 %}
             <button
                 title="{{ reply_count }} replies"
-                class="circle button camo sm:w-full"
+                class="circle button camo"
                 onclick="trigger('app:toggle_flex', [document.getElementById('replies:{{ comment.id }}')])"
             >
                 {{ icon "message-circle" }}
@@ -122,7 +122,7 @@ comment = comment.0.clone() %}
             {% else %}
             <a
                 title="{{ reply_count }} replies"
-                class="circle button camo sm:w-full"
+                class="circle button camo"
                 href="/@{{ comment.author.username }}/c/{{ comment.id }}"
             >
                 {{ icon "message-circle" }}
@@ -131,7 +131,7 @@ comment = comment.0.clone() %}
         </div>
 
         <!-- options -->
-        <div class="dropdown sm:w-full">
+        <div class="dropdown">
             <button
                 onclick="trigger('app:hook.dropdown', [event])"
                 exclude="dropdown"
