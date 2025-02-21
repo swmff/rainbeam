@@ -742,6 +742,7 @@ pub fn clean_metadata_raw(metadata: &ProfileMetadata) -> ProfileMetadata {
 /// Clean profile metadata short
 pub fn clean_metadata_short(metadata: &ProfileMetadata) -> String {
     remove_tags(&serde_json::to_string(&clean_metadata_short_raw(metadata)).unwrap())
+        .replace("\u{200d}", "")
 }
 
 /// Clean profile metadata short row
