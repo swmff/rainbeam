@@ -26,15 +26,15 @@ comment = comment.0.clone() %}
                 <!-- prettier-ignore -->
                 {% let display_name = comment.author.metadata.kv.get("sparkler:display_name") %}
 
-                    {% if let Some(display_name) = display_name %}
-                        {% if !display_name.trim().is_empty() %}
-                            {{ crate::routing::pages::escape_username(display_name) }}
-                        {% else %}
-                            {{ comment.author.username }}
-                        {% endif %}
+                {% if let Some(display_name) = display_name %}
+                    {% if !display_name.trim().is_empty() %}
+                        {{ crate::routing::pages::escape_username(display_name) }}
                     {% else %}
                         {{ comment.author.username }}
                     {% endif %}
+                {% else %}
+                    {{ comment.author.username }}
+                {% endif %}
             </a>
             {% else %}
             <img
@@ -99,7 +99,18 @@ comment = comment.0.clone() %}
             </button>
 
             <!-- replies -->
-            {% if show_replies != false %} {% if reply_count > 0 %}
+            {% if show_replies != false %} {% if open_replies_in_tab %}
+            <a
+                title="{{ reply_count }} replies"
+                class="circle button camo sm:w-full"
+                href="/@{{ comment.author.username }}/c/{{ comment.id }}"
+            >
+                {{ icon "message-circle" }} {% if reply_count > 0 %}<span
+                    class="notification camo"
+                    >{{ reply_count }}</span
+                >{% endif %}
+            </a>
+            {% else %} {% if reply_count > 0 %}
             <button
                 title="{{ reply_count }} replies"
                 class="circle button camo sm:w-full"
@@ -116,7 +127,7 @@ comment = comment.0.clone() %}
             >
                 {{ icon "message-circle" }}
             </a>
-            {% endif %} {% endif %}
+            {% endif %} {% endif %} {% endif %}
         </div>
 
         <!-- options -->
@@ -210,11 +221,11 @@ comment = comment.0.clone() %}
         ></include-partial>
 
         <a
-            href="/@{{ comment.author.username }}/c/{{ comment.id }}?page=1"
+            href="/@{{ comment.author.username }}/c/{{ comment.id }}"
             title="Show more"
             class="button secondary sm:w-full"
         >
-            {{ text "general:link.more" }} {{ icon "arrow-right" }}
+            {{ text "general:link.open" }} {{ icon "external-link" }}
         </a>
     </div>
     {% endif %}

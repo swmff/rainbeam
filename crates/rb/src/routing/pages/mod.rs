@@ -1252,6 +1252,7 @@ struct ResponseTemplate {
     page: i32,
     anonymous_username: Option<String>,
     anonymous_avatar: Option<String>,
+    open_replies_in_tab: bool,
     is_powerful: bool,
     is_helper: bool,
 }
@@ -1361,6 +1362,7 @@ pub async fn response_request(
             page: query.page,
             anonymous_username: Some("anonymous".to_string()), // TODO: fetch recipient setting
             anonymous_avatar: None,
+            open_replies_in_tab: false,
             is_powerful,
             is_helper,
         }
@@ -1472,6 +1474,7 @@ struct CommentTemplate {
     reaction_count: usize,
     anonymous_username: Option<String>,
     anonymous_avatar: Option<String>,
+    open_replies_in_tab: bool,
     is_powerful: bool,
     is_helper: bool,
 }
@@ -1569,6 +1572,7 @@ pub async fn comment_request(
             reaction_count: response.3,
             anonymous_username: Some("anonymous".to_string()), // TODO: fetch recipient setting
             anonymous_avatar: None,
+            open_replies_in_tab: false,
             is_powerful,
             is_helper,
         }
@@ -1585,6 +1589,7 @@ struct CommentsPartialTemplate {
     profile: Option<Box<Profile>>,
     response: QuestionResponse,
     comments: Vec<(ResponseComment, usize, usize)>,
+    open_replies_in_tab: bool,
     is_powerful: bool,
     is_helper: bool,
 }
@@ -1655,6 +1660,7 @@ pub async fn partial_comments_request(
             profile: auth_user,
             response,
             comments,
+            open_replies_in_tab: true,
             is_powerful,
             is_helper,
         }
