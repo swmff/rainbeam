@@ -930,36 +930,6 @@ pub async fn public_posts_timeline_request(
         0
     };
 
-    let mut responses = match database.get_posts_paginated(query.page).await {
-        Ok(responses) => responses,
-        Err(e) => return Html(e.to_html(database)),
-    };
-
-    // remove content from blocked users/users that have blocked us
-    if let Some(ref ua) = auth_user {
-        let blocked = match database
-            .auth
-            .get_user_relationships_of_status(ua.id.clone(), RelationshipStatus::Blocked)
-            .await
-        {
-            Ok(l) => l,
-            Err(_) => Vec::new(),
-        };
-
-        for user in blocked {
-            for (i, _) in responses
-                .clone()
-                .iter()
-                .filter(|x| (x.1.author.id == user.0.id) | (x.0.author.id == user.0.id))
-                .enumerate()
-            {
-                if responses.get(i).is_some() {
-                    responses.remove(i);
-                }
-            }
-        }
-    }
-
     // ...
     Html(
         PublicPostsTemplate {
@@ -1009,37 +979,10 @@ pub async fn partial_posts_request(
         None => None,
     };
 
-    let mut responses = match database.get_posts_paginated(props.page).await {
+    let responses = match database.get_posts_paginated(props.page).await {
         Ok(responses) => responses,
         Err(e) => return Html(e.to_html(database)),
     };
-
-    // remove content from blocked users/users that have blocked us
-    if let Some(ref ua) = auth_user {
-        let blocked = match database
-            .auth
-            .get_user_relationships_of_status(ua.id.clone(), RelationshipStatus::Blocked)
-            .await
-        {
-            Ok(l) => l,
-            Err(_) => Vec::new(),
-        };
-
-        for user in blocked {
-            for (i, _) in responses
-                .clone()
-                .iter()
-                .filter(|x| x.1.author.id == user.0.id)
-                .enumerate()
-            {
-                if i > responses.len() {
-                    continue;
-                }
-
-                responses.remove(i);
-            }
-        }
-    }
 
     let mut is_helper: bool = false;
     let is_powerful = if let Some(ref ua) = auth_user {
@@ -1997,31 +1940,10 @@ pub async fn public_global_timeline_request(
         group.permissions.check_helper()
     };
 
-    let mut questions = match database.get_global_questions_paginated(query.page).await {
+    let questions = match database.get_global_questions_paginated(query.page).await {
         Ok(r) => r,
         Err(e) => return Html(e.to_html(database)),
     };
-
-    // remove content from blocked users/users that have blocked us
-    let blocked = match database
-        .auth
-        .get_user_relationships_of_status(auth_user.id.clone(), RelationshipStatus::Blocked)
-        .await
-    {
-        Ok(l) => l,
-        Err(_) => Vec::new(),
-    };
-
-    for user in blocked {
-        for (i, _) in questions
-            .clone()
-            .iter()
-            .filter(|x| x.0.author.id == user.0.id)
-            .enumerate()
-        {
-            questions.remove(i);
-        }
-    }
 
     // build relationships list
     let mut relationships: HashMap<String, RelationshipStatus> = HashMap::new();

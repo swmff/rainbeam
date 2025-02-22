@@ -192,7 +192,7 @@
             {% include "components/response_title.html" %}
         {% endif %}
 
-        {% if show_comments != false %}
+        {% if show_comments != false && do_render_nested == true %}
         <div
             id="comments:{{ response.id }}"
             class="card secondary flex flex-col gap-4 round"
