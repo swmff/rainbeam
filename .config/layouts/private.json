@@ -1,0 +1,67 @@
+{
+    "component": "flex",
+    "options": { "gap": "4", "direction": "col" },
+    "children": [
+        { "json": "", "component": "banner", "options": {}, "children": [] },
+        {
+            "json": "",
+            "component": "Flex",
+            "options": { "class": "", "collapse": "yes", "gap": "4" },
+            "children": [
+                {
+                    "json": "",
+                    "component": "Flex",
+                    "options": {
+                        "direction": "col",
+                        "style": "width: 25rem; height: max-content",
+                        "gap": "2",
+                        "class": "card sm:w-full"
+                    },
+                    "children": [
+                        {
+                            "json": "",
+                            "component": "Name",
+                            "options": {},
+                            "children": []
+                        },
+                        {
+                            "json": "",
+                            "component": "Actions",
+                            "options": {},
+                            "children": []
+                        }
+                    ]
+                },
+                {
+                    "json": "",
+                    "component": "Divider",
+                    "options": { "class": "mobile small" },
+                    "children": []
+                },
+                {
+                    "json": "",
+                    "component": "Flex",
+                    "options": {
+                        "width": "full",
+                        "gap": "4",
+                        "direction": "col"
+                    },
+                    "children": [
+                        {
+                            "json": "",
+                            "component": "Tabs",
+                            "options": {},
+                            "children": []
+                        },
+                        {
+                            "json": "",
+                            "component": "Feed",
+                            "options": {},
+                            "children": []
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

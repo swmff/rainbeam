@@ -121,6 +121,17 @@ impl Default for LayoutComponent {
 }
 
 impl LayoutComponent {
+    /// Create a [`LayoutComponent`] from the name of a file in `./.config/layouts`.
+    pub fn from_json_file(file: &str) -> Self {
+        Self {
+            json: file.to_string(),
+            component: ComponentName::Empty,
+            options: HashMap::new(),
+            children: Vec::new(),
+        }
+        .fill()
+    }
+
     /// Follow component template to get full template.
     ///
     /// All imports are relative to `./.config/layouts`.

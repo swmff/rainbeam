@@ -69,29 +69,6 @@
     <div id="is_profile_page"></div>
 
     <div id="profile_box" class="flex flex-collapse gap-4">
-        <!-- locked message -->
-        {% if (relationship != crate::model::RelationshipStatus::Friends &&
-        other.metadata.is_true("sparkler:private_profile")) | (other.group ==
-        -1) %}
-        <div
-            class="card padded flex flex-col w-full gap-4 items-center justify-center"
-        >
-            {{ icon "lock-keyhole" }}
-            <h4>{{ text "profile:base.html:text.private" }}</h4>
-        </div>
-        {% else %}
-        <div style="display: none" aria-hidden="true">
-            <div id="use:panel" aria-hidden="true">
-                {% block panel %}{% endblock %}
-            </div>
-
-            <div id="use:tabs" aria-hidden="true">
-                <div class="pillmenu convertible">
-                    {% block pillmenu %}{% endblock %}
-                </div>
-            </div>
-        </div>
-
         <style>
             .profile_avatar {
                 --size: 180px;
@@ -111,6 +88,39 @@
                 }
             }
         </style>
+
+        {% if (relationship != crate::model::RelationshipStatus::Friends &&
+        other.metadata.is_true("sparkler:private_profile")) | (other.group ==
+        -1) %}
+        <!-- locked message -->
+        <div style="display: none" aria-hidden="true">
+            <div id="use:panel" aria-hidden="true">
+                <div
+                    class="card padded flex flex-col w-full gap-4 items-center justify-center"
+                >
+                    {{ icon "lock-keyhole" }}
+                    <h4>{{ text "profile:base.html:text.private" }}</h4>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: contents" id="custom">
+            {% let component =
+            authbeam::layout::LayoutComponent::from_json_file("private.json") %}
+            {% include "layout_components/renderer.html" %}
+        </div>
+        {% else %}
+        <div style="display: none" aria-hidden="true">
+            <div id="use:panel" aria-hidden="true">
+                {% block panel %}{% endblock %}
+            </div>
+
+            <div id="use:tabs" aria-hidden="true">
+                <div class="pillmenu convertible">
+                    {% block pillmenu %}{% endblock %}
+                </div>
+            </div>
+        </div>
 
         <!-- prettier-ignore -->
         <div style="display: contents" id="custom">
