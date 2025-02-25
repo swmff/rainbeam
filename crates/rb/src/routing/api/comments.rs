@@ -362,13 +362,7 @@ pub async fn ipblock_request(
     // get comment
     let comment = match database.get_comment(id.clone(), false).await {
         Ok(q) => q.0,
-        Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: (),
-            })
-        }
+        Err(e) => return Json(e.to_json()),
     };
 
     // block

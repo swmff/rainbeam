@@ -121,6 +121,27 @@
         });
     });
 
+    app.define("ipblock", async function ({ $ }, id) {
+        if (
+            !(await trigger("app:confirm", [
+                "Are you sure you want to do this?",
+            ]))
+        ) {
+            return;
+        }
+
+        fetch(`/api/v1/profiles/${id}/ipblock`, {
+            method: "POST",
+        })
+            .then((res) => res.json())
+            .then((res) => {
+                app.toast(
+                    res.success ? "success" : "error",
+                    res.success ? "IP blocked!" : res.message,
+                );
+            });
+    });
+
     app.define(
         "icon",
         async function ({ $ }, icon_name, classes = "", style = "") {

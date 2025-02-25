@@ -106,7 +106,7 @@
 
         <div style="display: contents" id="custom">
             {% let component =
-            authbeam::layout::LayoutComponent::from_json_file("private.json") %}
+            authbeam::layout::LayoutComponent::from_json_file("default.json") %}
             {% include "layout_components/renderer.html" %}
         </div>
         {% else %}
@@ -124,8 +124,18 @@
 
         <!-- prettier-ignore -->
         <div style="display: contents" id="custom">
-            {% let component = other.layout.as_ref() %}
-            {% include "layout_components/renderer.html" %}
+            {% if let Some(user) = profile %}
+                {% if user.metadata.is_true("rainbeam:force_default_layout") %}
+                    {% let component = authbeam::layout::LayoutComponent::from_json_file("default.json") %}
+                    {% include "layout_components/renderer.html" %}
+                {% else %}
+                    {% let component = other.layout.as_ref() %}
+                    {% include "layout_components/renderer.html" %}
+                {% endif %}
+            {% else %}
+                {% let component = other.layout.as_ref() %}
+                {% include "layout_components/renderer.html" %}
+            {% endif %}
         </div>
         {% endif %}
     </div>

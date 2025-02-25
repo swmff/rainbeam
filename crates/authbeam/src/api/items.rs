@@ -296,13 +296,7 @@ pub async fn buy_request(
     // return
     let item = match database.get_item(id).await {
         Ok(i) => i,
-        Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: (),
-            })
-        }
+        Err(e) => return Json(e.to_json()),
     };
 
     if item.cost == -1 {

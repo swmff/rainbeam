@@ -51,60 +51,71 @@
         </p>
     </div>
 
+    <h4 class="title">
+        {{ text "settings:account.html:title.profile_rendering" }}
+    </h4>
+
     <div class="flex flex-col gap-1">
-        <label for="sparkler:allow_profile_themes"
-            >{{ text "settings:account.html:label.allow_profile_themes"
-            }}</label
-        >
+        <div class="checkbox_container">
+            <input
+                type="checkbox"
+                name="sparkler:allow_profile_themes"
+                id="sparkler:allow_profile_themes"
+                onclick="update_theme_preference(event.target.options[event.target.selectedIndex].value === true ? 'yes' : 'no')"
+                checked
+            />
 
-        <select
-            type="url"
-            name="sparkler:allow_profile_themes"
-            id="sparkler:allow_profile_themes"
-            onchange="update_theme_preference(event.target.options[event.target.selectedIndex].value)"
-        >
-            <option value="yes" id="yes">
-                {{ text "general:dialog.yes" }}
-            </option>
-
-            <option value="no" id="no">{{ text "general:dialog.no" }}</option>
-        </select>
+            <label for="sparkler:allow_profile_themes" class="normal">
+                {{ text "settings:account.html:label.allow_profile_css" }}
+            </label>
+        </div>
 
         <p class="fade">
-            This is a local perference! Changing this to "No" will not show
-            custom profile themes.
+            This is a local perference! Unchecking this will not show custom
+            profile themes.
         </p>
     </div>
 
     <div class="flex flex-col gap-1">
-        <label for="sparkler:allow_profile_css"
-            >{{ text "settings:account.html:label.allow_profile_css" }}</label
-        >
+        <div class="checkbox_container">
+            <input
+                type="checkbox"
+                name="sparkler:allow_profile_css"
+                id="sparkler:allow_profile_css"
+                onclick="update_css_preference(event.target.options[event.target.selectedIndex].value === true ? 'yes' : 'no')"
+                checked
+            />
 
-        <select
-            type="url"
-            name="sparkler:allow_profile_css"
-            id="sparkler:allow_profile_css"
-            onchange="update_css_preference(event.target.options[event.target.selectedIndex].value)"
-        >
-            <option value="yes" id="css-yes">
-                {{ text "general:dialog.yes" }}
-            </option>
-
-            <option value="no" id="css-no">
-                {{ text "general:dialog.no" }}
-            </option>
-        </select>
+            <label for="sparkler:allow_profile_css" class="normal">
+                {{ text "settings:account.html:label.allow_profile_css" }}
+            </label>
+        </div>
 
         <p class="fade">
-            This is a local perference! Changing this to "No" will not show
-            custom profile CSS. Applied colors will still be rendered.
+            This is a local perference! Unchecking this will not show custom
+            profile CSS. Applied colors will still be rendered.
         </p>
+    </div>
+
+    <div class="flex flex-col gap-1">
+        <div class="checkbox_container">
+            <input
+                type="checkbox"
+                name="rainbeam:force_default_layout"
+                id="rainbeam:force_default_layout"
+                onchange="update_kv('rainbeam:force_default_layout', event.target.checked.toString())"
+            />
+
+            <label for="rainbeam:force_default_layout" class="normal">
+                {{ text "settings:account.html:label.force_default_layout" }}
+            </label>
+        </div>
     </div>
 
     <h4 class="title">
         {{ text "settings:account.html:title.local_behaviour" }}
     </h4>
+
     <div class="flex flex-col gap-1">
         <div class="checkbox_container">
             <input
@@ -144,6 +155,7 @@
     <h4 class="title">
         {{ text "settings:account.html:title.profile_controls" }}
     </h4>
+
     <div class="flex flex-col gap-1">
         <div class="checkbox_container">
             <input
@@ -684,21 +696,24 @@
             document.getElementById(current).setAttribute("selected", "true");
         }
 
-        // fill current theme preference
-        const pref = window.localStorage.getItem("theme-pref");
+        setTimeout(() => {
+            // fill current theme preference
+            const pref = window.localStorage.getItem("theme-pref");
 
-        if (document.getElementById(pref)) {
-            document.getElementById(pref).setAttribute("selected", "true");
-        }
+            if (document.getElementById("sparkler:allow_profile_themes")) {
+                document.getElementById(
+                    "sparkler:allow_profile_themes",
+                ).checked = pref === "yes";
+            }
 
-        // fill current css preference
-        const css_pref = window.localStorage.getItem("css-pref");
+            // fill current css preference
+            const css_pref = window.localStorage.getItem("css-pref");
 
-        if (document.getElementById(css_pref)) {
-            document
-                .getElementById(`css-${css_pref}`)
-                .setAttribute("selected", "true");
-        }
+            if (document.getElementById("sparkler:allow_profile_css")) {
+                document.getElementById("sparkler:allow_profile_css").checked =
+                    css_pref === "yes";
+            }
+        }, 150);
 
         // fill extras
         if (window.localStorage.getItem("clear_notifs") === "true") {

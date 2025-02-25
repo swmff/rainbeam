@@ -758,6 +758,7 @@ impl Database {
             "rainbeam:nsfw_profile",
             "rainbeam:share_hashtag",
             "rainbeam:authenticated_only",
+            "rainbeam:force_default_layout",
         ]
     }
 

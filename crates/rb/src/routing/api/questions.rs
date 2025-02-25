@@ -408,13 +408,7 @@ pub async fn ipblock_request(
     // get question
     let question = match database.get_question(id.clone()).await {
         Ok(q) => q,
-        Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: (),
-            })
-        }
+        Err(e) => return Json(e.to_json()),
     };
 
     // block

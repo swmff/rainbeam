@@ -165,6 +165,9 @@
         >
             {{ icon "shield" }} {{ text "general:action.block" }}
         </a>
+        <button onclick="trigger('app:ipblock', ['{{ other.id }}'])">
+            {{ icon "shield" }} {{ text "general:action.ip_block" }}
+        </button>
         <a
             href="javascript:trigger('reports:bootstrap', ['profiles', '{{ other.username }}'])"
         >

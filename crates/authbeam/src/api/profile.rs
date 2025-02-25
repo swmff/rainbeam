@@ -691,11 +691,7 @@ pub async fn update_tokens_request(
     let mut other = match database.get_profile(id).await {
         Ok(o) => o,
         Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: (),
-            });
+            return Json(e.to_json());
         }
     };
 
@@ -709,13 +705,7 @@ pub async fn update_tokens_request(
 
     let group = match database.get_group_by_id(auth_user.group).await {
         Ok(g) => g,
-        Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: (),
-            })
-        }
+        Err(e) => return Json(e.to_json()),
     };
 
     if !group.permissions.check(FinePermission::EDIT_USER) {
@@ -730,13 +720,7 @@ pub async fn update_tokens_request(
     // check permission
     let group = match database.get_group_by_id(other.group).await {
         Ok(g) => g,
-        Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: (),
-            })
-        }
+        Err(e) => return Json(e.to_json()),
     };
 
     if group.permissions.check(FinePermission::ADMINISTRATOR) {
@@ -1265,11 +1249,7 @@ pub async fn patch_metdata_request(
     let other_user = match database.get_profile(id.clone()).await {
         Ok(ua) => ua,
         Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: (),
-            });
+            return Json(e.to_json());
         }
     };
 
@@ -1383,13 +1363,7 @@ pub async fn update_badges_request(
     // check permission
     let group = match database.get_group_by_id(auth_user.group).await {
         Ok(g) => g,
-        Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: (),
-            })
-        }
+        Err(e) => return Json(e.to_json()),
     };
 
     if !group
@@ -1465,13 +1439,7 @@ pub async fn update_labels_request(
     // check permission
     let group = match database.get_group_by_id(auth_user.group).await {
         Ok(g) => g,
-        Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: (),
-            })
-        }
+        Err(e) => return Json(e.to_json()),
     };
 
     if !group

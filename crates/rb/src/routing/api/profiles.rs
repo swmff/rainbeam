@@ -7,7 +7,7 @@ use axum::http::{HeaderMap, HeaderValue, Response};
 use axum_extra::extract::CookieJar;
 use hcaptcha_no_wasm::Hcaptcha;
 
-use authbeam::model::{FinePermission, NotificationCreate};
+use authbeam::model::{FinePermission, IpBlockCreate, NotificationCreate};
 use databeam::prelude::DefaultReturn;
 
 use axum::{
@@ -19,8 +19,9 @@ use axum::{
 
 pub fn routes(database: Database) -> Router {
     Router::new()
-        .route("/{username}/report", post(report_request))
-        .route("/{username}/export", get(export_request)) // staff
+        .route("/{id}/report", post(report_request))
+        .route("/{id}/export", get(export_request)) // staff
+        .route("/{id}/ipblock", post(ipblock_request))
         // ...
         .with_state(database)
 }
@@ -94,13 +95,7 @@ pub async fn report_request(
     // get user
     let profile = match database.get_profile(input.clone()).await {
         Ok(p) => p,
-        Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: (),
-            })
-        }
+        Err(e) => return Json(e.to_json()),
     };
 
     // get real ip
@@ -233,4 +228,57 @@ pub async fn export_request(
             })
         }
     }
+}
+
+/// IP block a profile
+pub async fn ipblock_request(
+    jar: CookieJar,
+    Path(id): Path<String>,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    // get user from token
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => {
+                return Json(DatabaseError::NotAllowed.into());
+            }
+        },
+        None => {
+            return Json(DatabaseError::NotAllowed.into());
+        }
+    };
+
+    // get profile
+    let profile = match database.auth.get_profile(id.clone()).await {
+        Ok(p) => p,
+        Err(e) => return Json(e.to_json()),
+    };
+
+    // block
+    for ip in profile.ips {
+        if let Err(_) = database
+            .auth
+            .create_ipblock(
+                IpBlockCreate {
+                    ip,
+                    context: profile.username.clone(),
+                },
+                auth_user.clone(),
+            )
+            .await
+        {
+            continue;
+        }
+    }
+
+    return Json(DefaultReturn {
+        success: true,
+        message: "IPs blocked!".to_string(),
+        payload: (),
+    });
 }

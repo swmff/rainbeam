@@ -88,7 +88,7 @@
             });
     });
 
-    self.define("ipblock", async function ({ $, app }, id) {
+    self.define("ipblock", async function ({ _, app }, id) {
         if (
             !(await trigger("app:confirm", [
                 "Are you sure you want to do this?",

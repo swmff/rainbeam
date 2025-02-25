@@ -422,13 +422,7 @@ pub async fn report_request(
     // get response
     let circle = match database.get_circle(id.clone()).await {
         Ok(c) => c,
-        Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: (),
-            })
-        }
+        Err(e) => return Json(e.to_json()),
     };
 
     // get real ip
