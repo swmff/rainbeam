@@ -61,7 +61,7 @@
                 type="checkbox"
                 name="sparkler:allow_profile_themes"
                 id="sparkler:allow_profile_themes"
-                onclick="update_theme_preference(event.target.options[event.target.selectedIndex].value === true ? 'yes' : 'no')"
+                onclick="update_theme_preference(event.target.checked === true ? 'yes' : 'no')"
                 checked
             />
 
@@ -82,7 +82,7 @@
                 type="checkbox"
                 name="sparkler:allow_profile_css"
                 id="sparkler:allow_profile_css"
-                onclick="update_css_preference(event.target.options[event.target.selectedIndex].value === true ? 'yes' : 'no')"
+                onclick="update_css_preference(event.target.checked === true ? 'yes' : 'no')"
                 checked
             />
 
