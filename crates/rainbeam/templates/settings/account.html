@@ -700,7 +700,10 @@
             // fill current theme preference
             const pref = window.localStorage.getItem("theme-pref");
 
-            if (document.getElementById("sparkler:allow_profile_themes")) {
+            if (
+                document.getElementById("sparkler:allow_profile_themes") &&
+                pref
+            ) {
                 document.getElementById(
                     "sparkler:allow_profile_themes",
                 ).checked = pref === "yes";
@@ -709,7 +712,10 @@
             // fill current css preference
             const css_pref = window.localStorage.getItem("css-pref");
 
-            if (document.getElementById("sparkler:allow_profile_css")) {
+            if (
+                document.getElementById("sparkler:allow_profile_css") &&
+                css_pref
+            ) {
                 document.getElementById("sparkler:allow_profile_css").checked =
                     css_pref === "yes";
             }
