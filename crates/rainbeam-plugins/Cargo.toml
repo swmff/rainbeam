@@ -13,4 +13,4 @@ rust-version = "1.83"
 pathbufd = "0.1.4"
 serde = { version = "1.0.218", features = ["derive"] }
 toml = "0.8.20"
-wasmtime = "30.0.0"
+wasmtime = "30.0.2"

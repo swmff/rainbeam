@@ -566,7 +566,7 @@ pub async fn login_request(jar: CookieJar, State(database): State<Database>) -> 
             .get_profile_by_unhashed(c.value_trimmed().to_string())
             .await
         {
-            Ok(_) => return Html(DatabaseError::NotAllowed.to_html(database)),
+            Ok(ua) => Some(ua),
             Err(_) => None,
         },
         None => None,
@@ -611,7 +611,7 @@ pub async fn sign_up_request(
             .get_profile_by_unhashed(c.value_trimmed().to_string())
             .await
         {
-            Ok(_) => return Html(DatabaseError::NotAllowed.to_html(database)),
+            Ok(ua) => Some(ua),
             Err(_) => None,
         },
         None => None,
@@ -2474,6 +2474,7 @@ pub async fn routes(database: Database) -> Router {
         .route("/settings", get(settings::account_settings))
         .route("/settings/sessions", get(settings::sessions_settings))
         .route("/settings/profile", get(settings::profile_settings))
+        .route("/settings/theme", get(settings::theme_settings))
         .route("/settings/privacy", get(settings::privacy_settings))
         .route("/settings/coins", get(settings::coins_settings))
         // search

@@ -214,6 +214,96 @@ pub async fn profile_settings(
 }
 
 #[derive(Template)]
+#[template(path = "settings/theme.html")]
+struct ThemeSettingsTemplate {
+    config: Config,
+    lang: langbeam::LangFile,
+    profile: Option<Box<Profile>>,
+    unread: usize,
+    notifs: usize,
+    metadata: String,
+    user: Box<Profile>,
+    viewing_other_profile: bool,
+}
+
+/// GET /settings/theme
+pub async fn theme_settings(
+    jar: CookieJar,
+    State(database): State<Database>,
+    Query(props): Query<NotificationsQuery>,
+) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => return Html(DatabaseError::NotAllowed.to_html(database)),
+        },
+        None => return Html(DatabaseError::NotAllowed.to_html(database)),
+    };
+
+    let unread = match database
+        .get_questions_by_recipient(auth_user.id.to_owned())
+        .await
+    {
+        Ok(unread) => unread.len(),
+        Err(_) => 0,
+    };
+
+    let notifs = database
+        .auth
+        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .await;
+
+    let user = if props.profile.is_empty() {
+        auth_user.clone()
+    } else {
+        match database.get_profile(props.profile.clone()).await {
+            Ok(ua) => ua,
+            Err(e) => return Html(e.to_html(database)),
+        }
+    };
+
+    let viewing_other_profile =
+        (props.profile.is_empty() == false) && (props.profile != auth_user.id);
+
+    let is_helper = {
+        let group = match database.auth.get_group_by_id(auth_user.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        group.permissions.check_helper()
+    };
+
+    if viewing_other_profile && !is_helper {
+        // we cannot view the mail of other users if we are not a helper
+        return Html(DatabaseError::NotAllowed.to_html(database));
+    }
+
+    Html(
+        ThemeSettingsTemplate {
+            config: database.config.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
+            metadata: clean_metadata_short(&user.metadata),
+            profile: Some(auth_user),
+            unread,
+            notifs,
+            user,
+            viewing_other_profile,
+        }
+        .render()
+        .unwrap(),
+    )
+}
+
+#[derive(Template)]
 #[template(path = "settings/privacy.html")]
 struct PrivacySettingsTemplate {
     config: Config,
