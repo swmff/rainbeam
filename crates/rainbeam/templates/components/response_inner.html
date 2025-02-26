@@ -203,13 +203,23 @@
                 uses="app:clean_date_codes,app:link_filter,app:hook.alt,app:hook.partial_embeds"
             ></include-partial>
 
-            <a
-                href="/@{{ response.author.username }}/r/{{ response.id }}"
-                title="Show more"
-                class="button secondary sm:w-full"
-            >
-                {{ text "general:link.open" }} {{ icon "external-link" }}
-            </a>
+            <div class="flex gap-2 sm:w-full flex-row">
+                <a
+                    href="/@{{ response.author.username }}/r/{{ response.id }}#content"
+                    title="Add reply"
+                    class="button secondary sm:w-full"
+                >
+                    {{ icon "reply" }} {{ text "general:link.reply" }}
+                </a>
+
+                <a
+                    href="/@{{ response.author.username }}/r/{{ response.id }}"
+                    title="Show more"
+                    class="button secondary sm:w-full"
+                >
+                    {{ icon "external-link" }} {{ text "general:link.open" }}
+                </a>
+            </div>
         </div>
         {% endif %}
     </div>
