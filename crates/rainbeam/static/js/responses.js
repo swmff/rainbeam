@@ -169,7 +169,7 @@
 
     self.define("delete", async function ({ $, app }, id) {
         if (
-            !(await trigger("app:confirm", [
+            !(await trigger("app::confirm", [
                 "Are you sure you want to do this? This will delete the response and its question.",
             ]))
         ) {
@@ -195,7 +195,7 @@
 
     self.define("unsend", async function ({ $, app }, id) {
         if (
-            !(await trigger("app:confirm", [
+            !(await trigger("app::confirm", [
                 "Are you sure you want to do this? This will delete the response and allow you to answer the question again.",
             ]))
         ) {
@@ -283,7 +283,7 @@
 
     self.define("click", function (_, id, do_render_nested) {
         // close dropdowns
-        trigger("app:hook.dropdown.close");
+        trigger("app::hooks::dropdown.close");
 
         // check for warning
         const warning = document.querySelector(

@@ -32,7 +32,7 @@
 
     self.define("delete", async function ({ $, app }, id) {
         if (
-            !(await trigger("app:confirm", [
+            !(await trigger("app::confirm", [
                 "Are you sure you want to do this?",
             ]))
         ) {

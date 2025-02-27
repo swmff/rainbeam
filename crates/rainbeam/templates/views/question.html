@@ -149,7 +149,7 @@ block head %}
         })
             .then((res) => res.json())
             .then((res) => {
-                trigger("app:shout", [
+                trigger("app::shout", [
                     res.success ? "tip" : "caution",
                     res.message || "Response posted!",
                 ]);

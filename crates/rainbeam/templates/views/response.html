@@ -309,7 +309,7 @@ block head %}
 
             function edit(e) {
                 e.preventDefault();
-                trigger("responses:edit", [
+                trigger("responses::edit", [
                     "{{ response.id }}",
                     globalThis.post_editor_.getValue(),
                 ])
@@ -317,7 +317,7 @@ block head %}
 
             function edit_tags(e) {
                 e.preventDefault();
-                trigger("responses:edit_tags", [
+                trigger("responses::edit_tags", [
                     "{{ response.id }}",
                     e.target.tags.value.toLowerCase().split(",").map((t) => t.trim()),
                 ])
@@ -325,7 +325,7 @@ block head %}
 
             function edit_context_warning(e) {
                 e.preventDefault();
-                trigger("responses:edit_context_warning", [
+                trigger("responses::edit_context_warning", [
                     "{{ response.id }}",
                     e.target.warning.value,
                 ])
@@ -338,13 +338,13 @@ block head %}
 
 <script>
     setTimeout(() => {
-        trigger("questions:carp");
+        trigger("questions::carp");
     }, 100);
 
     function comment(e, response) {
         e.preventDefault();
 
-        trigger("comments:create", [
+        trigger("comments::create", [
             response,
             e.target.content.value,
             undefined,

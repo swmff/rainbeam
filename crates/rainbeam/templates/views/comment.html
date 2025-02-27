@@ -246,7 +246,7 @@ block head %}
         <script>
             function edit(e) {
                 e.preventDefault();
-                trigger("comments:edit", [
+                trigger("comments::edit", [
                     "{{ comment.0.id }}",
                     globalThis.comment_editor_.getValue(),
                 ])
@@ -259,13 +259,13 @@ block head %}
 
 <script>
     setTimeout(() => {
-        trigger("questions:carp");
+        trigger("questions::carp");
     }, 100);
 
     function comment(e, response) {
         e.preventDefault();
 
-        trigger("comments:create", [
+        trigger("comments::create", [
             response,
             e.target.content.value,
             "{{ comment.0.id }}",

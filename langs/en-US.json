@@ -19,6 +19,8 @@
         "general:link.export": "Export",
         "general:link.render": "Render",
         "general:link.tree": "Tree",
+        "general:link.switch_account": "Switch account",
+        "general:link.add_account": "Add account",
 
         "general:link.login": "Login",
         "general:link.sign_up": "Sign up",

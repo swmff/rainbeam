@@ -39,7 +39,7 @@ endblock %} {% block nav_left %}
 
                 document.getElementById("partial").innerHTML = `<include-partial
                     src="/_app/components/response.html?id=${reply}&do_render_nested=false"
-                    uses="app:clean_date_codes,app:link_filter,app:hook.alt"
+                    uses="app::clean_date_codes,app::link_filter,app::hooks::alt"
                 ></include-partial>`;
             }
 
@@ -70,7 +70,7 @@ endblock %} {% block nav_left %}
                     .querySelector("button")
                     .setAttribute("disabled", "true");
 
-                trigger("responses:create", [
+                trigger("responses::create", [
                     "0", // posts use "0" as their question ID
                     globalThis.compose_editor_.getValue(),
                     e.target.tags.value,
@@ -105,7 +105,7 @@ endblock %} {% block nav_left %}
             }, 250);
 
             async function are_you_sure() {
-                return await trigger("app:confirm", [
+                return await trigger("app::confirm", [
                     "Are you sure you would like to leave this page?",
                 ]);
             }

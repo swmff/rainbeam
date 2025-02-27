@@ -43,7 +43,7 @@
 
 <script>
     use("app", (app) => {
-        app["hook.attach_to_partial"](
+        app["hooks::attach_to_partial"](
             "/+{{ circle.name }}/_app/feed.html",
             "/+{{ circle.name }}",
             document.getElementById("feed"),

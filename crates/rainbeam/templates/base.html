@@ -34,7 +34,7 @@
             <div class="dropdown">
                 <button
                     class="flex-row title"
-                    onclick="trigger('app:hook.dropdown', [event])"
+                    onclick="trigger('app::hooks::dropdown', [event])"
                     exclude="dropdown"
                     style="gap: 0.25rem !important"
                 >
@@ -129,10 +129,18 @@
 
                     {% if profile.is_some() %}
                     <b class="title"></b>
-                    <a href="#" onclick="trigger('app:logout')" class="red">
+
+                    <button
+                        onclick="document.getElementById('tokens_dialog').showModal()"
+                    >
+                        {{ icon "ellipsis" }} {{ text
+                        "general:link.switch_account" }}
+                    </button>
+
+                    <button onclick="trigger('me::logout')" class="red">
                         {{ icon "log-out" }} {{ text "base.html:link.sign_out"
                         }}
-                    </a>
+                    </button>
                     {% endif %}
                 </div>
             </div>

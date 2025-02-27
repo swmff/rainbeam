@@ -127,7 +127,7 @@ config.name }}{% endblock %} {% block nav_left %}
             })
         ).json();
 
-        trigger("app:toast", [
+        trigger("app::toast", [
             res.success ? "success" : "error",
             res.success ? "Settings saved!" : res.message,
         ]);

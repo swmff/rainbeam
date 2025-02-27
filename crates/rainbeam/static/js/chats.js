@@ -20,7 +20,7 @@
 
     self.define("leave", async function ({ $, app }, id) {
         if (
-            !(await trigger("app:confirm", [
+            !(await trigger("app::confirm", [
                 "Are you sure you want to do this?",
             ]))
         ) {
@@ -160,7 +160,7 @@
 
     self.define("msg_delete", async function ({ $, app }, id) {
         if (
-            !(await trigger("app:confirm", [
+            !(await trigger("app::confirm", [
                 "Are you sure you want to do this?",
             ]))
         ) {
@@ -232,7 +232,7 @@
     });
 
     // ui
-    self.define("ui.above_editor_text", function above_form_text(_, text) {
+    self.define("ui::above_editor_text", function above_form_text(_, text) {
         if (text === "") {
             document.getElementById("above_form_text").style.display = "none";
             return;
@@ -242,8 +242,8 @@
         document.getElementById("above_form_text").style.display = "block";
     });
 
-    self.define("ui.views.editor", function ({ $ }, id) {
-        $["ui.above_editor_text"]("Editing message");
+    self.define("ui::views.editor", function ({ $ }, id) {
+        $["ui::above_editor_text"]("Editing message");
         $.EDIT_MESSAGE_ID = id;
 
         setTimeout(() => {
@@ -260,8 +260,8 @@
         document.getElementById("messages").style.pointerEvents = "none";
     });
 
-    self.define("ui.views.writer", function ({ $ }, id) {
-        $["ui.above_editor_text"]("");
+    self.define("ui::views.writer", function ({ $ }, id) {
+        $["ui::above_editor_text"]("");
         $.EDIT_MESSAGE_ID = "";
 
         document.getElementById("message_writer_form").style.display = "flex";

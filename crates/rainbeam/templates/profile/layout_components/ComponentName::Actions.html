@@ -4,7 +4,7 @@
 <div class="dropdown">
     <button
         title="Edit Profile"
-        onclick="trigger('app:hook.dropdown', [event])"
+        onclick="trigger('app::hooks::dropdown', [event])"
         exclude="dropdown"
         class="w-full bold primary"
     >
@@ -33,7 +33,7 @@
 <div class="dropdown">
     <button
         title="More"
-        onclick="trigger('app:hook.dropdown', [event])"
+        onclick="trigger('app::hooks::dropdown', [event])"
         exclude="dropdown"
         class="w-full"
     >
@@ -78,7 +78,7 @@
             })
                 .then((res) => res.json())
                 .then((res) => {
-                    trigger("app:toast", [
+                    trigger("app::toast", [
                         res.success ? "success" : "error",
                         res.success ? "Friend request sent!" : res.message,
                     ]);
@@ -93,7 +93,7 @@
     <script>
         globalThis.unfriend = async function (username) {
             if (
-                !(await trigger("app:confirm", [
+                !(await trigger("app::confirm", [
                     "Are you sure you want to do this?",
                 ]))
             ) {
@@ -105,7 +105,7 @@
             })
                 .then((res) => res.json())
                 .then((res) => {
-                    trigger("app:toast", [
+                    trigger("app::toast", [
                         res.success ? "success" : "error",
                         res.success ? "User unfriended!" : res.message,
                     ]);
@@ -120,7 +120,7 @@
     <script>
         globalThis.cancel_fr = async function () {
             if (
-                !(await trigger("app:confirm", [
+                !(await trigger("app::confirm", [
                     "Are you sure you want to do this?",
                 ]))
             ) {
@@ -132,7 +132,7 @@
             })
                 .then((res) => res.json())
                 .then((res) => {
-                    trigger("app:toast", [
+                    trigger("app::toast", [
                         res.success ? "success" : "error",
                         res.success ? "Request cancelled!" : res.message,
                     ]);
@@ -147,7 +147,7 @@
 <!-- actions -->
 <div class="dropdown">
     <button
-        onclick="trigger('app:hook.dropdown', [event])"
+        onclick="trigger('app::hooks::dropdown', [event])"
         exclude="dropdown"
         class="w-full"
     >
@@ -197,7 +197,7 @@
                 })
                     .then((res) => res.json())
                     .then((res) => {
-                        trigger("app:shout", [
+                        trigger("app::shout", [
                             res.success ? "tip" : "caution",
                             res.message || "Profile deleted!",
                         ]);
@@ -217,7 +217,7 @@
 <!-- anonymous actions -->
 <div class="dropdown">
     <button
-        onclick="trigger('app:hook.dropdown', [event])"
+        onclick="trigger('app::hooks::dropdown', [event])"
         exclude="dropdown"
         class="w-full"
     >

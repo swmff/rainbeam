@@ -65,7 +65,7 @@ block head %}
     const search = new URLSearchParams(window.location.search);
 
     setTimeout(() => {
-        trigger("reports:fill", [search.get("type"), search.get("target")]);
+        trigger("reports::fill", [search.get("type"), search.get("target")]);
     }, 100);
 </script>
 {% call super() %} {% endblock %}

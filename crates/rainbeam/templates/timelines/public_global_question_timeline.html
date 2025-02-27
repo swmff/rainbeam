@@ -112,7 +112,7 @@ block head %}
 
 <script>
     setTimeout(() => {
-        trigger("questions:carp");
+        trigger("questions::carp");
     }, 100);
 
     document.getElementById("question_form").addEventListener("submit", (e) => {
@@ -130,7 +130,7 @@ block head %}
         })
             .then((res) => res.json())
             .then((res) => {
-                trigger("app:toast", [
+                trigger("app::toast", [
                     res.success ? "success" : "error",
                     res.message || "Question asked!",
                 ]);

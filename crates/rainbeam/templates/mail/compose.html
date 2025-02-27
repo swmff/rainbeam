@@ -83,7 +83,7 @@ endblock %} {% block nav_left %}
                 event.preventDefault();
                 const reply = search.get("reply");
 
-                trigger("mail:create", [
+                trigger("mail::create", [
                     event.target.recipient.value,
                     event.target.title.value,
                     reply

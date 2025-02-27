@@ -27,7 +27,7 @@
 <script>
     globalThis.sub_search = (e) => {
         e.preventDefault();
-        trigger("search:run", [
+        trigger("search::run", [
             e.target.driver.options[e.target.driver.selectedIndex].value,
             e.target.q.value,
         ]);

@@ -136,7 +136,7 @@
 
         globalThis.remove_session = async (id) => {
             if (
-                !(await trigger("app:confirm", [
+                !(await trigger("app::confirm", [
                     "Are you sure you want to do this?",
                 ]))
             ) {
@@ -161,7 +161,7 @@
                 })
             ).json();
 
-            trigger("app:toast", [
+            trigger("app::toast", [
                 res.success ? "success" : "error",
                 res.success ? "Sessions saved!" : res.message,
             ]);

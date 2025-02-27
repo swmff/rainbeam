@@ -79,7 +79,7 @@
         };
 
         globalThis.save_links = async () => {
-            await trigger("app:debounce", ["settings:save_settings"]);
+            await trigger("app:debounce", ["settings::save_settings"]);
             const res = await (
                 await fetch("/api/v0/auth/profile/{{ user.id }}/links", {
                     method: "POST",
@@ -92,20 +92,20 @@
                 })
             ).json();
 
-            trigger("app:toast", [
+            trigger("app::toast", [
                 res.success ? "success" : "error",
                 res.success ? "Links saved!" : res.message,
             ]);
         };
 
         globalThis.add_link = async () => {
-            const title = await trigger("app:prompt", ["Link label:"]);
+            const title = await trigger("app:prompt", ["Link label::"]);
 
             if (!title) {
                 return
             }
 
-            const url = await trigger("app:prompt", ["Link URL:"]);
+            const url = await trigger("app:prompt", ["Link URL::"]);
 
             if (!url) {
                 return

@@ -38,7 +38,7 @@ note = user.metadata.soft_get("sparkler:status_note") %} {% if !note.is_empty()
 
                 <div class="dropdown">
                     <button
-                        onclick="trigger('app:hook.dropdown', [event])"
+                        onclick="trigger('app::hooks::dropdown', [event])"
                         exclude="dropdown"
                         class="camo icon-only"
                     >

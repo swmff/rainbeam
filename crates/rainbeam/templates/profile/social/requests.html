@@ -81,7 +81,7 @@
     <script>
         globalThis.cancel_fr = async function (username) {
             if (
-                !(await trigger("app:confirm", [
+                !(await trigger("app::confirm", [
                     "Are you sure you want to do this?",
                 ]))
             ) {
@@ -93,7 +93,7 @@
             })
                 .then((res) => res.json())
                 .then((res) => {
-                    trigger("app:toast", [
+                    trigger("app::toast", [
                         res.success ? "success" : "error",
                         res.success ? "Request cancelled!" : res.message,
                     ]);

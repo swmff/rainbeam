@@ -96,11 +96,17 @@
                         error.style.display = "block";
                         error.innerHTML = `<div class="mdnote-title">${json.message}</div>`;
                     } else {
+                        // update tokens
+                        const new_tokens = ns("me").LOGIN_ACCOUNT_TOKENS;
+                        new_tokens[e.target.username.value] = json.message;
+                        trigger("me::set_login_account_tokens", [new_tokens]);
+
+                        // ...
                         success.style.display = "flex";
                         success.innerHTML = `<p>Successfully logged into account.</p>
 
-                    <hr />
-                    <a href="${callback}?uid=${json.message}" class="button login bold">Continue</a>`;
+                        <hr />
+                        <a href="${callback}?token=${json.message}" class="button login bold">Continue</a>`;
                         forms.style.display = "none";
                     }
                 });

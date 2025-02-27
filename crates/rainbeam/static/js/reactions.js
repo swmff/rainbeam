@@ -13,7 +13,7 @@
         })
             .then((res) => res.json())
             .then((res) => {
-                trigger("app:toast", [
+                trigger("app::toast", [
                     res.success ? "success" : "error",
                     res.message || "Reaction added!",
                 ]);
@@ -26,7 +26,7 @@
         })
             .then((res) => res.json())
             .then((res) => {
-                trigger("app:toast", [
+                trigger("app::toast", [
                     res.success ? "success" : "error",
                     res.message || "Reaction removed!",
                 ]);

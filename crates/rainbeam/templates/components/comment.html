@@ -133,7 +133,7 @@ comment = comment.0.clone() %}
         <!-- options -->
         <div class="dropdown">
             <button
-                onclick="trigger('app:hook.dropdown', [event])"
+                onclick="trigger('app::hooks::dropdown', [event])"
                 exclude="dropdown"
                 class="circle camo w-full"
             >
@@ -217,7 +217,7 @@ comment = comment.0.clone() %}
     >
         <include-partial
             src="/_app/components/comments.html?id={{ comment.id }}&page=0"
-            uses="app:clean_date_codes,app:link_filter,app:hook.alt,app:hook.partial_embeds"
+            uses="app::clean_date_codes,app::link_filter,app::hooks::alt,app::hooks::partial_embeds"
         ></include-partial>
 
         <div class="flex gap-2 sm:w-full flex-row">

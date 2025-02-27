@@ -26,7 +26,7 @@
 
     <div class="dropdown">
         <button
-            onclick="trigger('app:hook.dropdown', [event])"
+            onclick="trigger('app::hooks::dropdown', [event])"
             exclude="dropdown"
             class="camo message_actions icon-only"
         >
@@ -52,7 +52,7 @@
             <b class="title">Manage</b>
 
             <button
-                onclick="trigger('chats:ui.views.editor', ['{{ message.0.id }}'])"
+                onclick="trigger('chats:ui::views.editor', ['{{ message.0.id }}'])"
             >
                 {{ icon "pen" }} Edit
             </button>

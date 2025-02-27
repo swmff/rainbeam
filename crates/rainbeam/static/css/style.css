@@ -40,6 +40,10 @@
     justify-content: right;
 }
 
+.justify-start {
+    justify-content: flex-start;
+}
+
 .items-center {
     align-items: center;
 }
@@ -126,14 +130,6 @@
 
 .w-content {
     width: max-content !important;
-}
-
-.invert {
-    filter: invert(1);
-}
-
-.grayscale {
-    filter: grayscale(1);
 }
 
 .bold {

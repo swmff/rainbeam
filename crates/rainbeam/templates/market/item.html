@@ -184,7 +184,7 @@ profile.as_ref().unwrap() %}
                 })
                     .then((res) => res.json())
                     .then((res) => {
-                        trigger("app:toast", [
+                        trigger("app::toast", [
                             res.success ? "success" : "error",
                             res.success ? "Metadata updated!" : res.message,
                         ]);
@@ -353,7 +353,7 @@ profile.as_ref().unwrap() %}
                 }
 
                 async function edit_item(e) {
-                    trigger("items:edit", [
+                    trigger("items::edit", [
                         "{{ item.id }}",
                         e.target.name.value,
                         e.target.description.value,

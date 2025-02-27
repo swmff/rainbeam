@@ -28,7 +28,7 @@
             })
                 .then((res) => res.json())
                 .then((res) => {
-                    trigger("app:shout", [
+                    trigger("app::shout", [
                         res.success ? "tip" : "caution",
                         res.success ? "Joined circle!" : res.message,
                     ]);

@@ -122,7 +122,7 @@
 
                     <div class="dropdown">
                         <button
-                            onclick="trigger('app:hook.dropdown', [event])"
+                            onclick="trigger('app::hooks::dropdown', [event])"
                             exclude="dropdown"
                             class="camo"
                         >
@@ -215,7 +215,7 @@
         e.preventDefault();
         e.target.querySelector("button").setAttribute("disabled", "true");
 
-        trigger("responses:create", [
+        trigger("responses::create", [
             question,
             e.target.content.value,
             e.target.tags.value,
@@ -231,7 +231,7 @@
 
     async function clear_inbox() {
         if (
-            !(await trigger("app:confirm", [
+            !(await trigger("app::confirm", [
                 "Are you sure you want to do this? This will delete every question currently in your inbox permanently.",
             ]))
         ) {
@@ -243,7 +243,7 @@
         })
             .then((res) => res.json())
             .then((res) => {
-                trigger("app:toast", [
+                trigger("app::toast", [
                     res.success ? "success" : "error",
                     res.success ? "Inbox cleared!" : res.message,
                 ]);
@@ -251,7 +251,7 @@
     }
 
     setTimeout(() => {
-        trigger("questions:carp");
+        trigger("questions::carp");
     }, 150);
 </script>
 

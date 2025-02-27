@@ -33,7 +33,7 @@ endblock %} {% block nav_left %}
                     "{{ user.id }}" !== "{{ author.id }}"
                 ) {
                     // this mail has the "unread" state
-                    trigger("mail:state", ["{{ letter.id }}", "Read"]);
+                    trigger("mail::state", ["{{ letter.id }}", "Read"]);
                 }
             }, 250);
         </script>

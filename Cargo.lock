@@ -2986,7 +2986,7 @@ dependencies = [
 
 [[package]]
 name = "rainbeam"
-version = "4.1.0"
+version = "5.0.0"
 dependencies = [
  "ammonia",
  "async-recursion",
@@ -3016,7 +3016,7 @@ dependencies = [
 
 [[package]]
 name = "rainbeam-core"
-version = "4.1.0"
+version = "5.0.0"
 dependencies = [
  "ammonia",
  "async-recursion",
@@ -3234,7 +3234,7 @@ dependencies = [
 
 [[package]]
 name = "rb"
-version = "4.1.0"
+version = "5.0.0"
 dependencies = [
  "ammonia",
  "async-recursion",

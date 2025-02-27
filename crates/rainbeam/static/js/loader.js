@@ -108,7 +108,8 @@ globalThis.reg_ns = (ns, deps) => {
 /// Call a namespace function quickly
 globalThis.trigger = (id, args) => {
     // get namespace
-    const [namespace, func] = id.split(":");
+    const s = id.split("::");
+    const [namespace, func] = [s[0], s.slice(1, s.length).join("::")];
     const self = ns(namespace);
 
     if (!self) {

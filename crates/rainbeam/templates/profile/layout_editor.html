@@ -148,7 +148,7 @@ config.name }}{% endblock %} {% block head %}
     <button
         class="big floating permanent"
         title="Menu"
-        onclick="trigger('app:hook.dropdown', [event])"
+        onclick="trigger('app::hooks::dropdown', [event])"
         exclude="dropdown"
     >
         {{ icon "menu" }}
@@ -232,7 +232,7 @@ config.name }}{% endblock %} {% block head %}
         );
 
         globalThis.save_layout = async () => {
-            await trigger("app:debounce", ["settings:save_settings"]);
+            await trigger("app:debounce", ["settings::save_settings"]);
             const res = await (
                 await fetch("/api/v0/auth/profile/{{ other.id }}/layout", {
                     method: "POST",
@@ -245,7 +245,7 @@ config.name }}{% endblock %} {% block head %}
                 })
             ).json();
 
-            trigger("app:toast", [
+            trigger("app::toast", [
                 res.success ? "success" : "error",
                 res.success ? "Layout saved!" : res.message,
             ]);
@@ -253,7 +253,7 @@ config.name }}{% endblock %} {% block head %}
 
         globalThis.reset_layout = async () => {
             if (
-                !(await trigger("app:confirm", [
+                !(await trigger("app::confirm", [
                     "Are you sure you would like to do this? This will reset your layout to the default.",
                 ]))
             ) {
@@ -263,11 +263,11 @@ config.name }}{% endblock %} {% block head %}
             globalThis.editor.json = { json: "default.json" };
             globalThis.editor.render();
 
-            trigger("app:toast", ["success", "Layout reset!"]);
+            trigger("app::toast", ["success", "Layout reset!"]);
         };
 
         globalThis.import_layout = async () => {
-            const json = await trigger("app:prompt", ["Layout JSON:"]);
+            const json = await trigger("app:prompt", ["Layout JSON::"]);
 
             if (!json) {
                 return;
@@ -280,7 +280,7 @@ config.name }}{% endblock %} {% block head %}
         };
 
         globalThis.export_layout = () => {
-            trigger("app:copy_text", [JSON.stringify(globalThis.editor.json)]);
+            trigger("app::copy_text", [JSON.stringify(globalThis.editor.json)]);
         };
     });
 </script>

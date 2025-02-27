@@ -39,7 +39,7 @@ class PartialComponent extends HTMLElement {
         const self = super();
 
         (async () => {
-            const svg = await trigger("app:icon", ["loader-circle", "icon"]);
+            const svg = await trigger("app::icon", ["loader-circle", "icon"]);
             self.innerHTML = `<div class="spinner constant flex">${svg.outerHTML}</div>`;
         })();
     }

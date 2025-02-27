@@ -77,7 +77,7 @@
     <!-- actual feed -->
     <include-partial
         src="/@{{ other.username }}/_app/feed.html?page={{ page }}{% if !tag.is_empty() %}&tag={{ tag }}{% endif %}&q={{ query }}"
-        uses="app:clean_date_codes,app:link_filter,app:hook.alt,app:hook.partial_embeds,app:hook.check_reactions"
+        uses="app::clean_date_codes,app::link_filter,app::hooks::alt,app::hooks::partial_embeds,app::hooks::check_reactions"
         instant="true"
         outerhtml="true"
         id="initial_loader"
@@ -96,7 +96,7 @@
 {% if tag.is_empty() && query.is_empty() %}
 <script>
     use("app", (app) => {
-        app["hook.attach_to_partial"](
+        app["hooks::attach_to_partial"](
             "/@{{ other.username }}/_app/feed.html",
             "/@{{ other.username }}",
             document.getElementById("feed"),
@@ -113,7 +113,7 @@
             </div>`;
 
             setTimeout(() => {
-                trigger("questions:carp");
+                trigger("questions::carp");
             }, 150);
         });
     });

@@ -96,7 +96,7 @@
                         e.preventDefault();
 
                         if (
-                            !(await trigger("app:confirm", [
+                            !(await trigger("app::confirm", [
                                 "Are you sure you want to do this?",
                             ]))
                         ) {
@@ -114,7 +114,7 @@
                         })
                             .then((res) => res.json())
                             .then((res) => {
-                                trigger("app:toast", [
+                                trigger("app::toast", [
                                     res.success ? "success" : "error",
                                     res.message || "Badges updated!",
                                 ]);
@@ -152,7 +152,7 @@
                         e.preventDefault();
 
                         if (
-                            !(await trigger("app:confirm", [
+                            !(await trigger("app::confirm", [
                                 "Are you sure you want to do this?",
                             ]))
                         ) {
@@ -171,7 +171,7 @@
                         })
                             .then((res) => res.json())
                             .then((res) => {
-                                trigger("app:shout", [
+                                trigger("app::shout", [
                                     res.success ? "tip" : "caution",
                                     res.message || "Password changed!",
                                 ]);
@@ -296,7 +296,7 @@
 
             globalThis.remove_session = async (id) => {
                 if (
-                    !(await trigger("app:confirm", [
+                    !(await trigger("app::confirm", [
                         "Are you sure you want to do this?",
                     ]))
                 ) {
@@ -321,21 +321,21 @@
                     })
                 ).json();
 
-                trigger("app:toast", [
+                trigger("app::toast", [
                     res.success ? "success" : "error",
                     res.success ? "Sessions saved!" : res.message,
                 ]);
             };
 
             globalThis.create_token = async () => {
-                const app_name = await trigger("app:prompt", [
+                const app_name = await trigger("app::prompt", [
                     "App identifier:",
                 ]);
                 if (!app_name) {
                     return;
                 }
 
-                const permissions = await trigger("app:prompt", [
+                const permissions = await trigger("app::prompt", [
                     "Permissions (comma separated):",
                 ]);
 
@@ -357,7 +357,7 @@
                     )
                 ).json();
 
-                trigger("app:toast", [
+                trigger("app::toast", [
                     res.success ? "success" : "error",
                     res.success ? "Token generated!" : res.message,
                 ]);
@@ -429,7 +429,7 @@
             })
                 .then((res) => res.json())
                 .then((res) => {
-                    trigger("app:toast", [
+                    trigger("app::toast", [
                         res.success ? "success" : "error",
                         res.success ? "User warned!" : res.message,
                     ]);
@@ -461,7 +461,7 @@
             })
                 .then((res) => res.json())
                 .then((res) => {
-                    trigger("app:toast", [
+                    trigger("app::toast", [
                         res.success ? "success" : "error",
                         res.success ? "IP banned!" : res.message,
                     ]);
@@ -469,7 +469,7 @@
         };
 
         globalThis.change_group = async () => {
-            const group = await trigger("app:prompt", ["Enter group number:"]);
+            const group = await trigger("app:prompt", ["Enter group number::"]);
 
             if (!group) {
                 return;
@@ -496,7 +496,7 @@
             })
                 .then((res) => res.json())
                 .then((res) => {
-                    trigger("app:toast", [
+                    trigger("app::toast", [
                         res.success ? "success" : "error",
                         res.success ? "Group updated!" : res.message,
                     ]);
@@ -504,7 +504,7 @@
         };
 
         globalThis.change_tier = async () => {
-            const tier = await trigger("app:prompt", ["Enter tier number:"]);
+            const tier = await trigger("app:prompt", ["Enter tier number::"]);
 
             if (!tier) {
                 return;
@@ -521,7 +521,7 @@
             })
                 .then((res) => res.json())
                 .then((res) => {
-                    trigger("app:toast", [
+                    trigger("app::toast", [
                         res.success ? "success" : "error",
                         res.success ? "Tier updated!" : res.message,
                     ]);
@@ -529,7 +529,7 @@
         };
 
         globalThis.change_coins = async () => {
-            const coins = await trigger("app:prompt", ["Enter coin amount:"]);
+            const coins = await trigger("app:prompt", ["Enter coin amount::"]);
 
             if (!coins) {
                 return;
@@ -546,7 +546,7 @@
             })
                 .then((res) => res.json())
                 .then((res) => {
-                    trigger("app:toast", [
+                    trigger("app::toast", [
                         res.success ? "success" : "error",
                         res.success ? "Coins updated!" : res.message,
                     ]);
@@ -565,7 +565,7 @@
             })
                 .then((res) => res.json())
                 .then((res) => {
-                    trigger("app:toast", [
+                    trigger("app::toast", [
                         res.success ? "success" : "error",
                         res.success ? "Metadata updated!" : res.message,
                     ]);
@@ -573,7 +573,7 @@
         };
 
         globalThis.change_verify = async (metadata) => {
-            const verify_url = await trigger("app:prompt", [
+            const verify_url = await trigger("app::prompt", [
                 "Enter verify URL:",
             ]);
 

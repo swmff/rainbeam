@@ -114,6 +114,7 @@ dialog::backdrop {
     height: 30px !important;
     font-weight: 500 !important;
     position: relative;
+    opacity: 100% !important;
 
     & svg {
         width: 16px;

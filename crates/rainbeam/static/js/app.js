@@ -99,31 +99,9 @@
         }
     });
 
-    app.define("me", async function (_) {
-        globalThis.__user = (
-            await (await fetch("/api/v0/auth/me")).json()
-        ).payload;
-    });
-
-    app.define("logout", async function (_) {
-        if (
-            !(await trigger("app:confirm", [
-                "Are you sure you would like to do this?",
-            ]))
-        ) {
-            return;
-        }
-
-        fetch("/api/v0/auth/untag", { method: "POST" }).then(() => {
-            fetch("/api/v0/auth/logout", { method: "POST" }).then(() => {
-                window.location.href = "/";
-            });
-        });
-    });
-
     app.define("ipblock", async function ({ $ }, id) {
         if (
-            !(await trigger("app:confirm", [
+            !(await trigger("app::confirm", [
                 "Are you sure you want to do this?",
             ]))
         ) {
@@ -232,7 +210,7 @@
         })
             .then((res) => res.json())
             .then((res) => {
-                trigger("app:toast", [
+                trigger("app::toast", [
                     res.success ? "success" : "error",
                     res.message || "IP banned!",
                 ]);
@@ -284,7 +262,7 @@
     });
 
     // hooks
-    app.define("hook.scroll", function (_, scroll_element, track_element) {
+    app.define("hooks::scroll", function (_, scroll_element, track_element) {
         const goals = [150, 250, 500, 1000];
 
         track_element.setAttribute("data-scroll", "0");
@@ -302,7 +280,7 @@
         });
     });
 
-    app.define("hook.dropdown.close", function (_) {
+    app.define("hooks::dropdown.close", function (_) {
         for (const dropdown of Array.from(
             document.querySelectorAll(".inner.open"),
         )) {
@@ -310,7 +288,7 @@
         }
     });
 
-    app.define("hook.dropdown", function ({ $ }, event) {
+    app.define("hooks::dropdown", function ({ $ }, event) {
         event.stopImmediatePropagation();
         let target = event.target;
 
@@ -319,7 +297,7 @@
         }
 
         // close all others
-        $["hook.dropdown.close"]();
+        $["hooks::dropdown.close"]();
 
         // open
         setTimeout(() => {
@@ -363,7 +341,7 @@
         }, 5);
     });
 
-    app.define("hook.dropdown.init", function (_, bind_to) {
+    app.define("hooks::dropdown.init", function (_, bind_to) {
         for (const dropdown of Array.from(
             document.querySelectorAll(".inner"),
         )) {
@@ -386,7 +364,7 @@
         });
     });
 
-    app.define("hook.character_counter", function (_, event) {
+    app.define("hooks::character_counter", function (_, event) {
         let target = event.target;
 
         while (!target.matches("textarea, input")) {
@@ -397,24 +375,24 @@
         counter.innerText = `${target.value.length}/${target.getAttribute("maxlength")}`;
     });
 
-    app.define("hook.character_counter.init", function (_, event) {
+    app.define("hooks::character_counter.init", function (_, event) {
         for (const element of Array.from(
             document.querySelectorAll("[hook=counter]") || [],
         )) {
             const counter = document.getElementById(`${element.id}:counter`);
             counter.innerText = `0/${element.getAttribute("maxlength")}`;
             element.addEventListener("keyup", (e) =>
-                app["hook.character_counter"](e),
+                app["hooks::character_counter"](e),
             );
         }
     });
 
-    app.define("hook.long", function (_, element, full_text) {
+    app.define("hooks::long", function (_, element, full_text) {
         element.classList.remove("hook:long.hidden_text");
         element.innerHTML = full_text;
     });
 
-    app.define("hook.long_text.init", function (_, event) {
+    app.define("hooks::long_text.init", function (_, event) {
         for (const element of Array.from(
             document.querySelectorAll("[hook=long]") || [],
         )) {
@@ -436,7 +414,7 @@
 
             // event
             const listener = () => {
-                app["hook.long"](element, html);
+                app["hooks::long"](element, html);
                 element.removeEventListener("click", listener);
             };
 
@@ -444,7 +422,7 @@
         }
     });
 
-    app.define("hook.alt", function (_) {
+    app.define("hooks::alt", function (_) {
         for (const element of Array.from(
             document.querySelectorAll("img") || [],
         )) {
@@ -454,7 +432,7 @@
         }
     });
 
-    app.define("hook.ips", function ({ $ }) {
+    app.define("hooks::ips", function ({ $ }) {
         for (const anchor of Array.from(document.querySelectorAll("a"))) {
             try {
                 const href = new URL(anchor.href);
@@ -480,7 +458,7 @@
     });
 
     app.define(
-        "hook.attach_to_partial",
+        "hooks::attach_to_partial",
         function ({ $ }, partial, full, attach, wrapper, page, run_on_load) {
             return new Promise((resolve, reject) => {
                 async function load_partial() {
@@ -503,7 +481,7 @@
                                 wrapper.removeEventListener("scroll", event);
 
                                 if (globalThis._app_base.ns_store.$questions) {
-                                    trigger("questions:carp");
+                                    trigger("questions::carp");
                                 }
 
                                 return resolve();
@@ -513,10 +491,10 @@
 
                             $.clean_date_codes();
                             $.link_filter();
-                            $["hook.alt"]();
+                            $["hooks::alt"]();
 
                             if (globalThis._app_base.ns_store.$questions) {
-                                trigger("questions:carp");
+                                trigger("questions::carp");
                             }
                         })
                         .catch(() => {
@@ -524,7 +502,7 @@
                             wrapper.removeEventListener("scroll", event);
 
                             if (globalThis._app_base.ns_store.$questions) {
-                                trigger("questions:carp");
+                                trigger("questions::carp");
                             }
 
                             resolve();
@@ -545,10 +523,10 @@
 
                                 page += 1;
                                 await load_partial();
-                                await $["hook.partial_embeds"]();
+                                await $["hooks::partial_embeds"]();
 
                                 if (globalThis._app_base.ns_store.$questions) {
-                                    trigger("questions:carp");
+                                    trigger("questions::carp");
                                 }
                             })
                             .catch(() => {
@@ -562,7 +540,7 @@
         },
     );
 
-    app.define("hook.partial_embeds", function (_) {
+    app.define("hooks::partial_embeds", function (_) {
         for (const paragraph of Array.from(
             document.querySelectorAll("span[class] p"),
         )) {
@@ -576,7 +554,7 @@
             paragraph.innerText = paragraph.innerText.replace(groups[0], "");
             paragraph.parentElement.innerHTML += `<include-partial
                 src="/_app/components/response.html?id=${groups[2]}&do_render_nested=false"
-                uses="app:clean_date_codes,app:link_filter,app:hook.alt"
+                uses="app::clean_date_codes,app::link_filter,app::hooks::alt"
             ></include-partial>`;
         }
 
@@ -595,12 +573,12 @@
             paragraph.innerText = paragraph.innerText.replace(groups[0], "");
             paragraph.parentElement.innerHTML = `<include-partial
                 src="/inbox/mail/_app/components/mail.html?id=${groups[2]}&do_render_nested=false"
-                uses="app:clean_date_codes,app:link_filter,app:hook.alt,app:hook.partial_embeds"
+                uses="app::clean_date_codes,app::link_filter,app::hooks::alt,app::hooks::partial_embeds"
             ></include-partial>${paragraph.parentElement.innerHTML}`;
         }
     });
 
-    app.define("hook.check_reactions", async function ({ $ }) {
+    app.define("hooks::check_reactions", async function ({ $ }) {
         const observer = $.offload_work_to_client_when_in_view(
             async (element) => {
                 const reaction = await (
@@ -624,7 +602,7 @@
         $.OBSERVERS.push(observer);
     });
 
-    app.define("hook.tabs:switch", function (_, tab) {
+    app.define("hooks::tabs:switch", function (_, tab) {
         // tab
         for (const element of Array.from(
             document.querySelectorAll("[data-tab]"),
@@ -650,18 +628,18 @@
         }
     });
 
-    app.define("hook.tabs:check", function ({ $ }, hash) {
+    app.define("hooks::tabs:check", function ({ $ }, hash) {
         if (!hash || !hash.startsWith("#/")) {
             return;
         }
 
-        $["hook.tabs:switch"](hash.replace("#/", ""));
+        $["hooks::tabs:switch"](hash.replace("#/", ""));
     });
 
-    app.define("hook.tabs", function ({ $ }) {
-        $["hook.tabs:check"](window.location.hash); // initial check
+    app.define("hooks::tabs", function ({ $ }) {
+        $["hooks::tabs:check"](window.location.hash); // initial check
         window.addEventListener("hashchange", (event) =>
-            $["hook.tabs:check"](new URL(event.newURL).hash),
+            $["hooks::tabs:check"](new URL(event.newURL).hash),
         );
     });
 

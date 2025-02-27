@@ -14,7 +14,7 @@
             .then((res) => res.json())
             .then((res) => {
                 if (document.getElementById(`notif:${id}`)) {
-                    trigger("app:toast", [
+                    trigger("app::toast", [
                         res.success ? "success" : "error",
                         res.success ? "Notification deleted!" : res.message,
                     ]);
@@ -39,7 +39,7 @@
         })
             .then((res) => res.json())
             .then((res) => {
-                trigger("app:toast", [
+                trigger("app::toast", [
                     res.success ? "success" : "error",
                     res.success ? "Notifications cleared!" : res.message,
                 ]);

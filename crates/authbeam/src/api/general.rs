@@ -230,7 +230,7 @@ pub async fn login_request(
 
 #[derive(serde::Deserialize)]
 pub struct CallbackQueryProps {
-    pub uid: String, // this uid will need to be sent to the client as a token
+    pub token: String, // this uid will need to be sent to the client as a token
 }
 
 pub async fn callback_request(Query(params): Query<CallbackQueryProps>) -> impl IntoResponse {
@@ -242,7 +242,7 @@ pub async fn callback_request(Query(params): Query<CallbackQueryProps>) -> impl 
                 "Set-Cookie".to_string(),
                 format!(
                     "__Secure-Token={}; SameSite=Lax; Secure; Path=/; HostOnly=true; HttpOnly=true; Max-Age={}",
-                    params.uid,
+                    params.token,
                     60 * 60 * 24 * 365
                 ),
             ),

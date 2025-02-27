@@ -30,7 +30,7 @@
                     return;
                 }
 
-                trigger("app:shout", ["caution", res.message]);
+                trigger("app::shout", ["caution", res.message]);
                 e.target.reset();
             });
     });

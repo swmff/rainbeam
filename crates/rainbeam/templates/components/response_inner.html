@@ -128,7 +128,7 @@
             {% if !response.reply.is_empty() && response.context.is_post == false && do_render_nested == true %}
             <include-partial
                 src="/_app/components/response.html?id={{ response.reply }}&do_render_nested=false"
-                uses="app:clean_date_codes,app:link_filter,app:hook.alt"
+                uses="app::clean_date_codes,app::link_filter,app::hooks::alt"
             ></include-partial>
             {% endif %}
         </span>
@@ -150,7 +150,7 @@
             {% if !response.reply.is_empty() && response.context.is_post == true && do_render_nested == true %}
             <include-partial
                 src="/_app/components/response.html?id={{ response.reply }}&do_render_nested=false"
-                uses="app:clean_date_codes,app:link_filter,app:hook.alt"
+                uses="app::clean_date_codes,app::link_filter,app::hooks::alt"
             ></include-partial>
             {% endif %}
         </span>
@@ -200,7 +200,7 @@
         >
             <include-partial
                 src="/_app/components/response_comments.html?id={{ response.id }}&page=0"
-                uses="app:clean_date_codes,app:link_filter,app:hook.alt,app:hook.partial_embeds"
+                uses="app::clean_date_codes,app::link_filter,app::hooks::alt,app::hooks::partial_embeds"
             ></include-partial>
 
             <div class="flex gap-2 sm:w-full flex-row">

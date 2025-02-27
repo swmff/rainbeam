@@ -1,4 +1,5 @@
-<h1 align="center">🐈‍⬛🌧️ Rainbeam</h1>
+![Rainbeam](./.github/assets/rainbeam-logo-full-primary-placard.svg)
+!["Docs" workflow badge](https://github.com/swmff/rainbeam/workflows/Docs/badge.svg)
 
 Rainbeam is a simple Q&A social network designed for community! On Rainbeam, users can create and customize their profile to look how they want, and then other users can ask them questions using their account or an anonymous username. Users receive questions in their inbox and can then answer them or manage them. Users can also ask “global questions” which everybody who is following them can see in a specialized timeline. Global questions can be answered by any logged-in user. Users can also respond to existing responses with comments to further interact with their friends' responses!
 

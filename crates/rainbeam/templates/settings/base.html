@@ -198,7 +198,7 @@ crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
                 })
             ).json();
 
-            trigger("app:toast", [
+            trigger("app::toast", [
                 res.success ? "success" : "error",
                 res.success ? "Settings saved!" : res.message,
             ]);

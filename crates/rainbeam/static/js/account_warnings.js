@@ -3,7 +3,7 @@
 
     self.define("delete", async function (_, id) {
         if (
-            !(await trigger("app:confirm", [
+            !(await trigger("app::confirm", [
                 "Are you sure you want to do this?",
             ]))
         ) {
@@ -15,7 +15,7 @@
         })
             .then((res) => res.json())
             .then((res) => {
-                trigger("app:shout", [
+                trigger("app::shout", [
                     res.success ? "tip" : "caution",
                     res.message || "Warning deleted!",
                 ]);

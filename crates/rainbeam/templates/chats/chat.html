@@ -67,7 +67,7 @@ endblock %} {% block nav_left %}
             <div class="dropdown">
                 <button
                     class="camo icon-only"
-                    onclick="trigger('app:hook.dropdown', [event])"
+                    onclick="trigger('app::hooks::dropdown', [event])"
                     exclude="dropdown"
                 >
                     {{ icon "ellipsis" }}
@@ -253,7 +253,7 @@ endblock %} {% block nav_left %}
 
             globalThis.send_message = (event) => {
                 event.preventDefault();
-                trigger("chats:msg", [
+                trigger("chats::msg", [
                     "{{ chat.id }}",
                     globalThis.message_writer_.getValue(),
                 ]).then((message) => {
@@ -266,19 +266,19 @@ endblock %} {% block nav_left %}
 
             globalThis.edit_message = (event) => {
                 event.preventDefault();
-                trigger("chats:msg_edit", [
+                trigger("chats::msg_edit", [
                     ns("chats").EDIT_MESSAGE_ID,
                     globalThis.message_editor_.getValue(),
                 ]).then((_) => {
                     event.target.reset();
                     globalThis.message_editor_.clearHistory();
-                    trigger("chats:ui.views.writer"); // hide editor
+                    trigger("chats:ui::views.writer"); // hide editor
                 });
             };
 
             globalThis.update_name = (event) => {
                 event.preventDefault();
-                trigger("chats:name", [
+                trigger("chats::name", [
                     "{{ chat.id }}",
                     event.target.content.value,
                 ]).then(() => {
@@ -288,7 +288,7 @@ endblock %} {% block nav_left %}
 
             globalThis.add_friend = (event) => {
                 event.preventDefault();
-                trigger("chats:add", [
+                trigger("chats::add", [
                     "{{ chat.id }}",
                     event.target.friend.options[
                         event.target.friend.selectedIndex
@@ -335,7 +335,7 @@ endblock %} {% block nav_left %}
                                             continue;
                                         }
 
-                                        trigger("chats:msg.html", [
+                                        trigger("chats::msg.html", [
                                             msg,
                                             document.getElementById("messages"),
                                             msg[1].id === window.CHAT_USER_ID, // check if this message is from us (so we don't send notif request)

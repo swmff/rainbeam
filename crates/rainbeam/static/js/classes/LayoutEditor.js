@@ -130,14 +130,14 @@ const COMPONENTS = [
 ];
 
 // preload icons
-trigger("app:icon", ["shapes"]);
-trigger("app:icon", ["type"]);
-trigger("app:icon", ["plus"]);
-trigger("app:icon", ["move-up"]);
-trigger("app:icon", ["move-down"]);
-trigger("app:icon", ["trash"]);
-trigger("app:icon", ["arrow-left"]);
-trigger("app:icon", ["x"]);
+trigger("app::icon", ["shapes"]);
+trigger("app::icon", ["type"]);
+trigger("app::icon", ["plus"]);
+trigger("app::icon", ["move-up"]);
+trigger("app::icon", ["move-down"]);
+trigger("app::icon", ["trash"]);
+trigger("app::icon", ["arrow-left"]);
+trigger("app::icon", ["x"]);
 
 /// The location of an element as represented by array indexes.
 class ElementPointer {
@@ -267,7 +267,7 @@ class LayoutEditor {
     /// Editor clicked.
     click(e, self) {
         e.stopImmediatePropagation();
-        trigger("app:hook.dropdown.close");
+        trigger("app::hooks::dropdown.close");
 
         const ptr = new ElementPointer(e.target);
         self.current = ptr.resolve(self.json);
@@ -345,7 +345,7 @@ class LayoutEditor {
                         const button = document.createElement("button");
                         button.classList.add("secondary");
 
-                        trigger("app:icon", [
+                        trigger("app::icon", [
                             data.icon || "shapes",
                             "icon",
                         ]).then((icon) => {
@@ -529,7 +529,7 @@ class LayoutEditor {
                     (() => {
                         const button = document.createElement("button");
 
-                        trigger("app:icon", ["plus", "icon"]).then((icon) => {
+                        trigger("app::icon", ["plus", "icon"]).then((icon) => {
                             button.prepend(icon);
                         });
 
@@ -554,7 +554,7 @@ class LayoutEditor {
                 (() => {
                     const button = document.createElement("button");
 
-                    trigger("app:icon", ["move-up", "icon"]).then((icon) => {
+                    trigger("app::icon", ["move-up", "icon"]).then((icon) => {
                         button.prepend(icon);
                     });
 
@@ -597,7 +597,7 @@ class LayoutEditor {
                 (() => {
                     const button = document.createElement("button");
 
-                    trigger("app:icon", ["move-down", "icon"]).then((icon) => {
+                    trigger("app::icon", ["move-down", "icon"]).then((icon) => {
                         button.prepend(icon);
                     });
 
@@ -641,7 +641,7 @@ class LayoutEditor {
                     const button = document.createElement("button");
                     button.classList.add("red");
 
-                    trigger("app:icon", ["trash", "icon"]).then((icon) => {
+                    trigger("app::icon", ["trash", "icon"]).then((icon) => {
                         button.prepend(icon);
                     });
 
@@ -655,7 +655,7 @@ class LayoutEditor {
 
                     button.addEventListener("click", async () => {
                         if (
-                            !(await trigger("app:confirm", [
+                            !(await trigger("app::confirm", [
                                 "Are you sure you would like to do this?",
                             ]))
                         ) {
@@ -700,9 +700,11 @@ class LayoutEditor {
                     const button = document.createElement("button");
                     button.className = "secondary";
 
-                    trigger("app:icon", ["arrow-left", "icon"]).then((icon) => {
-                        button.prepend(icon);
-                    });
+                    trigger("app::icon", ["arrow-left", "icon"]).then(
+                        (icon) => {
+                            button.prepend(icon);
+                        },
+                    );
 
                     button.appendChild(
                         (() => {
@@ -726,7 +728,7 @@ class LayoutEditor {
                 const button = document.createElement("button");
                 button.className = "red secondary";
 
-                trigger("app:icon", ["x", "icon"]).then((icon) => {
+                trigger("app::icon", ["x", "icon"]).then((icon) => {
                     button.prepend(icon);
                 });
 

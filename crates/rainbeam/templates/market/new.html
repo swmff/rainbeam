@@ -15,9 +15,9 @@
 
     async function create_item(e) {
         const type = e.target.type.options[e.target.type.selectedIndex].value;
-        const content = await trigger("items:content_input", [type]);
+        const content = await trigger("items::content_input", [type]);
 
-        trigger("items:create", [
+        trigger("items::create", [
             e.target.name.value,
             e.target.description.value,
             content,

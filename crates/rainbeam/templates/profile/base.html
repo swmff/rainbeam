@@ -220,7 +220,7 @@
     }
 
     setTimeout(() => {
-        trigger("questions:carp");
+        trigger("questions::carp");
         use("app", function (app) {
             if (app.PREVIOUSLY_EXISTED === true) {
                 // window.location.reload();
@@ -231,7 +231,7 @@
 
     function ask(e) {
         e.preventDefault();
-        trigger("questions:create", [
+        trigger("questions::create", [
             "{{ other.id }}",
             reply_intent
                 ? `${e.target.content.value}\n\n/+r/${reply_intent}`
@@ -258,7 +258,7 @@
         e.target.innerText = "Remove drawing";
         e.target.onclick = async (e) => {
             if (
-                !(await trigger("app:confirm", [
+                !(await trigger("app::confirm", [
                     "Are you sure you want to do this?",
                 ]))
             ) {
@@ -305,13 +305,13 @@
                     button.classList.remove("bold");
                     button.innerText = "Unfollow";
 
-                    trigger("app:toast", ["success", "User followed!"]);
+                    trigger("app::toast", ["success", "User followed!"]);
                 } else {
                     button.classList.add("primary");
                     button.classList.add("bold");
                     button.innerText = "Follow";
 
-                    trigger("app:toast", ["success", "User unfollowed!"]);
+                    trigger("app::toast", ["success", "User unfollowed!"]);
                 }
             });
     }
@@ -341,7 +341,7 @@
                 })
             ).json();
 
-            trigger("app:toast", [
+            trigger("app::toast", [
                 res.success ? "success" : "error",
                 res.success ? "Settings saved!" : res.message,
             ]);
@@ -354,7 +354,7 @@
 
             metadata.kv["sparkler:pinned"] += `${id},`;
             save_metadata();
-            trigger("app:toast", ["success", "Response pinned!"]);
+            trigger("app::toast", ["success", "Response pinned!"]);
         };
 
         globalThis.unpin_response = function (id) {
@@ -363,7 +363,7 @@
             ].replace(`${id},`, "");
 
             save_metadata();
-            trigger("app:toast", ["success", "Response unpinned!"]);
+            trigger("app::toast", ["success", "Response unpinned!"]);
         };
     })();
 </script>

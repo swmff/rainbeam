@@ -248,9 +248,9 @@
                 app.clean_date_codes();
                 app.link_filter();
 
-                app["hook.dropdown.init"](window);
-                app["hook.character_counter.init"]();
-                app["hook.long_text.init"]();
+                app["hooks::dropdown.init"](window);
+                app["hooks::character_counter.init"]();
+                app["hooks::long_text.init"]();
 
                 // anchors
                 for (const anchor of Array.from(
@@ -261,7 +261,7 @@
 
                 // questions
                 setTimeout(() => {
-                    trigger("questions:carp");
+                    trigger("questions::carp");
                 }, 150);
 
                 document
@@ -269,7 +269,7 @@
                     .addEventListener("submit", (e) => {
                         e.preventDefault();
 
-                        trigger("questions:create", [
+                        trigger("questions::create", [
                             "{{ other.id }}",
                             e.target.content.value,
                             (e.target.anonymous || { checked: false }).checked,
@@ -291,7 +291,7 @@
                 e.target.innerText = "Remove drawing";
                 e.target.onclick = async (e) => {
                     if (
-                        !(await trigger("app:confirm", [
+                        !(await trigger("app::confirm", [
                             "Are you sure you want to do this?",
                         ]))
                     ) {

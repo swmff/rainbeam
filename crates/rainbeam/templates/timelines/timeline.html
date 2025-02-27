@@ -78,7 +78,7 @@ block head %}
         <div class="flex flex-col gap-4" id="feed">
             <include-partial
                 src="/_app/timelines/timeline.html?page={{ page }}"
-                uses="app:clean_date_codes,app:link_filter,app:hook.alt,app:hook.partial_embeds,app:hook.check_reactions"
+                uses="app::clean_date_codes,app::link_filter,app::hooks::alt,app::hooks::partial_embeds,app::hooks::check_reactions"
                 instant="true"
                 outerhtml="true"
             ></include-partial>
@@ -88,11 +88,11 @@ block head %}
 
 <script>
     setTimeout(() => {
-        trigger("questions:carp");
+        trigger("questions::carp");
     }, 100);
 
     use("app", (app) => {
-        app["hook.attach_to_partial"](
+        app["hooks::attach_to_partial"](
             "/_app/timelines/timeline.html",
             "/",
             document.getElementById("feed"),

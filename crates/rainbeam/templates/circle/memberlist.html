@@ -19,7 +19,7 @@
 
         <script>
             async function send_invite() {
-                const user = await trigger("app:prompt", ["Username:"]);
+                const user = await trigger("app:prompt", ["Username::"]);
 
                 if (!user) {
                     return;
@@ -30,7 +30,7 @@
                 })
                     .then((res) => res.json())
                     .then((res) => {
-                        trigger("app:toast", [
+                        trigger("app::toast", [
                             res.success ? "success" : "error",
                             res.success ? "Invite sent!" : res.message,
                         ]);
@@ -86,7 +86,7 @@
 <script>
     async function kick_member(id) {
         if (
-            !(await trigger("app:confirm", [
+            !(await trigger("app::confirm", [
                 "Are you sure you want to do this?",
             ]))
         ) {
@@ -98,7 +98,7 @@
         })
             .then((res) => res.json())
             .then((res) => {
-                trigger("app:toast", [
+                trigger("app::toast", [
                     res.success ? "success" : "error",
                     res.success ? "Member kicked!" : res.message,
                 ]);

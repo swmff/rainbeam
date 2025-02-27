@@ -193,7 +193,7 @@
                 color_button.title = "Select color";
                 color_button.setAttribute("type", "button");
                 color_button.appendChild(
-                    await trigger("app:icon", ["paint-bucket", "icon"]),
+                    await trigger("app::icon", ["paint-bucket", "icon"]),
                 );
 
                 color_button.addEventListener("click", () => {
@@ -220,7 +220,7 @@
                 const download_button = document.createElement("button");
                 download_button.title = "Download graph";
                 download_button.appendChild(
-                    await trigger("app:icon", ["download", "icon"]),
+                    await trigger("app::icon", ["download", "icon"]),
                 );
 
                 media_container.appendChild(download_button);
@@ -232,7 +232,7 @@
                 const upload_button = document.createElement("button");
                 upload_button.title = "Upload graph";
                 upload_button.appendChild(
-                    await trigger("app:icon", ["upload", "icon"]),
+                    await trigger("app::icon", ["upload", "icon"]),
                 );
 
                 media_container.appendChild(upload_button);

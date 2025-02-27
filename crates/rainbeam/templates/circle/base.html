@@ -158,7 +158,7 @@
                         <!-- actions -->
                         <div class="dropdown" style="flex: 1 0 auto">
                             <button
-                                onclick="trigger('app:hook.dropdown', [event])"
+                                onclick="trigger('app::hooks::dropdown', [event])"
                                 exclude="dropdown"
                                 class="w-full"
                             >
@@ -211,7 +211,7 @@
                                         )
                                             .then((res) => res.json())
                                             .then((res) => {
-                                                trigger("app:shout", [
+                                                trigger("app::shout", [
                                                     res.success
                                                         ? "tip"
                                                         : "caution",
@@ -248,7 +248,7 @@
                                         )
                                             .then((res) => res.json())
                                             .then((res) => {
-                                                trigger("app:shout", [
+                                                trigger("app::shout", [
                                                     res.success
                                                         ? "tip"
                                                         : "caution",
@@ -288,7 +288,7 @@
                                         )
                                             .then((res) => res.json())
                                             .then((res) => {
-                                                trigger("app:shout", [
+                                                trigger("app::shout", [
                                                     res.success
                                                         ? "tip"
                                                         : "caution",
@@ -307,7 +307,7 @@
                         <!-- anonymous actions -->
                         <div class="dropdown">
                             <button
-                                onclick="trigger('app:hook.dropdown', [event])"
+                                onclick="trigger('app::hooks::dropdown', [event])"
                                 exclude="dropdown"
                                 class="w-full"
                             >
@@ -409,7 +409,7 @@
                 })
             ).json();
 
-            trigger("app:shout", [
+            trigger("app::shout", [
                 res.success ? "tip" : "caution",
                 res.message || "Settings saved!",
             ]);
