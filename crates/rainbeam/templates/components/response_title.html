@@ -77,7 +77,7 @@
         <button
             title="{{ reaction_count }} reactions"
             class="camo"
-            onclick="trigger('reactions:toggle', ['{{ response.id }}', 'Response', event.target])"
+            onclick="trigger('reactions::toggle', ['{{ response.id }}', 'Response', event.target])"
             hook="check_reaction"
             hook-arg:id="{{ response.id }}"
         >
@@ -93,7 +93,7 @@
         <button
             title="{{ comment_count }} comments"
             class="circle button camo"
-            onclick="trigger('app:toggle_flex', [document.getElementById('comments:{{ response.id }}')])"
+            onclick="trigger('app:toggle_flex', [document.getElementById('comments::{{ response.id }}')])"
         >
             {{ icon "message-circle" }}
             <span class="notification camo">{{ comment_count }}</span>
@@ -122,7 +122,7 @@
             <div class="inner w-content" exclude="dropdown">
                 {% if profile.is_some() %}
                 <button
-                    onclick="trigger('responses:create', ['0', '✨ Boost\n/+r/{{ response.id }}'])
+                    onclick="trigger('responses::create', ['0', '✨ Boost\n/+r/{{ response.id }}'])
                         .then((p) => {
                             p.success ? window.location.href = `/response/${p.payload.id}` : ''
                         })"
@@ -166,26 +166,26 @@
 
                 <!-- prettier-ignore -->
                 <button
-                    onclick="trigger('app:copy_text', [trigger('responses:gen_share', [event.target, '{{ response.id }}', 280])])"
+                    onclick="trigger('app::copy_text', [trigger('responses::gen_share', [event.target, '{{ response.id }}', 280])])"
                 >
                     {{ icon "copy" }} {{ text
                     "response_title.html:action.copy_to_clipboard" }}
                 </button>
 
                 <button
-                    onclick="trigger('app:intent_twitter', [trigger('responses:gen_share', [event.target, '{{ response.id }}', 280, false]), '{{ config.host }}/+r/{{ response.id }}'])"
+                    onclick="trigger('app::intent_twitter', [trigger('responses::gen_share', [event.target, '{{ response.id }}', 280, false]), '{{ config.host }}/+r/{{ response.id }}'])"
                 >
                     {{ icon "twitter" }} Twitter
                 </button>
 
                 <button
-                    onclick="trigger('app:intent_bluesky', [trigger('responses:gen_share', [event.target, '{{ response.id }}', 280, false]), '{{ config.host }}/+r/{{ response.id }}'])"
+                    onclick="trigger('app::intent_bluesky', [trigger('responses::gen_share', [event.target, '{{ response.id }}', 280, false]), '{{ config.host }}/+r/{{ response.id }}'])"
                 >
                     {{ icon "external-link" }} Bluesky
                 </button>
 
                 <button
-                    onclick="trigger('app:copy_text', ['{{ config.host }}/+r/{{ response.id }}'])"
+                    onclick="trigger('app::copy_text', ['{{ config.host }}/+r/{{ response.id }}'])"
                 >
                     {{ icon "copy" }} {{ text "general:action.copy_link" }}
                 </button>
@@ -224,7 +224,7 @@
                 {% if response.context.is_post == false %}
                 <a
                     href="#"
-                    onclick="trigger('responses:unsend', ['{{ response.id }}'])"
+                    onclick="trigger('responses::unsend', ['{{ response.id }}'])"
                     class="red"
                 >
                     {{ icon "undo-2" }} {{ text
@@ -233,7 +233,7 @@
                 {% endif %}
 
                 <button
-                    onclick="trigger('responses:delete', ['{{ response.id }}'])"
+                    onclick="trigger('responses::delete', ['{{ response.id }}'])"
                     class="red"
                 >
                     {{ icon "trash" }} {{ text
@@ -243,7 +243,7 @@
                 <!-- actions for everybody -->
                 <b class="title">Tools</b>
                 <button
-                    onclick="trigger('app:copy_text', ['{{ response.id }}'])"
+                    onclick="trigger('app::copy_text', ['{{ response.id }}'])"
                 >
                     {{ icon "copy" }} {{ text "general:action.copy_id" }}
                 </button>
@@ -264,7 +264,7 @@
                 {% if profile.id != response.author.id %}
                 <!-- actions for users that ARE NOT the author -->
                 <a
-                    href="javascript:trigger('reports:bootstrap', ['responses', '{{ response.id }}'])"
+                    href="javascript:trigger('reports::bootstrap', ['responses', '{{ response.id }}'])"
                 >
                     {{ icon "flag" }} {{ text "general:action.report" }}
                 </a>
@@ -272,7 +272,7 @@
                 <b class="title">Mod</b>
                 <a
                     href="#"
-                    onclick="trigger('responses:delete', ['{{ response.id }}'])"
+                    onclick="trigger('responses::delete', ['{{ response.id }}'])"
                     class="red"
                 >
                     {{ icon "trash" }} {{ text "general:action.delete" }}

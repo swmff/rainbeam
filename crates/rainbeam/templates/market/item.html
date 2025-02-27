@@ -1,7 +1,7 @@
 {% extends "base.html" %} {% block m_nav_right %}
 <button
     title="{{ reaction_count }} reactions"
-    onclick="trigger('reactions:toggle', ['{{ item.id }}', 'Item', event.target])"
+    onclick="trigger('reactions::toggle', ['{{ item.id }}', 'Item', event.target])"
     hook="check_reaction"
     hook-arg:id="{{ item.id }}"
 >
@@ -12,7 +12,7 @@
 {% if !is_owned && (item.cost != -1) %}
 <button
     class="primary"
-    onclick="trigger('items:purchase', ['{{ item.id }}', '{{ item.cost }}'])"
+    onclick="trigger('items::purchase', ['{{ item.id }}', '{{ item.cost }}'])"
 >
     {{ icon "check" }}
     <span>{{ text "market:text.buy" }}</span>
@@ -27,7 +27,7 @@ profile.as_ref().unwrap() %}
             href="#"
             class="{% if item.status == authbeam::model::ItemStatus::Featured %}active{% endif %}"
             title="Mark as featured"
-            onclick="trigger('items:status', ['{{ item.id }}', 'Featured'])"
+            onclick="trigger('items::status', ['{{ item.id }}', 'Featured'])"
             data-item-status="Featured"
         >
             {{ icon "star" }}
@@ -38,7 +38,7 @@ profile.as_ref().unwrap() %}
             href="#"
             class="{% if item.status == authbeam::model::ItemStatus::Approved %}active{% endif %}"
             title="Mark as approved"
-            onclick="trigger('items:status', ['{{ item.id }}', 'Approved'])"
+            onclick="trigger('items::status', ['{{ item.id }}', 'Approved'])"
             data-item-status="Approved"
         >
             {{ icon "circle-check" }}
@@ -49,7 +49,7 @@ profile.as_ref().unwrap() %}
             href="#"
             class="{% if item.status == authbeam::model::ItemStatus::Pending %}active{% endif %}"
             title="Mark as pending"
-            onclick="trigger('items:status', ['{{ item.id }}', 'Pending'])"
+            onclick="trigger('items::status', ['{{ item.id }}', 'Pending'])"
             data-item-status="Pending"
         >
             {{ icon "circle-dashed" }}
@@ -60,7 +60,7 @@ profile.as_ref().unwrap() %}
             href="#"
             class="{% if item.status == authbeam::model::ItemStatus::Rejected %}active{% endif %}"
             title="Mark as rejected"
-            onclick="trigger('items:status', ['{{ item.id }}', 'Rejected'])"
+            onclick="trigger('items::status', ['{{ item.id }}', 'Rejected'])"
             data-item-status="Rejected"
         >
             {{ icon "ban" }} <span>{{ text "market:text.rejected" }}</span>
@@ -119,7 +119,7 @@ profile.as_ref().unwrap() %}
         {% if item.cost != -1 %}
         <button
             class="big primary bold big gap-2"
-            onclick="trigger('items:purchase', ['{{ item.id }}', '{{ item.cost }}'])"
+            onclick="trigger('items::purchase', ['{{ item.id }}', '{{ item.cost }}'])"
         >
             {{ icon "check" }}
             <span>{{ text "market:text.buy" }}</span>
@@ -246,7 +246,7 @@ profile.as_ref().unwrap() %}
         <div class="card secondary flex gap-2 flex-wrap">
             <button
                 class="secondary"
-                onclick="trigger('items:edit_content', ['{{ item.id }}', '{{ item.type.to_string() }}'])"
+                onclick="trigger('items::edit_content', ['{{ item.id }}', '{{ item.type.to_string() }}'])"
             >
                 {{ icon "pen" }}
                 <span>{{ text "market:action.edit_content" }}</span>
@@ -254,7 +254,7 @@ profile.as_ref().unwrap() %}
 
             <button
                 class="secondary"
-                onclick="trigger('app:copy_text', ['{{ item.id }}'])"
+                onclick="trigger('app::copy_text', ['{{ item.id }}'])"
             >
                 {{ icon "copy" }}
                 <span>{{ text "general:action.copy_id" }}</span>
@@ -262,7 +262,7 @@ profile.as_ref().unwrap() %}
 
             <button
                 class="red secondary"
-                onclick="trigger('items:delete', ['{{ item.id }}'])"
+                onclick="trigger('items::delete', ['{{ item.id }}'])"
             >
                 {{ icon "trash" }}
                 <span>{{ text "general:action.delete" }}</span>

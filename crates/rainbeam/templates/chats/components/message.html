@@ -58,7 +58,7 @@
             </button>
 
             <button
-                onclick="trigger('chats:msg_delete', ['{{ message.0.id }}'])"
+                onclick="trigger('chats::msg_delete', ['{{ message.0.id }}'])"
                 class="red"
             >
                 {{ icon "trash" }} {{ text "general:action.delete" }}
@@ -66,7 +66,7 @@
             {% endif %} {% endif %}
             <!-- actions for everybody -->
             <b class="title">Tools</b>
-            <button onclick="trigger('app:copy_text', ['{{ message.0.id }}'])">
+            <button onclick="trigger('app::copy_text', ['{{ message.0.id }}'])">
                 {{ icon "copy" }} Copy ID
             </button>
 
@@ -75,14 +75,14 @@
                 {% if !is_own %}
             <!-- actions for users that ARE NOT the author -->
             <a
-                href="javascript:trigger('reports:bootstrap', ['messages', '{{ message.0.id }}'])"
+                href="javascript:trigger('reports::bootstrap', ['messages', '{{ message.0.id }}'])"
             >
                 {{ icon "flag" }} {{ text "general:action.report" }}
             </a>
             {% endif %} {% if is_helper %}
             <b class="title">Mod</b>
             <button
-                onclick="trigger('chats:msg_delete', ['{{ message.0.id }}'])"
+                onclick="trigger('chats::msg_delete', ['{{ message.0.id }}'])"
                 class="red"
             >
                 {{ icon "trash" }} {{ text "general:action.delete" }}

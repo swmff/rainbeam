@@ -114,7 +114,7 @@ config.name }}{% endblock %} {% block nav_left %}
 
     // handle submit
     globalThis.save_settings = async () => {
-        await app.debounce("settings:save_settings");
+        await app.debounce("settings::save_settings");
         const res = await (
             await fetch("/api/v1/circles/{{ circle.id }}/metadata", {
                 method: "POST",

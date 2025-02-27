@@ -41,7 +41,7 @@
                         <b class="title">Manage</b>
                         <a
                             href="#"
-                            onclick="trigger('account_warnings:delete', ['{{ warning.id }}'])"
+                            onclick="trigger('account_warnings::delete', ['{{ warning.id }}'])"
                             class="red"
                         >
                             {{ icon "trash" }} Delete
@@ -51,7 +51,7 @@
                         <b class="title">Tools</b>
                         <a
                             href="#"
-                            onclick="trigger('app:copy_text', ['{{ warning.id }}'])"
+                            onclick="trigger('app::copy_text', ['{{ warning.id }}'])"
                         >
                             {{ icon "copy" }} Copy ID
                         </a>

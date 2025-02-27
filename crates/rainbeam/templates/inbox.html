@@ -133,7 +133,7 @@
                             <b class="title">Manage</b>
                             <a
                                 href="#"
-                                onclick="trigger('questions:delete', ['{{ question.id }}'])"
+                                onclick="trigger('questions::delete', ['{{ question.id }}'])"
                                 class="red"
                             >
                                 {{ icon "trash" }} {{ text
@@ -141,14 +141,14 @@
                             </a>
 
                             <a
-                                href="javascript:trigger('questions:ipblock', ['{{ question.id }}'])"
+                                href="javascript:trigger('questions::ipblock', ['{{ question.id }}'])"
                             >
                                 {{ icon "shield" }} {{ text
                                 "general:action.ip_block" }}
                             </a>
 
                             <a
-                                href="javascript:trigger('reports:bootstrap', ['questions', '{{ question.id }}'])"
+                                href="javascript:trigger('reports::bootstrap', ['questions', '{{ question.id }}'])"
                             >
                                 {{ icon "flag" }} {{ text
                                 "general:action.report" }}

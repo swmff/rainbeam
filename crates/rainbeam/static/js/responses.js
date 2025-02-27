@@ -13,7 +13,7 @@
             unlisted = false,
             circle = "",
         ) {
-            await app.debounce("responses:create");
+            await app.debounce("responses::create");
             if (!tags) {
                 tags = "";
             }

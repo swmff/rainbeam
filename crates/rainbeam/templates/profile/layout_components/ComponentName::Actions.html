@@ -157,7 +157,7 @@
 
     <div class="inner w-content left" exclude="dropdown">
         <b class="title">This user</b>
-        <button onclick="trigger('chats:create', ['{{ other.id }}'])">
+        <button onclick="trigger('chats::create', ['{{ other.id }}'])">
             {{ icon "message-circle-plus" }} {{ text "general:link.chat" }}
         </button>
         <a href="/inbox/mail/compose?to={{ other.id }}">
@@ -169,15 +169,15 @@
         >
             {{ icon "shield" }} {{ text "general:action.block" }}
         </a>
-        <button onclick="trigger('app:ipblock', ['{{ other.id }}'])">
+        <button onclick="trigger('app::ipblock', ['{{ other.id }}'])">
             {{ icon "shield" }} {{ text "general:action.ip_block" }}
         </button>
         <a
-            href="javascript:trigger('reports:bootstrap', ['profiles', '{{ other.username }}'])"
+            href="javascript:trigger('reports::bootstrap', ['profiles', '{{ other.username }}'])"
         >
             {{ icon "flag" }} {{ text "general:action.report" }}
         </a>
-        <a href="#" onclick="trigger('app:copy_text', ['{{ other.id }}'])">
+        <a href="#" onclick="trigger('app::copy_text', ['{{ other.id }}'])">
             {{ icon "copy" }} {{ text "general:action.copy_id" }}
         </a>
         {% if is_powerful %}
@@ -228,7 +228,7 @@
     <div class="inner w-content left" exclude="dropdown">
         <b class="title">{{ text "profile:base.html:title.this_user" }}</b>
         <a
-            href="javascript:trigger('reports:bootstrap', ['profiles', '{{ other.username }}'])"
+            href="javascript:trigger('reports::bootstrap', ['profiles', '{{ other.username }}'])"
         >
             {{ icon "flag" }} {{ text "general:action.report" }}
         </a>

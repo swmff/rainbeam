@@ -173,12 +173,12 @@
                                 <b class="title">This circle</b>
                                 <a
                                     href="#"
-                                    onclick="trigger('app:copy_text', ['{{ circle.id }}'])"
+                                    onclick="trigger('app::copy_text', ['{{ circle.id }}'])"
                                 >
                                     {{ icon "copy" }} Copy ID
                                 </a>
                                 <a
-                                    href="javascript:trigger('reports:bootstrap', ['circles', '{{ circle.id }}'])"
+                                    href="javascript:trigger('reports::bootstrap', ['circles', '{{ circle.id }}'])"
                                 >
                                     {{ icon "flag" }} {{ text
                                     "general:action.report" }}
@@ -321,7 +321,7 @@
                             >
                                 <b class="title">This circle</b>
                                 <a
-                                    href="javascript:trigger('reports:bootstrap', ['circles', '{{ circle.id }}'])"
+                                    href="javascript:trigger('reports::bootstrap', ['circles', '{{ circle.id }}'])"
                                 >
                                     {{ icon "flag" }} {{ text
                                     "general:action.report" }}
@@ -365,7 +365,7 @@
         </span>
 
         <div class="flex gap-2">
-            <button class="primary bold" onclick="trigger('warnings:accept')">
+            <button class="primary bold" onclick="trigger('warnings::accept')">
                 Continue
             </button>
             <a href="/" class="button bold">Cancel</a>

@@ -91,14 +91,14 @@ endblock %} {% block nav_left %}
 
                     <button
                         class="red"
-                        onclick="trigger('chats:leave', ['{{ chat.id }}'])"
+                        onclick="trigger('chats::leave', ['{{ chat.id }}'])"
                     >
                         {{ icon "x" }} {{ text "chats:chat.html:action.leave" }}
                     </button>
 
                     <b class="title">Tools</b>
                     <a
-                        href="javascript:trigger('reports:bootstrap', ['chats', '{{ chat.id }}'])"
+                        href="javascript:trigger('reports::bootstrap', ['chats', '{{ chat.id }}'])"
                     >
                         {{ icon "flag" }} {{ text "general:action.report" }}
                     </a>

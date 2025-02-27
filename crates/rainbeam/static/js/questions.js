@@ -4,7 +4,7 @@
     self.define(
         "create",
         async function ({ $, app }, recipient, content, anonymous, media = "") {
-            await app.debounce("responses:create");
+            await app.debounce("responses::create");
             return new Promise((resolve, reject) => {
                 fetch("/api/v1/questions", {
                     method: "POST",

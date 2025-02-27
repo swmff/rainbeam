@@ -89,7 +89,7 @@ comment = comment.0.clone() %}
             <button
                 title="{{ reaction_count }} reactions"
                 class="circle camo"
-                onclick="trigger('reactions:toggle', ['{{ comment.id }}', 'Comment', event.target])"
+                onclick="trigger('reactions::toggle', ['{{ comment.id }}', 'Comment', event.target])"
                 hook="check_reaction"
                 hook-arg:id="{{ comment.id }}"
             >
@@ -114,7 +114,7 @@ comment = comment.0.clone() %}
             <button
                 title="{{ reply_count }} replies"
                 class="circle button camo"
-                onclick="trigger('app:toggle_flex', [document.getElementById('replies:{{ comment.id }}')])"
+                onclick="trigger('app:toggle_flex', [document.getElementById('replies::{{ comment.id }}')])"
             >
                 {{ icon "message-circle" }}
                 <span class="notification camo">{{ reply_count }}</span>
@@ -145,7 +145,7 @@ comment = comment.0.clone() %}
 
                 <!-- prettier-ignore -->
                 <button
-                    onclick="trigger('app:copy_text', ['{{ config.host }}/+c/{{ comment.id }}'])"
+                    onclick="trigger('app::copy_text', ['{{ config.host }}/+c/{{ comment.id }}'])"
                 >
                     {{ icon "copy" }} {{ text "general:action.copy_link" }}
                 </button>
@@ -162,14 +162,14 @@ comment = comment.0.clone() %}
                 </a>
 
                 <button
-                    onclick="trigger('comments:delete', ['{{ comment.id }}'])"
+                    onclick="trigger('comments::delete', ['{{ comment.id }}'])"
                     class="red"
                 >
                     {{ icon "trash" }} {{ text "general:action.delete" }}
                 </button>
 
                 <button
-                    onclick="trigger('comments:ipblock', ['{{ comment.id }}'])"
+                    onclick="trigger('comments::ipblock', ['{{ comment.id }}'])"
                 >
                     {{ icon "shield" }} {{ text "general:action.ip_block" }}
                 </button>
@@ -177,7 +177,7 @@ comment = comment.0.clone() %}
                 <!-- actions for everybody -->
                 <b class="title">Tools</b>
                 <button
-                    onclick="trigger('app:copy_text', ['{{ comment.id }}'])"
+                    onclick="trigger('app::copy_text', ['{{ comment.id }}'])"
                 >
                     {{ icon "copy" }} {{ text "general:action.copy_id" }}
                 </button>
@@ -191,7 +191,7 @@ comment = comment.0.clone() %}
                         {% if profile.id != comment.author.id %}
                 <!-- actions for users that ARE NOT the author -->
                 <a
-                    href="javascript:trigger('reports:bootstrap', ['comments', '{{ comment.id }}'])"
+                    href="javascript:trigger('reports::bootstrap', ['comments', '{{ comment.id }}'])"
                 >
                     {{ icon "flag" }} {{ text "general:action.report" }}
                 </a>
@@ -199,7 +199,7 @@ comment = comment.0.clone() %}
                 <b class="title">Mod</b>
                 <a
                     href="#"
-                    onclick="trigger('comments:delete', ['{{ comment.id }}'])"
+                    onclick="trigger('comments::delete', ['{{ comment.id }}'])"
                     class="red"
                 >
                     {{ icon "trash" }} {{ text "general:action.delete" }}

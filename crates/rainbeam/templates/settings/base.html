@@ -185,7 +185,7 @@ crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
 
         // handle submit
         globalThis.save_settings = async () => {
-            await app.debounce("settings:save_settings");
+            await app.debounce("settings::save_settings");
             const res = await (
                 await fetch("/api/v0/auth/profile/{{ user.id }}/metadata", {
                     method: "POST",

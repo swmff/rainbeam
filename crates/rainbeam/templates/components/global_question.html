@@ -67,7 +67,7 @@ question = question.clone().0 %}
 
                     <!-- prettier-ignore -->
                     <button
-                        onclick="trigger('app:copy_text', ['{{ config.host }}/+q/{{ question.id }}'])"
+                        onclick="trigger('app::copy_text', ['{{ config.host }}/+q/{{ question.id }}'])"
                     >
                         {{ icon "copy" }} Copy link
                     </button>
@@ -76,7 +76,7 @@ question = question.clone().0 %}
                     <b class="title">Manage</b>
                     <a
                         href="#"
-                        onclick="trigger('questions:delete', ['{{ question.id }}'])"
+                        onclick="trigger('questions::delete', ['{{ question.id }}'])"
                         class="red"
                     >
                         {{ icon "trash" }} Delete
@@ -85,7 +85,7 @@ question = question.clone().0 %}
                     <b class="title">Mod</b>
                     <a
                         href="#"
-                        onclick="trigger('questions:delete', ['{{ question.id }}'])"
+                        onclick="trigger('questions::delete', ['{{ question.id }}'])"
                         class="red"
                     >
                         {{ icon "trash" }} Delete
@@ -106,7 +106,7 @@ question = question.clone().0 %}
         <!-- reactions -->
         <button
             title="{{ reaction_count }} reactions"
-            onclick="trigger('reactions:toggle', ['{{ question.id }}', 'Question'])"
+            onclick="trigger('reactions::toggle', ['{{ question.id }}', 'Question'])"
             hook="check_reaction"
             hook-arg:id="{{ question.id }}"
         >
@@ -130,7 +130,7 @@ question = question.clone().0 %}
         {% if profile.is_none() %}
         <a
             class="button"
-            href="javascript:trigger('reports:bootstrap', ['questions', '{{ question.id }}'])"
+            href="javascript:trigger('reports::bootstrap', ['questions', '{{ question.id }}'])"
             title="Report"
         >
             {{ icon "flag" }}
@@ -139,7 +139,7 @@ question = question.clone().0 %}
         question.author.id %}
         <a
             class="button"
-            href="javascript:trigger('reports:bootstrap', ['questions', '{{ question.id }}'])"
+            href="javascript:trigger('reports::bootstrap', ['questions', '{{ question.id }}'])"
             title="Report"
         >
             {{ icon "flag" }}

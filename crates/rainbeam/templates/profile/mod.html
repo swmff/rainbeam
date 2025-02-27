@@ -469,7 +469,9 @@
         };
 
         globalThis.change_group = async () => {
-            const group = await trigger("app:prompt", ["Enter group number::"]);
+            const group = await trigger("app:prompt", [
+                "Enter group number::",
+            ]);
 
             if (!group) {
                 return;

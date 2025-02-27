@@ -23,7 +23,7 @@ warning_hash = rainbeam_shared::hash::hash(warning.to_string()) %}
         <div class="flex gap-2">
             <button
                 class="primary bold"
-                onclick="trigger('warnings:accept', ['{{ other.id }}', '{{ warning_hash }}', '/@{{ other.username }}']);"
+                onclick="trigger('warnings::accept', ['{{ other.id }}', '{{ warning_hash }}', '/@{{ other.username }}']);"
             >
                 {{ text "general:dialog.continue" }}
             </button>

@@ -514,7 +514,7 @@
                         wrapper.scrollTop + wrapper.offsetHeight + 100 >
                         attach.offsetHeight
                     ) {
-                        app.debounce("app:partials")
+                        app.debounce("app::partials")
                             .then(async () => {
                                 if (document.getElementById("initial_loader")) {
                                     console.log("partial blocked");

@@ -46,7 +46,7 @@
     });
 
     self.define("toggle", async function ({ $, app }, id, type, target) {
-        await app.debounce("reactions:toggle");
+        await app.debounce("reactions::toggle");
         const remove = (await $["has-reacted"](id)) === true;
 
         if (remove) {
