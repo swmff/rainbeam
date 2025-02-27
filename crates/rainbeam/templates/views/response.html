@@ -91,6 +91,7 @@ block head %}
         </div>
 
         <div data-tab="comments" class="flex flex-col gap-4">
+            {% if !response.author.metadata.is_true("rainbeam:disallow_response_comments") %}
             <div class="card-nest w-full" id="comment_field">
                 <div class="card flex flex-col gap-1">Leave a comment</div>
 
@@ -164,6 +165,7 @@ block head %}
                     </form>
                 </div>
             </div>
+            {% endif %}
 
             {% include "partials/views/comments.html" %}
 

@@ -759,6 +759,7 @@ impl Database {
             "rainbeam:share_hashtag",
             "rainbeam:authenticated_only",
             "rainbeam:force_default_layout",
+            "rainbeam:disallow_response_comments",
         ]
     }
 

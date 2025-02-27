@@ -87,7 +87,9 @@
         </button>
 
         <!-- comments -->
-        {% if show_comments != false %} {% if comment_count > 0 %}
+        {% if (show_comments != false) &&
+        (!response.author.metadata.is_true("rainbeam:disallow_response_comments"))
+        %} {% if comment_count > 0 %}
         <button
             title="{{ comment_count }} comments"
             class="circle button camo"

@@ -225,6 +225,7 @@
         "settings:privacy_options.html:label.disable_questions": "질문 금지",
         "settings:privacy_options.html:label.disable_anonymous_questions": "익명질문 비허용",
         "settings:privacy_options.html:label.disable_anonymous_comments": "답글에 익명댓글 비허용",
+        "settings:privacy_options.html:label.disallow_response_comments": "Disallow comments on your responses (from anybody)",
         "settings:privacy_options.html:label.require_account": "가입된 사용자만 질문 허용",
         "settings:privacy_options.html:label.require_account_to_view": "Require an account to view your profile",
         "settings:privacy_options.html:label.keep_socials_private": "비공개 계정 유지 (팔로워/팔로잉)",

@@ -3944,6 +3944,16 @@ impl Database {
             Err(e) => return Err(e),
         };
 
+        // check if the response author allows comments at all
+        if response
+            .author
+            .metadata
+            .is_true("rainbeam:disallow_response_comments")
+        {
+            return Err(DatabaseError::NotAllowed);
+        }
+
+        // check if we're posting this comment anonymously
         let tag = Database::anonymous_tag(&author);
 
         if tag.0 {

@@ -225,6 +225,7 @@
         "settings:privacy_options.html:label.disable_questions": "Disable questions",
         "settings:privacy_options.html:label.disable_anonymous_questions": "Disallow anonymous questions on your profile",
         "settings:privacy_options.html:label.disable_anonymous_comments": "Disallow anonymous comments on your responses",
+        "settings:privacy_options.html:label.disallow_response_comments": "Disallow comments on your responses (from anybody)",
         "settings:privacy_options.html:label.require_account": "Require an account to ask questions on your profile",
         "settings:privacy_options.html:label.require_account_to_view": "Require an account to view your profile",
         "settings:privacy_options.html:label.keep_socials_private": "Keep your socials private (followers/following)",
