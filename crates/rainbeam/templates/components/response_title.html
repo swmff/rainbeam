@@ -93,7 +93,7 @@
         <button
             title="{{ comment_count }} comments"
             class="circle button camo"
-            onclick="trigger('app:toggle_flex', [document.getElementById('comments::{{ response.id }}')])"
+            onclick="trigger('app::toggle_flex', [document.getElementById('comments:{{ response.id }}')])"
         >
             {{ icon "message-circle" }}
             <span class="notification camo">{{ comment_count }}</span>

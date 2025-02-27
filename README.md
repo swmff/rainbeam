@@ -1,4 +1,4 @@
-![Rainbeam](./.github/assets/rainbeam-logo-full-primary-placard.svg)
+![Rainbeam](https://raw.githubusercontent.com/swmff/rainbeam/refs/heads/master/.github/assets/rainbeam-logo-full-primary-placard.svg)
 
 !["Docs" workflow badge](https://github.com/swmff/rainbeam/workflows/Docs/badge.svg)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/swmff/rainbeam)

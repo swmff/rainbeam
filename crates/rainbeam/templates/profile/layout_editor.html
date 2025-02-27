@@ -232,7 +232,7 @@ config.name }}{% endblock %} {% block head %}
         );
 
         globalThis.save_layout = async () => {
-            await trigger("app:debounce", ["settings::save_settings"]);
+            await trigger("app::debounce", ["settings::save_settings"]);
             const res = await (
                 await fetch("/api/v0/auth/profile/{{ other.id }}/layout", {
                     method: "POST",

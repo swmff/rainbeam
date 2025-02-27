@@ -79,7 +79,7 @@
         };
 
         globalThis.save_links = async () => {
-            await trigger("app:debounce", ["settings::save_settings"]);
+            await trigger("app::debounce", ["settings::save_settings"]);
             const res = await (
                 await fetch("/api/v0/auth/profile/{{ user.id }}/links", {
                     method: "POST",

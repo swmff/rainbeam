@@ -114,7 +114,7 @@ comment = comment.0.clone() %}
             <button
                 title="{{ reply_count }} replies"
                 class="circle button camo"
-                onclick="trigger('app:toggle_flex', [document.getElementById('replies::{{ comment.id }}')])"
+                onclick="trigger('app::toggle_flex', [document.getElementById('replies:{{ comment.id }}')])"
             >
                 {{ icon "message-circle" }}
                 <span class="notification camo">{{ reply_count }}</span>
