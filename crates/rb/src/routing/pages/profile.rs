@@ -1267,7 +1267,7 @@ pub async fn friends_request(
                     query.page,
                 )
                 .await
-                .unwrap(),
+                .unwrap_or_default(),
             followers_count: database.auth.get_followers_count(other.id.clone()).await,
             following_count: database.auth.get_following_count(other.id.clone()).await,
             friends_count: database
