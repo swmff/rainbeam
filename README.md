@@ -1,5 +1,13 @@
 ![Rainbeam](./.github/assets/rainbeam-logo-full-primary-placard.svg)
+
 !["Docs" workflow badge](https://github.com/swmff/rainbeam/workflows/Docs/badge.svg)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/swmff/rainbeam)
+![GitHub last commit](https://img.shields.io/github/last-commit/swmff/rainbeam)
+![GitHub License](https://img.shields.io/github/license/swmff/rainbeam)
+![Authbeam Crates.io Version](https://img.shields.io/crates/v/authbeam)
+![Databeam Crates.io Version](https://img.shields.io/crates/v/databeam)
+![Langbeam Crates.io Version](https://img.shields.io/crates/v/langbeam)
+![Rainbeam Shared Crates.io Version](https://img.shields.io/crates/v/rainbeam-shared)
 
 Rainbeam is a simple Q&A social network designed for community! On Rainbeam, users can create and customize their profile to look how they want, and then other users can ask them questions using their account or an anonymous username. Users receive questions in their inbox and can then answer them or manage them. Users can also ask “global questions” which everybody who is following them can see in a specialized timeline. Global questions can be answered by any logged-in user. Users can also respond to existing responses with comments to further interact with their friends' responses!
 
