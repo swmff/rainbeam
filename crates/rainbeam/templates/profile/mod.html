@@ -469,7 +469,7 @@
         };
 
         globalThis.change_group = async () => {
-            const group = await trigger("app:prompt", [
+            const group = await trigger("app::prompt", [
                 "Enter group number::",
             ]);
 
@@ -506,7 +506,7 @@
         };
 
         globalThis.change_tier = async () => {
-            const tier = await trigger("app:prompt", ["Enter tier number::"]);
+            const tier = await trigger("app::prompt", ["Enter tier number::"]);
 
             if (!tier) {
                 return;
@@ -531,7 +531,7 @@
         };
 
         globalThis.change_coins = async () => {
-            const coins = await trigger("app:prompt", ["Enter coin amount::"]);
+            const coins = await trigger("app::prompt", ["Enter coin amount::"]);
 
             if (!coins) {
                 return;

@@ -1,4 +1,3 @@
-//! 🌈 Rainbeam!
 #![doc = include_str!("../../../README.md")]
 #![doc(issue_tracker_base_url = "https://github.com/swmff/rainbeam/issues")]
 #![doc(html_favicon_url = "https://rainbeam.net/static/favicon.svg")]

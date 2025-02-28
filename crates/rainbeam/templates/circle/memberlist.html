@@ -19,7 +19,7 @@
 
         <script>
             async function send_invite() {
-                const user = await trigger("app:prompt", ["Username::"]);
+                const user = await trigger("app::prompt", ["Username::"]);
 
                 if (!user) {
                     return;

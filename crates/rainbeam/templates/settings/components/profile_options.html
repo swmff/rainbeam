@@ -99,13 +99,13 @@
         };
 
         globalThis.add_link = async () => {
-            const title = await trigger("app:prompt", ["Link label::"]);
+            const title = await trigger("app::prompt", ["Link label::"]);
 
             if (!title) {
                 return
             }
 
-            const url = await trigger("app:prompt", ["Link URL::"]);
+            const url = await trigger("app::prompt", ["Link URL::"]);
 
             if (!url) {
                 return

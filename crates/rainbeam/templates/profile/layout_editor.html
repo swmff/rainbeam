@@ -267,7 +267,7 @@ config.name }}{% endblock %} {% block head %}
         };
 
         globalThis.import_layout = async () => {
-            const json = await trigger("app:prompt", ["Layout JSON::"]);
+            const json = await trigger("app::prompt", ["Layout JSON::"]);
 
             if (!json) {
                 return;

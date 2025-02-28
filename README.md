@@ -3,11 +3,11 @@
 !["Docs" workflow badge](https://github.com/swmff/rainbeam/workflows/Docs/badge.svg)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/swmff/rainbeam)
 ![GitHub last commit](https://img.shields.io/github/last-commit/swmff/rainbeam)
-![GitHub License](https://img.shields.io/github/license/swmff/rainbeam)
-![Authbeam Crates.io Version](https://img.shields.io/crates/v/authbeam)
-![Databeam Crates.io Version](https://img.shields.io/crates/v/databeam)
-![Langbeam Crates.io Version](https://img.shields.io/crates/v/langbeam)
-![Rainbeam Shared Crates.io Version](https://img.shields.io/crates/v/rainbeam-shared)
+[![GitHub License](https://img.shields.io/github/license/swmff/rainbeam)](https://github.com/swmff/rainbeam/blob/master/README.md)
+[![Authbeam Crates.io Version](https://img.shields.io/crates/v/authbeam)](https://crates.io/crates/authbeam)
+[![Databeam Crates.io Version](https://img.shields.io/crates/v/databeam)](https://crates.io/crates/databeam)
+[![Langbeam Crates.io Version](https://img.shields.io/crates/v/langbeam)](https://crates.io/crates/langbeam)
+[![Rainbeam Shared Crates.io Version](https://img.shields.io/crates/v/rainbeam-shared)](https://crates.io/crates/rainbeam-shared)
 
 Rainbeam is a simple Q&A social network designed for community! On Rainbeam, users can create and customize their profile to look how they want, and then other users can ask them questions using their account or an anonymous username. Users receive questions in their inbox and can then answer them or manage them. Users can also ask “global questions” which everybody who is following them can see in a specialized timeline. Global questions can be answered by any logged-in user. Users can also respond to existing responses with comments to further interact with their friends' responses!
 
@@ -15,16 +15,14 @@ Rainbeam is a simple Q&A social network designed for community! On Rainbeam, use
 
 All core packages are contained in the `crates/` directory:
 
-- `crates/builder/` - Client asset builder/bundler
-- `crates/shared/` - Core shared utilities
-- `crates/langbeam/` - l10n service
-- `crates/databeam/` - Database connection manager
-- `crates/authbeam/` - Authentication backend and API routes
-- **(v)** `crates/rainbeam-core/` - Rainbeam database connection and types
-    - `crates/rb/` - Rainbeam Axum routes (API and all pages)
-    - `crates/rainbeam/` - Rainbeam server binary
-
-Packages labeled with `(v)` are _version-tied_. This means that it and all the packages nested under it in the list share the same crate version.
+- `crates/builder` - Client asset builder/bundler
+- `crates/shared` - Core shared utilities
+- `crates/langbeam` - l10n service
+- `crates/databeam` - Database connection manager
+- `crates/authbeam` - Authentication backend and API routes
+- `crates/rainbeam-core` - Rainbeam database connection and types
+- `crates/rb` - Rainbeam Axum routes (API and all pages)
+- `crates/rainbeam` - Rainbeam server binary
 
 ## Usage
 
