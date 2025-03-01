@@ -6572,9 +6572,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xreactions\" WHERE CAST(\"timestamp\" AS INT) > {time} ORDER BY \"timestamp\" DESC")
+            format!("SELECT * FROM \"xreactions\" WHERE CAST(\"timestamp\" AS INT) > {time} ORDER BY \"timestamp\" DESC LIMIT 250")
         } else {
-            format!("SELECT * FROM \"xreactions\" WHERE CAST(\"timestamp\" AS INT) > {time} ORDER BY \"timestamp\" DESC")
+            format!("SELECT * FROM \"xreactions\" WHERE CAST(\"timestamp\" AS INT) > {time} ORDER BY \"timestamp\" DESC LIMIT 250")
         };
 
         let mut map: HashMap<String, usize> = HashMap::new(); // will store reaction count by asset id
@@ -6645,9 +6645,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xquestions\" WHERE CAST(\"timestamp\" AS INT) > {time} ORDER BY \"timestamp\" DESC")
+            format!("SELECT * FROM \"xquestions\" WHERE CAST(\"timestamp\" AS INT) > {time} ORDER BY \"timestamp\" DESC LIMIT 250")
         } else {
-            format!("SELECT * FROM \"xquestions\" WHERE CAST(\"timestamp\" AS INT) > {time} ORDER BY \"timestamp\" DESC")
+            format!("SELECT * FROM \"xquestions\" WHERE CAST(\"timestamp\" AS INT) > {time} ORDER BY \"timestamp\" DESC LIMIT 250")
         };
 
         let mut map: HashMap<String, usize> = HashMap::new(); // will store question count by author id
@@ -6728,9 +6728,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xresponses\" WHERE CAST(\"timestamp\" AS INT) > {time} AND \"context\" NOT LIKE '%\"unlisted\":true%' ORDER BY \"timestamp\" DESC")
+            format!("SELECT * FROM \"xresponses\" WHERE CAST(\"timestamp\" AS INT) > {time} AND \"context\" NOT LIKE '%\"unlisted\":true%' ORDER BY \"timestamp\" DESC LIMIT 250")
         } else {
-            format!("SELECT * FROM \"xresponses\" WHERE CAST(\"timestamp\" AS INT) > {time} AND \"context\" NOT LIKE '%\"unlisted\":true%' ORDER BY \"timestamp\" DESC")
+            format!("SELECT * FROM \"xresponses\" WHERE CAST(\"timestamp\" AS INT) > {time} AND \"context\" NOT LIKE '%\"unlisted\":true%' ORDER BY \"timestamp\" DESC LIMIT 250")
         };
 
         let mut map: HashMap<String, usize> = HashMap::new(); // will store question count by author id
