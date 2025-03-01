@@ -1,2 +1,2 @@
 ALTER TABLE "xresponses"
-ADD COLUMN "reaction_count" TEXT DEFAULT "0";
+ADD COLUMN "reaction_count" TEXT DEFAULT '0';

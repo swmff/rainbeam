@@ -2762,9 +2762,9 @@ impl Database {
         // create response
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            "INSERT INTO \"xresponses\" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            "INSERT INTO \"xresponses\" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xresponses\" VALEUS ($1, $2, $3, $4, $5, $6, $7, $8, $9)"
+            "INSERT INTO \"xresponses\" VALEUS ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)"
         }
         .to_string();
 
@@ -2782,6 +2782,7 @@ impl Database {
             })
             .bind::<&String>(&response.reply)
             .bind::<&String>(&response.edited.to_string())
+            .bind::<&str>("0")
             .execute(c)
             .await
         {
