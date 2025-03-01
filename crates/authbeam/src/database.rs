@@ -4545,6 +4545,69 @@ impl Database {
         Ok(transaction)
     }
 
+    /// Get all transactions where the customer is the given user ID, 12 at a time
+    ///
+    /// ## Arguments:
+    /// * `user`
+    /// * `page`
+    ///
+    /// ## Returns:
+    /// `Vec<(Transaction, Customer, Merchant)>`
+    pub async fn get_transactions_by_customer_paginated(
+        &self,
+        user: String,
+        page: i32,
+    ) -> Result<Vec<((Transaction, Option<Item>), Box<Profile>, Box<Profile>)>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            format!("SELECT * FROM \"xugc_transactions\" WHERE \"customer\" = ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
+        } else {
+            format!("SELECT * FROM \"xugc_transactions\" WHERE \"customer\" = $1 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
+        };
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query)
+            .bind::<&String>(&user)
+            .bind::<&String>(&user)
+            .fetch_all(c)
+            .await
+        {
+            Ok(p) => {
+                let mut out = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row).0;
+                    let transaction = match self.gimme_transaction(res).await {
+                        Ok(t) => t,
+                        Err(e) => return Err(e),
+                    };
+
+                    let customer = transaction.0.customer.clone();
+                    let merchant = transaction.0.merchant.clone();
+
+                    out.push((
+                        transaction,
+                        match self.get_profile(customer.to_string()).await {
+                            Ok(ua) => ua,
+                            Err(_) => continue,
+                        },
+                        match self.get_profile(merchant.to_string()).await {
+                            Ok(ua) => ua,
+                            Err(_) => continue,
+                        },
+                    ));
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::Other),
+        };
+
+        // return
+        Ok(res)
+    }
+
     /// Get all transactions by the given user ID, 12 at a time
     ///
     /// ## Arguments:
@@ -4949,6 +5012,63 @@ impl Database {
         let res = match sqlquery(&query)
             .bind::<&String>(&serde_json::to_string(&status).unwrap())
             .bind::<&String>(&format!("%{search}%"))
+            .fetch_all(c)
+            .await
+        {
+            Ok(p) => {
+                let mut out = Vec::new();
+
+                for row in p {
+                    let res = self.base.textify_row(row).0;
+                    let item = match self.gimme_item(res) {
+                        Ok(t) => t,
+                        Err(e) => return Err(e),
+                    };
+
+                    let creator = item.creator.clone();
+
+                    out.push((
+                        item,
+                        match self.get_profile(creator.to_string()).await {
+                            Ok(ua) => ua,
+                            Err(_) => continue,
+                        },
+                    ));
+                }
+
+                out
+            }
+            Err(_) => return Err(DatabaseError::Other),
+        };
+
+        // return
+        Ok(res)
+    }
+
+    /// Get all items by their type, 12 at a time
+    ///
+    /// ## Arguments:
+    /// * `type`
+    /// * `page`
+    ///
+    /// ## Returns:
+    /// `Vec<(Item, Box<Profile>)>`
+    pub async fn get_items_by_type_paginated(
+        &self,
+        r#type: ItemType,
+        page: i32,
+    ) -> Result<Vec<(Item, Box<Profile>)>> {
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            format!("SELECT * FROM \"xugc_items\" WHERE \"type\" = ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
+        } else {
+            format!("SELECT * FROM \"xugc_items\" WHERE \"type\" = $2 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
+        };
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query)
+            .bind::<&String>(&serde_json::to_string(&r#type).unwrap())
             .fetch_all(c)
             .await
         {

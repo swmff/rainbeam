@@ -135,7 +135,7 @@ dialog::backdrop {
     outline: none;
 }
 
-.dropdown:not(nav *) .inner.open button:not(.inner button) {
+.dropdown:not(nav *):has(.inner.open) button:not(.inner button) {
     background: var(--color-lowered) !important;
 }
 
@@ -159,7 +159,6 @@ dialog::backdrop {
         padding: 0.5rem 0.25rem;
         margin-bottom: 0;
         backdrop-filter: none;
-        border-bottom: solid 1px var(--color-super-lowered);
     }
 
     nav button:not(.dropdown *),
@@ -181,6 +180,14 @@ dialog::backdrop {
     nav button .notification.tr,
     nav .button .notification.tr {
         font-size: 12px;
+        position: absolute;
+        top: 0;
+        right: 0;
+    }
+
+    nav .button:not(.dropdown *) svg {
+        width: 1.75em;
+        height: 1.75em;
     }
 
     nav button::before,

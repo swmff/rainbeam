@@ -1,0 +1,111 @@
+{% extends "base.html" %} {% block title %}{{ config.name }}{% endblock %} {%
+block head %}
+<meta name="description" content="{{ config.description }}" />
+{% endblock %} {% block nav_left %}
+<a class="button" href="/" title="Timeline">
+    {{ icon "house" }}
+    <span class="desktop">{{ text "general:link.timeline" }}</span>
+</a>
+
+<a class="button" href="/inbox" title="My inbox">
+    {{ icon "inbox" }}
+    <span class="flex items-center gap-2">
+        <span class="desktop">{{ text "general:link.inbox" }}</span>
+        {% if unread != 0 %}
+        <span class="notification tr">{{ unread }}</span>
+        {% endif %}
+    </span>
+</a>
+
+<a class="button active" href="/discover" title="Discover">
+    {{ icon "compass" }}
+    <span class="flex items-center gap-2">
+        <span class="desktop">{{ text "general:link.discover" }}</span>
+    </span>
+</a>
+{% endblock %} {% block nav_right %}
+<a class="button" href="/inbox/notifications" title="My notifications">
+    {{ icon "bell" }} {% if notifs != 0 %}
+    <span class="notification tr">{{ notifs }}</span>
+    {% endif %}
+</a>
+{% endblock %} {% block content %}
+<article>
+    <main class="flex flex-col gap-2">
+        <div class="card w-full flex flex-col gap-4">
+            <h2>{{ text "general:link.discover" }}</h2>
+            <span>
+                Find interesting content from all over {{ config.name }}! All
+                feeds update daily and show data from the past week (as of data
+                update).
+            </span>
+        </div>
+
+        <div class="pillmenu convertible">
+            <a
+                href="#/responses.top"
+                class="active"
+                data-tab-button="responses.top"
+            >
+                <span
+                    >{{ text "timelines:discover.html:link.top_responses"
+                    }}</span
+                >
+            </a>
+
+            <a href="#/questions.most" data-tab-button="questions.most">
+                <span
+                    >{{ text "timelines:discover.html:link.active_askers"
+                    }}</span
+                >
+            </a>
+
+            <a href="#/responses.most" data-tab-button="responses.most">
+                <span
+                    >{{ text "timelines:discover.html:link.most_responses"
+                    }}</span
+                >
+            </a>
+        </div>
+
+        <div class="flex flex-col gap-2" data-tab="responses.top">
+            <include-partial
+                src="/_app/timelines/discover/responses_top.html"
+                uses="app::clean_date_codes,app::link_filter,app::hooks::alt,app::hooks::partial_embeds,app::hooks::check_reactions"
+                instant="true"
+                outerhtml="true"
+            ></include-partial>
+        </div>
+
+        <div class="flex flex-col gap-2 hidden" data-tab="questions.most">
+            <include-partial
+                src="/_app/timelines/discover/questions_most.html"
+                uses="app::clean_date_codes,app::link_filter,app::hooks::alt,app::hooks::partial_embeds,app::hooks::check_reactions"
+                instant="true"
+                outerhtml="true"
+            ></include-partial>
+        </div>
+
+        <div class="flex flex-col gap-2 hidden" data-tab="responses.most">
+            <include-partial
+                src="/_app/timelines/discover/responses_most.html"
+                uses="app::clean_date_codes,app::link_filter,app::hooks::alt,app::hooks::partial_embeds,app::hooks::check_reactions"
+                instant="true"
+                outerhtml="true"
+            ></include-partial>
+        </div>
+    </main>
+</article>
+
+<script>
+    setTimeout(() => {
+        trigger("questions::carp");
+    }, 100);
+</script>
+
+{% if let Some(profile) = profile %} {% let other = profile.clone() %} {% if
+profile.username == other.username %}
+<div id="is_self"></div>
+{% endif %} {% let raw_metadata =
+crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
+"components/theming.html" %} {% endif %} {% call super() %} {% endblock %}

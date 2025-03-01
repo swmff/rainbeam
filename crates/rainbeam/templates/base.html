@@ -1,7 +1,7 @@
 {% extends "raw_base.html" %} {% block base %}
 <nav>
     <div class="content_container">
-        <div class="flex gap-1 nav_side">
+        <div class="flex nav_side">
             <a class="button desktop title" href="/">
                 <b>
                     <img
@@ -24,7 +24,7 @@
             {% endif %} {% block nav_left %}{% endblock %}
         </div>
 
-        <div class="flex gap-1 nav_side">
+        <div class="flex nav_side">
             {% block nav_right %}{% endblock %} {% if profile.is_some() %}
             <a class="button" title="Create a post" href="/intents/post">
                 {{ icon "square-pen" }}

@@ -28,6 +28,7 @@
         "general:link.timeline": "Timeline",
         "general:link.home": "Home",
         "general:link.inbox": "Inbox",
+        "general:link.discover": "Discover",
 
         "general:service.chats": "Chats",
         "general:service.mail": "Mail",
@@ -133,6 +134,10 @@
         "timelines:link.global": "Global",
         "timelines:link.public": "Public",
         "timelines:link.following": "Following",
+
+        "timelines:discover.html:link.top_responses": "Top responses",
+        "timelines:discover.html:link.active_askers": "Active askers",
+        "timelines:discover.html:link.most_responses": "Most responses",
 
         "views:text.reactions": "Reactions",
         "views:text.responses": "Responses",
@@ -257,6 +262,7 @@
         "settings:coins.html:text.publish_item": "Publish item",
         "settings:coins.html:text.save_theme": "Save theme",
         "settings:coins.html:text.my_items": "My items",
+        "settings:coins.html:text.owned_items": "Owned items",
         "settings:coins.html:text.my_themes": "My themes",
 
         "chats:chat.html:action.change_name": "Change name",

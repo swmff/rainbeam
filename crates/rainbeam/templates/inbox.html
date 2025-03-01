@@ -3,12 +3,18 @@
 <a class="button" href="/" title="Timeline">
     {{ icon "house" }}
     <span class="desktop">{{ text "general:link.timeline" }}</span>
-    <span class="mobile">{{ text "general:link.home" }}</span>
 </a>
 
 <a class="button active" href="/inbox" title="My inbox">
     {{ icon "inbox" }}
-    <span>{{ text "general:link.inbox" }}</span>
+    <span class="desktop">{{ text "general:link.inbox" }}</span>
+</a>
+
+<a class="button" href="/discover" title="Discover">
+    {{ icon "compass" }}
+    <span class="flex items-center gap-2">
+        <span class="desktop">{{ text "general:link.discover" }}</span>
+    </span>
 </a>
 {% endblock %} {% block nav_right %}
 <a class="button" href="/inbox/notifications" title="My notifications">
@@ -38,130 +44,135 @@
         </div>
         {% endif %} {% for question in unread %}
         <div class="card-nest w-full" id="question:{{ question.id }}">
-            <div class="card flex flex-col gap-1">
-                <div
-                    class="flex items-center justify-between gap-1 question_title"
-                >
-                    <div class="footernav flex-wrap">
-                        <b class="flex items-center gap-2 item">
-                            <!-- prettier-ignore -->
-                            {% let author_tag = crate::database::Database::anonymous_tag(question.author.username.as_ref()) %}
-                            {% if author_tag.0 == false %}
-                            <img
-                                title="{{ question.author.username }}'s avatar"
-                                src="/api/v0/auth/profile/{{ question.author.id }}/avatar"
-                                alt=""
-                                class="avatar"
-                                loading="lazy"
-                                style="--size: 25px"
-                            />
+            <div class="card flex gap-2">
+                <!-- prettier-ignore -->
+                {% let author_tag = crate::database::Database::anonymous_tag(question.author.username.as_ref()) %}
+                {% if author_tag.0 == false %}
+                <img
+                    title="{{ question.author.username }}'s avatar"
+                    src="/api/v0/auth/profile/{{ question.author.id }}/avatar"
+                    alt=""
+                    class="avatar"
+                    loading="lazy"
+                    style="--size: 40px"
+                />
+                {% else %} {% if let Some(avatar) = anonymous_avatar %} {% if
+                (avatar.is_empty()) | (!avatar.starts_with("https://")) %}
+                <!-- default avatar, setting set but blank or unsafe -->
+                <img
+                    title="{{ question.author.username }}'s avatar"
+                    src="/static/images/default-avatar.svg"
+                    alt=""
+                    class="avatar"
+                    loading="lazy"
+                    style="--size: 40px"
+                />
+                {% else %}
+                <!-- anonymous avatar, setting set and valid -->
+                <img
+                    title="This profile's anonymous avatar"
+                    src="/api/v0/util/ext/image?img={{ avatar }}"
+                    alt=""
+                    class="avatar"
+                    loading="lazy"
+                    style="--size: 40px"
+                />
+                {% endif %} {% else %}
+                <!-- default avatar, setting not set -->
+                <img
+                    title="{{ question.author.username }}'s avatar"
+                    src="/static/images/default-avatar.svg"
+                    alt=""
+                    class="avatar"
+                    loading="lazy"
+                    style="--size: 40px"
+                />
+                {% endif %} {% endif %}
 
-                            <a
-                                href="/@{{ question.author.username }}"
-                                style="color: inherit"
-                                class="username short"
-                            >
+                <div class="flex flex-col w-full">
+                    <div
+                        class="flex items-center justify-between gap-1 question_title"
+                    >
+                        <div class="footernav flex-wrap">
+                            <b class="flex items-center gap-2 item">
                                 <!-- prettier-ignore -->
-                                {% let display_name = question.author.metadata.kv.get("sparkler:display_name") %}
+                                {% let author_tag = crate::database::Database::anonymous_tag(question.author.username.as_ref()) %}
+                                {% if author_tag.0 == false %}
+                                <a
+                                    href="/@{{ question.author.username }}"
+                                    style="color: inherit"
+                                    class="username short"
+                                >
+                                    <!-- prettier-ignore -->
+                                    {% let display_name = question.author.metadata.kv.get("sparkler:display_name") %}
 
-                                {% if let Some(display_name) = display_name %}
-                                    {{ crate::routing::pages::escape_username(display_name) }}
+                                    {% if let Some(display_name) = display_name %}
+                                        {{ crate::routing::pages::escape_username(display_name) }}
+                                    {% else %}
+                                        {{ question.author.username }}
+                                    {% endif %}
+                                </a>
                                 {% else %}
-                                    {{ question.author.username }}
-                                {% endif %}
-                            </a>
-                            {% else %} {% if let Some(avatar) = anonymous_avatar
-                            %} {% if (avatar.is_empty()) |
-                            (!avatar.starts_with("https://")) %}
-                            <!-- default avatar, setting set but blank or unsafe -->
-                            <img
-                                title="{{ question.author.username }}'s avatar"
-                                src="/static/images/default-avatar.svg"
-                                alt=""
-                                class="avatar"
-                                loading="lazy"
-                                style="--size: 25px"
-                            />
-                            {% else %}
-                            <!-- anonymous avatar, setting set and valid -->
-                            <img
-                                title="This profile's anonymous avatar"
-                                src="/api/v0/util/ext/image?img={{ avatar }}"
-                                alt=""
-                                class="avatar"
-                                loading="lazy"
-                                style="--size: 25px"
-                            />
-                            {% endif %} {% else %}
-                            <!-- default avatar, setting not set -->
-                            <img
-                                title="{{ question.author.username }}'s avatar"
-                                src="/static/images/default-avatar.svg"
-                                alt=""
-                                class="avatar"
-                                loading="lazy"
-                                style="--size: 25px"
-                            />
-                            {% endif %}
-
-                            <!-- prettier-ignore -->
-                            {% if let Some(username) = anonymous_username %}
-                                {% if username.is_empty() %}
+                                <!-- prettier-ignore -->
+                                {% if let Some(username) = anonymous_username %}
+                                    {% if username.is_empty() %}
+                                        anonymous
+                                    {% else %}
+                                        {{ username }}
+                                    {% endif %}
+                                {% else %}
                                     anonymous
-                                {% else %}
-                                    {{ username }}
                                 {% endif %}
-                            {% else %}
-                                anonymous
-                            {% endif %}
-                            {% endif %}
-                        </b>
+                                {% endif %}
+                            </b>
 
-                        <span class="date item">{{ question.timestamp }}</span>
-                    </div>
-
-                    <div class="dropdown">
-                        <button
-                            onclick="trigger('app::hooks::dropdown', [event])"
-                            exclude="dropdown"
-                            class="camo"
-                        >
-                            {{ icon "ellipsis" }}
-                        </button>
-
-                        <div class="inner" exclude="dropdown">
-                            <b class="title">Manage</b>
-                            <a
-                                href="#"
-                                onclick="trigger('questions::delete', ['{{ question.id }}'])"
-                                class="red"
+                            <span class="date item"
+                                >{{ question.timestamp }}</span
                             >
-                                {{ icon "trash" }} {{ text
-                                "general:action.delete" }}
-                            </a>
+                        </div>
 
-                            <a
-                                href="javascript:trigger('questions::ipblock', ['{{ question.id }}'])"
+                        <div class="dropdown actions_bar">
+                            <button
+                                onclick="trigger('app::hooks::dropdown', [event])"
+                                exclude="dropdown"
                             >
-                                {{ icon "shield" }} {{ text
-                                "general:action.ip_block" }}
-                            </a>
+                                {{ icon "ellipsis" }}
+                            </button>
 
-                            <a
-                                href="javascript:trigger('reports::bootstrap', ['questions', '{{ question.id }}'])"
-                            >
-                                {{ icon "flag" }} {{ text
-                                "general:action.report" }}
-                            </a>
+                            <div class="inner" exclude="dropdown">
+                                <b class="title">Manage</b>
+                                <a
+                                    href="#"
+                                    onclick="trigger('questions::delete', ['{{ question.id }}'])"
+                                    class="red"
+                                >
+                                    {{ icon "trash" }} {{ text
+                                    "general:action.delete" }}
+                                </a>
+
+                                <a
+                                    href="javascript:trigger('questions::ipblock', ['{{ question.id }}'])"
+                                >
+                                    {{ icon "shield" }} {{ text
+                                    "general:action.ip_block" }}
+                                </a>
+
+                                <a
+                                    href="javascript:trigger('reports::bootstrap', ['questions', '{{ question.id }}'])"
+                                >
+                                    {{ icon "flag" }} {{ text
+                                    "general:action.report" }}
+                                </a>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- prettier-ignore -->
-                <span class="question_content" hook="long" hook-arg="lowered">
-                    <p style="display: none">{{ question.context.media }}</p>
-                    {{ rainbeam_shared::ui::render_markdown(question.content)|safe }}
-                </span>
+                    <!-- prettier-ignore -->
+                    <span class="question_content" hook="long" hook-arg="lowered">
+                        <p style="display: none">{{ question.context.media }}</p>
+                        {{ rainbeam_shared::ui::render_markdown(question.content)|safe }}
+                    </span>
+                </div>
             </div>
 
             <div class="card">

@@ -89,6 +89,23 @@
                     {{ icon "chevron-right" }}
                 </button>
             </a>
+
+            <a
+                href="/market?customer={{ user.id }}"
+                class="card w-full flex justify-between items-center gap-2"
+            >
+                <div class="flex gap-2 items-center">
+                    {{ icon "gem" }}
+
+                    <span>
+                        {{ text "settings:coins.html:text.owned_items" }}
+                    </span>
+                </div>
+
+                <button class="primary icon-only small">
+                    {{ icon "chevron-right" }}
+                </button>
+            </a>
         </div>
     </div>
 

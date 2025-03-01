@@ -3,7 +3,7 @@
 !["Docs" workflow badge](https://github.com/swmff/rainbeam/workflows/Docs/badge.svg)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/swmff/rainbeam)
 ![GitHub last commit](https://img.shields.io/github/last-commit/swmff/rainbeam)
-[![GitHub License](https://img.shields.io/github/license/swmff/rainbeam)](https://github.com/swmff/rainbeam/blob/master/README.md)
+[![GitHub License](https://img.shields.io/github/license/swmff/rainbeam)](https://github.com/swmff/rainbeam/blob/master/LICENSE)
 [![Authbeam Crates.io Version](https://img.shields.io/crates/v/authbeam)](https://crates.io/crates/authbeam)
 [![Databeam Crates.io Version](https://img.shields.io/crates/v/databeam)](https://crates.io/crates/databeam)
 [![Langbeam Crates.io Version](https://img.shields.io/crates/v/langbeam)](https://crates.io/crates/langbeam)

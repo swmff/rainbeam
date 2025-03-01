@@ -28,6 +28,7 @@
         "general:link.timeline": "타임라인",
         "general:link.home": "홈",
         "general:link.inbox": "받은 편지함",
+        "general:link.discover": "Discover",
 
         "general:service.chats": "채팅",
         "general:service.mail": "메일",
@@ -133,6 +134,10 @@
         "timelines:link.global": "글로벌",
         "timelines:link.public": "공개 타임라인",
         "timelines:link.following": "팔로잉",
+
+        "timelines:discover.html:link.top_responses": "Top responses",
+        "timelines:discover.html:link.active_askers": "Active askers",
+        "timelines:discover.html:link.most_responses": "Most responses",
 
         "views:text.reactions": "리액션",
         "views:text.responses": "답변",
@@ -257,6 +262,7 @@
         "settings:coins.html:text.publish_item": "Publish item",
         "settings:coins.html:text.save_theme": "Save theme",
         "settings:coins.html:text.my_items": "My items",
+        "settings:coins.html:text.owned_items": "Owned items",
         "settings:coins.html:text.my_themes": "My themes",
 
         "chats:chat.html:action.change_name": "이름 변경",

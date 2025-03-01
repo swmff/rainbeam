@@ -427,6 +427,241 @@ pub async fn partial_public_timeline_request(
 }
 
 #[derive(Template)]
+#[template(path = "partials/timelines/discover/responses_top.html")]
+struct PartialTopResponsesTemplate {
+    config: Config,
+    lang: langbeam::LangFile,
+    profile: Option<Box<Profile>>,
+    responses: Vec<FullResponse>,
+    relationships: HashMap<String, RelationshipStatus>,
+    is_powerful: bool,
+    is_helper: bool,
+}
+
+/// GET /_app/timelines/discover/responses_top.html
+pub async fn partial_top_responses_request(
+    jar: CookieJar,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => Some(ua),
+            Err(_) => None,
+        },
+        None => None,
+    };
+
+    let responses = match database.get_top_reacted_responses(604_800_000).await {
+        Ok(r) => r,
+        Err(e) => return Html(e.to_html(database)),
+    };
+
+    let mut is_helper: bool = false;
+    let is_powerful = if let Some(ref ua) = auth_user {
+        let group = match database.auth.get_group_by_id(ua.group).await {
+            Ok(g) => g,
+            Err(_) => return Html(DatabaseError::Other.to_html(database)),
+        };
+
+        if group.permissions.check_helper() {
+            is_helper = true
+        }
+
+        group.permissions.check_manager()
+    } else {
+        false
+    };
+
+    // build relationships list
+    let mut relationships: HashMap<String, RelationshipStatus> = HashMap::new();
+
+    if let Some(ref ua) = auth_user {
+        for response in &responses {
+            if relationships.contains_key(&response.1.author.id) {
+                continue;
+            }
+
+            if is_helper {
+                // make sure staff can view your responses
+                relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
+                continue;
+            }
+
+            if response.1.author.id == ua.id {
+                // make sure we can view our own responses
+                relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
+                continue;
+            };
+
+            relationships.insert(
+                response.1.author.id.clone(),
+                database
+                    .auth
+                    .get_user_relationship(response.1.author.id.clone(), ua.id.clone())
+                    .await
+                    .0,
+            );
+        }
+    } else {
+        // the posts timeline requires that we have an entry for every relationship,
+        // since we don't have an account every single relationship should be unknown
+        for response in &responses {
+            if relationships.contains_key(&response.1.author.id) {
+                continue;
+            }
+
+            relationships.insert(response.1.author.id.clone(), RelationshipStatus::Unknown);
+        }
+    }
+
+    // ...
+    return Html(
+        PartialTopResponsesTemplate {
+            config: database.config.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
+            profile: auth_user,
+            responses,
+            relationships,
+            is_powerful,
+            is_helper,
+        }
+        .render()
+        .unwrap(),
+    );
+}
+
+#[derive(Template)]
+#[template(path = "partials/timelines/discover/questions_most.html")]
+struct PartialTopAskersTemplate {
+    lang: langbeam::LangFile,
+    users: Vec<(usize, Box<Profile>)>,
+}
+
+/// GET /_app/timelines/discover/questions_most.html
+pub async fn partial_top_askers_request(
+    jar: CookieJar,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    let users = match database.get_top_askers(604_800_000).await {
+        Ok(r) => r,
+        Err(e) => return Html(e.to_html(database)),
+    };
+
+    // ...
+    return Html(
+        PartialTopAskersTemplate {
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
+            users,
+        }
+        .render()
+        .unwrap(),
+    );
+}
+
+#[derive(Template)]
+#[template(path = "partials/timelines/discover/responses_most.html")]
+struct PartialTopRespondersTemplate {
+    lang: langbeam::LangFile,
+    users: Vec<(usize, Box<Profile>)>,
+}
+
+/// GET /_app/timelines/discover/responses_most.html
+pub async fn partial_top_responders_request(
+    jar: CookieJar,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    let users = match database.get_top_responders(604_800_000).await {
+        Ok(r) => r,
+        Err(e) => return Html(e.to_html(database)),
+    };
+
+    // ...
+    return Html(
+        PartialTopRespondersTemplate {
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
+            users,
+        }
+        .render()
+        .unwrap(),
+    );
+}
+
+#[derive(Template)]
+#[template(path = "timelines/discover.html")]
+struct DiscoverTemplate {
+    config: Config,
+    lang: langbeam::LangFile,
+    profile: Option<Box<Profile>>,
+    unread: usize,
+    notifs: usize,
+}
+
+/// GET /public
+pub async fn discover_request(
+    jar: CookieJar,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => return Html(DatabaseError::NotAllowed.to_string()),
+        },
+        None => return Html(DatabaseError::NotAllowed.to_string()),
+    };
+
+    // timeline
+    let unread = match database
+        .get_questions_by_recipient(auth_user.id.to_owned())
+        .await
+    {
+        Ok(unread) => unread.len(),
+        Err(_) => 0,
+    };
+
+    let notifs = database
+        .auth
+        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .await;
+
+    // ...
+    return Html(
+        DiscoverTemplate {
+            config: database.config.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
+            profile: Some(auth_user),
+            unread,
+            notifs,
+        }
+        .render()
+        .unwrap(),
+    );
+}
+
+#[derive(Template)]
 #[template(path = "general_markdown_text.html")]
 pub struct MarkdownTemplate {
     config: Config,
@@ -666,6 +901,8 @@ pub struct MarketQuery {
     status: ItemStatus,
     #[serde(default)]
     creator: String,
+    #[serde(default)]
+    customer: String,
     #[serde(default)]
     r#type: Option<ItemType>,
 }
@@ -2386,6 +2623,7 @@ pub async fn routes(database: Database) -> Router {
     Router::new()
         .route("/", get(homepage_request))
         .route("/public", get(public_timeline_request))
+        .route("/discover", get(discover_request))
         .route("/site/about", get(about_request))
         .route("/site/terms-of-service", get(tos_request))
         .route("/site/privacy", get(privacy_request))
@@ -2543,6 +2781,18 @@ pub async fn routes(database: Database) -> Router {
             get(partial_public_timeline_request),
         )
         .route("/_app/timelines/posts.html", get(partial_posts_request))
+        .route(
+            "/_app/timelines/discover/responses_top.html",
+            get(partial_top_responses_request),
+        )
+        .route(
+            "/_app/timelines/discover/questions_most.html",
+            get(partial_top_askers_request),
+        )
+        .route(
+            "/_app/timelines/discover/responses_most.html",
+            get(partial_top_responders_request),
+        )
         // ...
         .with_state(database)
 }

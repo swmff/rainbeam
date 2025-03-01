@@ -63,7 +63,7 @@
         {% if page > 0 %}
         <a
             class="button secondary"
-            href="?page={{ page - 1 }}&q={{ query }}&status={{ status.to_string() }}&creator={{ creator }}"
+            href="?page={{ page - 1 }}&q={{ query }}&status={{ status.to_string() }}&creator={{ creator }}&customer={{ customer }}"
             >{{ text "general:link.previous" }}</a
         >
         {% else %}
@@ -71,7 +71,7 @@
         {% endif %} {% if items.len() != 0 %}
         <a
             class="button secondary"
-            href="?page={{ page + 1 }}&q={{ query }}&status={{ status.to_string() }}&creator={{ creator }}"
+            href="?page={{ page + 1 }}&q={{ query }}&status={{ status.to_string() }}&creator={{ creator }}&customer={{ customer }}"
             >{{ text "general:link.next" }}</a
         >
         {% endif %}

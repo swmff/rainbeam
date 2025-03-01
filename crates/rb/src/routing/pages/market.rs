@@ -28,6 +28,7 @@ struct HomepageTemplate {
     query: String,
     status: ItemStatus,
     creator: String,
+    customer: String,
     items: Vec<(Item, Box<Profile>)>,
     is_helper: bool,
 }
@@ -79,18 +80,57 @@ pub async fn homepage_request(
 
     let is_helper = group.permissions.check_helper();
 
+    if !props.customer.is_empty() && (props.customer != auth_user.id) && !is_helper {
+        // cannot view the owned items of anybody else (unless you're a helper)
+        return Html(DatabaseError::NotAllowed.to_html(database));
+    }
+
     // data
     let items = if props.creator.is_empty() {
+        if let Some(r#type) = props.r#type {
+            match database
+                .auth
+                .get_items_by_type_paginated(r#type, props.page)
+                .await
+            {
+                Ok(i) => i,
+                Err(e) => return Html(e.to_string()),
+            }
+        } else {
+            match database
+                .auth
+                .get_items_by_status_searched_paginated(
+                    props.status.clone(),
+                    props.page,
+                    props.q.clone(),
+                )
+                .await
+            {
+                Ok(i) => i,
+                Err(e) => return Html(e.to_string()),
+            }
+        }
+    } else if !props.customer.is_empty() {
         match database
             .auth
-            .get_items_by_status_searched_paginated(
-                props.status.clone(),
-                props.page,
-                props.q.clone(),
-            )
+            .get_transactions_by_customer_paginated(props.customer.clone(), props.page)
             .await
         {
-            Ok(i) => i,
+            Ok(i) => {
+                let mut out = Vec::new();
+
+                for x in i {
+                    out.push((
+                        match x.0 .1 {
+                            Some(i) => i.clone(),
+                            None => return Html(DatabaseError::NotFound.to_html(database)),
+                        },
+                        x.2.clone(),
+                    ))
+                }
+
+                out
+            }
             Err(e) => return Html(e.to_string()),
         }
     } else {
@@ -138,6 +178,7 @@ pub async fn homepage_request(
             query: props.q,
             status: props.status,
             creator: props.creator,
+            customer: props.customer,
             items,
             is_helper,
         }

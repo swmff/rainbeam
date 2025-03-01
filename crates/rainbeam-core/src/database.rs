@@ -6548,4 +6548,238 @@ impl Database {
             Err(_) => return Err(DatabaseError::Other),
         };
     }
+
+    // discover
+
+    /// Get the top reacted-to responses (from the `cutoff`).
+    ///
+    /// # Arguments
+    /// * `cutoff`
+    pub async fn get_top_reacted_responses(&self, cutoff: u128) -> Result<Vec<FullResponse>> {
+        // attempt to fetch from cache
+        if let Some(res) = self
+            .base
+            .cachedb
+            .get_timed::<Vec<FullResponse>>("rbeam.app.discover:top_reacted".to_string())
+            .await
+        {
+            return Ok(res.1);
+        };
+
+        // ...
+        let time = rainbeam_shared::unix_epoch_timestamp() - cutoff;
+
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            format!("SELECT * FROM \"xreactions\" WHERE CAST(\"timestamp\" AS INT) > {time} ORDER BY \"timestamp\" DESC")
+        } else {
+            format!("SELECT * FROM \"xreactions\" WHERE CAST(\"timestamp\" AS INT) > {time} ORDER BY \"timestamp\" DESC")
+        };
+
+        let mut map: HashMap<String, usize> = HashMap::new(); // will store reaction count by asset id
+
+        let c = &self.base.db.client;
+        match sqlquery(&query).fetch_all(c).await {
+            Ok(p) => {
+                for row in p {
+                    let res = self.base.textify_row(row).0;
+                    let id = res.get("asset").unwrap().to_string();
+
+                    if let Some(v) = map.get_mut(&id) {
+                        *v += 1;
+                    } else {
+                        map.insert(id, 1);
+                    }
+                }
+            }
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // build out
+        let mut out = Vec::new();
+
+        for asset in map {
+            if asset.1 < 1 {
+                // don't even include stuff with less than 1 reaction
+                continue;
+            }
+
+            out.push(match self.get_response(asset.0).await {
+                Ok(r) => r,
+                Err(_) => continue, // likely not a response... TODO: maybe we should store the type :)
+            })
+        }
+
+        // store
+        self.base
+            .cachedb
+            .set_timed::<Vec<FullResponse>>(
+                "rbeam.app.discover:top_reacted".to_string(),
+                out.clone(),
+            )
+            .await;
+
+        // return
+        Ok(out)
+    }
+
+    /// Get the top "askers" (people who ask questions) (from the `cutoff`).
+    ///
+    /// # Arguments
+    /// * `cutoff`
+    pub async fn get_top_askers(&self, cutoff: u128) -> Result<Vec<(usize, Box<Profile>)>> {
+        // attempt to fetch from cache
+        if let Some(res) = self
+            .base
+            .cachedb
+            .get_timed::<Vec<(usize, Box<Profile>)>>("rbeam.app.discover:top_askers".to_string())
+            .await
+        {
+            return Ok(res.1);
+        };
+
+        // ...
+        let time = rainbeam_shared::unix_epoch_timestamp() - cutoff;
+
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            format!("SELECT * FROM \"xquestions\" WHERE CAST(\"timestamp\" AS INT) > {time} ORDER BY \"timestamp\" DESC")
+        } else {
+            format!("SELECT * FROM \"xquestions\" WHERE CAST(\"timestamp\" AS INT) > {time} ORDER BY \"timestamp\" DESC")
+        };
+
+        let mut map: HashMap<String, usize> = HashMap::new(); // will store question count by author id
+
+        let c = &self.base.db.client;
+        match sqlquery(&query).fetch_all(c).await {
+            Ok(p) => {
+                for row in p {
+                    let res = self.base.textify_row(row).0;
+                    let id = res.get("author").unwrap().to_string();
+
+                    if let Some(v) = map.get_mut(&id) {
+                        *v += 1;
+                    } else {
+                        map.insert(id, 1);
+                    }
+                }
+            }
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // build out
+        let mut out = Vec::new();
+
+        for asset in map {
+            if asset.1 < 1 {
+                // don't even include stuff with less than 1 reaction
+                continue;
+            }
+
+            if asset.0.starts_with("anonymous") {
+                // anonymous doesn't count!
+                continue;
+            }
+
+            out.push((
+                asset.1,
+                match self.auth.get_profile(asset.0).await {
+                    Ok(r) => r,
+                    Err(_) => continue,
+                },
+            ))
+        }
+
+        // store
+        self.base
+            .cachedb
+            .set_timed::<Vec<(usize, Box<Profile>)>>(
+                "rbeam.app.discover:top_askers".to_string(),
+                out.clone(),
+            )
+            .await;
+
+        // return
+        Ok(out)
+    }
+
+    /// Get the profiles with the most responses (from the `cutoff`).
+    ///
+    /// # Arguments
+    /// * `cutoff`
+    pub async fn get_top_responders(&self, cutoff: u128) -> Result<Vec<(usize, Box<Profile>)>> {
+        // attempt to fetch from cache
+        if let Some(res) = self
+            .base
+            .cachedb
+            .get_timed::<Vec<(usize, Box<Profile>)>>(
+                "rbeam.app.discover:top_responders".to_string(),
+            )
+            .await
+        {
+            return Ok(res.1);
+        };
+
+        // ...
+        let time = rainbeam_shared::unix_epoch_timestamp() - cutoff;
+
+        // pull from database
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            format!("SELECT * FROM \"xresponses\" WHERE CAST(\"timestamp\" AS INT) > {time} AND \"context\" NOT LIKE '%\"unlisted\":true%' ORDER BY \"timestamp\" DESC")
+        } else {
+            format!("SELECT * FROM \"xresponses\" WHERE CAST(\"timestamp\" AS INT) > {time} AND \"context\" NOT LIKE '%\"unlisted\":true%' ORDER BY \"timestamp\" DESC")
+        };
+
+        let mut map: HashMap<String, usize> = HashMap::new(); // will store question count by author id
+
+        let c = &self.base.db.client;
+        match sqlquery(&query).fetch_all(c).await {
+            Ok(p) => {
+                for row in p {
+                    let res = self.base.textify_row(row).0;
+                    let id = res.get("author").unwrap().to_string();
+
+                    if let Some(v) = map.get_mut(&id) {
+                        *v += 1;
+                    } else {
+                        map.insert(id, 1);
+                    }
+                }
+            }
+            Err(_) => return Err(DatabaseError::NotFound),
+        };
+
+        // build out
+        let mut out = Vec::new();
+
+        for asset in map {
+            if asset.1 < 1 {
+                // don't even include stuff with less than 1 reaction
+                continue;
+            }
+
+            out.push((
+                asset.1,
+                match self.auth.get_profile(asset.0).await {
+                    Ok(r) => r,
+                    Err(_) => continue,
+                },
+            ))
+        }
+
+        // store
+        self.base
+            .cachedb
+            .set_timed::<Vec<(usize, Box<Profile>)>>(
+                "rbeam.app.discover:top_responders".to_string(),
+                out.clone(),
+            )
+            .await;
+
+        // return
+        Ok(out)
+    }
 }

@@ -1,0 +1,42 @@
+<!-- prettier-ignore -->
+{% if users.len() == 0 %}
+<div class="markdown-alert-warning" data-marker="no-results">
+    <span>{{ text "general:text.no_results" }}</span>
+</div>
+{% endif %}
+
+<!-- prettier-ignore -->
+{% for (count, user) in users %}
+<div class="card flex gap-2">
+    <a href="/@{{ user.username }}">
+        <img
+            title="{{ user.username }}'s avatar"
+            src="/api/v0/auth/profile/{{ user.id }}/avatar"
+            alt=""
+            class="avatar"
+            style="--size: 40px"
+        />
+    </a>
+
+    <div class="flex flex-col gap-2">
+        <h3 class="no-margin">
+            <a href="/@{{ user.username }}">
+                <!-- prettier-ignore -->
+                {% let display_name = user.metadata.kv.get("sparkler:display_name") %}
+
+                {% if let Some(display_name) = display_name %}
+                    {% if !display_name.trim().is_empty() %}
+                        {{ crate::routing::pages::escape_username(display_name) }}
+                    {% else %}
+                        {{ user.username }}
+                    {% endif %}
+                {% else %}
+                    {{ user.username }}
+                {% endif %}
+            </a>
+        </h3>
+
+        <span><b>{{ count }}</b> responses</span>
+    </div>
+</div>
+{% endfor %}

@@ -154,6 +154,7 @@ nav .button:not(.inner *) {
     text-decoration: none;
     position: relative;
     height: 48px;
+    font-weight: 500;
     transition:
         opacity 0.15s,
         transform 0.15s;
