@@ -59,15 +59,16 @@ impl Database {
         // create responses table
         let _ = sqlquery(
             "CREATE TABLE IF NOT EXISTS \"xresponses\" (
-                author    TEXT,
-                question  TEXT,
-                content   TEXT,
-                id        TEXT,
-                timestamp TEXT,
-                tags      TEXT,
-                context   TEXT,
-                reply     TEXT,
-                edited    TEXT
+                author         TEXT,
+                question       TEXT,
+                content        TEXT,
+                id             TEXT,
+                timestamp      TEXT,
+                tags           TEXT,
+                context        TEXT,
+                reply          TEXT,
+                edited         TEXT,
+                reaction_count TEXT DEFAULT \"0\"
             )",
         )
         .execute(c)
@@ -1671,6 +1672,7 @@ impl Database {
                 Ok(t) => t,
                 Err(_) => return Err(DatabaseError::ValueError),
             };
+        let reaction_count = res.get("reaction_count").unwrap().parse::<usize>().unwrap();
 
         Ok((
             if ctx.is_post {
@@ -1711,7 +1713,18 @@ impl Database {
                 edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
             },
             self.get_comment_count_by_response(id.clone()).await,
-            self.get_reaction_count_by_asset(id).await,
+            {
+                let count = self.get_reaction_count_by_asset(id.clone()).await;
+
+                if reaction_count != count {
+                    // strange, the stored value (for discover) doesn't match
+                    self.update_response_reaction_count(id, count)
+                        .await
+                        .unwrap();
+                }
+
+                count
+            },
         ))
     }
 
@@ -2890,6 +2903,40 @@ impl Database {
 
                 // return
                 Ok(response)
+            }
+            Err(_) => Err(DatabaseError::Other),
+        }
+    }
+
+    /// Update an existing response's reaction count
+    ///
+    /// # Arguments
+    /// * `id`
+    /// * `count`
+    pub async fn update_response_reaction_count(&self, id: String, count: usize) -> Result<()> {
+        // update response
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "UPDATE \"xresponses\" SET \"reaction_count\" = ? WHERE \"id\" = ?"
+        } else {
+            "UPDATE \"xresponses\" SET (\"reaction_count\") = ($1) WHERE \"id\" = $3"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query)
+            .bind::<&i64>(&(count as i64))
+            .bind::<&String>(&id)
+            .execute(c)
+            .await
+        {
+            Ok(_) => {
+                self.base
+                    .cachedb
+                    .remove(format!("rbeam.app.response:{id}"))
+                    .await;
+
+                Ok(())
             }
             Err(_) => Err(DatabaseError::Other),
         }
@@ -6572,56 +6619,42 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xreactions\" WHERE CAST(\"timestamp\" AS INT) > {time} ORDER BY \"timestamp\" DESC LIMIT 250")
+            format!("SELECT * FROM \"xresponses\" WHERE CAST(\"timestamp\" AS INT) > {time} ORDER BY CAST(\"reaction_count\" AS INT) DESC LIMIT 100")
         } else {
-            format!("SELECT * FROM \"xreactions\" WHERE CAST(\"timestamp\" AS INT) > {time} ORDER BY \"timestamp\" DESC LIMIT 250")
+            format!("SELECT * FROM \"xresponses\" WHERE CAST(\"timestamp\" AS INT) > {time} ORDER BY CAST(\"reaction_count\" AS INT) DESC LIMIT 100")
         };
 
-        let mut map: HashMap<String, usize> = HashMap::new(); // will store reaction count by asset id
-
         let c = &self.base.db.client;
-        match sqlquery(&query).fetch_all(c).await {
+        let mut res = match sqlquery(&query).fetch_all(c).await {
             Ok(p) => {
+                let mut out: Vec<FullResponse> = Vec::new();
+
                 for row in p {
                     let res = self.base.textify_row(row).0;
-                    let id = res.get("asset").unwrap().to_string();
-
-                    if let Some(v) = map.get_mut(&id) {
-                        *v += 1;
-                    } else {
-                        map.insert(id, 1);
-                    }
+                    out.push(match self.gimme_response(res).await {
+                        Ok(r) => r,
+                        Err(e) => return Err(e),
+                    });
                 }
+
+                out
             }
             Err(_) => return Err(DatabaseError::NotFound),
         };
 
-        // build out
-        let mut out = Vec::new();
-
-        for asset in map {
-            if asset.1 < 1 {
-                // don't even include stuff with less than 1 reaction
-                continue;
-            }
-
-            out.push(match self.get_response(asset.0).await {
-                Ok(r) => r,
-                Err(_) => continue, // likely not a response... TODO: maybe we should store the type :)
-            })
-        }
+        res.sort_by(|a, b| a.3.cmp(&b.3));
 
         // store
         self.base
             .cachedb
             .set_timed::<Vec<FullResponse>>(
                 "rbeam.app.discover:top_reacted".to_string(),
-                out.clone(),
+                res.clone(),
             )
             .await;
 
         // return
-        Ok(out)
+        Ok(res)
     }
 
     /// Get the top "askers" (people who ask questions) (from the `cutoff`).
@@ -6645,9 +6678,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xquestions\" WHERE CAST(\"timestamp\" AS INT) > {time} ORDER BY \"timestamp\" DESC LIMIT 250")
+            format!("SELECT * FROM \"xquestions\" WHERE CAST(\"timestamp\" AS INT) > {time} ORDER BY \"timestamp\" DESC LIMIT 100")
         } else {
-            format!("SELECT * FROM \"xquestions\" WHERE CAST(\"timestamp\" AS INT) > {time} ORDER BY \"timestamp\" DESC LIMIT 250")
+            format!("SELECT * FROM \"xquestions\" WHERE CAST(\"timestamp\" AS INT) > {time} ORDER BY \"timestamp\" DESC LIMIT 100")
         };
 
         let mut map: HashMap<String, usize> = HashMap::new(); // will store question count by author id
@@ -6692,6 +6725,8 @@ impl Database {
             ))
         }
 
+        out.sort_by(|a, b| a.0.cmp(&b.0));
+
         // store
         self.base
             .cachedb
@@ -6728,9 +6763,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xresponses\" WHERE CAST(\"timestamp\" AS INT) > {time} AND \"context\" NOT LIKE '%\"unlisted\":true%' ORDER BY \"timestamp\" DESC LIMIT 250")
+            format!("SELECT * FROM \"xresponses\" WHERE CAST(\"timestamp\" AS INT) > {time} AND \"context\" NOT LIKE '%\"unlisted\":true%' ORDER BY \"timestamp\" DESC LIMIT 100")
         } else {
-            format!("SELECT * FROM \"xresponses\" WHERE CAST(\"timestamp\" AS INT) > {time} AND \"context\" NOT LIKE '%\"unlisted\":true%' ORDER BY \"timestamp\" DESC LIMIT 250")
+            format!("SELECT * FROM \"xresponses\" WHERE CAST(\"timestamp\" AS INT) > {time} AND \"context\" NOT LIKE '%\"unlisted\":true%' ORDER BY \"timestamp\" DESC LIMIT 100")
         };
 
         let mut map: HashMap<String, usize> = HashMap::new(); // will store question count by author id
@@ -6769,6 +6804,8 @@ impl Database {
                 },
             ))
         }
+
+        out.sort_by(|a, b| a.0.cmp(&b.0));
 
         // store
         self.base
