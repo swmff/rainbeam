@@ -1727,9 +1727,22 @@ impl Database {
                 let count = self.get_reaction_count_by_asset(id.clone()).await;
 
                 if reaction_count != count {
-                    self.update_response_reaction_count(id, count)
-                        .await
-                        .unwrap();
+                    // ensure values sync (update the lesser value)
+                    if reaction_count > count {
+                        // count = reaction_count
+                        self.update_response_reaction_count(id, count)
+                            .await
+                            .unwrap();
+                    } else {
+                        // reaction_count = count
+                        self.base
+                            .cachedb
+                            .set(
+                                format!("rbeam.app.reaction_count:{}", id),
+                                count.to_string(),
+                            )
+                            .await;
+                    }
                 }
 
                 count

@@ -429,10 +429,20 @@ impl Database {
                 if count == 0 {
                     response_count
                 } else {
-                    if response_count != count {
+                    // ensure values sync (update the lesser value)
+                    if response_count > count {
+                        self.base
+                            .cachedb
+                            .set(
+                                format!("rbeam.app.response_count:{}", &id),
+                                response_count.to_string(),
+                            )
+                            .await;
+                    } else {
                         self.update_profile_response_count(id, count).await.unwrap();
                     };
 
+                    // ...
                     count
                 }
             },
