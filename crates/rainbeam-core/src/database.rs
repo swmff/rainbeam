@@ -6620,9 +6620,9 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xresponses\" WHERE CAST(\"timestamp\" AS INT) > {time} ORDER BY CAST(\"reaction_count\" AS INT) DESC LIMIT 25")
+            format!("SELECT * FROM \"xresponses\" WHERE CAST(\"timestamp\" AS INT) > {time} ORDER BY CAST(\"reaction_count\" AS INT) ASC LIMIT 25")
         } else {
-            format!("SELECT * FROM \"xresponses\" WHERE CAST(\"timestamp\" AS INT) > {time} ORDER BY CAST(\"reaction_count\" AS INT) DESC LIMIT 25")
+            format!("SELECT * FROM \"xresponses\" WHERE CAST(\"timestamp\" AS INT) > {time} ORDER BY CAST(\"reaction_count\" AS INT) ASC LIMIT 25")
         };
 
         let c = &self.base.db.client;
