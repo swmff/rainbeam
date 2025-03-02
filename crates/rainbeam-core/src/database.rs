@@ -1316,6 +1316,16 @@ impl Database {
                     Err(e) => return Err(e),
                 };
 
+                // bump question count
+                if let Err(_) = self
+                    .auth
+                    .update_profile_question_count(author.id.clone(), author.question_count + 1)
+                    .await
+                {
+                    return Err(DatabaseError::Other);
+                };
+
+                // check relationship
                 let relationship = self
                     .auth
                     .get_user_relationship(recipient.id.clone(), author.id.clone())
@@ -1717,7 +1727,6 @@ impl Database {
                 let count = self.get_reaction_count_by_asset(id.clone()).await;
 
                 if reaction_count != count {
-                    // strange, the stored value (for discover) doesn't match
                     self.update_response_reaction_count(id, count)
                         .await
                         .unwrap();
@@ -2782,7 +2791,7 @@ impl Database {
             })
             .bind::<&String>(&response.reply)
             .bind::<&String>(&response.edited.to_string())
-            .bind::<&str>("0")
+            .bind::<i8>(0)
             .execute(c)
             .await
         {
@@ -2846,8 +2855,19 @@ impl Database {
                     // bump response count
                     self.base
                         .cachedb
-                        .incr(format!("rbeam.app.response_count:{}", response.author.id))
+                        .incr(format!(
+                            "rbeam.app.response_count:{}",
+                            response.author.id.clone()
+                        ))
                         .await;
+
+                    self.auth
+                        .update_profile_response_count(
+                            response.author.id.clone(),
+                            response.author.response_count + 1,
+                        )
+                        .await
+                        .unwrap();
 
                     return Ok(response);
                 } else {
@@ -2920,7 +2940,7 @@ impl Database {
         {
             "UPDATE \"xresponses\" SET \"reaction_count\" = ? WHERE \"id\" = ?"
         } else {
-            "UPDATE \"xresponses\" SET (\"reaction_count\") = ($1) WHERE \"id\" = $3"
+            "UPDATE \"xresponses\" SET (\"reaction_count\") = ($1) WHERE \"id\" = $2"
         }
         .to_string();
 
@@ -5330,10 +5350,8 @@ impl Database {
         }
 
         // check metadata kv
-        let allowed_custom_keys = self.auth.allowed_custom_keys();
-
         for kv in metadata.kv.clone() {
-            if !allowed_custom_keys.contains(&kv.0.as_str()) {
+            if !authbeam::database::ALLOWED_CUSTOM_KEYS.contains(&kv.0.as_str()) {
                 metadata.kv.remove(&kv.0);
             }
         }
@@ -6620,13 +6638,13 @@ impl Database {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xresponses\" WHERE CAST(\"timestamp\" AS INT) > {time} ORDER BY CAST(\"reaction_count\" AS INT) ASC LIMIT 25")
+            format!("SELECT * FROM \"xresponses\" WHERE CAST(\"timestamp\" AS INT) > {time} ORDER BY CAST(\"reaction_count\" AS INT) DESC LIMIT 25")
         } else {
-            format!("SELECT * FROM \"xresponses\" WHERE CAST(\"timestamp\" AS INT) > {time} ORDER BY CAST(\"reaction_count\" AS INT) ASC LIMIT 25")
+            format!("SELECT * FROM \"xresponses\" WHERE CAST(\"timestamp\" AS INT) > {time} ORDER BY CAST(\"reaction_count\" AS INT) DESC LIMIT 25")
         };
 
         let c = &self.base.db.client;
-        let mut res = match sqlquery(&query).fetch_all(c).await {
+        let res = match sqlquery(&query).fetch_all(c).await {
             Ok(p) => {
                 let mut out: Vec<FullResponse> = Vec::new();
 
@@ -6643,8 +6661,6 @@ impl Database {
             Err(_) => return Err(DatabaseError::NotFound),
         };
 
-        res.sort_by(|a, b| a.3.cmp(&b.3));
-
         // store
         self.base
             .cachedb
@@ -6658,11 +6674,11 @@ impl Database {
         Ok(res)
     }
 
-    /// Get the top "askers" (people who ask questions) (from the `cutoff`).
+    /// Get the top "askers" (people who ask questions).
     ///
     /// # Arguments
     /// * `cutoff`
-    pub async fn get_top_askers(&self, cutoff: u128) -> Result<Vec<(usize, Box<Profile>)>> {
+    pub async fn get_top_askers(&self) -> Result<Vec<(usize, Box<Profile>)>> {
         // attempt to fetch from cache
         if let Some(res) = self
             .base
@@ -6673,79 +6689,52 @@ impl Database {
             return Ok(res.1);
         };
 
-        // ...
-        let time = rainbeam_shared::unix_epoch_timestamp() - cutoff;
-
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xquestions\" WHERE CAST(\"timestamp\" AS INT) > {time} ORDER BY \"timestamp\" DESC LIMIT 100")
+            format!("SELECT * FROM \"xprofiles\" WHERE CAST(\"question_count\" AS INT) > 0 ORDER BY CAST(\"question_count\" AS INT) DESC LIMIT 100")
         } else {
-            format!("SELECT * FROM \"xquestions\" WHERE CAST(\"timestamp\" AS INT) > {time} ORDER BY \"timestamp\" DESC LIMIT 100")
+            format!("SELECT * FROM \"xprofiles\" WHERE CAST(\"question_count\" AS INT) > 0 ORDER BY CAST(\"question_count\" AS INT) DESC LIMIT 100")
         };
 
-        let mut map: HashMap<String, usize> = HashMap::new(); // will store question count by author id
-
         let c = &self.base.db.client;
-        match sqlquery(&query).fetch_all(c).await {
+        let res = match sqlquery(&query).fetch_all(c).await {
             Ok(p) => {
+                let mut out: Vec<(usize, Box<Profile>)> = Vec::new();
+
                 for row in p {
                     let res = self.base.textify_row(row).0;
-                    let id = res.get("author").unwrap().to_string();
+                    let p = match self.auth.gimme_profile(res).await {
+                        Ok(r) => r,
+                        Err(_) => return Err(DatabaseError::Other),
+                    };
 
-                    if let Some(v) = map.get_mut(&id) {
-                        *v += 1;
-                    } else {
-                        map.insert(id, 1);
-                    }
+                    out.push((p.question_count, p));
                 }
+
+                out
             }
             Err(_) => return Err(DatabaseError::NotFound),
         };
-
-        // build out
-        let mut out = Vec::new();
-
-        for asset in map {
-            if asset.1 < 1 {
-                // don't even include stuff with less than 1 reaction
-                continue;
-            }
-
-            if asset.0.starts_with("anonymous") {
-                // anonymous doesn't count!
-                continue;
-            }
-
-            out.push((
-                asset.1,
-                match self.auth.get_profile(asset.0).await {
-                    Ok(r) => r,
-                    Err(_) => continue,
-                },
-            ))
-        }
-
-        out.sort_by(|a, b| a.0.cmp(&b.0));
 
         // store
         self.base
             .cachedb
             .set_timed::<Vec<(usize, Box<Profile>)>>(
                 "rbeam.app.discover:top_askers".to_string(),
-                out.clone(),
+                res.clone(),
             )
             .await;
 
         // return
-        Ok(out)
+        Ok(res)
     }
 
-    /// Get the profiles with the most responses (from the `cutoff`).
+    /// Get the profiles with the most responses.
     ///
     /// # Arguments
     /// * `cutoff`
-    pub async fn get_top_responders(&self, cutoff: u128) -> Result<Vec<(usize, Box<Profile>)>> {
+    pub async fn get_top_responders(&self) -> Result<Vec<(usize, Box<Profile>)>> {
         // attempt to fetch from cache
         if let Some(res) = self
             .base
@@ -6758,66 +6747,44 @@ impl Database {
             return Ok(res.1);
         };
 
-        // ...
-        let time = rainbeam_shared::unix_epoch_timestamp() - cutoff;
-
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            format!("SELECT * FROM \"xresponses\" WHERE CAST(\"timestamp\" AS INT) > {time} AND \"context\" NOT LIKE '%\"unlisted\":true%' ORDER BY \"timestamp\" DESC LIMIT 100")
+            format!("SELECT * FROM \"xprofiles\" WHERE CAST(\"response_count\" AS INT) > 0 ORDER BY CAST(\"response_count\" AS INT) DESC LIMIT 100")
         } else {
-            format!("SELECT * FROM \"xresponses\" WHERE CAST(\"timestamp\" AS INT) > {time} AND \"context\" NOT LIKE '%\"unlisted\":true%' ORDER BY \"timestamp\" DESC LIMIT 100")
+            format!("SELECT * FROM \"xprofiles\" WHERE CAST(\"response_count\" AS INT) > 0 ORDER BY CAST(\"response_count\" AS INT) DESC LIMIT 100")
         };
 
-        let mut map: HashMap<String, usize> = HashMap::new(); // will store question count by author id
-
         let c = &self.base.db.client;
-        match sqlquery(&query).fetch_all(c).await {
+        let res = match sqlquery(&query).fetch_all(c).await {
             Ok(p) => {
+                let mut out: Vec<(usize, Box<Profile>)> = Vec::new();
+
                 for row in p {
                     let res = self.base.textify_row(row).0;
-                    let id = res.get("author").unwrap().to_string();
+                    let p = match self.auth.gimme_profile(res).await {
+                        Ok(r) => r,
+                        Err(_) => return Err(DatabaseError::Other),
+                    };
 
-                    if let Some(v) = map.get_mut(&id) {
-                        *v += 1;
-                    } else {
-                        map.insert(id, 1);
-                    }
+                    out.push((p.response_count, p));
                 }
+
+                out
             }
             Err(_) => return Err(DatabaseError::NotFound),
         };
-
-        // build out
-        let mut out = Vec::new();
-
-        for asset in map {
-            if asset.1 < 1 {
-                // don't even include stuff with less than 1 reaction
-                continue;
-            }
-
-            out.push((
-                asset.1,
-                match self.auth.get_profile(asset.0).await {
-                    Ok(r) => r,
-                    Err(_) => continue,
-                },
-            ))
-        }
-
-        out.sort_by(|a, b| a.0.cmp(&b.0));
 
         // store
         self.base
             .cachedb
             .set_timed::<Vec<(usize, Box<Profile>)>>(
                 "rbeam.app.discover:top_responders".to_string(),
-                out.clone(),
+                res.clone(),
             )
             .await;
 
         // return
-        Ok(out)
+        Ok(res)
     }
 }

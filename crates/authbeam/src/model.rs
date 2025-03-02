@@ -49,6 +49,10 @@ pub struct Profile {
     pub links: BTreeMap<String, String>,
     /// User layout
     pub layout: LayoutComponent,
+    /// The number of questions the profile has asked.
+    pub question_count: usize,
+    /// The number of responses the profile has posted.
+    pub response_count: usize,
 }
 
 impl Profile {
@@ -57,20 +61,7 @@ impl Profile {
         Self {
             username: "@".to_string(),
             id: "@".to_string(),
-            password: String::new(),
-            salt: String::new(),
-            tokens: Vec::new(),
-            ips: Vec::new(),
-            token_context: Vec::new(),
-            group: 0,
-            joined: 0,
-            metadata: ProfileMetadata::default(),
-            badges: Vec::new(),
-            tier: 0,
-            labels: Vec::new(),
-            coins: 0,
-            links: BTreeMap::new(),
-            layout: LayoutComponent::default(),
+            ..Default::default()
         }
     }
 
@@ -79,20 +70,7 @@ impl Profile {
         Self {
             username: "system".to_string(),
             id: "0".to_string(),
-            password: String::new(),
-            salt: String::new(),
-            tokens: Vec::new(),
-            ips: Vec::new(),
-            token_context: Vec::new(),
-            group: 0,
-            joined: 0,
-            metadata: ProfileMetadata::default(),
-            badges: Vec::new(),
-            tier: 0,
-            labels: Vec::new(),
-            coins: 0,
-            links: BTreeMap::new(),
-            layout: LayoutComponent::default(),
+            ..Default::default()
         }
     }
 
@@ -101,20 +79,7 @@ impl Profile {
         Self {
             username: "anonymous".to_string(),
             id: tag,
-            password: String::new(),
-            salt: String::new(),
-            tokens: Vec::new(),
-            ips: Vec::new(),
-            token_context: Vec::new(),
-            group: 0,
-            joined: 0,
-            metadata: ProfileMetadata::default(),
-            badges: Vec::new(),
-            tier: 0,
-            labels: Vec::new(),
-            coins: 0,
-            links: BTreeMap::new(),
-            layout: LayoutComponent::default(),
+            ..Default::default()
         }
     }
 
@@ -183,6 +148,8 @@ impl Default for Profile {
             coins: 0,
             links: BTreeMap::new(),
             layout: LayoutComponent::default(),
+            question_count: 0,
+            response_count: 0,
         }
     }
 }

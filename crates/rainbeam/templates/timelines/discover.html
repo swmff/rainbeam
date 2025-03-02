@@ -36,8 +36,7 @@ block head %}
             <h2>{{ text "general:link.discover" }}</h2>
             <span>
                 Find interesting content from all over {{ config.name }}! All
-                feeds update daily and show data from the past week (as of data
-                update).
+                feeds are updated daily.
             </span>
         </div>
 
@@ -69,6 +68,11 @@ block head %}
         </div>
 
         <div class="flex flex-col gap-2" data-tab="responses.top">
+            <div class="card w-full flex flex-col gap-4">
+                <h3>{{ text "timelines:discover.html:link.top_responses" }}</h3>
+                <span>The top 25 responses from the past week.</span>
+            </div>
+
             <include-partial
                 src="/_app/timelines/discover/responses_top.html"
                 uses="app::clean_date_codes,app::link_filter,app::hooks::alt,app::hooks::partial_embeds,app::hooks::check_reactions"
@@ -78,6 +82,11 @@ block head %}
         </div>
 
         <div class="flex flex-col gap-2 hidden" data-tab="questions.most">
+            <div class="card w-full flex flex-col gap-4">
+                <h3>{{ text "timelines:discover.html:link.active_askers" }}</h3>
+                <span>The top 100 "askers" of all time.</span>
+            </div>
+
             <include-partial
                 src="/_app/timelines/discover/questions_most.html"
                 uses="app::clean_date_codes,app::link_filter,app::hooks::alt,app::hooks::partial_embeds,app::hooks::check_reactions"
@@ -87,6 +96,13 @@ block head %}
         </div>
 
         <div class="flex flex-col gap-2 hidden" data-tab="responses.most">
+            <div class="card w-full flex flex-col gap-4">
+                <h3>
+                    {{ text "timelines:discover.html:link.most_responses" }}
+                </h3>
+                <span>The top 100 posters of all time.</span>
+            </div>
+
             <include-partial
                 src="/_app/timelines/discover/responses_most.html"
                 uses="app::clean_date_codes,app::link_filter,app::hooks::alt,app::hooks::partial_embeds,app::hooks::check_reactions"

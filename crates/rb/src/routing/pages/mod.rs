@@ -550,7 +550,7 @@ pub async fn partial_top_askers_request(
     jar: CookieJar,
     State(database): State<Database>,
 ) -> impl IntoResponse {
-    let users = match database.get_top_askers(604_800_000).await {
+    let users = match database.get_top_askers().await {
         Ok(r) => r,
         Err(e) => return Html(e.to_html(database)),
     };
@@ -582,7 +582,7 @@ pub async fn partial_top_responders_request(
     jar: CookieJar,
     State(database): State<Database>,
 ) -> impl IntoResponse {
-    let users = match database.get_top_responders(604_800_000).await {
+    let users = match database.get_top_responders().await {
         Ok(r) => r,
         Err(e) => return Html(e.to_html(database)),
     };

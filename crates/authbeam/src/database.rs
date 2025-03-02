@@ -17,9 +17,68 @@ use serde::{Deserialize, Serialize};
 use databeam::{query as sqlquery, utility, prelude::*};
 use pathbufd::{PathBufD, pathd};
 
-pub type Result<T> = std::result::Result<T, DatabaseError>;
-
 pub use rainbeam_shared::config::HCaptchaConfig;
+
+pub type Result<T> = std::result::Result<T, DatabaseError>;
+use std::sync::LazyLock;
+
+/// Custom keys allowed to be used as metadata options.
+pub static ALLOWED_CUSTOM_KEYS: LazyLock<Vec<&'static str>> = LazyLock::new(|| {
+    vec![
+        "sparkler:display_name",
+        "sparkler:status_note",
+        "sparkler:status_emoji",
+        "sparkler:limited_friend_requests",
+        "sparkler:limited_chats",
+        "sparkler:private_profile",
+        "sparkler:allow_drawings",
+        "sparkler:biography",
+        "sparkler:sidebar",
+        "sparkler:avatar_url",
+        "sparkler:banner_url",
+        "sparkler:banner_fit",
+        "sparkler:website_theme",
+        "sparkler:allow_profile_themes",
+        "sparkler:motivational_header",
+        "sparkler:warning",
+        "sparkler:anonymous_username",
+        "sparkler:anonymous_avatar",
+        "sparkler:pinned",
+        "sparkler:profile_theme",
+        "sparkler:desktop_tl_logo",
+        "sparkler:custom_css",
+        "sparkler:color_surface",
+        "sparkler:color_lowered",
+        "sparkler:color_super_lowered",
+        "sparkler:color_raised",
+        "sparkler:color_super_raised",
+        "sparkler:color_text",
+        "sparkler:color_text_raised",
+        "sparkler:color_text_lowered",
+        "sparkler:color_link",
+        "sparkler:color_primary",
+        "sparkler:color_primary_lowered",
+        "sparkler:color_primary_raised",
+        "sparkler:color_text_primary",
+        "sparkler:color_shadow",
+        "sparkler:lock_profile",
+        "sparkler:disallow_anonymous",
+        "sparkler:disallow_anonymous_comments",
+        "sparkler:require_account",
+        "sparkler:private_social",
+        "sparkler:disable_mailbox",
+        "sparkler:filter",
+        "sparkler:mail_signature",
+        "rainbeam:verify_url",
+        "rainbeam:verify_code",
+        "rainbeam:market_theme_template",
+        "rainbeam:nsfw_profile",
+        "rainbeam:share_hashtag",
+        "rainbeam:authenticated_only",
+        "rainbeam:force_default_layout",
+        "rainbeam:disallow_response_comments",
+    ]
+});
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ServerOptions {
@@ -113,22 +172,24 @@ impl Database {
 
         let _ = sqlquery(
             "CREATE TABLE IF NOT EXISTS \"xprofiles\" (
-                id            TEXT,
-                username      TEXT,
-                password      TEXT,
-                tokens        TEXT,
-                metadata      TEXT,
-                joined        TEXT,
-                gid           TEXT,
-                salt          TEXT,
-                ips           TEXT,
-                badges        TEXT,
-                tier          TEXT,
-                token_context TEXT,
-                labels        TEXT,
-                coins         TEXT DEFAULT '0',
-                links         TEXT DEFAULT '{}',
-                layout        TEXT DEFAULT '{\"json\":\"default.json\"}'
+                id             TEXT,
+                username       TEXT,
+                password       TEXT,
+                tokens         TEXT,
+                metadata       TEXT,
+                joined         TEXT,
+                gid            TEXT,
+                salt           TEXT,
+                ips            TEXT,
+                badges         TEXT,
+                tier           TEXT,
+                token_context  TEXT,
+                labels         TEXT,
+                coins          TEXT DEFAULT '0',
+                links          TEXT DEFAULT '{}',
+                layout         TEXT DEFAULT '{\"json\":\"default.json\"}',
+                question_count TEXT DEFAULT '0',
+                response_count TEXT DEFAULT '0'
             )",
         )
         .execute(c)
@@ -304,9 +365,10 @@ impl Database {
     // profiles
 
     /// Get profile given the `row` data
-    pub fn gimme_profile(&self, row: BTreeMap<String, String>) -> Result<Box<Profile>> {
+    pub async fn gimme_profile(&self, row: BTreeMap<String, String>) -> Result<Box<Profile>> {
+        let id = row.get("id").unwrap().to_string();
         Ok(Box::new(Profile {
-            id: row.get("id").unwrap().to_string(),
+            id: id.clone(),
             username: row.get("username").unwrap().to_string(),
             password: row.get("password").unwrap().to_string(),
             salt: row.get("salt").unwrap_or(&"".to_string()).to_string(),
@@ -342,6 +404,37 @@ impl Database {
             layout: match serde_json::from_str(row.get("layout").unwrap()) {
                 Ok(m) => m,
                 Err(_) => return Err(DatabaseError::ValueError),
+            },
+            question_count: row
+                .get("question_count")
+                .unwrap()
+                .parse::<usize>()
+                .unwrap_or(0),
+            response_count: {
+                let response_count = row
+                    .get("response_count")
+                    .unwrap()
+                    .parse::<usize>()
+                    .unwrap_or(0);
+
+                let count = self
+                    .base
+                    .cachedb
+                    .get(format!("rbeam.app.response_count:{}", &id))
+                    .await
+                    .unwrap_or_default()
+                    .parse::<usize>()
+                    .unwrap_or(0);
+
+                if count == 0 {
+                    response_count
+                } else {
+                    if response_count != count {
+                        self.update_profile_response_count(id, count).await.unwrap();
+                    };
+
+                    count
+                }
             },
         }))
     }
@@ -419,7 +512,7 @@ impl Database {
         };
 
         // return
-        Ok(match self.gimme_profile(row) {
+        Ok(match self.gimme_profile(row).await {
             Ok(ua) => ua,
             Err(e) => return Err(e),
         })
@@ -457,7 +550,7 @@ impl Database {
         };
 
         // return
-        Ok(match self.gimme_profile(row) {
+        Ok(match self.gimme_profile(row).await {
             Ok(ua) => ua,
             Err(e) => return Err(e),
         })
@@ -507,7 +600,7 @@ impl Database {
         };
 
         // store in cache
-        let user = match self.gimme_profile(row) {
+        let user = match self.gimme_profile(row).await {
             Ok(ua) => ua,
             Err(e) => return Err(e),
         };
@@ -564,7 +657,7 @@ impl Database {
         };
 
         // store in cache
-        let user = match self.gimme_profile(row) {
+        let user = match self.gimme_profile(row).await {
             Ok(ua) => ua,
             Err(e) => return Err(e),
         };
@@ -664,9 +757,9 @@ impl Database {
 
         // ...
         let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
-            "INSERT INTO \"xprofiles\" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            "INSERT INTO \"xprofiles\" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xprofiles\" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)"
+            "INSERT INTO \"xprofiles\" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)"
         };
 
         let user_token_unhashed: String = databeam::utility::uuid();
@@ -688,16 +781,18 @@ impl Database {
                 &serde_json::to_string::<ProfileMetadata>(&ProfileMetadata::default()).unwrap(),
             )
             .bind::<&String>(&timestamp)
-            .bind::<i32>(0)
+            .bind::<i8>(0)
             .bind::<&String>(&salt)
             .bind::<&String>(&serde_json::to_string::<Vec<String>>(&vec![user_ip]).unwrap())
             .bind::<&str>("[]")
-            .bind::<i32>(0)
+            .bind::<i8>(0)
             .bind::<&str>("[]")
             .bind::<&str>("")
-            .bind::<i32>(0) // start with 100 coins
+            .bind::<i8>(0) // start with 100 coins
             .bind::<&str>("{}")
             .bind::<&str>("{\"json\":\"default.json\"}")
+            .bind::<i8>(0)
+            .bind::<i8>(0)
             .execute(c)
             .await
         {
@@ -706,61 +801,72 @@ impl Database {
         }
     }
 
-    pub fn allowed_custom_keys(&self) -> Vec<&'static str> {
-        vec![
-            "sparkler:display_name",
-            "sparkler:status_note",
-            "sparkler:status_emoji",
-            "sparkler:limited_friend_requests",
-            "sparkler:limited_chats",
-            "sparkler:private_profile",
-            "sparkler:allow_drawings",
-            "sparkler:biography",
-            "sparkler:sidebar",
-            "sparkler:avatar_url",
-            "sparkler:banner_url",
-            "sparkler:banner_fit",
-            "sparkler:website_theme",
-            "sparkler:allow_profile_themes",
-            "sparkler:motivational_header",
-            "sparkler:warning",
-            "sparkler:anonymous_username",
-            "sparkler:anonymous_avatar",
-            "sparkler:pinned",
-            "sparkler:profile_theme",
-            "sparkler:desktop_tl_logo",
-            "sparkler:custom_css",
-            "sparkler:color_surface",
-            "sparkler:color_lowered",
-            "sparkler:color_super_lowered",
-            "sparkler:color_raised",
-            "sparkler:color_super_raised",
-            "sparkler:color_text",
-            "sparkler:color_text_raised",
-            "sparkler:color_text_lowered",
-            "sparkler:color_link",
-            "sparkler:color_primary",
-            "sparkler:color_primary_lowered",
-            "sparkler:color_primary_raised",
-            "sparkler:color_text_primary",
-            "sparkler:color_shadow",
-            "sparkler:lock_profile",
-            "sparkler:disallow_anonymous",
-            "sparkler:disallow_anonymous_comments",
-            "sparkler:require_account",
-            "sparkler:private_social",
-            "sparkler:disable_mailbox",
-            "sparkler:filter",
-            "sparkler:mail_signature",
-            "rainbeam:verify_url",
-            "rainbeam:verify_code",
-            "rainbeam:market_theme_template",
-            "rainbeam:nsfw_profile",
-            "rainbeam:share_hashtag",
-            "rainbeam:authenticated_only",
-            "rainbeam:force_default_layout",
-            "rainbeam:disallow_response_comments",
-        ]
+    /// Update an existing profile's question count
+    ///
+    /// # Arguments
+    /// * `id`
+    /// * `count`
+    pub async fn update_profile_question_count(&self, id: String, count: usize) -> Result<()> {
+        // update response
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "UPDATE \"xprofiles\" SET \"question_count\" = ? WHERE \"id\" = ?"
+        } else {
+            "UPDATE \"xprofiles\" SET (\"question_count\") = ($1) WHERE \"id\" = $2"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query)
+            .bind::<&i64>(&(count as i64))
+            .bind::<&String>(&id)
+            .execute(c)
+            .await
+        {
+            Ok(_) => {
+                self.base
+                    .cachedb
+                    .remove(format!("rbeam.auth.profile:{id}"))
+                    .await;
+
+                Ok(())
+            }
+            Err(_) => Err(DatabaseError::Other),
+        }
+    }
+
+    /// Update an existing profile's response count
+    ///
+    /// # Arguments
+    /// * `id`
+    /// * `count`
+    pub async fn update_profile_response_count(&self, id: String, count: usize) -> Result<()> {
+        // update response
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "UPDATE \"xprofiles\" SET \"response_count\" = ? WHERE \"id\" = ?"
+        } else {
+            "UPDATE \"xprofiles\" SET (\"response_count\") = ($1) WHERE \"id\" = $2"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query)
+            .bind::<&i64>(&(count as i64))
+            .bind::<&String>(&id)
+            .execute(c)
+            .await
+        {
+            Ok(_) => {
+                self.base
+                    .cachedb
+                    .remove(format!("rbeam.auth.profile:{id}"))
+                    .await;
+
+                Ok(())
+            }
+            Err(_) => Err(DatabaseError::Other),
+        }
     }
 
     /// Update a [`Profile`]'s metadata by its `id`
@@ -776,10 +882,8 @@ impl Database {
         };
 
         // check metadata kv
-        let allowed_custom_keys = self.allowed_custom_keys();
-
         for kv in metadata.kv.clone() {
-            if !allowed_custom_keys.contains(&kv.0.as_str()) {
+            if !ALLOWED_CUSTOM_KEYS.contains(&kv.0.as_str()) {
                 metadata.kv.remove(&kv.0);
             }
         }
@@ -1597,7 +1701,6 @@ impl Database {
         };
 
         // store in cache
-        dbg!(&serde_json::from_str::<FinePermission>("3"),);
         let group = Group {
             name: row.get("name").unwrap().to_string(),
             id: row.get("id").unwrap().parse::<i32>().unwrap(),
