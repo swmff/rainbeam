@@ -189,7 +189,9 @@ impl Database {
                 links          TEXT DEFAULT '{}',
                 layout         TEXT DEFAULT '{\"json\":\"default.json\"}',
                 question_count TEXT DEFAULT '0',
-                response_count TEXT DEFAULT '0'
+                response_count TEXT DEFAULT '0',
+                totp           TEXT DEFAULT '',
+                recovery_codes TEXT DEFAULT '[]'
             )",
         )
         .execute(c)
@@ -447,6 +449,10 @@ impl Database {
                 }
             },
             totp: row.get("totp").unwrap().to_string(),
+            recovery_codes: match serde_json::from_str(row.get("recovery_codes").unwrap()) {
+                Ok(m) => m,
+                Err(_) => return Err(DatabaseError::ValueError),
+            },
         }))
     }
 
@@ -768,9 +774,9 @@ impl Database {
 
         // ...
         let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
-            "INSERT INTO \"xprofiles\" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            "INSERT INTO \"xprofiles\" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xprofiles\" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)"
+            "INSERT INTO \"xprofiles\" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)"
         };
 
         let user_token_unhashed: String = databeam::utility::uuid();
@@ -805,6 +811,7 @@ impl Database {
             .bind::<i8>(0)
             .bind::<i8>(0)
             .bind::<&str>("")
+            .bind::<&str>("[]")
             .execute(c)
             .await
         {
@@ -5618,19 +5625,30 @@ impl Database {
     // totp
 
     /// Update the profile's TOTP secret.
-    pub async fn update_profile_totp_secret(&self, id: String, secret: String) -> Result<()> {
+    pub async fn update_profile_totp_secret(
+        &self,
+        id: String,
+        secret: String,
+        recovery: &Vec<String>,
+    ) -> Result<()> {
+        let ua = match self.get_profile_by_id(id.clone()).await {
+            Ok(ua) => ua,
+            Err(e) => return Err(e),
+        };
+
         // update profile
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
-            "UPDATE \"xprofiles\" SET \"totp\" = ? WHERE \"id\" = ?"
+            "UPDATE \"xprofiles\" SET \"totp\" = ?, \"recovery_codes\" = ? WHERE \"id\" = ?"
         } else {
-            "UPDATE \"xprofiles\" SET (\"totp\") = ($1) WHERE \"id\" = $2"
+            "UPDATE \"xprofiles\" SET (\"totp\", \"recovery_codes\") = ($1, $2) WHERE \"id\" = $3"
         }
         .to_string();
 
         let c = &self.base.db.client;
         match sqlquery(&query)
             .bind::<&String>(&secret)
+            .bind::<&String>(&serde_json::to_string(&recovery).unwrap())
             .bind::<&String>(&id)
             .execute(c)
             .await
@@ -5639,6 +5657,11 @@ impl Database {
                 self.base
                     .cachedb
                     .remove(format!("rbeam.auth.profile:{id}"))
+                    .await;
+
+                self.base
+                    .cachedb
+                    .remove(format!("rbeam.auth.profile:{}", ua.username))
                     .await;
 
                 Ok(())
@@ -5651,7 +5674,11 @@ impl Database {
     ///
     /// # Returns
     /// `Result<(secret, qr base64)>`
-    pub async fn enable_totp(&self, as_user: Box<Profile>, id: String) -> Result<(String, String)> {
+    pub async fn enable_totp(
+        &self,
+        as_user: Box<Profile>,
+        id: String,
+    ) -> Result<(String, String, Vec<String>)> {
         let profile = match self.get_profile(id.clone()).await {
             Ok(p) => p,
             Err(e) => return Err(e),
@@ -5662,10 +5689,11 @@ impl Database {
         }
 
         let secret = totp_rs::Secret::default();
+        let recovery = Database::generate_totp_recovery_codes();
 
         // update profile
         if let Err(e) = self
-            .update_profile_totp_secret(id.to_string(), secret.to_string())
+            .update_profile_totp_secret(id.to_string(), secret.to_string(), &recovery)
             .await
         {
             return Err(e);
@@ -5699,6 +5727,36 @@ impl Database {
         };
 
         // return
-        Ok((secret.to_string(), qr))
+        Ok((secret.to_string(), qr, recovery))
+    }
+
+    /// Validate a given TOTP code for the given profile.
+    pub fn check_totp(&self, ua: &Box<Profile>, code: &str) -> bool {
+        let totp = ua.totp(Some(
+            self.config
+                .host
+                .replace("http://", "")
+                .replace("https://", "")
+                .replace(":", "_"),
+        ));
+
+        if let Some(totp) = totp {
+            return !code.is_empty()
+                && (totp.check_current(code).unwrap()
+                    | ua.recovery_codes.contains(&code.to_string()));
+        }
+
+        true
+    }
+
+    /// Generate 8 random recovery codes for TOTP.
+    pub fn generate_totp_recovery_codes() -> Vec<String> {
+        let mut out: Vec<String> = Vec::new();
+
+        for _ in 0..9 {
+            out.push(rainbeam_shared::hash::salt())
+        }
+
+        out
     }
 }

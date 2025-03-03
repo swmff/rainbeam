@@ -259,13 +259,40 @@
         <b class="heading">{{ text "settings:account.html:label.2fa" }}</b>
 
         {% if user.totp.is_empty() %}
-        <img id="totp_qr" style="display: none; max-width: 250px" />
-        <pre id="totp_secret" style="display: none"></pre>
+        <div id="totp_stuff" style="display: none">
+            <span
+                >Scan this QR code in a TOTP authenticator app (like Google
+                Authenticator):
+            </span>
+
+            <img id="totp_qr" style="max-width: 250px" />
+
+            <span>TOTP secret (do NOT share):</span>
+            <pre id="totp_secret"></pre>
+
+            <span
+                >Recovery codes (STORE SAFELY, these can only be viewed
+                once):</span
+            >
+
+            <pre id="totp_recovery_codes"></pre>
+        </div>
+
         <button class="primary" onclick="enable_totp(event)">
-            Enable TOTP
+            Enable TOTP 2FA
         </button>
         {% else %}
-        <button class="red" onclick="disable_totp(event)">Disable TOTP</button>
+        <pre id="totp_recovery_codes" style="display: none"></pre>
+
+        <div class="flex gap-2 flex-wrap">
+            <button class="red" onclick="refresh_totp_codes(event)">
+                Refresh recovery codes
+            </button>
+
+            <button class="red" onclick="disable_totp(event)">
+                Disable TOTP 2FA
+            </button>
+        </div>
         {% endif %}
     </div>
 
@@ -864,16 +891,16 @@
                         res.message || "TOTP enabled!",
                     ]);
 
-                    const [secret, qr] = res.payload;
+                    const [secret, qr, recovery_codes] = res.payload;
 
                     document.getElementById("totp_secret").innerText = secret;
-                    document.getElementById("totp_secret").style.display =
-                        "block";
-
                     document.getElementById("totp_qr").src =
                         `data:image/png;base64,${qr}`;
-                    document.getElementById("totp_qr").style.display = "block";
+                    document.getElementById("totp_recovery_codes").innerText =
+                        recovery_codes.join("\n");
 
+                    document.getElementById("totp_stuff").style.display =
+                        "contents";
                     event.target.remove();
                 });
         };
@@ -906,6 +933,45 @@
                         res.success ? "success" : "error",
                         res.message || "TOTP disabled!",
                     ]);
+
+                    event.target.remove();
+                });
+        };
+
+        globalThis.refresh_totp_codes = async (event) => {
+            if (
+                !(await trigger("app::confirm", [
+                    "Are you sure you want to do this? The old codes will no longer work.",
+                ]))
+            ) {
+                return;
+            }
+
+            const totp_code = await trigger("app::prompt", ["TOTP code:"]);
+
+            if (!totp_code) {
+                return;
+            }
+
+            fetch("/api/v0/auth/profile/{{ user.id }}/totp_recovery_codes", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ totp: totp_code }),
+            })
+                .then((res) => res.json())
+                .then((res) => {
+                    trigger("app::toast", [
+                        res.success ? "success" : "error",
+                        res.message || "Recovery codes refreshed!",
+                    ]);
+
+                    document.getElementById("totp_recovery_codes").innerText =
+                        res.payload.join("\n");
+                    document.getElementById(
+                        "totp_recovery_codes",
+                    ).style.display = "block";
 
                     event.target.remove();
                 });

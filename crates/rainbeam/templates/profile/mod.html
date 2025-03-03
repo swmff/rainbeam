@@ -51,6 +51,12 @@
                 <li><a href="javascript:change_verify()">Set verify</a></li>
                 {% endif %}
 
+                {% if other.totp.is_empty() %}
+                <li>2FA: <b>No</b></li>
+                {% else %}
+                <li>2FA: <b>Yes</b></li>
+                {% endif %}
+
                 <li><a href="/inbox/mail?profile={{ other.id }}">View mail</a></li>
                 <li><a href="/market?creator={{ other.id }}">View items</a></li>
                 <li><a href="/settings?profile={{ other.id }}">View settings</a></li>

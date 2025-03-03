@@ -79,6 +79,10 @@ pub fn routes(database: Database) -> Router {
         .route("/profile/{id}/layout", post(profile::update_layout_request))
         .route("/profile/{id}/totp", post(profile::enable_totp_request))
         .route("/profile/{id}/totp", delete(profile::disable_totp_request))
+        .route(
+            "/profile/{id}/totp_recovery_codes",
+            post(profile::refresh_totp_recovery_codes_request),
+        )
         .route("/profile/{id}/banner", get(profile::banner_request))
         .route("/profile/{id}/avatar", get(profile::avatar_request))
         .route("/profile/{id}/custom.css", get(profile::css_request))

@@ -57,6 +57,9 @@ pub struct Profile {
     /// The TOTP secret for this profile. An empty value means the user has TOTP disabled.
     #[serde(default)]
     pub totp: String,
+    /// The TOTP recovery codes for this profile.
+    #[serde(default)]
+    pub recovery_codes: Vec<String>,
 }
 
 impl Profile {
@@ -115,6 +118,8 @@ impl Profile {
         self.salt = String::new();
         self.password = String::new();
         self.metadata = ProfileMetadata::default();
+        self.totp = String::new();
+        self.recovery_codes = Vec::new();
     }
 
     /// Get context from a token
@@ -177,6 +182,7 @@ impl Default for Profile {
             question_count: 0,
             response_count: 0,
             totp: String::new(),
+            recovery_codes: Vec::new(),
         }
     }
 }

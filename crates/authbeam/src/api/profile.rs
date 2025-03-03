@@ -1715,27 +1715,14 @@ pub async fn disable_totp_request(
         Err(e) => return Json(e.to_json()),
     };
 
-    // get totp
-    let totp = match profile.totp(Some(
-        database
-            .config
-            .host
-            .replace("http://", "")
-            .replace("https://", "")
-            .replace(":", "_"),
-    )) {
-        Some(t) => t,
-        None => return Json(DatabaseError::Other.to_json()),
-    };
-
-    // check
-    if totp.check_current(&props.totp).unwrap() == false {
+    // check totp
+    if !database.check_totp(&profile, &props.totp) {
         return Json(DatabaseError::NotAllowed.to_json());
     }
 
     // disable
     if let Err(e) = database
-        .update_profile_totp_secret(profile.id, String::new())
+        .update_profile_totp_secret(profile.id, String::new(), &Vec::new())
         .await
     {
         return Json(e.to_json());
@@ -1746,5 +1733,65 @@ pub async fn disable_totp_request(
         success: true,
         message: "TOTP disabled".to_string(),
         payload: (),
+    })
+}
+
+/// Refresh TOTP recovery codes for a user.
+pub async fn refresh_totp_recovery_codes_request(
+    jar: CookieJar,
+    Path(id): Path<String>,
+    State(database): State<Database>,
+    Json(props): Json<TOTPDisable>,
+) -> impl IntoResponse {
+    // get user from token
+    match jar.get("__Secure-Token") {
+        Some(c) => {
+            let token = c.value_trimmed().to_string();
+
+            match database.get_profile_by_unhashed(token.clone()).await {
+                Ok(ua) => {
+                    // check token permission
+                    if !ua
+                        .token_context_from_token(&token)
+                        .can_do(TokenPermission::ManageAccount)
+                    {
+                        return Json(DatabaseError::NotAllowed.to_json());
+                    }
+
+                    // return
+                    ua
+                }
+                Err(e) => return Json(e.to_json()),
+            }
+        }
+        None => return Json(DatabaseError::NotAllowed.to_json()),
+    };
+
+    // get profile
+    let profile = match database.get_profile(id).await {
+        Ok(p) => p,
+        Err(e) => return Json(e.to_json()),
+    };
+
+    // check totp
+    if !database.check_totp(&profile, &props.totp) {
+        return Json(DatabaseError::NotAllowed.to_json());
+    }
+
+    // update
+    let recovery = Database::generate_totp_recovery_codes();
+
+    if let Err(e) = database
+        .update_profile_totp_secret(profile.id, profile.totp, &recovery)
+        .await
+    {
+        return Json(e.to_json());
+    }
+
+    // return
+    Json(DefaultReturn {
+        success: true,
+        message: "TOTP disabled".to_string(),
+        payload: Some(recovery),
     })
 }

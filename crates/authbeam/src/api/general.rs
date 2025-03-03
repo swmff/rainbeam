@@ -167,22 +167,11 @@ pub async fn login_request(
     }
 
     // check totp
-    let totp = ua.totp(Some(
-        database
-            .config
-            .host
-            .replace("http://", "")
-            .replace("https://", "")
-            .replace(":", "_"),
-    ));
-
-    if let Some(totp) = totp {
-        if props.totp.is_empty() | !totp.check_current(&props.totp).unwrap() {
-            return (
-                HeaderMap::new(),
-                serde_json::to_string(&DatabaseError::NotAllowed.to_json::<()>()).unwrap(),
-            );
-        }
+    if !database.check_totp(&ua, &props.totp) {
+        return (
+            HeaderMap::new(),
+            serde_json::to_string(&DatabaseError::NotAllowed.to_json::<()>()).unwrap(),
+        );
     }
 
     // ...
