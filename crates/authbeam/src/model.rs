@@ -1,5 +1,6 @@
 use hcaptcha_no_wasm::Hcaptcha;
 use std::collections::{BTreeMap, HashMap};
+use totp_rs::TOTP;
 
 use axum::{
     http::StatusCode,
@@ -53,6 +54,9 @@ pub struct Profile {
     pub question_count: usize,
     /// The number of responses the profile has posted.
     pub response_count: usize,
+    /// The TOTP secret for this profile. An empty value means the user has TOTP disabled.
+    #[serde(default)]
+    pub totp: String,
 }
 
 impl Profile {
@@ -127,6 +131,28 @@ impl Profile {
 
         return TokenContext::default();
     }
+
+    // totp
+
+    /// Get a [`TOTP`] from the profile's `totp` secret value.
+    pub fn totp(&self, issuer: Option<String>) -> Option<TOTP> {
+        if self.totp.is_empty() {
+            return None;
+        }
+
+        match TOTP::new(
+            totp_rs::Algorithm::SHA1,
+            6,
+            1,
+            30,
+            self.totp.as_bytes().to_owned(),
+            Some(issuer.unwrap_or("Rainbeam".to_string())),
+            self.username.clone(),
+        ) {
+            Ok(t) => Some(t),
+            Err(_) => None,
+        }
+    }
 }
 
 impl Default for Profile {
@@ -150,6 +176,7 @@ impl Default for Profile {
             layout: LayoutComponent::default(),
             question_count: 0,
             response_count: 0,
+            totp: String::new(),
         }
     }
 }
@@ -591,6 +618,8 @@ pub struct ProfileLogin {
     pub password: String,
     #[captcha]
     pub token: String,
+    #[serde(default)]
+    pub totp: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -720,6 +749,11 @@ pub struct ItemEditContent {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SetItemStatus {
     pub status: ItemStatus,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct TOTPDisable {
+    pub totp: String,
 }
 
 /// General API errors

@@ -4339,7 +4339,7 @@ impl Database {
             return Err(DatabaseError::ContentTooShort);
         }
 
-        // update response
+        // update comment
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
             "UPDATE \"xcomments\" SET \"content\" = ?, \"edited\" = ? WHERE \"id\" = ?"
@@ -6542,7 +6542,7 @@ impl Database {
             return Err(DatabaseError::ContentTooShort);
         }
 
-        // update response
+        // update message
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
             "UPDATE \"xmessages\" SET \"content\" = ?, \"edited\" = ? WHERE \"id\" = ?"

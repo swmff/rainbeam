@@ -46,6 +46,31 @@
                         />
                     </div>
 
+                    <details>
+                        <summary>
+                            {{ text "settings:account.html:label.2fa" }}
+                        </summary>
+
+                        <div class="flex flex-col gap-1 card w-full">
+                            <p>
+                                This section is only important if you have TOTP
+                                enabled for your account. You can ignore it if
+                                you don't.
+                            </p>
+
+                            <label for="totp">TOTP code</label>
+                            <input
+                                type="text"
+                                name="totp"
+                                id="totp"
+                                minlength="6"
+                                maxlength="6"
+                            />
+                        </div>
+                    </details>
+
+                    <hr />
+
                     <div
                         class="h-captcha"
                         data-sitekey="{{ config.captcha.site_key }}"
@@ -84,6 +109,7 @@
                             password: e.target.password.value,
                             token: e.target.querySelector(".h-captcha textarea")
                                 .value,
+                            totp: e.target.totp.value || "",
                         }),
                         headers: {
                             "Content-Type": "application/json",

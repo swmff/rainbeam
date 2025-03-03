@@ -30,13 +30,7 @@ pub async fn follow_request(
                 });
             }
         },
-        None => {
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: (),
-            });
-        }
+        None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
     // check block status
@@ -103,9 +97,7 @@ pub async fn friend_request(
                 });
             }
         },
-        None => {
-            return Json(DatabaseError::NotAllowed.to_json());
-        }
+        None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
     // ...
@@ -239,9 +231,7 @@ pub async fn block_request(
                 });
             }
         },
-        None => {
-            return Json(DatabaseError::NotAllowed.to_json());
-        }
+        None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
     // ...
@@ -347,9 +337,7 @@ pub async fn delete_request(
                 });
             }
         },
-        None => {
-            return Json(DatabaseError::NotAllowed.to_json());
-        }
+        None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
     // ...

@@ -177,6 +177,7 @@
 
         "settings:account.html:title.my_account": "내 계정",
 
+        "settings:account.html:label.2fa": "Two-factor authentication",
         "settings:account.html:label.change_username": "사용자명 변경",
         "settings:account.html:label.current_password": "현재 비밀번호",
         "settings:account.html:label.new_username": "새 사용자명",

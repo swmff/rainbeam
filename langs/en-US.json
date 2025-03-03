@@ -177,6 +177,7 @@
 
         "settings:account.html:title.my_account": "My account",
 
+        "settings:account.html:label.2fa": "Two-factor authentication",
         "settings:account.html:label.change_username": "Change username",
         "settings:account.html:label.current_password": "Current password",
         "settings:account.html:label.new_username": "New username",

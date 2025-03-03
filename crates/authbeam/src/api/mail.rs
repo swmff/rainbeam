@@ -33,14 +33,10 @@ pub async fn create_request(
                     // return
                     ua
                 }
-                Err(e) => {
-                    return Json(e.to_json());
-                }
+                Err(e) => return Json(e.to_json()),
             }
         }
-        None => {
-            return Json(DatabaseError::NotAllowed.to_json());
-        }
+        None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
     // return
@@ -83,13 +79,7 @@ pub async fn delete_request(
                 });
             }
         },
-        None => {
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: (),
-            });
-        }
+        None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
     // return
@@ -126,13 +116,7 @@ pub async fn update_state_request(
                 });
             }
         },
-        None => {
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: (),
-            });
-        }
+        None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
     // return

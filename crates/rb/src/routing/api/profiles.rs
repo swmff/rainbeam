@@ -171,9 +171,7 @@ pub async fn export_request(
                 });
             }
         },
-        None => {
-            return Json(DatabaseError::NotAllowed.to_json());
-        }
+        None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
     let group = match database.auth.get_group_by_id(auth_user.group).await {

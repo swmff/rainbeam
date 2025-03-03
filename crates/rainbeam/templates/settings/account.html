@@ -17,8 +17,7 @@
 <a href="/settings/coins?profile={{ user.id }}"
     >{{ icon "store" }}{{ text "settings:link.coins" }}</a
 >
-{% endblock %} {% block panel %}
-
+{% endblock %} {% block panel %} {% let user = profile.as_ref().unwrap() %}
 <div class="flex flex-col gap-4">
     <h4 class="title">{{ text "settings:account.html:title.language" }}</h4>
 
@@ -255,6 +254,21 @@
     </div>
 
     <h4 class="title">{{ text "settings:account.html:title.my_account" }}</h4>
+
+    <div class="flex flex-col gap-1" id="2fa">
+        <b class="heading">{{ text "settings:account.html:label.2fa" }}</b>
+
+        {% if user.totp.is_empty() %}
+        <img id="totp_qr" style="display: none; max-width: 250px" />
+        <pre id="totp_secret" style="display: none"></pre>
+        <button class="primary" onclick="enable_totp(event)">
+            Enable TOTP
+        </button>
+        {% else %}
+        <button class="red" onclick="disable_totp(event)">Disable TOTP</button>
+        {% endif %}
+    </div>
+
     <form class="flex flex-col gap-1" id="change_username">
         <b class="heading"
             >{{ text "settings:account.html:label.change_username" }}</b
@@ -826,6 +840,76 @@
                         e.target.reset();
                     });
             });
+
+        // totp
+        globalThis.enable_totp = async (event) => {
+            if (
+                !(await trigger("app::confirm", [
+                    "Are you sure you want to do this? You must have access to your TOTP codes to disable TOTP.",
+                ]))
+            ) {
+                return;
+            }
+
+            fetch("/api/v0/auth/profile/{{ user.id }}/totp", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            })
+                .then((res) => res.json())
+                .then((res) => {
+                    trigger("app::toast", [
+                        res.success ? "success" : "error",
+                        res.message || "TOTP enabled!",
+                    ]);
+
+                    const [secret, qr] = res.payload;
+
+                    document.getElementById("totp_secret").innerText = secret;
+                    document.getElementById("totp_secret").style.display =
+                        "block";
+
+                    document.getElementById("totp_qr").src =
+                        `data:image/png;base64,${qr}`;
+                    document.getElementById("totp_qr").style.display = "block";
+
+                    event.target.remove();
+                });
+        };
+
+        globalThis.disable_totp = async (event) => {
+            if (
+                !(await trigger("app::confirm", [
+                    "Are you sure you want to do this?",
+                ]))
+            ) {
+                return;
+            }
+
+            const totp_code = await trigger("app::prompt", ["TOTP code:"]);
+
+            if (!totp_code) {
+                return;
+            }
+
+            fetch("/api/v0/auth/profile/{{ user.id }}/totp", {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ totp: totp_code }),
+            })
+                .then((res) => res.json())
+                .then((res) => {
+                    trigger("app::toast", [
+                        res.success ? "success" : "error",
+                        res.message || "TOTP disabled!",
+                    ]);
+
+                    event.target.remove();
+                });
+        };
     })();
 </script>
 {% call super() %} {% endblock %}

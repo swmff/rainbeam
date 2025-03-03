@@ -28,9 +28,7 @@ pub async fn get_request(jar: CookieJar, State(database): State<Database>) -> im
                 });
             }
         },
-        None => {
-            return Json(DatabaseError::NotAllowed.to_json());
-        }
+        None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
     // return
@@ -67,13 +65,7 @@ pub async fn delete_request(
                 });
             }
         },
-        None => {
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: (),
-            });
-        }
+        None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
     // get profile
@@ -128,14 +120,10 @@ pub async fn generate_token_request(
                     // return
                     ua
                 }
-                Err(e) => {
-                    return Json(e.to_json());
-                }
+                Err(e) => return Json(e.to_json()),
             }
         }
-        None => {
-            return Json(DatabaseError::NotAllowed.to_json());
-        }
+        None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
     // for every token that doesn't have a context, insert the default context
@@ -234,32 +222,16 @@ pub async fn update_tokens_request(
                         .token_context_from_token(&token)
                         .can_do(TokenPermission::ManageAccount)
                     {
-                        return Json(DefaultReturn {
-                            success: false,
-                            message: DatabaseError::NotAllowed.to_string(),
-                            payload: (),
-                        });
+                        return Json(DatabaseError::NotAllowed.to_json());
                     }
 
                     // return
                     ua
                 }
-                Err(e) => {
-                    return Json(DefaultReturn {
-                        success: false,
-                        message: e.to_string(),
-                        payload: (),
-                    });
-                }
+                Err(e) => return Json(e.to_json()),
             }
         }
-        None => {
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: (),
-            });
-        }
+        None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
     // for every token that doesn't have a context, insert the default context

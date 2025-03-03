@@ -22,24 +22,14 @@ pub async fn create_request(
     if let Some(_) = jar.get("__Secure-Token") {
         return (
             HeaderMap::new(),
-            serde_json::to_string(&DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: (),
-            })
-            .unwrap(),
+            serde_json::to_string(&DatabaseError::NotAllowed.to_json::<()>()).unwrap(),
         );
     }
 
     if !props.policy_consent {
         return (
             HeaderMap::new(),
-            serde_json::to_string(&DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: (),
-            })
-            .unwrap(),
+            serde_json::to_string(&DatabaseError::NotAllowed.to_json::<()>()).unwrap(),
         );
     }
 
@@ -59,12 +49,7 @@ pub async fn create_request(
     if database.get_ipban_by_ip(real_ip.clone()).await.is_ok() {
         return (
             HeaderMap::new(),
-            serde_json::to_string(&DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: (),
-            })
-            .unwrap(),
+            serde_json::to_string(&DatabaseError::NotAllowed.to_json::<()>()).unwrap(),
         );
     }
 
@@ -151,17 +136,13 @@ pub async fn login_request(
     };
 
     // check password
-    let input_password = rainbeam_shared::hash::hash_salted(props.password.clone(), ua.salt);
+    let input_password =
+        rainbeam_shared::hash::hash_salted(props.password.clone(), ua.salt.clone());
 
     if input_password != ua.password {
         return (
             HeaderMap::new(),
-            serde_json::to_string(&DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: (),
-            })
-            .unwrap(),
+            serde_json::to_string(&DatabaseError::NotAllowed.to_json::<()>()).unwrap(),
         );
     }
 
@@ -181,13 +162,27 @@ pub async fn login_request(
     if database.get_ipban_by_ip(real_ip.clone()).await.is_ok() {
         return (
             HeaderMap::new(),
-            serde_json::to_string(&DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: (),
-            })
-            .unwrap(),
+            serde_json::to_string(&DatabaseError::NotAllowed.to_json::<()>()).unwrap(),
         );
+    }
+
+    // check totp
+    let totp = ua.totp(Some(
+        database
+            .config
+            .host
+            .replace("http://", "")
+            .replace("https://", "")
+            .replace(":", "_"),
+    ));
+
+    if let Some(totp) = totp {
+        if props.totp.is_empty() | !totp.check_current(&props.totp).unwrap() {
+            return (
+                HeaderMap::new(),
+                serde_json::to_string(&DatabaseError::NotAllowed.to_json::<()>()).unwrap(),
+            );
+        }
     }
 
     // ...

@@ -446,6 +446,7 @@ impl Database {
                     count
                 }
             },
+            totp: row.get("totp").unwrap().to_string(),
         }))
     }
 
@@ -767,9 +768,9 @@ impl Database {
 
         // ...
         let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
-            "INSERT INTO \"xprofiles\" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            "INSERT INTO \"xprofiles\" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xprofiles\" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)"
+            "INSERT INTO \"xprofiles\" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)"
         };
 
         let user_token_unhashed: String = databeam::utility::uuid();
@@ -803,6 +804,7 @@ impl Database {
             .bind::<&str>("{\"json\":\"default.json\"}")
             .bind::<i8>(0)
             .bind::<i8>(0)
+            .bind::<&str>("")
             .execute(c)
             .await
         {
@@ -817,7 +819,7 @@ impl Database {
     /// * `id`
     /// * `count`
     pub async fn update_profile_question_count(&self, id: String, count: usize) -> Result<()> {
-        // update response
+        // update profile
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
             "UPDATE \"xprofiles\" SET \"question_count\" = ? WHERE \"id\" = ?"
@@ -851,7 +853,7 @@ impl Database {
     /// * `id`
     /// * `count`
     pub async fn update_profile_response_count(&self, id: String, count: usize) -> Result<()> {
-        // update response
+        // update profile
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
             "UPDATE \"xprofiles\" SET \"response_count\" = ? WHERE \"id\" = ?"
@@ -5611,5 +5613,92 @@ impl Database {
             }
             Err(_) => return Err(DatabaseError::Other),
         };
+    }
+
+    // totp
+
+    /// Update the profile's TOTP secret.
+    pub async fn update_profile_totp_secret(&self, id: String, secret: String) -> Result<()> {
+        // update profile
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "UPDATE \"xprofiles\" SET \"totp\" = ? WHERE \"id\" = ?"
+        } else {
+            "UPDATE \"xprofiles\" SET (\"totp\") = ($1) WHERE \"id\" = $2"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        match sqlquery(&query)
+            .bind::<&String>(&secret)
+            .bind::<&String>(&id)
+            .execute(c)
+            .await
+        {
+            Ok(_) => {
+                self.base
+                    .cachedb
+                    .remove(format!("rbeam.auth.profile:{id}"))
+                    .await;
+
+                Ok(())
+            }
+            Err(_) => Err(DatabaseError::Other),
+        }
+    }
+
+    /// Enable TOTP for a profile.
+    ///
+    /// # Returns
+    /// `Result<(secret, qr base64)>`
+    pub async fn enable_totp(&self, as_user: Box<Profile>, id: String) -> Result<(String, String)> {
+        let profile = match self.get_profile(id.clone()).await {
+            Ok(p) => p,
+            Err(e) => return Err(e),
+        };
+
+        if profile.id != as_user.id {
+            return Err(DatabaseError::NotAllowed);
+        }
+
+        let secret = totp_rs::Secret::default();
+
+        // update profile
+        if let Err(e) = self
+            .update_profile_totp_secret(id.to_string(), secret.to_string())
+            .await
+        {
+            return Err(e);
+        }
+
+        // fetch profile again (with totp information)
+        let profile = match self.get_profile(id.clone()).await {
+            Ok(p) => p,
+            Err(e) => return Err(e),
+        };
+
+        // get totp
+        let totp = profile.totp(Some(
+            self.config
+                .host
+                .replace("http://", "")
+                .replace("https://", "")
+                .replace(":", "_"),
+        ));
+
+        if totp.is_none() {
+            return Err(DatabaseError::Other);
+        }
+
+        let totp = totp.unwrap();
+
+        // generate qr
+        let qr = match totp.get_qr_base64() {
+            Ok(q) => q,
+            Err(_) => return Err(DatabaseError::Other),
+        };
+
+        // return
+        Ok((secret.to_string(), qr))
     }
 }

@@ -2,8 +2,8 @@ use crate::database::Database;
 use crate::model::{
     DatabaseError, FinePermission, NotificationCreate, RenderLayout, SetProfileBadges,
     SetProfileCoins, SetProfileGroup, SetProfileLabels, SetProfileLayout, SetProfileLinks,
-    SetProfileMetadata, SetProfilePassword, SetProfileTier, SetProfileUsername, TokenContext,
-    TokenPermission,
+    SetProfileMetadata, SetProfilePassword, SetProfileTier, SetProfileUsername, TOTPDisable,
+    TokenContext, TokenPermission,
 };
 use databeam::prelude::DefaultReturn;
 use pathbufd::pathd;
@@ -354,14 +354,10 @@ pub async fn update_tier_request(
                     // return
                     ua
                 }
-                Err(e) => {
-                    return Json(e.to_json());
-                }
+                Err(e) => return Json(e.to_json()),
             }
         }
-        None => {
-            return Json(DatabaseError::NotAllowed.to_json());
-        }
+        None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
     // check permission
@@ -453,9 +449,7 @@ pub async fn update_group_request(
                 return Json(e.to_json());
             }
         },
-        None => {
-            return Json(DatabaseError::NotAllowed.to_json());
-        }
+        None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
     // check permission
@@ -565,9 +559,7 @@ pub async fn update_coins_request(
                 });
             }
         },
-        None => {
-            return Json(DatabaseError::NotAllowed.to_json());
-        }
+        None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
     // check permission
@@ -660,32 +652,16 @@ pub async fn update_tokens_request(
                         .token_context_from_token(&token)
                         .can_do(TokenPermission::Moderator)
                     {
-                        return Json(DefaultReturn {
-                            success: false,
-                            message: DatabaseError::NotAllowed.to_string(),
-                            payload: (),
-                        });
+                        return Json(DatabaseError::NotAllowed.to_json());
                     }
 
                     // return
                     ua
                 }
-                Err(e) => {
-                    return Json(DefaultReturn {
-                        success: false,
-                        message: e.to_string(),
-                        payload: (),
-                    });
-                }
+                Err(e) => return Json(e.to_json()),
             }
         }
-        None => {
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: (),
-            });
-        }
+        None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
     let mut other = match database.get_profile(id).await {
@@ -806,14 +782,10 @@ pub async fn generate_token_request(
                     // return
                     ua
                 }
-                Err(e) => {
-                    return Json(e.to_json());
-                }
+                Err(e) => return Json(e.to_json()),
             }
         }
-        None => {
-            return Json(DatabaseError::NotAllowed.to_json());
-        }
+        None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
     let mut other = match database.get_profile(id).await {
@@ -950,14 +922,10 @@ pub async fn update_password_request(
                     // return
                     ua
                 }
-                Err(e) => {
-                    return Json(e.to_json());
-                }
+                Err(e) => return Json(e.to_json()),
             }
         }
-        None => {
-            return Json(DatabaseError::NotAllowed.to_json());
-        }
+        None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
     // check permission
@@ -1040,14 +1008,10 @@ pub async fn update_username_request(
                     // return
                     ua
                 }
-                Err(e) => {
-                    return Json(e.to_json());
-                }
+                Err(e) => return Json(e.to_json()),
             }
         }
-        None => {
-            return Json(DatabaseError::NotAllowed.to_json());
-        }
+        None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
     // check permission
@@ -1121,32 +1085,16 @@ pub async fn update_metdata_request(
                         .token_context_from_token(&token)
                         .can_do(TokenPermission::ManageProfile)
                     {
-                        return Json(DefaultReturn {
-                            success: false,
-                            message: DatabaseError::NotAllowed.to_string(),
-                            payload: (),
-                        });
+                        return Json(DatabaseError::NotAllowed.to_json());
                     }
 
                     // return
                     ua
                 }
-                Err(e) => {
-                    return Json(DefaultReturn {
-                        success: false,
-                        message: e.to_string(),
-                        payload: (),
-                    });
-                }
+                Err(e) => return Json(e.to_json()),
             }
         }
-        None => {
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: (),
-            });
-        }
+        None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
     // check permission
@@ -1167,11 +1115,7 @@ pub async fn update_metdata_request(
             .check(FinePermission::MANAGE_PROFILE_SETTINGS)
         {
             // we cannot manager other managers
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: (),
-            });
+            return Json(DatabaseError::NotAllowed.to_json());
         }
     }
 
@@ -1217,32 +1161,16 @@ pub async fn patch_metdata_request(
                         .token_context_from_token(&token)
                         .can_do(TokenPermission::ManageProfile)
                     {
-                        return Json(DefaultReturn {
-                            success: false,
-                            message: DatabaseError::NotAllowed.to_string(),
-                            payload: (),
-                        });
+                        return Json(DatabaseError::NotAllowed.to_json());
                     }
 
                     // return
                     ua
                 }
-                Err(e) => {
-                    return Json(DefaultReturn {
-                        success: false,
-                        message: e.to_string(),
-                        payload: (),
-                    });
-                }
+                Err(e) => return Json(e.to_json()),
             }
         }
-        None => {
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: (),
-            });
-        }
+        None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
     // get other user
@@ -1271,11 +1199,7 @@ pub async fn patch_metdata_request(
             .check(FinePermission::MANAGE_PROFILE_SETTINGS)
         {
             // we must have the "Manager" permission to edit other users
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: (),
-            });
+            return Json(DatabaseError::NotAllowed.to_json());
         }
     }
 
@@ -1332,32 +1256,16 @@ pub async fn update_badges_request(
                         .token_context_from_token(&token)
                         .can_do(TokenPermission::Moderator)
                     {
-                        return Json(DefaultReturn {
-                            success: false,
-                            message: DatabaseError::NotAllowed.to_string(),
-                            payload: (),
-                        });
+                        return Json(DatabaseError::NotAllowed.to_json());
                     }
 
                     // return
                     ua
                 }
-                Err(e) => {
-                    return Json(DefaultReturn {
-                        success: false,
-                        message: e.to_string(),
-                        payload: (),
-                    });
-                }
+                Err(e) => return Json(e.to_json()),
             }
         }
-        None => {
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: (),
-            });
-        }
+        None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
     // check permission
@@ -1408,32 +1316,16 @@ pub async fn update_labels_request(
                         .token_context_from_token(&token)
                         .can_do(TokenPermission::Moderator)
                     {
-                        return Json(DefaultReturn {
-                            success: false,
-                            message: DatabaseError::NotAllowed.to_string(),
-                            payload: (),
-                        });
+                        return Json(DatabaseError::NotAllowed.to_json());
                     }
 
                     // return
                     ua
                 }
-                Err(e) => {
-                    return Json(DefaultReturn {
-                        success: false,
-                        message: e.to_string(),
-                        payload: (),
-                    });
-                }
+                Err(e) => return Json(e.to_json()),
             }
         }
-        None => {
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: (),
-            });
-        }
+        None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
     // check permission
@@ -1490,14 +1382,10 @@ pub async fn update_links_request(
                     // return
                     ua
                 }
-                Err(e) => {
-                    return Json(e.to_json());
-                }
+                Err(e) => return Json(e.to_json()),
             }
         }
-        None => {
-            return Json(DatabaseError::NotAllowed.to_json());
-        }
+        None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
     // check permission
@@ -1550,14 +1438,10 @@ pub async fn update_layout_request(
                     // return
                     ua
                 }
-                Err(e) => {
-                    return Json(e.to_json());
-                }
+                Err(e) => return Json(e.to_json()),
             }
         }
-        None => {
-            return Json(DatabaseError::NotAllowed.to_json());
-        }
+        None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
     // check permission
@@ -1620,13 +1504,7 @@ pub async fn delete_request(
                 });
             }
         },
-        None => {
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: (),
-            });
-        }
+        None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
     // check permission
@@ -1656,11 +1534,7 @@ pub async fn delete_request(
 
         if !group.permissions.check(FinePermission::DELETE_USER) {
             // we must have the "Manager" permission to edit other users
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: (),
-            });
+            return Json(DatabaseError::NotAllowed.to_json());
         } else {
             let actor_id = auth_user.id;
             if let Err(e) = database
@@ -1697,11 +1571,7 @@ pub async fn delete_request(
 
         if group.permissions.check(FinePermission::DELETE_USER) {
             // we cannot manager other managers
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: (),
-            });
+            return Json(DatabaseError::NotAllowed.to_json());
         }
     }
 
@@ -1763,4 +1633,118 @@ pub async fn css_request(
 
     out.push_str(&auth_user.metadata.soft_get("sparkler:custom_css"));
     format!("{out}\n}}")
+}
+
+/// Enable TOTP for a user.
+pub async fn enable_totp_request(
+    jar: CookieJar,
+    Path(id): Path<String>,
+    State(database): State<Database>,
+) -> impl IntoResponse {
+    // get user from token
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => {
+            let token = c.value_trimmed().to_string();
+
+            match database.get_profile_by_unhashed(token.clone()).await {
+                Ok(ua) => {
+                    // check token permission
+                    if !ua
+                        .token_context_from_token(&token)
+                        .can_do(TokenPermission::ManageAccount)
+                    {
+                        return Json(DatabaseError::NotAllowed.to_json());
+                    }
+
+                    // return
+                    ua
+                }
+                Err(e) => return Json(e.to_json()),
+            }
+        }
+        None => return Json(DatabaseError::NotAllowed.to_json()),
+    };
+
+    // update
+    match database.enable_totp(auth_user, id).await {
+        Ok(t) => {
+            return Json(DefaultReturn {
+                success: true,
+                message: "TOTP enabled".to_string(),
+                payload: Some(t),
+            })
+        }
+        Err(e) => return Json(e.to_json()),
+    }
+}
+
+/// Disable TOTP for a user.
+pub async fn disable_totp_request(
+    jar: CookieJar,
+    Path(id): Path<String>,
+    State(database): State<Database>,
+    Json(props): Json<TOTPDisable>,
+) -> impl IntoResponse {
+    // get user from token
+    match jar.get("__Secure-Token") {
+        Some(c) => {
+            let token = c.value_trimmed().to_string();
+
+            match database.get_profile_by_unhashed(token.clone()).await {
+                Ok(ua) => {
+                    // check token permission
+                    if !ua
+                        .token_context_from_token(&token)
+                        .can_do(TokenPermission::ManageAccount)
+                    {
+                        return Json(DatabaseError::NotAllowed.to_json());
+                    }
+
+                    // return
+                    ua
+                }
+                Err(e) => return Json(e.to_json()),
+            }
+        }
+        None => return Json(DatabaseError::NotAllowed.to_json()),
+    };
+
+    // get profile
+    let profile = match database.get_profile(id).await {
+        Ok(p) => p,
+        Err(e) => return Json(e.to_json()),
+    };
+
+    // get totp
+    let totp = match profile.totp(Some(
+        database
+            .config
+            .host
+            .replace("http://", "")
+            .replace("https://", "")
+            .replace(":", "_"),
+    )) {
+        Some(t) => t,
+        None => return Json(DatabaseError::Other.to_json()),
+    };
+
+    // check
+    if totp.check_current(&props.totp).unwrap() == false {
+        return Json(DatabaseError::NotAllowed.to_json());
+    }
+
+    // disable
+    if let Err(e) = database
+        .update_profile_totp_secret(profile.id, String::new())
+        .await
+    {
+        return Json(e.to_json());
+    }
+
+    // return
+    Json(DefaultReturn {
+        success: true,
+        message: "TOTP disabled".to_string(),
+        payload: (),
+    })
 }

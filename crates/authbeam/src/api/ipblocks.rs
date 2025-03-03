@@ -30,13 +30,7 @@ pub async fn create_request(
                 });
             }
         },
-        None => {
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: (),
-            });
-        }
+        None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
     // return
@@ -71,13 +65,7 @@ pub async fn delete_request(
                 });
             }
         },
-        None => {
-            return Json(DefaultReturn {
-                success: false,
-                message: DatabaseError::NotAllowed.to_string(),
-                payload: (),
-            });
-        }
+        None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
     // return
