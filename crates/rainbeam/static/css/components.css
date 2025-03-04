@@ -125,9 +125,7 @@ dialog::backdrop {
 
 .dropdown .inner a:hover,
 .dropdown .inner button:hover {
-    /* background-color: var(--color-lowered); */
-    background-color: var(--color-primary);
-    color: var(--color-text-primary) !important;
+    background-color: var(--color-lowered);
 }
 
 .dropdown .inner a:focus,
@@ -136,7 +134,13 @@ dialog::backdrop {
 }
 
 .dropdown:not(nav *):has(.inner.open) button:not(.inner button) {
+    color: var(--color-text) !important;
     background: var(--color-lowered) !important;
+}
+
+.dropdown:not(nav *):has(.inner.open) button.primary:not(.inner button) {
+    color: var(--color-text-primary) !important;
+    background: var(--color-primary-lowered) !important;
 }
 
 .dropdown button .icon {
@@ -318,12 +322,6 @@ dialog::backdrop {
     height: max-content;
 }
 
-/* .notification.tr {
-    position: absolute;
-    top: 6px;
-    right: 0;
-} */
-
 .notification.tr {
     /* background: var(--color-primary) !important;
     color: var(--color-text-primary) !important; */
@@ -340,6 +338,12 @@ dialog::backdrop {
 
 .notification.notif-invert:not(:is(.dark *)) {
     filter: invert(1);
+}
+
+.pillmenu .notification {
+    background: transparent;
+    color: inherit;
+    font-size: 14px;
 }
 
 .question_content p:last-of-type,
@@ -411,6 +415,8 @@ dialog::backdrop {
     border-radius: var(--radius);
     user-select: none;
     position: sticky;
+    box-shadow: var(--shadow-x-offset) var(--shadow-y-offset) var(--shadow-size)
+        var(--color-shadow);
 }
 
 .sidenav a {
@@ -423,7 +429,6 @@ dialog::backdrop {
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    transition: background 0.15s;
 }
 
 .sidenav .title {
@@ -458,7 +463,8 @@ dialog::backdrop {
     display: flex;
     border-radius: var(--radius);
     user-select: none;
-    box-shadow: 0 0 2px var(--color-shadow);
+    box-shadow: var(--shadow-x-offset) var(--shadow-y-offset) var(--shadow-size)
+        var(--color-shadow);
 }
 
 .pillmenu a {

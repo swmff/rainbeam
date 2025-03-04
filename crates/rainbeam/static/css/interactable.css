@@ -2,7 +2,7 @@ button,
 .button {
     background: var(--color-lowered);
     color: var(--color-text);
-    padding: 0.25rem 1.25rem;
+    padding: 0.35rem 1.25rem;
     min-height: 32px;
     min-width: max-content;
     width: max-content;
@@ -165,10 +165,6 @@ button.icon-only,
     /* left: calc(50% - 1em / 2.12); */
 }
 
-.icon-only:active .icon {
-    transform: scale(1.05); /* negate button transform */
-}
-
 .icon-only .notification {
     position: absolute;
     z-index: 1;
@@ -246,13 +242,16 @@ select {
 input.secondary,
 textarea.secondary,
 select.secondary,
-details input,
-details textarea,
-details select,
 .card input:not(dialog *),
 .card textarea:not(dialog *),
 .card select:not(dialog *) {
     background: var(--color-surface);
+}
+
+details input,
+details textarea,
+details select {
+    background: var(--color-raised);
 }
 
 input:focus,

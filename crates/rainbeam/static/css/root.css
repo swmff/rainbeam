@@ -12,8 +12,8 @@
 
 :root {
     color-scheme: light dark;
-    --hue: 225;
-    --sat: 5%;
+    --hue: 16;
+    --sat: 6%;
     --lit: 0%;
     --color-surface: hsl(var(--hue), var(--sat), calc(95% - var(--lit)));
     --color-lowered: hsl(var(--hue), var(--sat), calc(93% - var(--lit)));
@@ -29,15 +29,19 @@
     --color-text-lowered: var(--color-text);
     --color-link: #2949b2;
     --color-text-primary: hsl(0, 0%, 100%);
-    --color-shadow: rgba(0, 0, 0, 0.15);
+    --color-shadow: rgba(0, 0, 0, 0.08);
     --color-red: hsl(0, 84%, 40%);
     --color-green: hsl(100, 84%, 40%);
     --radius: 8px;
     --circle: 360px;
+    --shadow-x-offset: 0;
+    --shadow-y-offset: 0.125rem;
+    --shadow-size: 0.25rem;
 }
 
 .dark,
 .dark * {
+    --hue: 266;
     --sat: 5%;
     --lit: 12%;
     --color-surface: hsl(var(--hue), var(--sat), calc(0% + var(--lit)));

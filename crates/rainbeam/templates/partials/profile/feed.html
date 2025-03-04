@@ -1,19 +1,35 @@
 <!-- prettier-ignore -->
-{% let anonymous_username = other.metadata.kv.get("sparkler:anonymous_username") %}
-{% let anonymous_avatar = other.metadata.kv.get("sparkler:anonymous_avatar") %}
+{% if unlocked %}
+    {% let anonymous_username = other.metadata.kv.get("sparkler:anonymous_username") %}
+    {% let anonymous_avatar = other.metadata.kv.get("sparkler:anonymous_avatar") %}
 
-{% for response in responses %}
-    {% let relationship = relationships.get(response.1.author.id).unwrap().to_owned() %}
-    {% if (relationship != crate::model::RelationshipStatus::Friends
-        && relationship != crate::model::RelationshipStatus::Blocked
-        && response.1.author.metadata.is_true("sparkler:private_profile")) | (response.1.author.group == -1) %}
-        {% include "components/private_response.html" %}
-    {% else %}
-        {% let is_pinned = false %}
-        {% let show_pin_button = true %}
-        {% let do_not_render_question = false %}
-        {% let show_comments = true %}
-        {% let do_render_nested = true %}
-        {% include "components/response.html" %}
-    {% endif %}
-{% endfor %}
+    {% for response in responses %}
+        {% let relationship = relationships.get(response.1.author.id).unwrap().to_owned() %}
+        {% if (relationship != crate::model::RelationshipStatus::Friends
+            && relationship != crate::model::RelationshipStatus::Blocked
+            && response.1.author.metadata.is_true("sparkler:private_profile")) | (response.1.author.group == -1) %}
+            {% include "components/private_response.html" %}
+        {% else %}
+            {% let is_pinned = false %}
+            {% let show_pin_button = true %}
+            {% let do_not_render_question = false %}
+            {% let show_comments = true %}
+            {% let do_render_nested = true %}
+            {% include "components/response.html" %}
+        {% endif %}
+    {% endfor %}
+{% else %}
+<form class="flex flex-col gap-2 card">
+    <label for="view_password">Password required</label>
+
+    <input
+        type="text"
+        name="password"
+        id="view_password"
+        required
+        autocomplete="false"
+    />
+
+    <button>{{ text "general:dialog.okay" }}</button>
+</form>
+{% endif %}

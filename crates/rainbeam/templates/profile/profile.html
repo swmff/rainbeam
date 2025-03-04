@@ -57,8 +57,9 @@
             {% let do_render_nested = true %}
             {% include "../components/response.html" %}
         {% endfor %}
+    {% if !pinned.is_empty() %}
     <hr class="small" />
-    {% endif %} {% if !tag.is_empty() %}
+    {% endif %} {% endif %} {% if !tag.is_empty() %}
     <h3>#{{ tag }}</h3>
     {% endif %}
 
@@ -76,7 +77,7 @@
 
     <!-- actual feed -->
     <include-partial
-        src="/@{{ other.username }}/_app/feed.html?page={{ page }}{% if !tag.is_empty() %}&tag={{ tag }}{% endif %}&q={{ query }}"
+        src="/@{{ other.username }}/_app/feed.html?page={{ page }}{% if !tag.is_empty() %}&tag={{ tag }}{% endif %}&q={{ query }}&password={{ view_password }}"
         uses="app::clean_date_codes,app::link_filter,app::hooks::alt,app::hooks::partial_embeds,app::hooks::check_reactions"
         instant="true"
         outerhtml="true"
@@ -93,11 +94,11 @@
     {% endif %}
 </div>
 
-{% if tag.is_empty() && query.is_empty() %}
+{% if tag.is_empty() && query.is_empty() && unlocked %}
 <script>
     use("app", (app) => {
         app["hooks::attach_to_partial"](
-            "/@{{ other.username }}/_app/feed.html",
+            "/@{{ other.username }}/_app/feed.html?password={{ view_password }}",
             "/@{{ other.username }}",
             document.getElementById("feed"),
             document.body,

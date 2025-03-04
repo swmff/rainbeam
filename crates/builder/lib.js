@@ -140,31 +140,59 @@ export default async function build(options) {
     }
 
     // walk css dir
+    async function css(file_name, original_file_name, full_path) {
+        const { code } = transform({
+            filename: file_name,
+            code: Buffer.from(
+                await fs.readFile(full_path, { encoding: "utf8" }),
+            ),
+            minify: true,
+            sourceMap: true,
+        });
+
+        let content = new TextDecoder().decode(code);
+
+        // hashed files
+        for (const hashed_file of Object.entries(hashed_files)) {
+            if (
+                !content.includes(hashed_file[0]) ||
+                hashed_file[0] === original_file_name
+            ) {
+                continue;
+            }
+
+            content = content.replaceAll(
+                `@import "${hashed_file[0]}";`,
+                // `@import "${hashed_file[1]}"`,
+                // replace with file contents (merge into a single file)
+                await css(
+                    hashed_file[1],
+                    hashed_file[0],
+                    full_path.replace(original_file_name, hashed_file[0]),
+                ),
+            );
+        }
+
+        // return
+        return content;
+    }
+
     await walk_dir(
         async (file_name, full_path, build_path) => {
             // minify
             console.log(`min ${file_name}`);
-            const { code } = transform({
-                filename: file_name,
-                code: Buffer.from(
-                    await fs.readFile(full_path, { encoding: "utf8" }),
-                ),
-                minify: false,
-                sourceMap: true,
-            });
 
-            let content = new TextDecoder().decode(code);
+            const file_path = full_path.split("/");
+            const original_file_name = file_path.pop();
 
-            // hashed files
-            for (const hashed_file of Object.entries(hashed_files)) {
-                content = content.replaceAll(
-                    `@import "${hashed_file[0]}"`,
-                    `@import "${hashed_file[1]}"`,
-                );
-            }
+            const content = await css(file_name, original_file_name, full_path);
+            const new_file_name = `${hash(content)}.h.${file_name.split(".h.")[1]}`;
+            hashed_files[original_file_name] = new_file_name;
 
-            // write
-            await fs.writeFile(build_path, content);
+            await fs.writeFile(
+                build_path.replace(file_name, new_file_name),
+                content,
+            );
         },
         `${__cwd}/${options.css_dir}`,
         "css/",

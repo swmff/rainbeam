@@ -111,6 +111,23 @@
         </label>
     </div>
 
+    <div class="flex flex-col gap-1">
+        <label for="rainbeam:view_password">
+            {{ text "settings:privacy_options.html:label.view_password" }}
+        </label>
+
+        <input
+            name="rainbeam:view_password"
+            id="rainbeam:view_password"
+            onchange="update_kv('rainbeam:view_password', event.target.value)"
+        />
+
+        <p class="fade">
+            Require a password to view your response feeds. Leave blank to
+            disable.
+        </p>
+    </div>
+
     <h4 class="title">
         {{ text "settings:privacy_options.html:title.moderation" }}
     </h4>

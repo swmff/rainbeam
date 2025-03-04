@@ -77,11 +77,6 @@
                         >{{ icon "mails" }} {{ text "general:service.mail" }}</a
                     >
 
-                    <a href="/circles">
-                        {{ icon "users-round" }} {{ text
-                        "general:service.circles" }}
-                    </a>
-
                     <b class="title">{{ text "general:title.social" }}</b>
 
                     <a
@@ -149,7 +144,6 @@
 </nav>
 
 <div id="toast_zone"></div>
-
 {% block under_nav %}{% endblock %}
 
 <div id="page">
@@ -157,78 +151,4 @@
         {% block content %}{% endblock %}
     </div>
 </div>
-
-<footer>
-    <div class="content_container flex-collapse gap-4">
-        <div class="flex flex-col gap-1">
-            <b class="title">{{ config.name }}</b>
-
-            <span class="fade">
-                Commit
-                <a
-                    href='https://github.com/swmff/rainbeam/commit/{{ var "commit" }}'
-                    >{{ var "commit_short" }}</a
-                >
-            </span>
-
-            <span class="fade">
-                Built <span class="date">{{ var "time_unix" }}</span>
-            </span>
-        </div>
-
-        <div class="flex gap-4 flex-collapse">
-            {% if let Some(user) = profile %}
-            <section class="fade">
-                <b class="header">Actions</b>
-
-                <a href="/intents/post" class="button camo">
-                    {{ icon "square-pen" }} {{ text "general:link.post" }}
-                </a>
-
-                <a href="/search" class="button camo">
-                    {{ icon "search" }} {{ text "general:link.search" }}
-                </a>
-            </section>
-
-            <section class="fade">
-                <b class="header">Services</b>
-
-                <a href="/chats" class="button camo">
-                    {{ icon "message-circle-more" }} {{ text
-                    "general:service.chats" }}
-                </a>
-
-                <a href="/inbox/mail" class="button camo">
-                    {{ icon "mails" }} {{ text "general:service.mail" }}
-                </a>
-            </section>
-            {% endif %}
-
-            <section class="fade">
-                <b class="header">Site</b>
-
-                <a href="/site/about" class="button camo">
-                    {{ icon "info" }} {{ text "base.html:link.about" }}
-                </a>
-
-                <a href="https://swmff.github.io/rainbeam/" class="button camo">
-                    {{ icon "book" }} {{ text "base.html:link.reference" }}
-                </a>
-
-                <a href="https://github.com/swmff/rainbeam" class="button camo">
-                    {{ icon "code" }} {{ text "base.html:link.source_code" }}
-                </a>
-            </section>
-        </div>
-    </div>
-</footer>
-
-<a
-    href="#top"
-    id="backtotop"
-    class="button border floating"
-    title="Back to top"
->
-    {{ icon "chevron-up" }}
-</a>
 {% call super() %} {% endblock %}

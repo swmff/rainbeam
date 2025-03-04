@@ -142,8 +142,8 @@ block head %}
     });
 </script>
 
-{% if let Some(profile) = profile %} {% let other = profile.clone() %} {% if
-profile.username == other.username %}
+{% include "components/footer.html" %} {% if let Some(profile) = profile %} {%
+let other = profile.clone() %} {% if profile.username == other.username %}
 <div id="is_self"></div>
 {% endif %} {% let raw_metadata =
 crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include

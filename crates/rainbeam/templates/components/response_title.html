@@ -3,14 +3,19 @@
 >
     <div class="footernav items-center flex-wrap">
         <b class="flex items-center gap-2">
-            <img
-                title="{{ response.author.username }}'s avatar"
-                src="/api/v0/auth/profile/{{ response.author.id }}/avatar"
-                alt=""
-                class="avatar"
-                loading="lazy"
-                style="--size: 30px"
-            />
+            <a
+                href="/@{{ response.author.username }}"
+                style="min-width: max-content"
+            >
+                <img
+                    title="{{ response.author.username }}'s avatar"
+                    src="/api/v0/auth/profile/{{ response.author.id }}/avatar"
+                    alt=""
+                    class="avatar"
+                    loading="lazy"
+                    style="--size: 30px"
+                />
+            </a>
 
             <a
                 href="/@{{ response.author.username }}"
@@ -49,24 +54,6 @@
             href="/@{{ response.author.username }}"
         >
             {{ icon "pin" }}
-        </a>
-        {% endif %} {% if !response.context.circle.is_empty() %}
-        <a
-            class="button item camo icon-only small avatar"
-            href="/+g/{{ response.context.circle }}"
-            title="Posted in circle"
-            style="
-                --size: 25px;
-                background: url('/api/v1/circles/{{ response.context.circle }}/avatar');
-                border-radius: var(--radius);
-                background-size: cover;
-                padding: 0 !important;
-                width: var(--size) !important;
-                height: var(--size) !important;
-                min-width: var(--size) !important;
-                min-height: var(--size) !important;
-            "
-        >
         </a>
         {% endif %}
     </div>

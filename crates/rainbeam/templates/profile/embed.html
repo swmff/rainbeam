@@ -219,7 +219,14 @@
 
             <!-- prettier-ignore -->
             <!-- actual feed -->
-            {% include "partials/profile/feed.html" %} {% endif %}
+            <include-partial
+                src="/@{{ other.username }}/_app/feed.html"
+                uses="app::clean_date_codes,app::link_filter,app::hooks::alt,app::hooks::partial_embeds,app::hooks::check_reactions"
+                instant="true"
+                outerhtml="true"
+                id="initial_loader"
+            ></include-partial>
+            {% endif %}
 
             <!-- closing statement -->
             <footer
@@ -233,8 +240,6 @@
                 </span>
             </footer>
         </div>
-
-        <script src="https://unpkg.com/lucide@latest"></script>
 
         <script>
             use("questions", () => {});

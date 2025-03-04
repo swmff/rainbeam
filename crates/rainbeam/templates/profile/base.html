@@ -32,7 +32,6 @@
 <a class="button" href="/" title="Timeline">
     {{ icon "house" }}
     <span class="desktop">{{ text "general:link.timeline" }}</span>
-    
 </a>
 
 <a class="button" href="/inbox" title="My inbox">
@@ -59,12 +58,6 @@
 </a>
 {% endif %} {% endblock %} {% block content %}
 <article class="flex flex-col gap-4">
-    <style>
-        footer {
-            display: none !important;
-        }
-    </style>
-
     <button
         onclick="document.getElementById('search_dialog').showModal()"
         title="Search"

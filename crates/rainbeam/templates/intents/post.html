@@ -77,7 +77,6 @@ endblock %} {% block nav_left %}
                     e.target.warning.value,
                     e.target.reply.value,
                     e.target.unlisted.checked,
-                    e.target.circle.value,
                 ]).then((res) => {
                     // reset if successful
                     e.target.reset();
@@ -118,8 +117,9 @@ endblock %} {% block nav_left %}
         </script>
     </main>
 </article>
-{% if let Some(profile) = profile %} {% let other = profile.clone() %} {% if
-profile.username == other.username %}
+
+{% include "components/footer.html" %} {% if let Some(profile) = profile %} {%
+let other = profile.clone() %} {% if profile.username == other.username %}
 <div id="is_self"></div>
 {% endif %} {% let raw_metadata =
 crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include

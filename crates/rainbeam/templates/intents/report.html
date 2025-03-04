@@ -8,16 +8,6 @@ block head %}
 {% endblock %} {% block content %}
 <article>
     <main class="flex flex-col gap-2">
-        {% if profile.is_some() %}
-        <div class="markdown-alert-tip">
-            <span>
-                Since you have an account, please directly mail
-                <a href="/+u/0">@system</a> instead if you expect a reply to
-                your report.
-            </span>
-        </div>
-        {% endif %}
-
         <form class="card" onsubmit="trigger('reports::file', [event])">
             <div class="flex flex-col gap-1">
                 <label for="content"
@@ -65,4 +55,5 @@ block head %}
         trigger("reports::fill", [search.get("type"), search.get("target")]);
     }, 100);
 </script>
-{% call super() %} {% endblock %}
+
+{% include "components/footer.html" %} {% call super() %} {% endblock %}

@@ -88,6 +88,9 @@ pub enum ComponentName {
     /// A `<style>` element.
     #[serde(alias = "style")]
     Style,
+    /// The site footer.
+    #[serde(alias = "footer")]
+    Footer,
 }
 
 impl Default for ComponentName {

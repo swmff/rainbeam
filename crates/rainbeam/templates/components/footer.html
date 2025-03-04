@@ -1,0 +1,15 @@
+<footer class="fade">
+    <span class="item">{{ config.name }}</span>
+
+    <span class="item"
+        ><a href="/about">{{ text "base.html:link.about" }}</a></span
+    >
+
+    <span class="item">
+        <a href='https://github.com/swmff/rainbeam/commit/{{ var "commit" }}'
+            >{{ var "commit_short" }}</a
+        >
+
+        (built <span class="date">{{ var "time_unix" }}</span>)
+    </span>
+</footer>

@@ -60,6 +60,10 @@
     gap: 1rem;
 }
 
+.gap-8 {
+    gap: 1.25rem;
+}
+
 .mobile {
     display: none !important;
 }

@@ -44,6 +44,8 @@ struct ProfileTemplate {
     disallow_anonymous: bool,
     require_account: bool,
     hide_social: bool,
+    view_password: String,
+    unlocked: bool,
     is_powerful: bool, // at least "manager"
     is_helper: bool,   // at least "helper"
     is_self: bool,
@@ -293,6 +295,14 @@ All mail sent to this account can be viewed by any staff member with access.
                 .unwrap_or(&"false".to_string())
                 == "true")
                 && !is_self,
+            view_password: query.password.clone(),
+            unlocked: if other.metadata.exists("rainbeam:view_password") {
+                (other.metadata.soft_get("rainbeam:view_password") == query.password)
+                    | is_self
+                    | is_helper
+            } else {
+                true
+            },
             is_powerful,
             is_helper,
             is_self,
@@ -314,6 +324,7 @@ struct PartialProfileTemplate {
     // ...
     is_powerful: bool, // at least "manager"
     is_helper: bool,   // at least "helper"
+    unlocked: bool,
 }
 
 /// GET /@{username}/_app/feed.html
@@ -481,6 +492,13 @@ pub async fn partial_profile_request(
             // ...
             is_powerful,
             is_helper,
+            unlocked: if other.metadata.exists("rainbeam:view_password") {
+                (other.metadata.soft_get("rainbeam:view_password") == query.password)
+                    | is_self
+                    | is_helper
+            } else {
+                true
+            },
         }
         .render()
         .unwrap(),
@@ -614,8 +632,6 @@ struct ProfileEmbedTemplate {
     lang: langbeam::LangFile,
     profile: Option<Box<Profile>>,
     other: Box<Profile>,
-    responses: Vec<FullResponse>,
-    relationships: HashMap<String, RelationshipStatus>,
     pinned: Option<Vec<FullResponse>>,
     is_powerful: bool,
     is_helper: bool,
@@ -656,14 +672,6 @@ pub async fn profile_embed_request(
         return Html(DatabaseError::NotAllowed.to_html(database));
     }
 
-    let mut responses = match database
-        .get_responses_by_author_paginated(other.id.to_owned(), 0)
-        .await
-    {
-        Ok(responses) => responses,
-        Err(e) => return Html(e.to_html(database)),
-    };
-
     let pinned = if let Some(pinned) = other.metadata.kv.get("sparkler:pinned") {
         if pinned.is_empty() {
             None
@@ -677,13 +685,6 @@ pub async fn profile_embed_request(
                             // don't allow us to pin responses from other users
                             continue;
                         }
-
-                        // remove from responses
-                        let in_responses = responses.iter().position(|r| r.1.id == response.1.id);
-
-                        if let Some(index) = in_responses {
-                            responses.remove(index);
-                        };
 
                         // push
                         out.push(response)
@@ -749,47 +750,6 @@ pub async fn profile_embed_request(
         return Html(DatabaseError::NotFound.to_html(database));
     }
 
-    // build relationships list
-    let mut relationships: HashMap<String, RelationshipStatus> = HashMap::new();
-
-    if let Some(ref ua) = auth_user {
-        for response in &responses {
-            if relationships.contains_key(&response.1.author.id) {
-                continue;
-            }
-
-            if is_helper {
-                // make sure staff can view your responses
-                relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
-                continue;
-            }
-
-            if response.1.author.id == ua.id {
-                // make sure we can view our own responses
-                relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
-                continue;
-            };
-
-            relationships.insert(
-                response.1.author.id.clone(),
-                database
-                    .auth
-                    .get_user_relationship(response.1.author.id.clone(), ua.id.clone())
-                    .await
-                    .0,
-            );
-        }
-    } else {
-        for response in &responses {
-            // no user, no relationships
-            if relationships.contains_key(&response.1.author.id) {
-                continue;
-            }
-
-            relationships.insert(response.1.author.id.clone(), RelationshipStatus::Unknown);
-        }
-    }
-
     // ...
     Html(
         ProfileEmbedTemplate {
@@ -801,8 +761,6 @@ pub async fn profile_embed_request(
             }),
             profile: auth_user.clone(),
             other: other.clone(),
-            responses,
-            relationships,
             pinned,
             is_powerful,
             is_helper,

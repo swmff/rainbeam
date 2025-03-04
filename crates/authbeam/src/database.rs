@@ -77,6 +77,7 @@ pub static ALLOWED_CUSTOM_KEYS: LazyLock<Vec<&'static str>> = LazyLock::new(|| {
         "rainbeam:authenticated_only",
         "rainbeam:force_default_layout",
         "rainbeam:disallow_response_comments",
+        "rainbeam:view_password",
     ]
 });
 

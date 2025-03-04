@@ -462,7 +462,7 @@
         function ({ $ }, partial, full, attach, wrapper, page, run_on_load) {
             return new Promise((resolve, reject) => {
                 async function load_partial() {
-                    const url = `${partial}?page=${page}`;
+                    const url = `${partial}${partial.includes("?") ? "&" : "?"}page=${page}`;
                     history.replaceState(
                         history.state,
                         "",

@@ -32,7 +32,6 @@
 
         "general:service.chats": "채팅",
         "general:service.mail": "메일",
-        "general:service.circles": "서클",
         "general:service.market": "Market",
 
         "general:title.services": "서비스",
@@ -237,6 +236,7 @@
         "settings:privacy_options.html:label.require_account": "가입된 사용자만 질문 허용",
         "settings:privacy_options.html:label.require_account_to_view": "Require an account to view your profile",
         "settings:privacy_options.html:label.keep_socials_private": "비공개 계정 유지 (팔로워/팔로잉)",
+        "settings:privacy_options.html:label.view_password": "Profile view password",
 
         "settings:privacy_options.html:title.moderation": "모더레이션",
         "settings:privacy_options.html:label.filter": "필터",

@@ -50,4 +50,5 @@ block head %}
     // logout of account (if it exists), we can only possibly see this page with an account if it was deleted
     fetch("/api/v0/auth/logout", { method: "POST" });
 </script>
-{% call super() %} {% endblock %}
+
+{% include "components/footer.html" %} {% call super() %} {% endblock %}

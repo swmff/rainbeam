@@ -77,7 +77,8 @@ config.name }}{% endblock %} {% block head %}
     .layout_editor_stats .layout_editor_stat {
         background: var(--color-lowered);
         border: solid 1px var(--color-super-lowered);
-        box-shadow: 0 0 2px var(--color-shadow);
+        box-shadow: var(--shadow-x-offset) var(--shadow-y-offset)
+            var(--shadow-size) var(--color-shadow);
         display: flex;
         justify-content: center;
         align-items: center;
@@ -200,7 +201,8 @@ config.name }}{% endblock %} {% block head %}
         left: 0;
         flex-direction: column;
         border-right: solid 1px var(--color-super-lowered);
-        box-shadow: 0 0 2px var(--color-shadow);
+        box-shadow: var(--shadow-x-offset) var(--shadow-y-offset)
+            var(--shadow-size) var(--color-shadow);
         background: var(--color-lowered);
         overflow: auto;
         display: none;

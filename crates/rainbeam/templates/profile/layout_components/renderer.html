@@ -35,6 +35,8 @@
     {% include "profile/layout_components/ComponentName::About.html" %}
 {% else if rendered == "ComponentName::Actions" %}
     {% include "profile/layout_components/ComponentName::Actions.html" %}
+{% else if rendered == "ComponentName::Footer" %}
+    {% include "profile/layout_components/ComponentName::Footer.html" %}
 {% else %}
     {{ rendered|safe }}
 {% endif %}

@@ -58,7 +58,7 @@ crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
     }
 </style>
 
-<article class="flex flex-collapse gap-2">
+<article class="flex flex-collapse gap-4">
     <div
         id="settings_nav"
         class="flex flex-col gap-4 sm:static sm:w-full"
@@ -77,6 +77,8 @@ crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
                 "profile:base.html:link.layout" }}
             </a>
         </div>
+
+        <div class="desktop">{% include "components/footer.html" %}</div>
     </div>
 
     <section id="settings_content" class="card flex flex-col gap-2 w-full">
@@ -96,6 +98,10 @@ crate::routing::pages::clean_metadata_raw(other.metadata) %} {% include
         {% block panel %}{% endblock %}
     </section>
 </article>
+
+<div class="mobile" style="display: contents">
+    {% include "components/footer.html" %}
+</div>
 
 <!-- prettier-ignore -->
 <script type="application/json" id="my_metadata">{{ metadata|safe }}</script>

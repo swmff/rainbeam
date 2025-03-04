@@ -232,9 +232,6 @@ pub struct ResponseContext {
     /// Empty means no warning.
     #[serde(default)]
     pub warning: String,
-    /// The ID of the circle this response belongs to
-    #[serde(default)]
-    pub circle: String,
 }
 
 impl Context for ResponseContext {}
@@ -245,7 +242,6 @@ impl Default for ResponseContext {
             is_post: false,
             unlisted: false,
             warning: String::new(),
-            circle: String::new(),
         }
     }
 }

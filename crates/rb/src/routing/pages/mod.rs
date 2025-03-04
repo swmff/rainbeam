@@ -24,7 +24,6 @@ use crate::ToHtml;
 use super::api;
 
 pub mod chats;
-pub mod circles;
 pub mod mail;
 pub mod market;
 pub mod profile;
@@ -919,6 +918,8 @@ pub struct ProfileQuery {
     pub page: i32,
     pub tag: Option<String>,
     pub q: Option<String>,
+    #[serde(default)]
+    pub password: String,
 }
 
 /// Escape profile colors
@@ -2683,31 +2684,6 @@ pub async fn routes(database: Database) -> Router {
         )
         .route("/@{username}", get(profile::profile_request))
         .route("/{id}", get(api::profiles::expand_request))
-        // circles
-        .route("/circles", get(circles::circles_request))
-        .route("/circles/new", get(circles::new_circle_request))
-        .route(
-            "/circles/@{name}/settings/privacy",
-            get(circles::privacy_settings_request),
-        )
-        .route(
-            "/circles/@{name}/settings",
-            get(circles::general_settings_request),
-        )
-        .route(
-            "/circles/@{name}/memberlist/accept",
-            get(circles::accept_invite_request),
-        )
-        .route(
-            "/circles/@{name}/memberlist",
-            get(circles::memberlist_request),
-        )
-        .route("/circles/@{name}", get(circles::profile_redirect_request))
-        .route(
-            "/+{name}/_app/feed.html",
-            get(circles::partial_profile_request),
-        )
-        .route("/+{name}", get(circles::profile_request))
         // settings
         .route("/settings", get(settings::account_settings))
         .route("/settings/sessions", get(settings::sessions_settings))
@@ -2758,7 +2734,6 @@ pub async fn routes(database: Database) -> Router {
         .route("/comment/{id}", get(api::comments::expand_request))
         .route("/+u/{id}", get(api::profiles::expand_request))
         .route("/+i/{ip}", get(api::profiles::expand_ip_request))
-        .route("/+g/{id}", get(api::circles::expand_request))
         // partials
         .route(
             "/_app/components/comments.html",

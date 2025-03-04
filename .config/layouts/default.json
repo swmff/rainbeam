@@ -2,7 +2,7 @@
     "component": "flex",
     "options": {
         "direction": "col",
-        "gap": "4",
+        "gap": "8",
         "class": "w-full"
     },
     "children": [
@@ -13,40 +13,49 @@
             "component": "flex",
             "options": {
                 "collapse": "yes",
-                "gap": "4"
+                "gap": "8"
             },
             "children": [
                 {
                     "component": "flex",
                     "options": {
-                        "gap": "2",
+                        "gap": "4",
                         "direction": "col",
-                        "class": "card sm:w-full",
-                        "style": "width: 25rem; height: max-content"
+                        "class": "sm:w-full",
+                        "style": "width: 25rem; height: max-content",
+                        "id": "profile_box_inner"
                     },
                     "children": [
                         {
-                            "component": "name"
+                            "component": "flex",
+                            "options": {
+                                "gap": "2",
+                                "direction": "col",
+                                "width": "full",
+                                "class": "card"
+                            },
+                            "children": [
+                                {
+                                    "component": "name"
+                                },
+                                {
+                                    "component": "about"
+                                },
+                                {
+                                    "component": "actions"
+                                }
+                            ]
                         },
                         {
-                            "component": "about"
-                        },
-                        {
-                            "component": "actions"
+                            "component": "footer"
                         }
                     ]
-                },
-                {
-                    "component": "divider",
-                    "options": {
-                        "class": "mobile small"
-                    }
                 },
                 {
                     "component": "flex",
                     "options": {
                         "direction": "col",
-                        "gap": "4",
+                        "gap": "8",
                         "width": "full"
                     },
                     "children": [
