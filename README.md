@@ -66,6 +66,8 @@ All commits which do this will have an associated `.sql` file in `sql/` which wi
 
 You can configure Rainbeam in the configuration file located at `./.config/config.toml`. This file will be created for you when the server is first run.
 
+**IMPORTANT**: You can change the maximum body size from the default of 8 MB using the `MAX_BODY_LIMIT` environment variable. `.env` files are not read, so this should be passed as program argument when running.
+
 #### Tier features
 
 You can lock a given set of features behind the `tier` column of profiles using the `tiers` configuration key.

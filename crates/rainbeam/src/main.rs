@@ -18,6 +18,8 @@ pub use rb::config;
 pub use rb::model;
 pub use rb::routing;
 
+use std::env::var;
+
 // mimalloc
 #[cfg(feature = "mimalloc")]
 use mimalloc::MiMalloc;
@@ -108,6 +110,12 @@ pub async fn main() {
             ))),
         )
         .fallback_service(get(routing::pages::not_found).with_state(database.clone()))
+        .layer(axum::extract::DefaultBodyLimit::max(
+            var("MAX_BODY_LIMIT")
+                .unwrap_or("8388608".to_string())
+                .parse::<usize>()
+                .unwrap(),
+        ))
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(trace::DefaultMakeSpan::new().level(Level::INFO))

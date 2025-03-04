@@ -14,18 +14,10 @@ use serde::{Deserialize, Serialize};
 
 /// [`Database::create_profile`]
 pub async fn create_request(
-    jar: CookieJar,
     headers: HeaderMap,
     State(database): State<Database>,
     Json(props): Json<ProfileCreate>,
 ) -> impl IntoResponse {
-    if let Some(_) = jar.get("__Secure-Token") {
-        return (
-            HeaderMap::new(),
-            serde_json::to_string(&DatabaseError::NotAllowed.to_json::<()>()).unwrap(),
-        );
-    }
-
     if !props.policy_consent {
         return (
             HeaderMap::new(),
