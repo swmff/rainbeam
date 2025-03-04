@@ -6,6 +6,7 @@
 {% endif %}
 
 <!-- prettier-ignore -->
+{% let user = profile.as_ref().unwrap() %}
 {% for response in responses %}
     {% let relationship = relationships.get(response.1.author.id).unwrap().to_owned() %}
     {% if (relationship != crate::model::RelationshipStatus::Friends
@@ -17,8 +18,8 @@
         {% let is_pinned = false %}
         {% let show_pin_button = false %}
         {% let do_not_render_question = false %}
-        {% let anonymous_username = Some("anonymous") %}
-        {% let anonymous_avatar = Some("") %}
+        {% let anonymous_username = user.metadata.kv.get("sparkler:anonymous_username") %}
+        {% let anonymous_avatar = user.metadata.kv.get("sparkler:anonymous_avatar") %}
         {% let show_comments = true %}
         {% let do_render_nested = true %}
         {% include "components/response.html" %}

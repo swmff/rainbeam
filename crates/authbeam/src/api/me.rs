@@ -42,13 +42,15 @@ pub async fn get_request(jar: CookieJar, State(database): State<Database>) -> im
 #[derive(Serialize, Deserialize)]
 pub struct DeleteProfile {
     password: String,
+    #[serde(default)]
+    totp: String,
 }
 
 /// Delete the current user's profile
 pub async fn delete_request(
     jar: CookieJar,
     State(database): State<Database>,
-    Json(req): Json<DeleteProfile>,
+    Json(props): Json<DeleteProfile>,
 ) -> impl IntoResponse {
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
@@ -69,7 +71,7 @@ pub async fn delete_request(
     };
 
     // get profile
-    let hashed = rainbeam_shared::hash::hash_salted(req.password, auth_user.salt);
+    let hashed = rainbeam_shared::hash::hash_salted(props.password, auth_user.salt.clone());
 
     if hashed != auth_user.password {
         return Json(DefaultReturn {
@@ -77,6 +79,11 @@ pub async fn delete_request(
             message: DatabaseError::NotAllowed.to_string(),
             payload: (),
         });
+    }
+
+    // check totp
+    if !database.check_totp(&auth_user, &props.totp) {
+        return Json(DatabaseError::NotAllowed.to_json());
     }
 
     // return
