@@ -31,7 +31,7 @@
     --color-text-primary: hsl(0, 0%, 100%);
     --color-shadow: rgba(0, 0, 0, 0.08);
     --color-red: hsl(0, 84%, 40%);
-    --color-green: hsl(100, 84%, 40%);
+    --color-green: hsl(100, 84%, 20%);
     --radius: 8px;
     --circle: 360px;
     --shadow-x-offset: 0;

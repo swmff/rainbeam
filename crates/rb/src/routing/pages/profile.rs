@@ -109,16 +109,7 @@ pub async fn profile_request(
                 }),
                 profile: auth_user,
                 title: "System".to_string(),
-                text: "Reserved system profile.
-
-***
-You can use the button below to send mail to the **system** account.
-
-All mail sent to this account can be viewed by any staff member with access.
-<br />
-<br />
-<a href='/inbox/mail/compose?to=0' class='button primary' data-turbo='false'>Send mail</a>"
-                    .to_string(),
+                text: "Reserved system profile.".to_string(),
             }
             .render()
             .unwrap(),

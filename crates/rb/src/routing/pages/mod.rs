@@ -1,31 +1,33 @@
-use std::collections::HashMap;
-
-use reva_axum::Template;
-use axum::extract::{Path, Query};
-use axum::http::status::StatusCode;
-use axum::response::IntoResponse;
-use axum::routing::{get, post};
-use axum::{extract::State, response::Html, Router};
-use axum_extra::extract::CookieJar;
-
-use ammonia::Builder;
-use langbeam::LangFile;
-use serde::{Deserialize, Serialize};
-use authbeam::model::{
-    FinePermission, IpBan, ItemStatus, ItemType, Notification, Profile, ProfileMetadata,
-    RelationshipStatus,
+use rainbeam::{
+    database::Database,
+    model::{RelationshipStatus, Question, Reaction, FullResponse, DatabaseError},
 };
+use rainbeam_shared::config::Config;
+use authbeam::model::{
+    Profile, ProfileMetadata, Notification, FinePermission, IpBan, ItemType, ItemStatus,
+};
+use langbeam::LangFile;
 
-use crate::config::Config;
-use crate::database::Database;
-use crate::model::{DatabaseError, FullResponse, Question, QuestionResponse, Reaction, ResponseComment};
+use axum::{
+    extract::{Path, Query, State},
+    response::{Html, IntoResponse},
+    routing::{get, post, Router},
+};
+use axum_extra::extract::CookieJar;
+use ammonia::Builder;
+use reqwest::StatusCode;
+use reva_axum::Template;
+
 use crate::ToHtml;
+use serde::{Serialize, Deserialize};
+use std::collections::HashMap;
 
 use super::api;
 
 pub mod chats;
 pub mod mail;
 pub mod market;
+pub mod models;
 pub mod profile;
 pub mod search;
 pub mod settings;
@@ -1417,517 +1419,6 @@ pub async fn following_posts_timeline_request(
 }
 
 #[derive(Template)]
-#[template(path = "views/response.html")]
-struct ResponseTemplate {
-    config: Config,
-    lang: langbeam::LangFile,
-    profile: Option<Box<Profile>>,
-    unread: usize,
-    notifs: usize,
-    question: Question,
-    response: QuestionResponse,
-    relationship: RelationshipStatus,
-    comments: Vec<(ResponseComment, usize, usize)>,
-    reactions: Vec<Reaction>,
-    tags: String,
-    page: i32,
-    anonymous_username: Option<String>,
-    anonymous_avatar: Option<String>,
-    open_replies_in_tab: bool,
-    is_powerful: bool,
-    is_helper: bool,
-}
-
-/// GET /@{}/r/{id}
-pub async fn response_request(
-    jar: CookieJar,
-    Path((_, id)): Path<(String, String)>,
-    State(database): State<Database>,
-    Query(query): Query<PaginatedQuery>,
-) -> impl IntoResponse {
-    let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
-            Ok(ua) => Some(ua),
-            Err(_) => None,
-        },
-        None => None,
-    };
-
-    let unread = if let Some(ref ua) = auth_user {
-        match database.get_questions_by_recipient(ua.id.to_owned()).await {
-            Ok(unread) => unread.len(),
-            Err(_) => 0,
-        }
-    } else {
-        0
-    };
-
-    let notifs = if let Some(ref ua) = auth_user {
-        database
-            .auth
-            .get_notification_count_by_recipient(ua.id.to_owned())
-            .await
-    } else {
-        0
-    };
-
-    let response = match database.get_response(id.clone()).await {
-        Ok(r) => r,
-        Err(e) => return Html(e.to_html(database)),
-    };
-
-    let comments = match database
-        .get_comments_by_response_paginated(id.clone(), query.page)
-        .await
-    {
-        Ok(r) => r,
-        Err(e) => return Html(e.to_html(database)),
-    };
-
-    let reactions = match database.get_reactions_by_asset(id.clone()).await {
-        Ok(r) => r,
-        Err(e) => return Html(e.to_html(database)),
-    };
-
-    let mut is_helper: bool = false;
-    let is_powerful = if let Some(ref ua) = auth_user {
-        let group = match database.auth.get_group_by_id(ua.group).await {
-            Ok(g) => g,
-            Err(_) => return Html(DatabaseError::Other.to_html(database)),
-        };
-
-        is_helper = group.permissions.check_helper();
-        group.permissions.check_manager()
-    } else {
-        false
-    };
-
-    // get_relationship
-    let mut relationship = RelationshipStatus::Unknown;
-
-    if let Some(ref ua) = auth_user {
-        if (response.1.author.id == ua.id) | is_helper {
-            // make sure we can view our own responses
-            relationship = RelationshipStatus::Friends;
-        } else {
-            relationship = database
-                .auth
-                .get_user_relationship(response.1.author.id.clone(), ua.id.clone())
-                .await
-                .0;
-        }
-    }
-
-    // ...
-    Html(
-        ResponseTemplate {
-            config: database.config.clone(),
-            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
-                c.value_trimmed()
-            } else {
-                ""
-            }),
-            profile: auth_user.clone(),
-            unread,
-            notifs,
-            question: response.0,
-            tags: serde_json::to_string(&response.1.tags).unwrap(),
-            response: response.1.clone(),
-            relationship,
-            comments,
-            reactions,
-            page: query.page,
-            anonymous_username: Some("anonymous".to_string()), // TODO: fetch recipient setting
-            anonymous_avatar: None,
-            open_replies_in_tab: false,
-            is_powerful,
-            is_helper,
-        }
-        .render()
-        .unwrap(),
-    )
-}
-
-#[derive(Template)]
-#[template(path = "components/response.html")]
-struct PartialResponseTemplate {
-    config: Config,
-    lang: langbeam::LangFile,
-    profile: Option<Box<Profile>>,
-    response: FullResponse,
-    anonymous_username: Option<String>,
-    anonymous_avatar: Option<String>,
-    is_powerful: bool,
-    is_helper: bool,
-    do_not_render_question: bool,
-    is_pinned: bool,
-    show_comments: bool,
-    show_pin_button: bool,
-    do_render_nested: bool,
-}
-
-#[derive(Deserialize)]
-pub struct PartialResponseProps {
-    pub id: String,
-    pub do_render_nested: bool,
-}
-
-/// GET /_app/components/response.html
-pub async fn partial_response_request(
-    jar: CookieJar,
-    State(database): State<Database>,
-    Query(props): Query<PartialResponseProps>,
-) -> impl IntoResponse {
-    let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
-            Ok(ua) => Some(ua),
-            Err(_) => None,
-        },
-        None => None,
-    };
-
-    let response = match database.get_response(props.id.clone()).await {
-        Ok(r) => r,
-        Err(e) => return Html(e.to_html(database)),
-    };
-
-    let mut is_helper: bool = false;
-    let is_powerful = if let Some(ref ua) = auth_user {
-        let group = match database.auth.get_group_by_id(ua.group).await {
-            Ok(g) => g,
-            Err(_) => return Html(DatabaseError::Other.to_html(database)),
-        };
-
-        is_helper = group.permissions.check_helper();
-        group.permissions.check_manager()
-    } else {
-        false
-    };
-
-    // ...
-    Html(
-        PartialResponseTemplate {
-            config: database.config.clone(),
-            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
-                c.value_trimmed()
-            } else {
-                ""
-            }),
-            profile: auth_user,
-            do_not_render_question: response.1.context.is_post,
-            is_pinned: false,
-            show_comments: true,
-            show_pin_button: false,
-            do_render_nested: props.do_render_nested,
-            response,
-            anonymous_username: Some("anonymous".to_string()), // TODO: fetch recipient setting
-            anonymous_avatar: None,
-            is_powerful,
-            is_helper,
-        }
-        .render()
-        .unwrap(),
-    )
-}
-
-#[derive(Template)]
-#[template(path = "views/comment.html")]
-struct CommentTemplate {
-    config: Config,
-    lang: langbeam::LangFile,
-    profile: Option<Box<Profile>>,
-    unread: usize,
-    notifs: usize,
-    comment: (ResponseComment, usize, usize),
-    replies: Vec<(ResponseComment, usize, usize)>,
-    reactions: Vec<Reaction>,
-    page: i32,
-    question: Question,
-    response: QuestionResponse,
-    reaction_count: usize,
-    anonymous_username: Option<String>,
-    anonymous_avatar: Option<String>,
-    open_replies_in_tab: bool,
-    is_powerful: bool,
-    is_helper: bool,
-}
-
-/// GET /@{username}/c/{id}
-pub async fn comment_request(
-    jar: CookieJar,
-    Path((_, id)): Path<(String, String)>,
-    State(database): State<Database>,
-    Query(props): Query<PaginatedQuery>,
-) -> impl IntoResponse {
-    let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
-            Ok(ua) => Some(ua),
-            Err(_) => None,
-        },
-        None => None,
-    };
-
-    let unread = if let Some(ref ua) = auth_user {
-        match database.get_questions_by_recipient(ua.id.to_owned()).await {
-            Ok(unread) => unread.len(),
-            Err(_) => 0,
-        }
-    } else {
-        0
-    };
-
-    let notifs = if let Some(ref ua) = auth_user {
-        database
-            .auth
-            .get_notification_count_by_recipient(ua.id.to_owned())
-            .await
-    } else {
-        0
-    };
-
-    let comment = match database.get_comment(id.clone(), true).await {
-        Ok(r) => r,
-        Err(e) => return Html(e.to_html(database)),
-    };
-
-    let response = match database.get_response(comment.0.response.clone()).await {
-        Ok(r) => r,
-        Err(e) => return Html(e.to_html(database)),
-    };
-
-    let replies = match database
-        .get_replies_by_comment_paginated(comment.0.id.clone(), props.page.clone())
-        .await
-    {
-        Ok(r) => r,
-        Err(_) => Vec::new(),
-    };
-
-    let mut is_helper: bool = false;
-    let is_powerful = if let Some(ref ua) = auth_user {
-        let group = match database.auth.get_group_by_id(ua.group).await {
-            Ok(g) => g,
-            Err(_) => return Html(DatabaseError::Other.to_html(database)),
-        };
-
-        is_helper = group.permissions.check_helper();
-        group.permissions.check_manager()
-    } else {
-        false
-    };
-
-    let reactions = match database.get_reactions_by_asset(id.clone()).await {
-        Ok(r) => r,
-        Err(e) => return Html(e.to_html(database)),
-    };
-
-    Html(
-        CommentTemplate {
-            config: database.config.clone(),
-            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
-                c.value_trimmed()
-            } else {
-                ""
-            }),
-            profile: auth_user,
-            unread,
-            notifs,
-            comment,
-            replies,
-            reactions,
-            page: props.page,
-            question: response.0,
-            response: response.1,
-            reaction_count: response.3,
-            anonymous_username: Some("anonymous".to_string()), // TODO: fetch recipient setting
-            anonymous_avatar: None,
-            open_replies_in_tab: false,
-            is_powerful,
-            is_helper,
-        }
-        .render()
-        .unwrap(),
-    )
-}
-
-#[derive(Template)]
-#[template(path = "partials/views/comments.html")]
-struct CommentsPartialTemplate {
-    config: Config,
-    lang: langbeam::LangFile,
-    profile: Option<Box<Profile>>,
-    response: QuestionResponse,
-    comments: Vec<(ResponseComment, usize, usize)>,
-    open_replies_in_tab: bool,
-    is_powerful: bool,
-    is_helper: bool,
-}
-
-#[derive(Deserialize)]
-pub struct PartialCommentsProps {
-    pub id: String,
-    pub page: i32,
-}
-
-/// GET /_app/components/comments.html
-pub async fn partial_comments_request(
-    jar: CookieJar,
-    State(database): State<Database>,
-    Query(props): Query<PartialCommentsProps>,
-) -> impl IntoResponse {
-    let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
-            Ok(ua) => Some(ua),
-            Err(_) => None,
-        },
-        None => None,
-    };
-
-    let comment = match database.get_comment(props.id.clone(), true).await {
-        Ok(r) => r,
-        Err(e) => return Html(e.to_html(database)),
-    };
-
-    let comments = match database
-        .get_replies_by_comment_paginated(comment.0.id.clone(), props.page.clone())
-        .await
-    {
-        Ok(r) => r,
-        Err(_) => Vec::new(),
-    };
-
-    let response = match database.get_response(comment.0.response.clone()).await {
-        Ok(r) => r.1,
-        Err(e) => return Html(e.to_html(database)),
-    };
-
-    let mut is_helper: bool = false;
-    let is_powerful = if let Some(ref ua) = auth_user {
-        let group = match database.auth.get_group_by_id(ua.group).await {
-            Ok(g) => g,
-            Err(_) => return Html(DatabaseError::Other.to_html(database)),
-        };
-
-        is_helper = group.permissions.check_helper();
-        group.permissions.check_manager()
-    } else {
-        false
-    };
-
-    Html(
-        CommentsPartialTemplate {
-            config: database.config.clone(),
-            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
-                c.value_trimmed()
-            } else {
-                ""
-            }),
-            profile: auth_user,
-            response,
-            comments,
-            open_replies_in_tab: true,
-            is_powerful,
-            is_helper,
-        }
-        .render()
-        .unwrap(),
-    )
-}
-
-#[derive(Template)]
-#[template(path = "partials/views/comments.html")]
-struct ResponseCommentsPartialTemplate {
-    config: Config,
-    lang: langbeam::LangFile,
-    profile: Option<Box<Profile>>,
-    response: QuestionResponse,
-    comments: Vec<(ResponseComment, usize, usize)>,
-    open_replies_in_tab: bool,
-    is_powerful: bool,
-    is_helper: bool,
-}
-
-/// GET /_app/components/response_comments.html
-pub async fn partial_response_comments_request(
-    jar: CookieJar,
-    State(database): State<Database>,
-    Query(props): Query<PartialCommentsProps>,
-) -> impl IntoResponse {
-    let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
-            Ok(ua) => Some(ua),
-            Err(_) => None,
-        },
-        None => None,
-    };
-
-    let response = match database.get_response(props.id.clone()).await {
-        Ok(r) => r.1,
-        Err(e) => return Html(e.to_html(database)),
-    };
-
-    let comments = match database
-        .get_comments_by_response_paginated(response.id.clone(), props.page.clone())
-        .await
-    {
-        Ok(r) => r,
-        Err(_) => Vec::new(),
-    };
-
-    let mut is_helper: bool = false;
-    let is_powerful = if let Some(ref ua) = auth_user {
-        let group = match database.auth.get_group_by_id(ua.group).await {
-            Ok(g) => g,
-            Err(_) => return Html(DatabaseError::Other.to_html(database)),
-        };
-
-        is_helper = group.permissions.check_helper();
-        group.permissions.check_manager()
-    } else {
-        false
-    };
-
-    Html(
-        ResponseCommentsPartialTemplate {
-            config: database.config.clone(),
-            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
-                c.value_trimmed()
-            } else {
-                ""
-            }),
-            profile: auth_user,
-            response,
-            comments,
-            open_replies_in_tab: true,
-            is_powerful,
-            is_helper,
-        }
-        .render()
-        .unwrap(),
-    )
-}
-
-#[derive(Template)]
 #[template(path = "inbox.html")]
 struct InboxTemplate {
     config: Config,
@@ -1938,6 +1429,34 @@ struct InboxTemplate {
     anonymous_username: Option<String>,
     anonymous_avatar: Option<String>,
     is_helper: bool,
+}
+
+#[derive(Template)]
+#[template(path = "partials/views/reactions.html")]
+struct PartialReactionsTemplate {
+    reactions: Vec<Reaction>,
+}
+
+#[derive(Deserialize)]
+pub struct PartialReactionsProps {
+    pub id: String,
+}
+
+/// GET /_app/components/short_reactions.html
+pub async fn partial_reactions_request(
+    State(database): State<Database>,
+    Query(props): Query<PartialReactionsProps>,
+) -> impl IntoResponse {
+    Html(
+        PartialReactionsTemplate {
+            reactions: match database.get_reactions_by_asset(props.id).await {
+                Ok(r) => r,
+                Err(e) => return Html(e.to_string()),
+            },
+        }
+        .render()
+        .unwrap(),
+    )
 }
 
 /// GET /inbox
@@ -2646,8 +2165,11 @@ pub async fn routes(database: Database) -> Router {
         .route("/intents/post", get(compose_request))
         // assets
         .route("/@{username}/q/{id}", get(question_request))
-        .route("/@{username}/r/{id}", get(response_request))
-        .route("/@{username}/c/{id}", get(comment_request))
+        .route(
+            "/@{username}/r/{id}",
+            get(models::response::response_request),
+        )
+        .route("/@{username}/c/{id}", get(models::comment::comment_request))
         // profiles
         .route("/@{username}/_app/warning", get(profile::warning_request))
         .route("/@{username}/mod", get(profile::mod_request)) // staff
@@ -2737,15 +2259,19 @@ pub async fn routes(database: Database) -> Router {
         // partials
         .route(
             "/_app/components/comments.html",
-            get(partial_comments_request),
+            get(models::comment::partial_comments_request),
         )
         .route(
             "/_app/components/response_comments.html",
-            get(partial_response_comments_request),
+            get(models::comment::partial_response_comments_request),
         )
         .route(
             "/_app/components/response.html",
-            get(partial_response_request),
+            get(models::response::partial_response_request),
+        )
+        .route(
+            "/_app/components/short_reactions.html",
+            get(partial_reactions_request),
         )
         .route(
             "/_app/timelines/timeline.html",

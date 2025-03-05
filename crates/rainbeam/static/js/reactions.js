@@ -51,16 +51,36 @@
 
         if (remove) {
             if (target) {
-                const icon = target.querySelector(".icon");
-                icon.classList.remove("filled");
+                target.classList.remove("green");
+
+                const count = target.querySelector(".notification");
+
+                if (count) {
+                    count.innerText = Number.parseInt(count.innerText) - 1;
+                } else {
+                    const new_count = document.createElement("span");
+                    new_count.className = "notification camo";
+                    new_count.innerText = "1";
+                    target.appendChild(new_count);
+                }
             }
 
             return $.delete(id);
         }
 
         if (target) {
-            const icon = target.querySelector(".icon");
-            icon.classList.add("filled");
+            target.classList.add("green");
+
+            const count = target.querySelector(".notification");
+
+            if (count) {
+                count.innerText = Number.parseInt(count.innerText) + 1;
+            } else {
+                const new_count = document.createElement("span");
+                new_count.className = "notification camo";
+                new_count.innerText = "1";
+                target.appendChild(new_count);
+            }
         }
 
         return $.create(id, type);

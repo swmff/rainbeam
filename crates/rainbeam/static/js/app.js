@@ -588,7 +588,7 @@
                 ).json();
 
                 if (reaction.success) {
-                    element.children[0].classList.add("filled");
+                    element.classList.add("green");
                 }
             },
         );

@@ -215,6 +215,10 @@
             style="display: none"
         >
             <include-partial
+                src="/_app/components/short_reactions.html?id={{ response.id }}"
+            ></include-partial>
+
+            <include-partial
                 src="/_app/components/response_comments.html?id={{ response.id }}&page=0"
                 uses="app::clean_date_codes,app::link_filter,app::hooks::alt,app::hooks::partial_embeds"
             ></include-partial>
