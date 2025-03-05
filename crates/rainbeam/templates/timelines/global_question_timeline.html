@@ -60,16 +60,29 @@ block head %}
 
             <div class="card">
                 <form id="question_form" class="flex flex-col gap-2">
+                    {% if let Some(profile) = profile %}
                     <textarea
                         class="w-full"
                         placeholder="Type your question!"
                         minlength="1"
-                        maxlength="250"
+                        maxlength="{% if (profile.tier >= config.tiers.double_limits) %}4096{% else %}2048{% endif %}"
                         required
                         name="content"
                         id="content"
                         hook="counter"
                     ></textarea>
+                    {% else %}
+                    <textarea
+                        class="w-full"
+                        placeholder="Type your question!"
+                        minlength="1"
+                        maxlength="2048"
+                        required
+                        name="content"
+                        id="content"
+                        hook="counter"
+                    ></textarea>
+                    {% endif %}
 
                     <div class="flex justify-between w-full gap-1">
                         <span

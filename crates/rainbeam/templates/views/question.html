@@ -1,6 +1,39 @@
 {% extends "base.html" %} {% block title %}{{ config.name }}{% endblock %} {%
 block head %}
 <meta name="description" content="{{ config.description }}" />
+<meta name="og:url" content="{{ config.host }}/question/{{ question.id }}" />
+
+<meta property="og:type" content="website" />
+<meta property="profile:username" content="spark" />
+
+<meta
+    name="og:image"
+    content="{{ config.host }}/api/v0/auth/profile/{{ question.author.id }}/avatar"
+/>
+
+<meta
+    name="twitter:image"
+    content="https://neospring.org/api/v0/auth/profile/{{ question.author.id }}/avatar"
+/>
+
+<meta name="twitter:card" content="summary" />
+
+<!-- prettier-ignore -->
+<meta name="og:title" content="@{{ question.author.username }} asks: {{ question.content }}" />
+<meta
+    name="twitter:title"
+    content="@{{ question.author.username }} asks: {{ question.content }}"
+/>
+
+<meta
+    name="og:description"
+    content="Post your response on {{ config.name }}!"
+/>
+
+<meta
+    name="twitter:description"
+    content="Post your response on {{ config.name }}!"
+/>
 {% endblock %} {% block nav_left %} {% if profile.is_some() %}
 <a class="button" href="/" title="Timeline">
     {{ icon "house" }}
