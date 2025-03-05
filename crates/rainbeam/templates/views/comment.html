@@ -87,7 +87,7 @@ block head %}
             <a href="#/replies" class="active" data-tab-button="replies"><span>{{ text "views:text.replies" }}</span></a>
             <a href="#/reactions" data-tab-button="reactions"><span>{{ text "views:text.reactions" }}</span></a>
             {% if let Some(profile) = profile %}
-            {% if profile.id == response.author.id %}
+            {% if profile.id == comment.0.author.id %}
             <a href="#/edit" data-tab-button="edit"
                 ><span>{{ text "general:action.edit" }}</span></a
             >
@@ -206,7 +206,7 @@ block head %}
         </div>
 
         {% if let Some(profile) = profile %}
-        {% if profile.id == response.author.id %}
+        {% if profile.id == comment.0.author.id %}
         <script src="https://unpkg.com/codemirror@5.39.2/lib/codemirror.js"></script>
         <script src="https://unpkg.com/codemirror@5.39.2/addon/display/placeholder.js"></script>
         <script src="https://unpkg.com/codemirror@5.39.2/mode/markdown/markdown.js"></script>
