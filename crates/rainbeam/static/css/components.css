@@ -479,7 +479,6 @@ dialog::backdrop {
     justify-content: center;
     gap: 0.5rem;
     flex-wrap: wrap;
-    transition: background 0.15s;
     position: relative;
 }
 

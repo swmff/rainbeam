@@ -21,6 +21,8 @@
         "general:link.tree": "Tree",
         "general:link.switch_account": "Switch account",
         "general:link.add_account": "Add account",
+        "general:link.terms_of_service": "Terms of Service",
+        "general:link.privacy_policy": "Privacy Policy",
 
         "general:link.login": "Login",
         "general:link.sign_up": "Sign up",

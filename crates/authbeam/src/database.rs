@@ -2100,16 +2100,13 @@ impl Database {
         }
 
         // make sure both users exist
-        let user_1 = match self.get_profile_by_username(props.user.to_owned()).await {
+        let user_1 = match self.get_profile(props.user.to_owned()).await {
             Ok(ua) => ua,
             Err(e) => return Err(e),
         };
 
         // make sure both users exist
-        if let Err(e) = self
-            .get_profile_by_username(props.following.to_owned())
-            .await
-        {
+        if let Err(e) = self.get_profile(props.following.to_owned()).await {
             return Err(e);
         };
 
