@@ -52,6 +52,7 @@
         if (remove) {
             if (target) {
                 target.classList.remove("green");
+                target.querySelector("svg").classList.remove("filled");
 
                 const count = target.querySelector(".notification");
 
@@ -70,6 +71,7 @@
 
         if (target) {
             target.classList.add("green");
+            target.querySelector("svg").classList.add("filled");
 
             const count = target.querySelector(".notification");
 

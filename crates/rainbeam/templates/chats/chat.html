@@ -70,44 +70,55 @@ endblock %} {% block nav_left %}
 
                 <b>{{ chat.name }}</b>
             </div>
-            <div class="dropdown">
+
+            <div class="flex gap-2">
                 <button
                     class="camo icon-only"
-                    onclick="trigger('app::hooks::dropdown', [event])"
-                    exclude="dropdown"
+                    onclick="document.getElementById('add_friends_dialog').showModal()"
                 >
-                    {{ icon "ellipsis" }}
+                    {{ icon "user-plus" }}
                 </button>
 
-                <div class="inner" exclude="dropdown">
-                    <b class="title">{{ text "general:link.actions" }}</b>
+                <div class="dropdown">
                     <button
-                        onclick="document.getElementById('name_dialog').showModal()"
+                        class="camo icon-only"
+                        onclick="trigger('app::hooks::dropdown', [event])"
+                        exclude="dropdown"
                     >
-                        {{ icon "pen" }} {{ text
-                        "chats:chat.html:action.change_name" }}
+                        {{ icon "ellipsis" }}
                     </button>
 
-                    <button
-                        onclick="document.getElementById('add_friends_dialog').showModal()"
-                    >
-                        {{ icon "user-plus" }} {{ text
-                        "chats:chat.html:action.add_friend" }}
-                    </button>
+                    <div class="inner" exclude="dropdown">
+                        <b class="title">{{ text "general:link.actions" }}</b>
+                        <button
+                            onclick="document.getElementById('name_dialog').showModal()"
+                        >
+                            {{ icon "pen" }} {{ text
+                            "chats:chat.html:action.change_name" }}
+                        </button>
 
-                    <button
-                        class="red"
-                        onclick="trigger('chats::leave', ['{{ chat.id }}'])"
-                    >
-                        {{ icon "x" }} {{ text "chats:chat.html:action.leave" }}
-                    </button>
+                        <button
+                            onclick="document.getElementById('add_friends_dialog').showModal()"
+                        >
+                            {{ icon "user-plus" }} {{ text
+                            "chats:chat.html:action.add_friend" }}
+                        </button>
 
-                    <b class="title">Tools</b>
-                    <a
-                        href="javascript:trigger('reports::bootstrap', ['chats', '{{ chat.id }}'])"
-                    >
-                        {{ icon "flag" }} {{ text "general:action.report" }}
-                    </a>
+                        <button
+                            class="red"
+                            onclick="trigger('chats::leave', ['{{ chat.id }}'])"
+                        >
+                            {{ icon "x" }} {{ text
+                            "chats:chat.html:action.leave" }}
+                        </button>
+
+                        <b class="title">Tools</b>
+                        <a
+                            href="javascript:trigger('reports::bootstrap', ['chats', '{{ chat.id }}'])"
+                        >
+                            {{ icon "flag" }} {{ text "general:action.report" }}
+                        </a>
+                    </div>
                 </div>
             </div>
         </header>
@@ -278,7 +289,7 @@ endblock %} {% block nav_left %}
                 ]).then((_) => {
                     event.target.reset();
                     globalThis.message_editor_.clearHistory();
-                    trigger("chats:ui::views.writer"); // hide editor
+                    trigger("chats::ui::views.writer"); // hide editor
                 });
             };
 

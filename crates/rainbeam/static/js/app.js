@@ -589,6 +589,7 @@
 
                 if (reaction.success) {
                     element.classList.add("green");
+                    element.querySelector("svg").classList.add("filled");
                 }
             },
         );

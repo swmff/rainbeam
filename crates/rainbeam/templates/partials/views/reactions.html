@@ -1,6 +1,6 @@
 {% if reactions.len() > 0 %}
 <div class="flex w-full items-center flex-wrap gap-2">
-    <div class="flex" style="margin-top: 4px">{{ icon "smile" }}</div>
+    <div class="flex" style="margin-top: 4px">{{ icon "heart" }}</div>
 
     {% for reaction in reactions %}
     <a href="/@{{ reaction.user.username }}">
