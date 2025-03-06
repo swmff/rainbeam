@@ -15,6 +15,7 @@ use axum::{
 };
 
 use axum_extra::extract::cookie::CookieJar;
+use serde::Deserialize;
 
 pub fn routes(database: Database) -> Router {
     Router::new()
@@ -26,6 +27,7 @@ pub fn routes(database: Database) -> Router {
         .route("/{id}/add", post(add_friend_request))
         .route("/{id}", delete(delete_request))
         .route("/{id}/report", post(report_request))
+        .route("/_app/render", post(render_request))
         // ...
         .with_state(database)
 }
@@ -331,4 +333,13 @@ pub async fn report_request(
             payload: (),
         }),
     }
+}
+
+#[derive(Deserialize)]
+pub struct RenderProps {
+    pub content: String,
+}
+
+pub async fn render_request(Json(req): Json<RenderProps>) -> impl IntoResponse {
+    rainbeam_shared::ui::render_markdown(&req.content)
 }

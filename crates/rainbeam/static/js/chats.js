@@ -203,7 +203,7 @@
                     );
 
                     // update message on page
-                    fetch("/api/v1/pages/_app/render", {
+                    fetch("/api/v1/chats/_app/render", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
