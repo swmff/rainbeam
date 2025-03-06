@@ -12,6 +12,7 @@ use serde::{Deserialize, Serialize};
 use authbeam::model::{IpBlock, Profile, UserFollow};
 use databeam::prelude::*;
 pub use authbeam::model::RelationshipStatus;
+use crate::carp::CarpGraph;
 
 /// Trait for simple asset contexts
 pub trait Context {}
@@ -130,6 +131,16 @@ impl Default for QuestionContext {
             ref_id: String::new(),
             source_id: String::new(),
         }
+    }
+}
+
+impl QuestionContext {
+    pub fn render_media(&self) -> String {
+        if let Ok(g) = CarpGraph::from_str(self.media.replace("--CARP", "").as_str()) {
+            return g.to_svg();
+        }
+
+        String::new()
     }
 }
 

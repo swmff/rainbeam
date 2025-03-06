@@ -185,7 +185,7 @@
                     <!-- prettier-ignore -->
                     <span class="question_content" hook="long" hook-arg="lowered">
                         {% if !question.context.media.is_empty() %}
-                            {{ crate::routing::pages::models::carp::CarpGraph::from_str(question.context.media.replace("--CARP", "").as_str()).unwrap().to_svg()|safe }}
+                            {{ question.context.render_media()|safe }}
                         {% endif %}
 
                         {{ rainbeam_shared::ui::render_markdown(question.content)|safe }}

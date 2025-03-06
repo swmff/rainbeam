@@ -1,5 +1,5 @@
 use serde::{Serialize, Deserialize};
-use rainbeam::{database::Result, model::DatabaseError};
+use crate::{database::Result, model::DatabaseError};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Point(

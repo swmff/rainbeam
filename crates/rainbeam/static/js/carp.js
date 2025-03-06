@@ -179,7 +179,6 @@
                 // color picker
                 const color_picker = document.createElement("input");
                 color_picker.type = "color";
-                color_picker.style.display = "none";
                 control_container.appendChild(color_picker);
 
                 color_picker.addEventListener("change", (e) => {
@@ -188,19 +187,7 @@
                     color_button.style.color = this.COLOR;
                 });
 
-                const color_button = document.createElement("button");
-                color_button.classList.add("primary");
-                color_button.title = "Select color";
-                color_button.setAttribute("type", "button");
-                color_button.appendChild(
-                    await trigger("app::icon", ["paint-bucket", "icon"]),
-                );
-
-                color_button.addEventListener("click", () => {
-                    color_picker.click();
-                });
-
-                control_container.appendChild(color_button);
+                control_container.appendChild(color_picker);
 
                 // stroke size selector
                 const stroke_range = document.createElement("input");
