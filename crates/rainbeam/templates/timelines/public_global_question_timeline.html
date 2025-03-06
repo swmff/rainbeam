@@ -130,10 +130,6 @@ block head %}
 </article>
 
 <script>
-    setTimeout(() => {
-        trigger("questions::carp");
-    }, 100);
-
     document.getElementById("question_form").addEventListener("submit", (e) => {
         e.preventDefault();
         fetch("/api/v1/questions", {

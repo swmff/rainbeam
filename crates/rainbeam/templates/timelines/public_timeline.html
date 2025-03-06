@@ -83,10 +83,6 @@ block head %}
 </article>
 
 <script>
-    setTimeout(() => {
-        trigger("questions::carp");
-    }, 100);
-
     use("app", (app) => {
         app["hooks::attach_to_partial"](
             "/_app/timelines/public_timeline.html",

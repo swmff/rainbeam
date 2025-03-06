@@ -817,7 +817,8 @@ details[open] summary:before {
     position: absolute;
 }
 
-canvas {
+canvas,
+.carpgraph {
     background: white;
     border: solid 2px var(--color-primary);
     border-radius: var(--radius);

@@ -480,10 +480,6 @@
                                 // pretty much blank content, no more pages
                                 wrapper.removeEventListener("scroll", event);
 
-                                if (globalThis._app_base.ns_store.$questions) {
-                                    trigger("questions::carp");
-                                }
-
                                 return resolve();
                             }
 
@@ -492,18 +488,10 @@
                             $.clean_date_codes();
                             $.link_filter();
                             $["hooks::alt"]();
-
-                            if (globalThis._app_base.ns_store.$questions) {
-                                trigger("questions::carp");
-                            }
                         })
                         .catch(() => {
                             // done scrolling, no more pages (http error)
                             wrapper.removeEventListener("scroll", event);
-
-                            if (globalThis._app_base.ns_store.$questions) {
-                                trigger("questions::carp");
-                            }
 
                             resolve();
                         });
@@ -524,10 +512,6 @@
                                 page += 1;
                                 await load_partial();
                                 await $["hooks::partial_embeds"]();
-
-                                if (globalThis._app_base.ns_store.$questions) {
-                                    trigger("questions::carp");
-                                }
                             })
                             .catch(() => {
                                 console.log("partial stuck");
