@@ -231,7 +231,7 @@
             }
 
             const part_1 = (
-                target.querySelector(".question_content p:nth-child(2)") || {
+                target.querySelector(".question_content p:first-child") || {
                     innerText: "",
                 }
             ).innerText;

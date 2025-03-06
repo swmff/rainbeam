@@ -27,7 +27,7 @@ macro_rules! cache_sync {
                     )
                     .await;
             } else {
-                $self.$update($id, count).await.unwrap();
+                $self.$update($id.clone(), count).await.unwrap();
             };
 
             // ...
@@ -205,5 +205,13 @@ macro_rules! simplify {
         if let None = $e {
             return $v;
         }
+    };
+}
+
+/// Ignore (`let _ = ...`) something.
+#[macro_export]
+macro_rules! ignore {
+    ($e:expr) => {
+        let _ = $e;
     };
 }

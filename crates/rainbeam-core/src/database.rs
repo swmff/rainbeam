@@ -1,4 +1,5 @@
 use async_recursion::async_recursion;
+use authbeam::ignore;
 use rainbeam_shared::snow::AlmostSnowflake;
 use std::collections::{BTreeMap, HashMap};
 
@@ -1551,7 +1552,7 @@ impl Database {
                             continue;
                         }
 
-                        simplify!(
+                        ignore!(
                             self.create_question(
                                 QuestionCreate {
                                     recipient: friend.id,
@@ -1563,9 +1564,8 @@ impl Database {
                                 question.author.id.clone(),
                                 ip.clone(),
                             )
-                            .await;
-                            Err
-                        )
+                            .await
+                        );
                     }
                 }
 

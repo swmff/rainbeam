@@ -81,6 +81,7 @@ pub static ALLOWED_CUSTOM_KEYS: LazyLock<Vec<&'static str>> = LazyLock::new(|| {
         "rainbeam:disallow_response_comments",
         "rainbeam:view_password",
         "rainbeam:do_not_send_global_questions_to_inbox",
+        "rainbeam:do_not_clear_inbox_count_on_view",
     ]
 });
 
@@ -374,7 +375,12 @@ impl Database {
 
     /// Get profile given the `row` data.
     pub async fn gimme_profile(&self, row: BTreeMap<String, String>) -> Result<Box<Profile>> {
-        let id = row.get("id").unwrap().to_string();
+        let id = from_row!(row->id());
+
+        let metadata: ProfileMetadata = from_row!(row->metadata(json); DatabaseError::ValueError);
+        let do_not_clear_inbox_count_on_view =
+            metadata.is_true("rainbeam:do_not_clear_inbox_count_on_view");
+
         Ok(Box::new(Profile {
             id: id.clone(),
             username: from_row!(row->username()),
@@ -383,7 +389,7 @@ impl Database {
             tokens: from_row!(row->tokens(json); DatabaseError::ValueError),
             ips: from_row!(row->ips(json); DatabaseError::ValueError),
             token_context: from_row!(row->token_context(json); DatabaseError::ValueError),
-            metadata: from_row!(row->metadata(json); DatabaseError::ValueError),
+            metadata,
             badges: from_row!(row->badges(json); DatabaseError::ValueError),
             group: from_row!(row->gid(i32); 0),
             joined: from_row!(row->joined(u128); 0),
@@ -399,7 +405,12 @@ impl Database {
             totp: row.get("totp").unwrap().to_string(),
             recovery_codes: from_row!(row->recovery_codes(json); DatabaseError::ValueError),
             notification_count: from_row!(row->notification_count(usize); 0),
-            inbox_count: from_row!(row->inbox_count(usize); 0),
+            inbox_count: if do_not_clear_inbox_count_on_view {
+                // sync
+                cache_sync!(|row, id| inbox_count->(update_profile_inbox_count in self) {1})
+            } else {
+                from_row!(row->inbox_count(usize); 0)
+            },
         }))
     }
 

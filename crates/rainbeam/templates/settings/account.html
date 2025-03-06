@@ -256,6 +256,26 @@
     </div>
 
     <div class="flex flex-col gap-1">
+        <div class="checkbox_container">
+            <input
+                type="checkbox"
+                name="rainbeam:do_not_clear_inbox_count_on_view"
+                id="rainbeam:do_not_clear_inbox_count_on_view"
+                onchange="update_kv('rainbeam:do_not_clear_inbox_count_on_view', event.target.checked.toString())"
+            />
+
+            <label
+                for="rainbeam:do_not_clear_inbox_count_on_view"
+                class="normal"
+            >
+                {{ text
+                "settings:account.html:label.do_not_clear_inbox_count_on_view"
+                }}
+            </label>
+        </div>
+    </div>
+
+    <div class="flex flex-col gap-1">
         <label for="rainbeam:share_hashtag">
             {{ text "settings:account.html:label.share_hashtag" }}
         </label>

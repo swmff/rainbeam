@@ -1460,13 +1460,18 @@ pub async fn inbox_request(jar: CookieJar, State(database): State<Database>) -> 
     };
 
     // mark all as read
-    simplify!(
-        database
-            .auth
-            .update_profile_inbox_count(auth_user.id.clone(), 0)
-            .await;
-        Err; Html(DatabaseError::Other.to_html(database))
-    );
+    if !auth_user
+        .metadata
+        .is_true("rainbeam:do_not_clear_inbox_count_on_view")
+    {
+        simplify!(
+            database
+                .auth
+                .update_profile_inbox_count(auth_user.id.clone(), 0)
+                .await;
+            Err; Html(DatabaseError::Other.to_html(database))
+        );
+    }
 
     // ...
     let unread = match database
