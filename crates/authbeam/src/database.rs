@@ -22,6 +22,8 @@ pub use rainbeam_shared::config::HCaptchaConfig;
 pub type Result<T> = std::result::Result<T, DatabaseError>;
 use std::sync::LazyLock;
 
+use crate::{cache_sync, from_row, update_profile_count, simplify};
+
 /// Custom keys allowed to be used as metadata options.
 pub static ALLOWED_CUSTOM_KEYS: LazyLock<Vec<&'static str>> = LazyLock::new(|| {
     vec![
@@ -78,6 +80,7 @@ pub static ALLOWED_CUSTOM_KEYS: LazyLock<Vec<&'static str>> = LazyLock::new(|| {
         "rainbeam:force_default_layout",
         "rainbeam:disallow_response_comments",
         "rainbeam:view_password",
+        "rainbeam:do_not_send_global_questions_to_inbox",
     ]
 });
 
@@ -173,26 +176,28 @@ impl Database {
 
         let _ = sqlquery(
             "CREATE TABLE IF NOT EXISTS \"xprofiles\" (
-                id             TEXT,
-                username       TEXT,
-                password       TEXT,
-                tokens         TEXT,
-                metadata       TEXT,
-                joined         TEXT,
-                gid            TEXT,
-                salt           TEXT,
-                ips            TEXT,
-                badges         TEXT,
-                tier           TEXT,
-                token_context  TEXT,
-                labels         TEXT,
-                coins          TEXT DEFAULT '0',
-                links          TEXT DEFAULT '{}',
-                layout         TEXT DEFAULT '{\"json\":\"default.json\"}',
-                question_count TEXT DEFAULT '0',
-                response_count TEXT DEFAULT '0',
-                totp           TEXT DEFAULT '',
-                recovery_codes TEXT DEFAULT '[]'
+                id                 TEXT,
+                username           TEXT,
+                password           TEXT,
+                tokens             TEXT,
+                metadata           TEXT,
+                joined             TEXT,
+                gid                TEXT,
+                salt               TEXT,
+                ips                TEXT,
+                badges             TEXT,
+                tier               TEXT,
+                token_context      TEXT,
+                labels             TEXT,
+                coins              TEXT DEFAULT '0',
+                links              TEXT DEFAULT '{}',
+                layout             TEXT DEFAULT '{\"json\":\"default.json\"}',
+                question_count     TEXT DEFAULT '0',
+                response_count     TEXT DEFAULT '0',
+                totp               TEXT DEFAULT '',
+                recovery_codes     TEXT DEFAULT '[]'
+                notification_count TEXT DEFAULT '0',
+                inbox_count        TEXT DEFAULT '0'
             )",
         )
         .execute(c)
@@ -346,7 +351,7 @@ impl Database {
         out
     }
 
-    /// Create a moderator audit log entry
+    /// Create a moderator audit log entry.
     pub async fn audit(&self, actor_id: String, content: String) -> Result<()> {
         match self
             .create_notification(
@@ -367,93 +372,34 @@ impl Database {
 
     // profiles
 
-    /// Get profile given the `row` data
+    /// Get profile given the `row` data.
     pub async fn gimme_profile(&self, row: BTreeMap<String, String>) -> Result<Box<Profile>> {
         let id = row.get("id").unwrap().to_string();
         Ok(Box::new(Profile {
             id: id.clone(),
-            username: row.get("username").unwrap().to_string(),
-            password: row.get("password").unwrap().to_string(),
-            salt: row.get("salt").unwrap_or(&"".to_string()).to_string(),
-            tokens: match serde_json::from_str(row.get("tokens").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-            ips: match serde_json::from_str(row.get("ips").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-            token_context: match serde_json::from_str(row.get("token_context").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-            metadata: match serde_json::from_str(row.get("metadata").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-            badges: match serde_json::from_str(row.get("badges").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-            group: row.get("gid").unwrap().parse::<i32>().unwrap_or(0),
-            joined: row.get("joined").unwrap().parse::<u128>().unwrap(),
-            tier: row.get("tier").unwrap().parse::<i32>().unwrap_or(0),
+            username: from_row!(row->username()),
+            password: from_row!(row->password()),
+            salt: from_row!(row->salt(); &String::new()),
+            tokens: from_row!(row->tokens(json); DatabaseError::ValueError),
+            ips: from_row!(row->ips(json); DatabaseError::ValueError),
+            token_context: from_row!(row->token_context(json); DatabaseError::ValueError),
+            metadata: from_row!(row->metadata(json); DatabaseError::ValueError),
+            badges: from_row!(row->badges(json); DatabaseError::ValueError),
+            group: from_row!(row->gid(i32); 0),
+            joined: from_row!(row->joined(u128); 0),
+            tier: from_row!(row->tier(i32); 0),
             labels: Database::collect_split_owned(row.get("labels").unwrap().split(",")),
-            coins: row.get("coins").unwrap().parse::<i32>().unwrap_or(0),
-            links: match serde_json::from_str(row.get("links").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-            layout: match serde_json::from_str(row.get("layout").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
-            question_count: row
-                .get("question_count")
-                .unwrap()
-                .parse::<usize>()
-                .unwrap_or(0),
-            response_count: {
-                let response_count = row
-                    .get("response_count")
-                    .unwrap()
-                    .parse::<usize>()
-                    .unwrap_or(0);
-
-                let count = self
-                    .base
-                    .cachedb
-                    .get(format!("rbeam.app.response_count:{}", &id))
-                    .await
-                    .unwrap_or_default()
-                    .parse::<usize>()
-                    .unwrap_or(0);
-
-                if count == 0 {
-                    response_count
-                } else {
-                    // ensure values sync (update the lesser value)
-                    if response_count > count {
-                        self.base
-                            .cachedb
-                            .set(
-                                format!("rbeam.app.response_count:{}", &id),
-                                response_count.to_string(),
-                            )
-                            .await;
-                    } else {
-                        self.update_profile_response_count(id, count).await.unwrap();
-                    };
-
-                    // ...
-                    count
-                }
-            },
+            coins: from_row!(row->coins(i32); 0),
+            links: from_row!(row->links(json); DatabaseError::ValueError),
+            layout: from_row!(row->layout(json); DatabaseError::ValueError),
+            question_count: from_row!(row->question_count(usize); 0),
+            response_count: cache_sync!(
+                |row, id| response_count->(update_profile_response_count in self) {1}
+            ),
             totp: row.get("totp").unwrap().to_string(),
-            recovery_codes: match serde_json::from_str(row.get("recovery_codes").unwrap()) {
-                Ok(m) => m,
-                Err(_) => return Err(DatabaseError::ValueError),
-            },
+            recovery_codes: from_row!(row->recovery_codes(json); DatabaseError::ValueError),
+            notification_count: from_row!(row->notification_count(usize); 0),
+            inbox_count: from_row!(row->inbox_count(usize); 0),
         }))
     }
 
@@ -467,7 +413,7 @@ impl Database {
 
         true
     }
-    /// Fetch a profile correctly
+    /// Fetch a profile correctly.
     pub async fn get_profile(&self, mut id: String) -> Result<Box<Profile>> {
         if id.starts_with("ANSWERED:") {
             // we use the "ANSWERED" prefix whenever we answer a question so it doesn't show up in inboxes
@@ -507,7 +453,7 @@ impl Database {
         }
     }
 
-    /// Get a [`Profile`] by their hashed ID
+    /// Get a [`Profile`] by their hashed ID.
     ///
     /// # Arguments:
     /// * `hashed` - `String` of the profile's hashed ID
@@ -536,7 +482,7 @@ impl Database {
         })
     }
 
-    /// Get a user by their unhashed ID (hashes ID and then calls [`Database::get_profile_by_hashed()`])
+    /// Get a user by their unhashed ID (hashes ID and then calls [`Database::get_profile_by_hashed()`]).
     ///
     /// # Arguments:
     /// * `unhashed` - `String` of the user's unhashed ID
@@ -545,7 +491,7 @@ impl Database {
             .await
     }
 
-    /// Get a [`Profile`] by their IP
+    /// Get a [`Profile`] by their IP.
     ///
     /// # Arguments:
     /// * `hashed` - `String` of the profile's IP
@@ -574,7 +520,7 @@ impl Database {
         })
     }
 
-    /// Get a user by their username
+    /// Get a user by their username.
     ///
     /// # Arguments:
     /// * `username` - `String` of the user's username
@@ -635,7 +581,7 @@ impl Database {
         Ok(user)
     }
 
-    /// Get a user by their id
+    /// Get a user by their id.
     ///
     /// # Arguments:
     /// * `id` - `String` of the user's username
@@ -692,7 +638,7 @@ impl Database {
         Ok(user)
     }
 
-    /// Validate a username
+    /// Validate a username.
     pub fn validate_username(username: String) -> Result<()> {
         let banned_usernames = &[
             "admin",
@@ -741,7 +687,7 @@ impl Database {
     }
 
     // SET
-    /// Create a new user given their username. Returns their unhashed token
+    /// Create a new user given their username. Returns their unhashed token.
     ///
     /// # Arguments:
     /// * `username` - `String` of the user's `username`
@@ -775,9 +721,9 @@ impl Database {
 
         // ...
         let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
-            "INSERT INTO \"xprofiles\" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            "INSERT INTO \"xprofiles\" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xprofiles\" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)"
+            "INSERT INTO \"xprofiles\" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)"
         };
 
         let user_token_unhashed: String = databeam::utility::uuid();
@@ -813,6 +759,8 @@ impl Database {
             .bind::<i8>(0)
             .bind::<&str>("")
             .bind::<&str>("[]")
+            .bind::<i8>(0)
+            .bind::<i8>(0)
             .execute(c)
             .await
         {
@@ -821,75 +769,12 @@ impl Database {
         }
     }
 
-    /// Update an existing profile's question count
-    ///
-    /// # Arguments
-    /// * `id`
-    /// * `count`
-    pub async fn update_profile_question_count(&self, id: String, count: usize) -> Result<()> {
-        // update profile
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
-            "UPDATE \"xprofiles\" SET \"question_count\" = ? WHERE \"id\" = ?"
-        } else {
-            "UPDATE \"xprofiles\" SET (\"question_count\") = ($1) WHERE \"id\" = $2"
-        }
-        .to_string();
+    update_profile_count!(update_profile_question_count, question_count);
+    update_profile_count!(update_profile_response_count, response_count);
+    update_profile_count!(update_profile_inbox_count, inbox_count);
+    update_profile_count!(update_profile_notification_count, notification_count);
 
-        let c = &self.base.db.client;
-        match sqlquery(&query)
-            .bind::<&i64>(&(count as i64))
-            .bind::<&String>(&id)
-            .execute(c)
-            .await
-        {
-            Ok(_) => {
-                self.base
-                    .cachedb
-                    .remove(format!("rbeam.auth.profile:{id}"))
-                    .await;
-
-                Ok(())
-            }
-            Err(_) => Err(DatabaseError::Other),
-        }
-    }
-
-    /// Update an existing profile's response count
-    ///
-    /// # Arguments
-    /// * `id`
-    /// * `count`
-    pub async fn update_profile_response_count(&self, id: String, count: usize) -> Result<()> {
-        // update profile
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
-            "UPDATE \"xprofiles\" SET \"response_count\" = ? WHERE \"id\" = ?"
-        } else {
-            "UPDATE \"xprofiles\" SET (\"response_count\") = ($1) WHERE \"id\" = $2"
-        }
-        .to_string();
-
-        let c = &self.base.db.client;
-        match sqlquery(&query)
-            .bind::<&i64>(&(count as i64))
-            .bind::<&String>(&id)
-            .execute(c)
-            .await
-        {
-            Ok(_) => {
-                self.base
-                    .cachedb
-                    .remove(format!("rbeam.auth.profile:{id}"))
-                    .await;
-
-                Ok(())
-            }
-            Err(_) => Err(DatabaseError::Other),
-        }
-    }
-
-    /// Update a [`Profile`]'s metadata by its `id`
+    /// Update a [`Profile`]'s metadata by its `id`.
     pub async fn update_profile_metadata(
         &self,
         id: String,
@@ -2260,7 +2145,7 @@ impl Database {
     // GET
     /// Get an existing notification
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `id`
     pub async fn get_notification(&self, id: String) -> Result<Notification> {
         // check in cache
@@ -2294,8 +2179,8 @@ impl Database {
             title: res.get("title").unwrap().to_string(),
             content: res.get("content").unwrap().to_string(),
             address: res.get("address").unwrap().to_string(),
-            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-            id: res.get("id").unwrap().to_string(),
+            timestamp: from_row!(res->timestamp(u128); 0),
+            id: from_row!(res->id()),
             recipient: res.get("recipient").unwrap().to_string(),
         };
 
@@ -2314,7 +2199,7 @@ impl Database {
 
     /// Get all notifications by their recipient
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `recipient`
     pub async fn get_notifications_by_recipient(
         &self,
@@ -2344,8 +2229,8 @@ impl Database {
                         title: res.get("title").unwrap().to_string(),
                         content: res.get("content").unwrap().to_string(),
                         address: res.get("address").unwrap().to_string(),
-                        timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-                        id: res.get("id").unwrap().to_string(),
+                        timestamp: from_row!(res->timestamp(u128); 0),
+                        id: from_row!(res->id()),
                         recipient: res.get("recipient").unwrap().to_string(),
                     });
                 }
@@ -2361,9 +2246,9 @@ impl Database {
 
     /// Get the number of notifications by their recipient
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `recipient`
-    pub async fn get_notification_count_by_recipient(&self, recipient: String) -> usize {
+    pub async fn get_notification_count_by_recipient_cache(&self, recipient: String) -> usize {
         // attempt to fetch from cache
         if let Some(count) = self
             .base
@@ -2392,9 +2277,20 @@ impl Database {
         count
     }
 
+    /// Get the number of notifications by their recipient
+    ///
+    /// # Arguments
+    /// * `recipient`
+    pub async fn get_notification_count_by_recipient(&self, recipient: String) -> usize {
+        match self.get_profile(recipient).await {
+            Ok(x) => x.notification_count,
+            Err(_) => 0,
+        }
+    }
+
     /// Get all notifications by their recipient, 12 at a time
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `recipient`
     /// * `page`
     pub async fn get_notifications_by_recipient_paginated(
@@ -2425,8 +2321,8 @@ impl Database {
                         title: res.get("title").unwrap().to_string(),
                         content: res.get("content").unwrap().to_string(),
                         address: res.get("address").unwrap().to_string(),
-                        timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-                        id: res.get("id").unwrap().to_string(),
+                        timestamp: from_row!(res->timestamp(u128); 0),
+                        id: from_row!(res->id()),
                         recipient: res.get("recipient").unwrap().to_string(),
                     });
                 }
@@ -2443,7 +2339,7 @@ impl Database {
     // SET
     /// Create a new notification
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `props` - [`NotificationCreate`]
     pub async fn create_notification(
         &self,
@@ -2493,6 +2389,20 @@ impl Database {
                     ))
                     .await;
 
+                // check recipient
+                if !notification.recipient.starts_with("*") {
+                    let recipient =
+                        simplify!(self.get_profile(notification.recipient.clone()).await; Result);
+
+                    simplify!(
+                        self.update_profile_notification_count(
+                            notification.recipient,
+                            recipient.notification_count + 1,
+                        )
+                        .await; Err
+                    );
+                }
+
                 // ...
                 return Ok(());
             }
@@ -2504,7 +2414,7 @@ impl Database {
     ///
     /// Notifications can only be deleted by their recipient.
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `id` - the ID of the notification
     /// * `user` - the user doing this
     pub async fn delete_notification(&self, id: String, user: Box<Profile>) -> Result<()> {
@@ -2566,7 +2476,7 @@ impl Database {
 
     /// Delete all existing notifications by their recipient
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `id` - the ID of the notification
     /// * `user` - the user doing this
     pub async fn delete_notifications_by_recipient(
@@ -2639,7 +2549,7 @@ impl Database {
     // GET
     /// Get an existing warning
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `id`
     pub async fn get_warning(&self, id: String) -> Result<Warning> {
         // check in cache
@@ -2670,9 +2580,9 @@ impl Database {
 
         // return
         let warning = Warning {
-            id: res.get("id").unwrap().to_string(),
+            id: from_row!(res->id()),
             content: res.get("content").unwrap().to_string(),
-            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+            timestamp: from_row!(res->timestamp(u128); 0),
             recipient: res.get("recipient").unwrap().to_string(),
             moderator: match self
                 .get_profile_by_id(res.get("moderator").unwrap().to_string())
@@ -2698,7 +2608,7 @@ impl Database {
 
     /// Get all warnings by their recipient
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `recipient`
     /// * `user` - the user doing this
     pub async fn get_warnings_by_recipient(
@@ -2737,9 +2647,9 @@ impl Database {
                 for row in p {
                     let res = self.base.textify_row(row).0;
                     out.push(Warning {
-                        id: res.get("id").unwrap().to_string(),
+                        id: from_row!(res->id()),
                         content: res.get("content").unwrap().to_string(),
-                        timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                        timestamp: from_row!(res->timestamp(u128); 0),
                         recipient: res.get("recipient").unwrap().to_string(),
                         moderator: match self
                             .get_profile_by_id(res.get("moderator").unwrap().to_string())
@@ -2763,7 +2673,7 @@ impl Database {
     // SET
     /// Create a new warning
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `props` - [`WarningCreate`]
     /// * `user` - the user creating this warning
     pub async fn create_warning(&self, props: WarningCreate, user: Box<Profile>) -> Result<()> {
@@ -2833,7 +2743,7 @@ impl Database {
     ///
     /// Warnings can only be deleted by their moderator or admins.
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `id` - the ID of the warning
     /// * `user` - the user doing this
     pub async fn delete_warning(&self, id: String, user: Box<Profile>) -> Result<()> {
@@ -2886,7 +2796,7 @@ impl Database {
     // GET
     /// Get an existing [`IpBan`]
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `id`
     pub async fn get_ipban(&self, id: String) -> Result<IpBan> {
         // check in cache
@@ -2917,9 +2827,9 @@ impl Database {
 
         // return
         let ban = IpBan {
-            id: res.get("id").unwrap().to_string(),
-            ip: res.get("ip").unwrap().to_string(),
-            reason: res.get("reason").unwrap().to_string(),
+            id: from_row!(res->id()),
+            ip: from_row!(res->ip()),
+            reason: from_row!(res->reason()),
             moderator: match self
                 .get_profile_by_id(res.get("moderator").unwrap().to_string())
                 .await
@@ -2927,7 +2837,7 @@ impl Database {
                 Ok(ua) => ua,
                 Err(e) => return Err(e),
             },
-            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+            timestamp: from_row!(res->timestamp(u128); 0),
         };
 
         // store in cache
@@ -2945,7 +2855,7 @@ impl Database {
 
     /// Get an existing [`IpBan`] by its IP
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `ip`
     pub async fn get_ipban_by_ip(&self, ip: String) -> Result<IpBan> {
         // pull from database
@@ -2965,9 +2875,9 @@ impl Database {
 
         // return
         let ban = IpBan {
-            id: res.get("id").unwrap().to_string(),
-            ip: res.get("ip").unwrap().to_string(),
-            reason: res.get("reason").unwrap().to_string(),
+            id: from_row!(res->id()),
+            ip: from_row!(res->ip()),
+            reason: from_row!(res->reason()),
             moderator: match self
                 .get_profile_by_id(res.get("moderator").unwrap().to_string())
                 .await
@@ -2975,7 +2885,7 @@ impl Database {
                 Ok(ua) => ua,
                 Err(e) => return Err(e),
             },
-            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+            timestamp: from_row!(res->timestamp(u128); 0),
         };
 
         // return
@@ -2984,7 +2894,7 @@ impl Database {
 
     /// Get all [`IpBan`]s
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `user` - the user doing this
     pub async fn get_ipbans(&self, user: Box<Profile>) -> Result<Vec<IpBan>> {
         // make sure user is a manager
@@ -3014,9 +2924,9 @@ impl Database {
                 for row in p {
                     let res = self.base.textify_row(row).0;
                     out.push(IpBan {
-                        id: res.get("id").unwrap().to_string(),
-                        ip: res.get("ip").unwrap().to_string(),
-                        reason: res.get("reason").unwrap().to_string(),
+                        id: from_row!(res->id()),
+                        ip: from_row!(res->ip()),
+                        reason: from_row!(res->reason()),
                         moderator: match self
                             .get_profile_by_id(res.get("moderator").unwrap().to_string())
                             .await
@@ -3024,7 +2934,7 @@ impl Database {
                             Ok(ua) => ua,
                             Err(_) => continue,
                         },
-                        timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                        timestamp: from_row!(res->timestamp(u128); 0),
                     });
                 }
 
@@ -3040,7 +2950,7 @@ impl Database {
     // SET
     /// Create a new [`IpBan`]
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `props` - [`IpBanCreate`]
     /// * `user` - the user creating this ban
     pub async fn create_ipban(&self, props: IpBanCreate, user: Box<Profile>) -> Result<()> {
@@ -3110,7 +3020,7 @@ impl Database {
 
     /// Delete an existing IpBan
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `id` - the ID of the ban
     /// * `user` - the user doing this
     pub async fn delete_ipban(&self, id: String, user: Box<Profile>) -> Result<()> {
@@ -3719,7 +3629,7 @@ impl Database {
     // GET
     /// Get an existing [`IpBlock`]
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `id`
     pub async fn get_ipblock(&self, id: String) -> Result<IpBlock> {
         // check in cache
@@ -3750,11 +3660,11 @@ impl Database {
 
         // return
         let block = IpBlock {
-            id: res.get("id").unwrap().to_string(),
-            ip: res.get("ip").unwrap().to_string(),
+            id: from_row!(res->id()),
+            ip: from_row!(res->ip()),
             user: res.get("user").unwrap().to_string(),
             context: res.get("context").unwrap().to_string(),
-            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+            timestamp: from_row!(res->timestamp(u128); 0),
         };
 
         // store in cache
@@ -3772,7 +3682,7 @@ impl Database {
 
     /// Get an existing [`IpBlock`] by its IP and its `user`
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `ip`
     /// * `user`
     pub async fn get_ipblock_by_ip(&self, ip: String, user: String) -> Result<IpBlock> {
@@ -3798,11 +3708,11 @@ impl Database {
 
         // return
         let block = IpBlock {
-            id: res.get("id").unwrap().to_string(),
-            ip: res.get("ip").unwrap().to_string(),
+            id: from_row!(res->id()),
+            ip: from_row!(res->ip()),
             user: res.get("user").unwrap().to_string(),
             context: res.get("context").unwrap().to_string(),
-            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+            timestamp: from_row!(res->timestamp(u128); 0),
         };
 
         // return
@@ -3811,7 +3721,7 @@ impl Database {
 
     /// Get all [`IpBlocks`]s for the given `query_user`
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `query_user` - the ID of the user the blocks belong to
     pub async fn get_ipblocks(&self, query_user: String) -> Result<Vec<IpBlock>> {
         // pull from database
@@ -3835,11 +3745,11 @@ impl Database {
                 for row in p {
                     let res = self.base.textify_row(row).0;
                     out.push(IpBlock {
-                        id: res.get("id").unwrap().to_string(),
-                        ip: res.get("ip").unwrap().to_string(),
+                        id: from_row!(res->id()),
+                        ip: from_row!(res->ip()),
                         user: res.get("user").unwrap().to_string(),
                         context: res.get("context").unwrap().to_string(),
-                        timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                        timestamp: from_row!(res->timestamp(u128); 0),
                     });
                 }
 
@@ -3855,7 +3765,7 @@ impl Database {
     // SET
     /// Create a new [`IpBlock`]
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `props` - [`IpBlockCreate`]
     /// * `user` - the user creating this block
     pub async fn create_ipblock(&self, props: IpBlockCreate, user: Box<Profile>) -> Result<()> {
@@ -3903,7 +3813,7 @@ impl Database {
 
     /// Delete an existing IpBlock
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `id` - the ID of the block
     /// * `user` - the user doing this
     pub async fn delete_ipblock(&self, id: String, user: Box<Profile>) -> Result<()> {
@@ -3972,7 +3882,7 @@ impl Database {
     // GET
     /// Get an existing mail
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `id`
     pub async fn get_mail(&self, id: String) -> Result<Mail> {
         // check in cache
@@ -4014,8 +3924,8 @@ impl Database {
         let mail = Mail {
             title: res.get("title").unwrap().to_string(),
             content: res.get("content").unwrap().to_string(),
-            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-            id: res.get("id").unwrap().to_string(),
+            timestamp: from_row!(res->timestamp(u128); 0),
+            id: from_row!(res->id()),
             state: serde_json::from_str(res.get("state").unwrap()).unwrap(),
             author: res.get("author").unwrap().to_string(),
             recipient: serde_json::from_str(recipient).unwrap_or(vec![recipient.to_string()]),
@@ -4036,7 +3946,7 @@ impl Database {
 
     /// Get all mail by their recipient, 12 at a time
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `recipient`
     /// * `page`
     pub async fn get_mail_by_recipient_paginated(
@@ -4072,8 +3982,8 @@ impl Database {
                         Mail {
                             title: res.get("title").unwrap().to_string(),
                             content: res.get("content").unwrap().to_string(),
-                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-                            id: res.get("id").unwrap().to_string(),
+                            timestamp: from_row!(res->timestamp(u128); 0),
+                            id: from_row!(res->id()),
                             state: serde_json::from_str(res.get("state").unwrap()).unwrap(),
                             author: author.to_string(),
                             recipient: serde_json::from_str(recipient)
@@ -4097,7 +4007,7 @@ impl Database {
 
     /// Get all mail by their recipient, 12 at a time
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `recipient`
     /// * `page`
     pub async fn get_mail_by_recipient_sent_paginated(
@@ -4133,8 +4043,8 @@ impl Database {
                         Mail {
                             title: res.get("title").unwrap().to_string(),
                             content: res.get("content").unwrap().to_string(),
-                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-                            id: res.get("id").unwrap().to_string(),
+                            timestamp: from_row!(res->timestamp(u128); 0),
+                            id: from_row!(res->id()),
                             state: serde_json::from_str(res.get("state").unwrap()).unwrap(),
                             author: author.to_string(),
                             recipient: serde_json::from_str(recipient)
@@ -4159,7 +4069,7 @@ impl Database {
     // SET
     /// Create a new mail
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `props` - [`MailCreate`]
     pub async fn create_mail(&self, props: MailCreate, author: String) -> Result<Mail> {
         // check content length
@@ -4295,7 +4205,7 @@ impl Database {
     ///
     /// Mail can only be deleted by their recipient.
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `id` - the ID of the mail
     /// * `user` - the user doing this
     pub async fn delete_mail(&self, id: String, user: Box<Profile>) -> Result<()> {
@@ -4345,7 +4255,7 @@ impl Database {
 
     /// Update mail state
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `id`
     /// * `state` - [`MailState`]
     /// * `user`
@@ -4409,16 +4319,16 @@ impl Database {
     /// Get a [`UserLabel`] from a database result
     pub async fn gimme_label(&self, res: BTreeMap<String, String>) -> Result<UserLabel> {
         Ok(UserLabel {
-            id: res.get("id").unwrap().to_string(),
+            id: from_row!(res->id()),
             name: res.get("name").unwrap().to_string(),
-            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+            timestamp: from_row!(res->timestamp(u128); 0),
             creator: res.get("author").unwrap().to_string(),
         })
     }
 
     /// Get an existing label
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `id`
     pub async fn get_label(&self, id: String) -> Result<UserLabel> {
         // check in cache
@@ -4564,7 +4474,7 @@ impl Database {
     // GET
     /// Get an existing transaction
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `id`
     pub async fn get_transaction(&self, id: String) -> Result<(Transaction, Option<Item>)> {
         // check in cache
@@ -4627,7 +4537,7 @@ impl Database {
 
     /// Get an existing transaction given the `customer` and the `item`
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `user`
     /// * `item`
     pub async fn get_transaction_by_customer_item(
@@ -4667,11 +4577,11 @@ impl Database {
 
     /// Get all transactions where the customer is the given user ID, 12 at a time
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `user`
     /// * `page`
     ///
-    /// ## Returns:
+    /// # Returns
     /// `Vec<(Transaction, Customer, Merchant)>`
     pub async fn get_transactions_by_customer_paginated(
         &self,
@@ -4730,11 +4640,11 @@ impl Database {
 
     /// Get all transactions by the given user ID, 12 at a time
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `user`
     /// * `page`
     ///
-    /// ## Returns:
+    /// # Returns
     /// `Vec<(Transaction, Customer, Merchant)>`
     pub async fn get_participating_transactions_paginated(
         &self,
@@ -4794,7 +4704,7 @@ impl Database {
     // SET
     /// Create a new transaction
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `props` - [`TransactionCreate`]
     /// * `customer` - the user in the `customer` field of the transaction
     pub async fn create_transaction(
@@ -4922,7 +4832,7 @@ impl Database {
     // GET
     /// Get an existing item
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `id`
     pub async fn get_item(&self, id: String) -> Result<Item> {
         if id == "0" {
@@ -4995,11 +4905,11 @@ impl Database {
 
     /// Get all items by their creator, 12 at a time
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `user`
     /// * `page`
     ///
-    /// ## Returns:
+    /// # Returns
     /// `Vec<(Item, Box<Profile>)>`
     pub async fn get_items_by_creator_paginated(
         &self,
@@ -5048,12 +4958,12 @@ impl Database {
 
     /// Get all items by their creator and type, 12 at a time
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `user`
     /// * `type`
     /// * `page`
     ///
-    /// ## Returns:
+    /// # Returns
     /// `Vec<(Item, Box<Profile>)>`
     pub async fn get_items_by_creator_type_paginated(
         &self,
@@ -5108,11 +5018,11 @@ impl Database {
 
     /// Get all items by their status, 12 at a time
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `user`
     /// * `page`
     ///
-    /// ## Returns:
+    /// # Returns
     /// `Vec<(Item, Box<Profile>)>`
     pub async fn get_items_by_status_searched_paginated(
         &self,
@@ -5167,11 +5077,11 @@ impl Database {
 
     /// Get all items by their type, 12 at a time
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `type`
     /// * `page`
     ///
-    /// ## Returns:
+    /// # Returns
     /// `Vec<(Item, Box<Profile>)>`
     pub async fn get_items_by_type_paginated(
         &self,
@@ -5225,7 +5135,7 @@ impl Database {
     // SET
     /// Create a new item
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `props` - [`ItemCreate`]
     /// * `creator` - the user in the `creator` field of the item
     pub async fn create_item(&self, props: ItemCreate, creator: String) -> Result<Item> {
@@ -5336,7 +5246,7 @@ impl Database {
 
     /// Update item status
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `id`
     /// * `status` - [`ItemStatus`]
     /// * `user`
@@ -5412,7 +5322,7 @@ impl Database {
 
     /// Update item fields
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `id`
     /// * `props` - [`ItemEdit`]
     /// * `user`
@@ -5492,7 +5402,7 @@ impl Database {
 
     /// Update item content
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `id`
     /// * `props` - [`ItemEditContent`]
     /// * `user`
@@ -5572,7 +5482,7 @@ impl Database {
     ///
     /// Items can only be deleted by their creator.
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `id` - the ID of the item
     /// * `user` - the user doing this
     pub async fn delete_item(&self, id: String, user: Box<Profile>) -> Result<()> {

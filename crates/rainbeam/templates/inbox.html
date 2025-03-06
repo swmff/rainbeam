@@ -42,8 +42,13 @@
                 {{ icon "bomb" }} {{ text "general:action.clear" }}
             </button>
         </div>
-        {% endif %} {% for question in unread %}
-        <div class="card-nest w-full" id="question:{{ question.id }}">
+        {% endif %} {% for question in unread %} {% let qid =
+        question.get_real_id() %}
+        <div
+            class="card-nest w-full"
+            id="question:{{ qid }}"
+            data-src="{{ question.context.source_id }}"
+        >
             <div class="card flex gap-2">
                 <!-- prettier-ignore -->
                 {% let author_tag = crate::database::Database::anonymous_tag(question.author.username.as_ref()) %}
@@ -129,6 +134,16 @@
                             <span class="date item"
                                 >{{ question.timestamp }}</span
                             >
+
+                            {% if question.recipient.id == "@" %}
+                            <a
+                                class="button item primary icon-only small"
+                                href="/question/{{ question.id }}"
+                                title="Global question"
+                            >
+                                {{ icon "globe" }}
+                            </a>
+                            {% endif %}
                         </div>
 
                         <div class="dropdown actions_bar">
@@ -143,7 +158,7 @@
                                 <b class="title">Manage</b>
                                 <a
                                     href="#"
-                                    onclick="trigger('questions::delete', ['{{ question.id }}'])"
+                                    onclick="trigger('questions::delete', ['{{ qid }}'])"
                                     class="red"
                                 >
                                     {{ icon "trash" }} {{ text
@@ -151,14 +166,14 @@
                                 </a>
 
                                 <a
-                                    href="javascript:trigger('questions::ipblock', ['{{ question.id }}'])"
+                                    href="javascript:trigger('questions::ipblock', ['{{ qid }}'])"
                                 >
                                     {{ icon "shield" }} {{ text
                                     "general:action.ip_block" }}
                                 </a>
 
                                 <a
-                                    href="javascript:trigger('reports::bootstrap', ['questions', '{{ question.id }}'])"
+                                    href="javascript:trigger('reports::bootstrap', ['questions', '{{ qid }}'])"
                                 >
                                     {{ icon "flag" }} {{ text
                                     "general:action.report" }}
@@ -178,7 +193,7 @@
             <div class="card">
                 <form
                     class="flex flex-col gap-2"
-                    onsubmit="respond(event, '{{ question.id }}')"
+                    onsubmit="respond(event, '{{ qid }}')"
                 >
                     {% if let Some(profile) = profile %}
                     <textarea
@@ -188,7 +203,7 @@
                         maxlength="{% if profile.tier >= config.tiers.double_limits %}8192{% else %}4096{% endif %}"
                         required
                         name="content"
-                        id="content-{{ question.id }}"
+                        id="content-{{ qid }}"
                         hook="counter"
                     ></textarea>
                     {% else %}
@@ -199,7 +214,7 @@
                         maxlength="4096"
                         required
                         name="content"
-                        id="content-{{ question.id }}"
+                        id="content-{{ qid }}"
                         hook="counter"
                     ></textarea>
                     {% endif %} {% include
@@ -207,7 +222,7 @@
 
                     <div class="flex justify-between w-full gap-1">
                         <span
-                            id="content-{{ question.id }}:counter"
+                            id="content-{{ qid }}:counter"
                             class="notification item"
                         ></span>
                         <button class="primary bold">
@@ -225,6 +240,14 @@
     function respond(e, question) {
         e.preventDefault();
         e.target.querySelector("button").setAttribute("disabled", "true");
+
+        const source_id = document
+            .getElementById(`question:${question}`)
+            .getAttribute("data-src");
+        if (source_id) {
+            // remove ref question
+            trigger("questions::delete", [source_id, false]);
+        }
 
         trigger("responses::create", [
             question,

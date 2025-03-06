@@ -35,13 +35,15 @@
         },
     );
 
-    self.define("delete", async function ({ $, app }, id) {
-        if (
-            !(await trigger("app::confirm", [
-                "Are you sure you want to do this?",
-            ]))
-        ) {
-            return;
+    self.define("delete", async function ({ $, app }, id, do_confirm = true) {
+        if (do_confirm) {
+            if (
+                !(await trigger("app::confirm", [
+                    "Are you sure you want to do this?",
+                ]))
+            ) {
+                return;
+            }
         }
 
         fetch(`/api/v1/questions/${id}`, {
@@ -49,15 +51,17 @@
         })
             .then((res) => res.json())
             .then((res) => {
-                app.toast(
-                    res.success ? "success" : "error",
-                    res.success ? "Question deleted!" : res.message,
-                );
+                if (do_confirm) {
+                    app.toast(
+                        res.success ? "success" : "error",
+                        res.success ? "Question deleted!" : res.message,
+                    );
 
-                app.smooth_remove(
-                    document.getElementById(`question:${id}`),
-                    500,
-                );
+                    app.smooth_remove(
+                        document.getElementById(`question:${id}`),
+                        500,
+                    );
+                }
             });
     });
 

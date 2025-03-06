@@ -1,6 +1,6 @@
 [package]
 name = "authbeam"
-version = "4.0.0"
+version = "5.0.0"
 edition = "2021"
 description = "Authentication manager"
 authors = ["trisuaso", "swmff"]

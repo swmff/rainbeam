@@ -3,7 +3,6 @@ endblock %} {% block nav_left %}
 <a class="button" href="/" title="Timeline">
     {{ icon "house" }}
     <span class="desktop">{{ text "general:link.timeline" }}</span>
-    
 </a>
 
 <a class="button" href="/inbox" title="My inbox">
@@ -24,8 +23,7 @@ endblock %} {% block nav_left %}
 </a>
 {% endblock %} {% block nav_right %}
 <a class="button" href="/inbox/notifications" title="My notifications">
-    {{ icon "bell" }}
-    {% if notifs != 0 %}
+    {{ icon "bell" }} {% if notifs != 0 %}
     <span class="notification tr">{{ notifs }}</span>
     {% endif %}
 </a>

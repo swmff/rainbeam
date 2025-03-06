@@ -60,10 +60,9 @@ pub async fn response_request(
     };
 
     let unread = if let Some(ref ua) = auth_user {
-        match database.get_questions_by_recipient(ua.id.to_owned()).await {
-            Ok(unread) => unread.len(),
-            Err(_) => 0,
-        }
+        database
+            .get_inbox_count_by_recipient(ua.id.to_owned())
+            .await
     } else {
         0
     };

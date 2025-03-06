@@ -48,13 +48,9 @@ pub async fn account_settings(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = match database
-        .get_questions_by_recipient(auth_user.id.to_owned())
-        .await
-    {
-        Ok(unread) => unread.len(),
-        Err(_) => 0,
-    };
+    let unread = database
+        .get_inbox_count_by_recipient(auth_user.id.to_owned())
+        .await;
 
     let notifs = database
         .auth
@@ -154,13 +150,9 @@ pub async fn profile_settings(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = match database
-        .get_questions_by_recipient(auth_user.id.to_owned())
-        .await
-    {
-        Ok(unread) => unread.len(),
-        Err(_) => 0,
-    };
+    let unread = database
+        .get_inbox_count_by_recipient(auth_user.id.to_owned())
+        .await;
 
     let notifs = database
         .auth
@@ -244,13 +236,9 @@ pub async fn theme_settings(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = match database
-        .get_questions_by_recipient(auth_user.id.to_owned())
-        .await
-    {
-        Ok(unread) => unread.len(),
-        Err(_) => 0,
-    };
+    let unread = database
+        .get_inbox_count_by_recipient(auth_user.id.to_owned())
+        .await;
 
     let notifs = database
         .auth
@@ -334,13 +322,9 @@ pub async fn privacy_settings(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = match database
-        .get_questions_by_recipient(auth_user.id.to_owned())
-        .await
-    {
-        Ok(unread) => unread.len(),
-        Err(_) => 0,
-    };
+    let unread = database
+        .get_inbox_count_by_recipient(auth_user.id.to_owned())
+        .await;
 
     let notifs = database
         .auth
@@ -427,13 +411,9 @@ pub async fn sessions_settings(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = match database
-        .get_questions_by_recipient(auth_user.id.to_owned())
-        .await
-    {
-        Ok(unread) => unread.len(),
-        Err(_) => 0,
-    };
+    let unread = database
+        .get_inbox_count_by_recipient(auth_user.id.to_owned())
+        .await;
 
     let notifs = database
         .auth
@@ -527,13 +507,9 @@ pub async fn coins_settings(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = match database
-        .get_questions_by_recipient(auth_user.id.to_owned())
-        .await
-    {
-        Ok(unread) => unread.len(),
-        Err(_) => 0,
-    };
+    let unread = database
+        .get_inbox_count_by_recipient(auth_user.id.to_owned())
+        .await;
 
     let notifs = database
         .auth

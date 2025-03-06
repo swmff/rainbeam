@@ -45,10 +45,9 @@ pub async fn search_homepage_request(
     };
 
     let unread = if let Some(ref ua) = auth_user {
-        match database.get_questions_by_recipient(ua.id.to_owned()).await {
-            Ok(unread) => unread.len(),
-            Err(_) => 0,
-        }
+        database
+            .get_inbox_count_by_recipient(ua.id.to_owned())
+            .await
     } else {
         0
     };
@@ -118,10 +117,9 @@ pub async fn search_responses_request(
     };
 
     let unread = if let Some(ref ua) = auth_user {
-        match database.get_questions_by_recipient(ua.id.to_owned()).await {
-            Ok(unread) => unread.len(),
-            Err(_) => 0,
-        }
+        database
+            .get_inbox_count_by_recipient(ua.id.to_owned())
+            .await
     } else {
         0
     };
@@ -266,10 +264,9 @@ pub async fn search_posts_request(
     };
 
     let unread = if let Some(ref ua) = auth_user {
-        match database.get_questions_by_recipient(ua.id.to_owned()).await {
-            Ok(unread) => unread.len(),
-            Err(_) => 0,
-        }
+        database
+            .get_inbox_count_by_recipient(ua.id.to_owned())
+            .await
     } else {
         0
     };
@@ -403,10 +400,9 @@ pub async fn search_questions_request(
     };
 
     let unread = if let Some(ref ua) = auth_user {
-        match database.get_questions_by_recipient(ua.id.to_owned()).await {
-            Ok(unread) => unread.len(),
-            Err(_) => 0,
-        }
+        database
+            .get_inbox_count_by_recipient(ua.id.to_owned())
+            .await
     } else {
         0
     };
@@ -535,10 +531,9 @@ pub async fn search_users_request(
     };
 
     let unread = if let Some(ref ua) = auth_user {
-        match database.get_questions_by_recipient(ua.id.to_owned()).await {
-            Ok(unread) => unread.len(),
-            Err(_) => 0,
-        }
+        database
+            .get_inbox_count_by_recipient(ua.id.to_owned())
+            .await
     } else {
         0
     };

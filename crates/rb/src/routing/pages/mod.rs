@@ -3,8 +3,9 @@ use rainbeam::{
     model::{RelationshipStatus, Question, Reaction, FullResponse, DatabaseError},
 };
 use rainbeam_shared::config::Config;
-use authbeam::model::{
-    Profile, ProfileMetadata, Notification, FinePermission, IpBan, ItemType, ItemStatus,
+use authbeam::{
+    simplify,
+    model::{Profile, ProfileMetadata, Notification, FinePermission, IpBan, ItemType, ItemStatus},
 };
 use langbeam::LangFile;
 
@@ -111,10 +112,9 @@ pub async fn homepage_request(
 
     // timeline
     if let Some(ref ua) = auth_user {
-        let unread = match database.get_questions_by_recipient(ua.id.to_owned()).await {
-            Ok(unread) => unread.len(),
-            Err(_) => 0,
-        };
+        let unread = database
+            .get_inbox_count_by_recipient(ua.id.to_owned())
+            .await;
 
         let notifs = database
             .auth
@@ -296,13 +296,9 @@ pub async fn public_timeline_request(
     };
 
     // timeline
-    let unread = match database
-        .get_questions_by_recipient(auth_user.id.to_owned())
-        .await
-    {
-        Ok(unread) => unread.len(),
-        Err(_) => 0,
-    };
+    let unread = database
+        .get_inbox_count_by_recipient(auth_user.id.to_owned())
+        .await;
 
     let notifs = database
         .auth
@@ -631,13 +627,9 @@ pub async fn discover_request(
     };
 
     // timeline
-    let unread = match database
-        .get_questions_by_recipient(auth_user.id.to_owned())
-        .await
-    {
-        Ok(unread) => unread.len(),
-        Err(_) => 0,
-    };
+    let unread = database
+        .get_inbox_count_by_recipient(auth_user.id.to_owned())
+        .await;
 
     let notifs = database
         .auth
@@ -1047,10 +1039,9 @@ pub async fn question_request(
     };
 
     let unread = if let Some(ref ua) = auth_user {
-        match database.get_questions_by_recipient(ua.id.to_owned()).await {
-            Ok(unread) => unread.len(),
-            Err(_) => 0,
-        }
+        database
+            .get_inbox_count_by_recipient(ua.id.to_owned())
+            .await
     } else {
         0
     };
@@ -1153,10 +1144,9 @@ pub async fn public_posts_timeline_request(
     };
 
     let unread = if let Some(ref ua) = auth_user {
-        match database.get_questions_by_recipient(ua.id.to_owned()).await {
-            Ok(unread) => unread.len(),
-            Err(_) => 0,
-        }
+        database
+            .get_inbox_count_by_recipient(ua.id.to_owned())
+            .await
     } else {
         0
     };
@@ -1335,13 +1325,9 @@ pub async fn following_posts_timeline_request(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = match database
-        .get_questions_by_recipient(auth_user.id.to_owned())
-        .await
-    {
-        Ok(unread) => unread.len(),
-        Err(_) => 0,
-    };
+    let unread = database
+        .get_inbox_count_by_recipient(auth_user.id.to_owned())
+        .await;
 
     let notifs = database
         .auth
@@ -1473,6 +1459,16 @@ pub async fn inbox_request(jar: CookieJar, State(database): State<Database>) -> 
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
+    // mark all as read
+    simplify!(
+        database
+            .auth
+            .update_profile_inbox_count(auth_user.id.clone(), 0)
+            .await;
+        Err; Html(DatabaseError::Other.to_html(database))
+    );
+
+    // ...
     let unread = match database
         .get_questions_by_recipient(auth_user.id.to_owned())
         .await
@@ -1561,13 +1557,9 @@ pub async fn global_timeline_request(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = match database
-        .get_questions_by_recipient(auth_user.id.to_owned())
-        .await
-    {
-        Ok(unread) => unread.len(),
-        Err(_) => 0,
-    };
+    let unread = database
+        .get_inbox_count_by_recipient(auth_user.id.to_owned())
+        .await;
 
     let notifs = database
         .auth
@@ -1675,13 +1667,9 @@ pub async fn public_global_timeline_request(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = match database
-        .get_questions_by_recipient(auth_user.id.to_owned())
-        .await
-    {
-        Ok(unread) => unread.len(),
-        Err(_) => 0,
-    };
+    let unread = database
+        .get_inbox_count_by_recipient(auth_user.id.to_owned())
+        .await;
 
     let notifs = database
         .auth
@@ -1833,6 +1821,16 @@ pub async fn notifications_request(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
+    // mark all as read
+    simplify!(
+        database
+            .auth
+            .update_profile_notification_count(auth_user.id.clone(), 0)
+            .await;
+        Err; Html(DatabaseError::Other.to_html(database))
+    );
+
+    // ...
     let is_helper = {
         let group = match database.auth.get_group_by_id(auth_user.group).await {
             Ok(g) => g,
@@ -1842,13 +1840,9 @@ pub async fn notifications_request(
         group.permissions.check_helper()
     };
 
-    let unread = match database
-        .get_questions_by_recipient(auth_user.id.to_owned())
-        .await
-    {
-        Ok(unread) => unread.len(),
-        Err(_) => 0,
-    };
+    let unread = database
+        .get_inbox_count_by_recipient(auth_user.id.to_owned())
+        .await;
 
     let pid = if is_helper && !props.profile.is_empty() {
         // use the given profile value if we gave one and we are a helper
@@ -1925,13 +1919,9 @@ pub async fn reports_request(
     }
 
     // ...
-    let unread = match database
-        .get_questions_by_recipient(auth_user.id.to_owned())
-        .await
-    {
-        Ok(unread) => unread.len(),
-        Err(_) => 0,
-    };
+    let unread = database
+        .get_inbox_count_by_recipient(auth_user.id.to_owned())
+        .await;
 
     let reports = match database
         .auth
@@ -2000,13 +1990,9 @@ pub async fn audit_log_request(
     }
 
     // ...
-    let unread = match database
-        .get_questions_by_recipient(auth_user.id.to_owned())
-        .await
-    {
-        Ok(unread) => unread.len(),
-        Err(_) => 0,
-    };
+    let unread = database
+        .get_inbox_count_by_recipient(auth_user.id.to_owned())
+        .await;
 
     let logs = match database
         .auth
@@ -2071,13 +2057,9 @@ pub async fn ipbans_request(jar: CookieJar, State(database): State<Database>) ->
     }
 
     // ...
-    let unread = match database
-        .get_questions_by_recipient(auth_user.id.to_owned())
-        .await
-    {
-        Ok(unread) => unread.len(),
-        Err(_) => 0,
-    };
+    let unread = database
+        .get_inbox_count_by_recipient(auth_user.id.to_owned())
+        .await;
 
     let bans = match database.auth.get_ipbans(auth_user.clone()).await {
         Ok(r) => r,

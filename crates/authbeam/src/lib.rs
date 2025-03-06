@@ -5,6 +5,7 @@ pub mod api;
 pub mod avif;
 pub mod database;
 pub mod layout;
+mod macros;
 pub mod model;
 pub mod permissions;
 

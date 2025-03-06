@@ -51,13 +51,9 @@ pub async fn homepage_request(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = match database
-        .get_questions_by_recipient(auth_user.id.to_owned())
-        .await
-    {
-        Ok(unread) => unread.len(),
-        Err(_) => 0,
-    };
+    let unread = database
+        .get_inbox_count_by_recipient(auth_user.id.to_owned())
+        .await;
 
     let notifs = database
         .auth
@@ -211,13 +207,9 @@ pub async fn create_request(jar: CookieJar, State(database): State<Database>) ->
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = match database
-        .get_questions_by_recipient(auth_user.id.to_owned())
-        .await
-    {
-        Ok(unread) => unread.len(),
-        Err(_) => 0,
-    };
+    let unread = database
+        .get_inbox_count_by_recipient(auth_user.id.to_owned())
+        .await;
 
     let notifs = database
         .auth
@@ -274,13 +266,9 @@ pub async fn item_request(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = match database
-        .get_questions_by_recipient(auth_user.id.to_owned())
-        .await
-    {
-        Ok(unread) => unread.len(),
-        Err(_) => 0,
-    };
+    let unread = database
+        .get_inbox_count_by_recipient(auth_user.id.to_owned())
+        .await;
 
     let notifs = database
         .auth

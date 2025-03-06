@@ -2,7 +2,7 @@
 
 /// Error quit with message
 ///
-/// ## Arguments:
+/// # Arguments
 /// * `msg` - result message
 pub fn no(msg: &str) -> () {
     println!("\x1b[91m{}\x1b[0m", format!("error:\x1b[0m {msg}"));
@@ -11,7 +11,7 @@ pub fn no(msg: &str) -> () {
 
 /// Success quit with message
 ///
-/// ## Arguments:
+/// # Arguments
 /// * `msg` - result message
 pub fn yes(msg: &str) -> () {
     println!("\x1b[92m{}\x1b[0m", format!("success:\x1b[0m {msg}"));

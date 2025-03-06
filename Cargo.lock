@@ -201,7 +201,7 @@ checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 
 [[package]]
 name = "authbeam"
-version = "4.0.0"
+version = "5.0.0"
 dependencies = [
  "axum",
  "axum-extra",
@@ -3035,7 +3035,7 @@ dependencies = [
 
 [[package]]
 name = "rainbeam"
-version = "7.0.1"
+version = "8.0.0"
 dependencies = [
  "ammonia",
  "async-recursion",
@@ -3065,7 +3065,7 @@ dependencies = [
 
 [[package]]
 name = "rainbeam-core"
-version = "7.0.1"
+version = "8.0.0"
 dependencies = [
  "ammonia",
  "async-recursion",
@@ -3283,7 +3283,7 @@ dependencies = [
 
 [[package]]
 name = "rb"
-version = "7.0.1"
+version = "8.0.0"
 dependencies = [
  "ammonia",
  "async-recursion",

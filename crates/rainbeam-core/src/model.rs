@@ -44,6 +44,16 @@ pub struct Question {
     pub context: QuestionContext,
 }
 
+impl Question {
+    pub fn get_real_id(&self) -> String {
+        if !self.context.source_id.is_empty() {
+            return self.context.source_id.clone();
+        }
+
+        return self.id.clone();
+    }
+}
+
 impl CtxAsset for Question {
     fn ref_context(&self) -> &impl Context {
         &self.context
@@ -103,6 +113,12 @@ pub struct QuestionContext {
     /// * `--CARP`: carp canvas drawing
     #[serde(default)]
     pub media: String,
+    /// The real ID of this question (for aliasing a global question).
+    #[serde(default)]
+    pub ref_id: String,
+    /// The source ID of this question (if pulled from a ref_id).
+    #[serde(default)]
+    pub source_id: String,
 }
 
 impl Context for QuestionContext {}
@@ -111,6 +127,8 @@ impl Default for QuestionContext {
     fn default() -> Self {
         Self {
             media: String::new(),
+            ref_id: String::new(),
+            source_id: String::new(),
         }
     }
 }
@@ -533,6 +551,8 @@ pub struct QuestionCreate {
     pub anonymous: bool,
     #[serde(default)]
     pub media: String,
+    #[serde(default)]
+    pub ref_id: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

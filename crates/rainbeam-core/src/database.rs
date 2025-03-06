@@ -6,7 +6,10 @@ use crate::config::Config;
 use crate::model::*;
 use crate::model::{DatabaseError, Question};
 
-use authbeam::model::{FinePermission, NotificationCreate, Profile, RelationshipStatus};
+use authbeam::{
+    simplify, from_row,
+    model::{FinePermission, NotificationCreate, Profile, RelationshipStatus},
+};
 use databeam::{utility, query as sqlquery, prelude::*};
 use langbeam::LangFile;
 
@@ -228,7 +231,7 @@ impl Database {
 
     /// Get all profiles by a search query, 12 at a time
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `page`
     /// * `search`
     pub async fn get_profiles_searched_paginated(
@@ -255,7 +258,7 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row).0;
-                    let id = res.get("id").unwrap().to_string();
+                    let id = from_row!(res->id());
                     out.push(match self.get_profile(id).await {
                         Ok(p) => p,
                         Err(_) => continue,
@@ -371,8 +374,9 @@ impl Database {
 
     /// Get an existing question
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `id`
+    #[async_recursion]
     pub async fn get_question(&self, id: String) -> Result<Question> {
         if id == "0" {
             return Ok(Question::post());
@@ -500,7 +504,7 @@ impl Database {
         };
 
         // return
-        let question = Question {
+        let mut question = Question {
             author: match self
                 .get_profile(res.get("author").unwrap().to_string())
                 .await
@@ -515,12 +519,20 @@ impl Database {
                 Ok(ua) => ua,
                 Err(_) => anonymous_profile(res.get("recipient").unwrap().to_string()),
             },
-            content: res.get("content").unwrap().to_string(),
-            id: res.get("id").unwrap().to_string(),
-            ip: res.get("ip").unwrap().to_string(),
-            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
+            content: from_row!(res->content()),
+            id: from_row!(res->id()),
+            ip: from_row!(res->ip()),
+            timestamp: from_row!(res->timestamp(u128); 0),
+            context: from_row!(res->context(json); DatabaseError::ValueError),
         };
+
+        // check ref question
+        if !question.context.ref_id.is_empty() {
+            let q = simplify!(self.get_question(question.context.ref_id.clone()).await; Result);
+            let original_id = question.id.clone();
+            question = q;
+            question.context.source_id = original_id;
+        }
 
         // store in cache
         if id.len() == 64 {
@@ -540,7 +552,7 @@ impl Database {
 
     /// Get all questions by their recipient
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `recipient`
     pub async fn get_questions_by_recipient(&self, recipient: String) -> Result<Vec<Question>> {
         // pull from database
@@ -563,7 +575,7 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row).0;
-                    out.push(Question {
+                    let mut question = Question {
                         author: match self
                             .get_profile(res.get("author").unwrap().to_string())
                             .await
@@ -579,11 +591,22 @@ impl Database {
                             Err(_) => anonymous_profile("anonymous".to_string()),
                         },
                         content: res.get("content").unwrap().to_string(),
-                        id: res.get("id").unwrap().to_string(),
-                        ip: res.get("ip").unwrap().to_string(),
-                        timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-                        context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
-                    });
+                        id: from_row!(res->id()),
+                        ip: from_row!(res->ip()),
+                        timestamp: from_row!(res->timestamp(u128); 0),
+                        context: from_row!(res->context(json); DatabaseError::ValueError),
+                    };
+
+                    // check ref question
+                    if !question.context.ref_id.is_empty() {
+                        let q = simplify!(self.get_question(question.context.ref_id.clone()).await; Result);
+                        let original_id = question.id.clone();
+                        question = q;
+                        question.context.source_id = original_id;
+                    }
+
+                    // ...
+                    out.push(question);
                 }
 
                 out
@@ -595,9 +618,20 @@ impl Database {
         Ok(res)
     }
 
+    /// Get the number of notifications by their recipient
+    ///
+    /// # Arguments
+    /// * `recipient`
+    pub async fn get_inbox_count_by_recipient(&self, recipient: String) -> usize {
+        match self.get_profile(recipient).await {
+            Ok(x) => x.inbox_count,
+            Err(_) => 0,
+        }
+    }
+
     /// Get all questions by their author, 12 at a time
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `author`
     /// * `page`
     pub async fn get_questions_by_author_paginated(
@@ -641,10 +675,10 @@ impl Database {
                             Err(_) => continue,
                         },
                         content: res.get("content").unwrap().to_string(),
-                        id: res.get("id").unwrap().to_string(),
-                        ip: res.get("ip").unwrap().to_string(),
-                        timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-                        context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
+                        id: from_row!(res->id()),
+                        ip: from_row!(res->ip()),
+                        timestamp: from_row!(res->timestamp(u128); 0),
+                        context: from_row!(res->context(json); DatabaseError::ValueError),
                     });
                 }
 
@@ -659,7 +693,7 @@ impl Database {
 
     /// Get all global questions by their author
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `author`
     pub async fn get_global_questions_by_author(
         &self,
@@ -685,7 +719,7 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row).0;
-                    let id = res.get("id").unwrap().to_string();
+                    let id = from_row!(res->id());
                     out.push((
                         Question {
                             author: match self
@@ -704,9 +738,9 @@ impl Database {
                             },
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
-                            ip: res.get("ip").unwrap().to_string(),
-                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
+                            ip: from_row!(res->ip()),
+                            timestamp: from_row!(res->timestamp(u128); 0),
+                            context: from_row!(res->context(json); DatabaseError::ValueError),
                         },
                         // get the number of responses the question has
                         self.get_response_count_by_question(id.clone()).await,
@@ -726,7 +760,7 @@ impl Database {
 
     /// Get all global questions by their author, 20 at a time
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `author`
     /// * `page`
     pub async fn get_global_questions_by_author_paginated(
@@ -753,7 +787,7 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row).0;
-                    let id = res.get("id").unwrap().to_string();
+                    let id = from_row!(res->id());
                     out.push((
                         Question {
                             author: match self
@@ -772,9 +806,9 @@ impl Database {
                             },
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
-                            ip: res.get("ip").unwrap().to_string(),
-                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
+                            ip: from_row!(res->ip()),
+                            timestamp: from_row!(res->timestamp(u128); 0),
+                            context: from_row!(res->context(json); DatabaseError::ValueError),
                         },
                         // get the number of responses the question has
                         self.get_response_count_by_question(id.clone()).await,
@@ -794,7 +828,7 @@ impl Database {
 
     /// Get all global questions by their author and a search query, 12 at a time
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `author`
     /// * `search`
     /// * `page`
@@ -824,7 +858,7 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row).0;
-                    let id = res.get("id").unwrap().to_string();
+                    let id = from_row!(res->id());
                     out.push((
                         Question {
                             author: match self
@@ -843,9 +877,9 @@ impl Database {
                             },
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
-                            ip: res.get("ip").unwrap().to_string(),
-                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
+                            ip: from_row!(res->ip()),
+                            timestamp: from_row!(res->timestamp(u128); 0),
+                            context: from_row!(res->context(json); DatabaseError::ValueError),
                         },
                         // get the number of responses the question has
                         self.get_response_count_by_question(id.clone()).await,
@@ -865,7 +899,7 @@ impl Database {
 
     /// Get all global questions by a search query, 12 at a time
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `page`
     /// * `search`
     pub async fn get_global_questions_searched_paginated(
@@ -892,7 +926,7 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row).0;
-                    let id = res.get("id").unwrap().to_string();
+                    let id = from_row!(res->id());
                     out.push((
                         Question {
                             author: match self
@@ -911,9 +945,9 @@ impl Database {
                             },
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
-                            ip: res.get("ip").unwrap().to_string(),
-                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
+                            ip: from_row!(res->ip()),
+                            timestamp: from_row!(res->timestamp(u128); 0),
+                            context: from_row!(res->context(json); DatabaseError::ValueError),
                         },
                         // get the number of responses the question has
                         self.get_response_count_by_question(id.clone()).await,
@@ -987,7 +1021,7 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row).0;
-                    let id = res.get("id").unwrap().to_string();
+                    let id = from_row!(res->id());
                     out.push((
                         Question {
                             author: match self
@@ -1006,9 +1040,9 @@ impl Database {
                             },
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
-                            ip: res.get("ip").unwrap().to_string(),
-                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
+                            ip: from_row!(res->ip()),
+                            timestamp: from_row!(res->timestamp(u128); 0),
+                            context: from_row!(res->context(json); DatabaseError::ValueError),
                         },
                         // get the number of responses the question has
                         self.get_response_count_by_question(id.clone()).await,
@@ -1050,7 +1084,7 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row).0;
-                    let id = res.get("id").unwrap().to_string();
+                    let id = from_row!(res->id());
                     out.push((
                         Question {
                             author: match self
@@ -1069,9 +1103,9 @@ impl Database {
                             },
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
-                            ip: res.get("ip").unwrap().to_string(),
-                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
+                            ip: from_row!(res->ip()),
+                            timestamp: from_row!(res->timestamp(u128); 0),
+                            context: from_row!(res->context(json); DatabaseError::ValueError),
                         },
                         // get the number of responses the question has
                         self.get_response_count_by_question(id.clone()).await,
@@ -1124,7 +1158,7 @@ impl Database {
 
     /// Get all questions by their author
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `author`
     pub async fn get_questions_by_author(
         &self,
@@ -1151,7 +1185,7 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row).0;
-                    let id = res.get("id").unwrap().to_string();
+                    let id = from_row!(res->id());
                     out.push((
                         Question {
                             author: match self
@@ -1170,9 +1204,9 @@ impl Database {
                             },
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
-                            ip: res.get("ip").unwrap().to_string(),
-                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
-                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
+                            ip: from_row!(res->ip()),
+                            timestamp: from_row!(res->timestamp(u128); 0),
+                            context: from_row!(res->context(json); DatabaseError::ValueError),
                         },
                         // get the number of responses the question has
                         self.get_response_count_by_question(id.clone()).await,
@@ -1229,6 +1263,7 @@ impl Database {
     /// * `props` - [`QuestionCreate`]
     /// * `author` - the ID of the user creating the question
     /// * `ip` - author IP
+    #[async_recursion]
     pub async fn create_question(
         &self,
         mut props: QuestionCreate,
@@ -1336,6 +1371,14 @@ impl Database {
                     return Ok(String::new());
                 }
             }
+
+            // incr recipient inbox count
+            simplify!(
+                self.auth
+                    .update_profile_inbox_count(recipient.id.clone(), recipient.inbox_count + 1)
+                    .await;
+                Err; Err(DatabaseError::Other)
+            )
         } else {
             // anonymous users cannot ask global questions
             if tag.0 == true {
@@ -1356,7 +1399,7 @@ impl Database {
             }
 
             // check content length
-            if props.content.trim().len() < 2 {
+            if (props.content.trim().len() < 2) && props.ref_id.is_empty() {
                 return Err(DatabaseError::ContentTooShort);
             }
 
@@ -1390,7 +1433,7 @@ impl Database {
                 }
 
                 // check content length
-                if props.content.trim().len() < 2 {
+                if (props.content.trim().len() < 2) && props.ref_id.is_empty() {
                     return Err(DatabaseError::ContentTooShort);
                 }
 
@@ -1407,7 +1450,7 @@ impl Database {
                 }
             } else {
                 // true anonymous
-                if props.content.trim().len() < 2 {
+                if (props.content.trim().len() < 2) && props.ref_id.is_empty() {
                     return Err(DatabaseError::ContentTooShort);
                 }
 
@@ -1426,7 +1469,7 @@ impl Database {
         // check markdown content
         let markdown = rainbeam_shared::ui::render_markdown(&props.content);
 
-        if markdown.trim().len() == 0 {
+        if (markdown.trim().len() == 0) && props.ref_id.is_empty() {
             return Err(DatabaseError::ContentTooShort);
         }
 
@@ -1445,7 +1488,11 @@ impl Database {
             id: AlmostSnowflake::new(self.config.snowflake_server_id).to_string(),
             timestamp: utility::unix_epoch_timestamp(),
             ip: ip.clone(),
-            context: QuestionContext { media: props.media },
+            context: QuestionContext {
+                media: props.media,
+                ref_id: props.ref_id,
+                source_id: String::new(),
+            },
         };
 
         // create question
@@ -1479,6 +1526,47 @@ impl Database {
                             question.author.username
                         ))
                         .await;
+
+                    // create ref questions for all friends
+                    // we're doing friends here instead of followers because are probably
+                    // going to have many more followers than friends
+                    let friends = simplify!(
+                        self.auth
+                            .get_user_participating_relationships_of_status(question.author.id.clone(), RelationshipStatus::Friends)
+                            .await;
+                        Result; Vec::new()
+                    );
+
+                    for friend in friends {
+                        let friend = if friend.0.id == question.author.id {
+                            friend.1
+                        } else {
+                            friend.0
+                        };
+
+                        if friend
+                            .metadata
+                            .is_true("rainbeam:do_not_send_global_questions_to_inbox")
+                        {
+                            continue;
+                        }
+
+                        simplify!(
+                            self.create_question(
+                                QuestionCreate {
+                                    recipient: friend.id,
+                                    content: String::new(),
+                                    anonymous: false,
+                                    media: String::new(),
+                                    ref_id: question.id.clone(),
+                                },
+                                question.author.id.clone(),
+                                ip.clone(),
+                            )
+                            .await;
+                            Err
+                        )
+                    }
                 }
 
                 // ...
@@ -1587,7 +1675,7 @@ impl Database {
 
     /// Delete all questions by their recipient
     ///
-    /// ## Arguments:
+    /// # Arguments
     /// * `recipient`
     /// * `user`
     pub async fn delete_questions_by_recipient(
@@ -1635,7 +1723,7 @@ impl Database {
     /// Get a response from a database result
     pub async fn gimme_response(&self, res: BTreeMap<String, String>) -> Result<FullResponse> {
         let question = res.get("question").unwrap().to_string();
-        let id = res.get("id").unwrap().to_string();
+        let id = from_row!(res->id());
         let author = res.get("author").unwrap().to_string();
         let ctx: ResponseContext =
             match serde_json::from_str(res.get("context").unwrap_or(&"{}".to_string())) {
@@ -1673,7 +1761,7 @@ impl Database {
                 question,
                 content: res.get("content").unwrap().to_string(),
                 id: id.to_owned(),
-                timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                timestamp: from_row!(res->timestamp(u128); 0),
                 tags: match serde_json::from_str(res.get("tags").unwrap()) {
                     Ok(t) => t,
                     Err(_) => return Err(DatabaseError::ValueError),
@@ -1716,7 +1804,7 @@ impl Database {
         res: BTreeMap<String, String>,
     ) -> Result<QuestionResponse> {
         let question = res.get("question").unwrap().to_string();
-        let id = res.get("id").unwrap().to_string();
+        let id = from_row!(res->id());
         let author = res.get("author").unwrap().to_string();
         let ctx: ResponseContext =
             match serde_json::from_str(res.get("context").unwrap_or(&"{}".to_string())) {
@@ -1743,7 +1831,7 @@ impl Database {
             question,
             content: res.get("content").unwrap().to_string(),
             id: id.to_owned(),
-            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+            timestamp: from_row!(res->timestamp(u128); 0),
             tags: match serde_json::from_str(res.get("tags").unwrap()) {
                 Ok(t) => t,
                 Err(_) => return Err(DatabaseError::ValueError),
@@ -3409,8 +3497,8 @@ impl Database {
             },
             response: res.get("response").unwrap().to_string(),
             content: res.get("content").unwrap().to_string(),
-            id: res.get("id").unwrap().to_string(),
-            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+            id: from_row!(res->id()),
+            timestamp: from_row!(res->timestamp(u128); 0),
             reply: if reply.is_empty() {
                 None
             } else {
@@ -3420,8 +3508,8 @@ impl Database {
                 }
             },
             edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
-            ip: res.get("ip").unwrap().to_string(),
-            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
+            ip: from_row!(res->ip()),
+            context: from_row!(res->context(json); DatabaseError::ValueError),
         };
 
         // store in cache
@@ -3477,7 +3565,7 @@ impl Database {
                     let res = self.base.textify_row(row).0;
 
                     let reply = res.get("reply").unwrap().to_string();
-                    let id = res.get("id").unwrap().to_string();
+                    let id = from_row!(res->id());
 
                     out.push((
                         ResponseComment {
@@ -3491,7 +3579,7 @@ impl Database {
                             response: res.get("response").unwrap().to_string(),
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
-                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            timestamp: from_row!(res->timestamp(u128); 0),
                             reply: if reply.is_empty() {
                                 None
                             } else {
@@ -3501,8 +3589,8 @@ impl Database {
                                 }
                             },
                             edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
-                            ip: res.get("ip").unwrap().to_string(),
-                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
+                            ip: from_row!(res->ip()),
+                            context: from_row!(res->context(json); DatabaseError::ValueError),
                         },
                         self.get_reply_count_by_comment(id.clone()).await,
                         self.get_reaction_count_by_asset(id).await,
@@ -3548,7 +3636,7 @@ impl Database {
                     let res = self.base.textify_row(row).0;
 
                     let reply = res.get("reply").unwrap().to_string();
-                    let id = res.get("id").unwrap().to_string();
+                    let id = from_row!(res->id());
 
                     out.push((
                         ResponseComment {
@@ -3562,7 +3650,7 @@ impl Database {
                             response: res.get("response").unwrap().to_string(),
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
-                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            timestamp: from_row!(res->timestamp(u128); 0),
                             reply: if reply.is_empty() {
                                 None
                             } else {
@@ -3572,8 +3660,8 @@ impl Database {
                                 }
                             },
                             edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
-                            ip: res.get("ip").unwrap().to_string(),
-                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
+                            ip: from_row!(res->ip()),
+                            context: from_row!(res->context(json); DatabaseError::ValueError),
                         },
                         self.get_reply_count_by_comment(id.clone()).await,
                         self.get_reaction_count_by_asset(id).await,
@@ -3645,7 +3733,7 @@ impl Database {
                     let res = self.base.textify_row(row).0;
 
                     let reply = res.get("reply").unwrap().to_string();
-                    let id = res.get("id").unwrap().to_string();
+                    let id = from_row!(res->id());
 
                     out.push((
                         ResponseComment {
@@ -3659,7 +3747,7 @@ impl Database {
                             response: res.get("response").unwrap().to_string(),
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
-                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            timestamp: from_row!(res->timestamp(u128); 0),
                             reply: if reply.is_empty() {
                                 None
                             } else {
@@ -3669,8 +3757,8 @@ impl Database {
                                 }
                             },
                             edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
-                            ip: res.get("ip").unwrap().to_string(),
-                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
+                            ip: from_row!(res->ip()),
+                            context: from_row!(res->context(json); DatabaseError::ValueError),
                         },
                         self.get_reply_count_by_comment(id.clone()).await,
                         self.get_reaction_count_by_asset(id).await,
@@ -3713,7 +3801,7 @@ impl Database {
                     let res = self.base.textify_row(row).0;
 
                     let reply = res.get("reply").unwrap().to_string();
-                    let id = res.get("id").unwrap().to_string();
+                    let id = from_row!(res->id());
 
                     out.push((
                         ResponseComment {
@@ -3727,7 +3815,7 @@ impl Database {
                             response: res.get("response").unwrap().to_string(),
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
-                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            timestamp: from_row!(res->timestamp(u128); 0),
                             reply: if reply.is_empty() {
                                 None
                             } else {
@@ -3737,8 +3825,8 @@ impl Database {
                                 }
                             },
                             edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
-                            ip: res.get("ip").unwrap().to_string(),
-                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
+                            ip: from_row!(res->ip()),
+                            context: from_row!(res->context(json); DatabaseError::ValueError),
                         },
                         self.get_reply_count_by_comment(id.clone()).await,
                         self.get_reaction_count_by_asset(id).await,
@@ -3783,7 +3871,7 @@ impl Database {
                     let res = self.base.textify_row(row).0;
 
                     let reply = res.get("reply").unwrap().to_string();
-                    let id = res.get("id").unwrap().to_string();
+                    let id = from_row!(res->id());
 
                     out.push((
                         ResponseComment {
@@ -3797,7 +3885,7 @@ impl Database {
                             response: res.get("response").unwrap().to_string(),
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
-                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            timestamp: from_row!(res->timestamp(u128); 0),
                             reply: if reply.is_empty() {
                                 None
                             } else {
@@ -3807,8 +3895,8 @@ impl Database {
                                 }
                             },
                             edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
-                            ip: res.get("ip").unwrap().to_string(),
-                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
+                            ip: from_row!(res->ip()),
+                            context: from_row!(res->context(json); DatabaseError::ValueError),
                         },
                         if recurse == true {
                             self.get_reply_count_by_comment(id.clone()).await
@@ -3858,7 +3946,7 @@ impl Database {
                     let res = self.base.textify_row(row).0;
 
                     let reply = res.get("reply").unwrap().to_string();
-                    let id = res.get("id").unwrap().to_string();
+                    let id = from_row!(res->id());
 
                     out.push((
                         ResponseComment {
@@ -3872,7 +3960,7 @@ impl Database {
                             response: res.get("response").unwrap().to_string(),
                             content: res.get("content").unwrap().to_string(),
                             id: id.clone(),
-                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            timestamp: from_row!(res->timestamp(u128); 0),
                             reply: if reply.is_empty() {
                                 None
                             } else {
@@ -3882,8 +3970,8 @@ impl Database {
                                 }
                             },
                             edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
-                            ip: res.get("ip").unwrap().to_string(),
-                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
+                            ip: from_row!(res->ip()),
+                            context: from_row!(res->context(json); DatabaseError::ValueError),
                         },
                         self.get_reply_count_by_comment(id.clone()).await,
                         self.get_reaction_count_by_asset(id).await,
@@ -4451,7 +4539,7 @@ impl Database {
                 Err(_) => anonymous_profile("anonymous".to_string()),
             },
             asset: res.get("asset").unwrap().to_string(),
-            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+            timestamp: from_row!(res->timestamp(u128); 0),
         };
 
         // store in cache
@@ -4494,7 +4582,7 @@ impl Database {
                             Err(_) => continue,
                         },
                         asset: res.get("asset").unwrap().to_string(),
-                        timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                        timestamp: from_row!(res->timestamp(u128); 0),
                     });
                 }
 
@@ -4763,10 +4851,10 @@ impl Database {
 
         // return
         let chat = Chat {
-            id: res.get("id").unwrap().to_string(),
+            id: from_row!(res->id()),
             users: serde_json::from_str(res.get("users").unwrap()).unwrap(),
-            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
-            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+            context: from_row!(res->context(json); DatabaseError::ValueError),
+            timestamp: from_row!(res->timestamp(u128); 0),
             name: res.get("name").unwrap_or(&String::new()).to_string(),
         };
 
@@ -4820,10 +4908,10 @@ impl Database {
 
         // return
         let chat = Chat {
-            id: res.get("id").unwrap().to_string(),
+            id: from_row!(res->id()),
             users: serde_json::from_str(res.get("users").unwrap()).unwrap(),
-            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
-            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+            context: from_row!(res->context(json); DatabaseError::ValueError),
+            timestamp: from_row!(res->timestamp(u128); 0),
             name: res.get("name").unwrap_or(&String::new()).to_string(),
         };
 
@@ -4871,10 +4959,10 @@ impl Database {
 
                     out.push((
                         Chat {
-                            id: res.get("id").unwrap().to_string(),
+                            id: from_row!(res->id()),
                             users,
-                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
-                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            context: from_row!(res->context(json); DatabaseError::ValueError),
+                            timestamp: from_row!(res->timestamp(u128); 0),
                             name: res.get("name").unwrap_or(&String::new()).to_string(),
                         },
                         profiles_out,
@@ -5275,12 +5363,12 @@ impl Database {
 
         // return
         let message = Message {
-            id: res.get("id").unwrap().to_string(),
+            id: from_row!(res->id()),
             chat: res.get("chat").unwrap().to_string(),
             author: res.get("author").unwrap().to_string(),
             content: res.get("content").unwrap().to_string(),
-            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
-            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+            context: from_row!(res->context(json); DatabaseError::ValueError),
+            timestamp: from_row!(res->timestamp(u128); 0),
             edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
         };
 
@@ -5318,12 +5406,12 @@ impl Database {
 
         // return
         let message = Message {
-            id: res.get("id").unwrap().to_string(),
+            id: from_row!(res->id()),
             chat: res.get("chat").unwrap().to_string(),
             author: res.get("author").unwrap().to_string(),
             content: res.get("content").unwrap().to_string(),
-            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
-            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+            context: from_row!(res->context(json); DatabaseError::ValueError),
+            timestamp: from_row!(res->timestamp(u128); 0),
             edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
         };
 
@@ -5364,12 +5452,12 @@ impl Database {
 
                     out.push((
                         Message {
-                            id: res.get("id").unwrap().to_string(),
+                            id: from_row!(res->id()),
                             chat: res.get("chat").unwrap().to_string(),
                             author: res.get("author").unwrap().to_string(),
                             content: res.get("content").unwrap().to_string(),
-                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
-                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            context: from_row!(res->context(json); DatabaseError::ValueError),
+                            timestamp: from_row!(res->timestamp(u128); 0),
                         },
                         match self.auth.get_profile(author).await {
                             Ok(p) => p,
@@ -5412,12 +5500,12 @@ impl Database {
 
                     out.push((
                         Message {
-                            id: res.get("id").unwrap().to_string(),
+                            id: from_row!(res->id()),
                             chat: res.get("chat").unwrap().to_string(),
                             author: res.get("author").unwrap().to_string(),
                             content: res.get("content").unwrap().to_string(),
-                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
-                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            context: from_row!(res->context(json); DatabaseError::ValueError),
+                            timestamp: from_row!(res->timestamp(u128); 0),
                             edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
                         },
                         match self.auth.get_profile(author).await {
@@ -5465,12 +5553,12 @@ impl Database {
 
                     out.push((
                         Message {
-                            id: res.get("id").unwrap().to_string(),
+                            id: from_row!(res->id()),
                             chat: res.get("chat").unwrap().to_string(),
                             author: res.get("author").unwrap().to_string(),
                             content: res.get("content").unwrap().to_string(),
-                            context: serde_json::from_str(res.get("context").unwrap()).unwrap(),
-                            timestamp: res.get("timestamp").unwrap().parse::<u128>().unwrap(),
+                            context: from_row!(res->context(json); DatabaseError::ValueError),
+                            timestamp: from_row!(res->timestamp(u128); 0),
                             edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
                         },
                         match self.auth.get_profile(author).await {

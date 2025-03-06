@@ -60,6 +60,10 @@ pub struct Profile {
     /// The TOTP recovery codes for this profile.
     #[serde(default)]
     pub recovery_codes: Vec<String>,
+    /// The number of unread notifications the profile has.
+    pub notification_count: usize,
+    /// The number of unread questions the profile has in their inbox.
+    pub inbox_count: usize,
 }
 
 impl Profile {
@@ -183,6 +187,8 @@ impl Default for Profile {
             response_count: 0,
             totp: String::new(),
             recovery_codes: Vec::new(),
+            notification_count: 0,
+            inbox_count: 0,
         }
     }
 }
