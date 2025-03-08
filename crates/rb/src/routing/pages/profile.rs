@@ -15,7 +15,7 @@ use crate::database::Database;
 use crate::model::{Chat, DatabaseError, FullResponse, Question, RelationshipStatus};
 use crate::ToHtml;
 
-use super::{clean_metadata, PaginatedQuery, ProfileQuery, MarkdownTemplate};
+use super::{clean_metadata, MarkdownTemplate, PaginatedQuery, PasswordQuery, ProfileQuery};
 
 #[derive(Template)]
 #[template(path = "profile/profile.html")]
@@ -314,7 +314,6 @@ struct PartialProfileTemplate {
     // ...
     is_powerful: bool, // at least "manager"
     is_helper: bool,   // at least "helper"
-    unlocked: bool,
 }
 
 /// GET /@{username}/_app/feed.html
@@ -482,13 +481,6 @@ pub async fn partial_profile_request(
             // ...
             is_powerful,
             is_helper,
-            unlocked: if other.metadata.exists("rainbeam:view_password") {
-                (other.metadata.soft_get("rainbeam:view_password") == query.password)
-                    | is_self
-                    | is_helper
-            } else {
-                true
-            },
         }
         .render()
         .unwrap(),
@@ -1475,6 +1467,7 @@ struct ProfileQuestionsTemplate {
     disallow_anonymous: bool,
     require_account: bool,
     hide_social: bool,
+    unlocked: bool,
     is_powerful: bool,
     is_helper: bool,
     is_self: bool,
@@ -1676,6 +1669,13 @@ pub async fn questions_request(
                 .unwrap_or(&"false".to_string())
                 == "true")
                 && !is_self,
+            unlocked: if other.metadata.exists("rainbeam:view_password") {
+                (other.metadata.soft_get("rainbeam:view_password") == query.password)
+                    | is_self
+                    | is_helper
+            } else {
+                true
+            },
             is_powerful,
             is_helper,
             is_self,
@@ -1713,6 +1713,7 @@ struct ModTemplate {
     disallow_anonymous: bool,
     require_account: bool,
     hide_social: bool,
+    unlocked: bool,
     is_powerful: bool,
     is_helper: bool,
     is_self: bool,
@@ -1723,6 +1724,7 @@ pub async fn mod_request(
     jar: CookieJar,
     Path(username): Path<String>,
     State(database): State<Database>,
+    Query(query): Query<PasswordQuery>,
 ) -> impl IntoResponse {
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
@@ -1871,6 +1873,13 @@ pub async fn mod_request(
                 .unwrap_or(&"false".to_string())
                 == "true")
                 && !is_self,
+            unlocked: if other.metadata.exists("rainbeam:view_password") {
+                (other.metadata.soft_get("rainbeam:view_password") == query.password)
+                    | is_self
+                    | is_helper
+            } else {
+                true
+            },
             is_powerful,
             is_helper,
             is_self,
@@ -1904,6 +1913,7 @@ struct ProfileQuestionsInboxTemplate {
     disallow_anonymous: bool,
     require_account: bool,
     hide_social: bool,
+    unlocked: bool,
     is_powerful: bool,
     is_helper: bool,
     is_self: bool,
@@ -1914,6 +1924,7 @@ pub async fn inbox_request(
     jar: CookieJar,
     Path(username): Path<String>,
     State(database): State<Database>,
+    Query(query): Query<PasswordQuery>,
 ) -> impl IntoResponse {
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
@@ -2058,6 +2069,13 @@ pub async fn inbox_request(
                 .unwrap_or(&"false".to_string())
                 == "true")
                 && !is_self,
+            unlocked: if other.metadata.exists("rainbeam:view_password") {
+                (other.metadata.soft_get("rainbeam:view_password") == query.password)
+                    | is_self
+                    | is_helper
+            } else {
+                true
+            },
             is_powerful,
             is_helper,
             is_self,
@@ -2092,6 +2110,7 @@ struct ProfileQuestionsOutboxTemplate {
     disallow_anonymous: bool,
     require_account: bool,
     hide_social: bool,
+    unlocked: bool,
     is_powerful: bool,
     is_helper: bool,
     is_self: bool,
@@ -2102,7 +2121,7 @@ pub async fn outbox_request(
     jar: CookieJar,
     Path(username): Path<String>,
     State(database): State<Database>,
-    Query(query): Query<PaginatedQuery>,
+    Query(query): Query<ProfileQuery>,
 ) -> impl IntoResponse {
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
@@ -2248,6 +2267,13 @@ pub async fn outbox_request(
                 .unwrap_or(&"false".to_string())
                 == "true")
                 && !is_self,
+            unlocked: if other.metadata.exists("rainbeam:view_password") {
+                (other.metadata.soft_get("rainbeam:view_password") == query.password)
+                    | is_self
+                    | is_helper
+            } else {
+                true
+            },
             is_powerful,
             is_helper,
             is_self,

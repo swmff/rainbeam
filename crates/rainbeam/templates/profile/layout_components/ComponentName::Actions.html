@@ -47,11 +47,15 @@
             "profile:base.html:link.account_settings" }}
         </a>
 
-        <a
-            href="javascript:document.getElementById('embed_dialog').showModal()"
+        <button
+            onclick="trigger('app::copy_text', ['{{ config.host }}/@{{ other.username }}'])"
         >
+            {{ icon "copy" }} {{ text "general:action.copy_link" }}
+        </button>
+
+        <button onclick="document.getElementById('embed_dialog').showModal()">
             {{ icon "code" }} {{ text "profile:base.html:link.embed_profile" }}
-        </a>
+        </button>
     </div>
 </div>
 {% else %}

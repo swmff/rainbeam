@@ -1,4 +1,5 @@
 use authbeam::api::profile::read_image;
+use rainbeam::carp::CarpGraph;
 use crate::database::Database;
 use axum::{
     body::Body,
@@ -16,6 +17,7 @@ pub fn routes(database: Database) -> Router {
         .route("/lang", get(langfile_request))
         .route("/lang/set", post(set_langfile_request))
         .route("/ext/image", get(external_image_request))
+        .route("/carpsvg", post(render_carpgraph))
         // ...
         .with_state(database.clone())
 }
@@ -155,4 +157,8 @@ pub async fn set_langfile_request(Query(props): Query<LangFileQuery>) -> impl In
         },
         "Language changed",
     )
+}
+
+pub async fn render_carpgraph(Json(data): Json<CarpGraph>) -> impl IntoResponse {
+    data.to_svg()
 }

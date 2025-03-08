@@ -23,6 +23,8 @@
         "move-up",
         "move-down",
         "plus",
-        "type"
+        "type",
+        "file-json",
+        "code-xml"
     ]
 }

@@ -771,11 +771,39 @@ pub async fn privacy_request(
 
 #[derive(Template)]
 #[template(path = "fun/carp.html")]
-struct CarpTemplate {}
+struct CarpTemplate {
+    config: Config,
+    lang: langbeam::LangFile,
+    profile: Option<Box<Profile>>,
+}
 
 /// GET /site/fun/carp
-pub async fn carp_request() -> impl IntoResponse {
-    Html(CarpTemplate {}.render().unwrap())
+pub async fn carp_request(jar: CookieJar, State(database): State<Database>) -> impl IntoResponse {
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => Some(ua),
+            Err(_) => None,
+        },
+        None => None,
+    };
+
+    Html(
+        CarpTemplate {
+            config: database.config.clone(),
+            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
+                c.value_trimmed()
+            } else {
+                ""
+            }),
+            profile: auth_user,
+        }
+        .render()
+        .unwrap(),
+    )
 }
 
 #[derive(Template)]
@@ -912,6 +940,12 @@ pub struct ProfileQuery {
     pub page: i32,
     pub tag: Option<String>,
     pub q: Option<String>,
+    #[serde(default)]
+    pub password: String,
+}
+
+#[derive(Deserialize)]
+pub struct PasswordQuery {
     #[serde(default)]
     pub password: String,
 }

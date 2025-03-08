@@ -204,17 +204,64 @@
                 });
 
                 // media buttons
-                const download_button = document.createElement("button");
-                download_button.title = "Download graph";
-                download_button.appendChild(
+                const download_dropdown = document.createElement("div");
+                download_dropdown.className = "dropdown";
+
+                const download_dropdown_button =
+                    document.createElement("button");
+                download_dropdown_button.title = "Download graph";
+                download_dropdown_button.setAttribute("type", "button");
+                download_dropdown_button.appendChild(
                     await trigger("app::icon", ["download", "icon"]),
                 );
+                download_dropdown_button.addEventListener("click", (event) => {
+                    trigger("app::hooks::dropdown", [event]);
+                });
+                download_dropdown_button.setAttribute("exclude", "dropdown");
 
-                media_container.appendChild(download_button);
-                download_button.setAttribute("type", "button");
-                download_button.addEventListener("click", () => {
+                const inner = document.createElement("div");
+                inner.className = "inner";
+                inner.setAttribute("exclude", "dropdown");
+
+                const download_as_carpgraph_button =
+                    document.createElement("button");
+                download_as_carpgraph_button.setAttribute("type", "button");
+                download_as_carpgraph_button.appendChild(
+                    await trigger("app::icon", ["file-json", "icon"]),
+                );
+                download_as_carpgraph_button.appendChild(
+                    (() => {
+                        const span = document.createElement("span");
+                        span.innerText = "Download .carpgraph";
+                        return span;
+                    })(),
+                );
+
+                download_as_carpgraph_button.addEventListener("click", () => {
                     this.download();
                 });
+
+                const download_as_svg_button = document.createElement("button");
+                download_as_svg_button.setAttribute("type", "button");
+                download_as_svg_button.appendChild(
+                    await trigger("app::icon", ["code-xml", "icon"]),
+                );
+                download_as_svg_button.appendChild(
+                    (() => {
+                        const span = document.createElement("span");
+                        span.innerText = "Download .svg";
+                        return span;
+                    })(),
+                );
+
+                download_as_svg_button.addEventListener("click", () => {
+                    this.download_svg();
+                });
+
+                inner.appendChild(download_as_carpgraph_button);
+                inner.appendChild(download_as_svg_button);
+                download_dropdown.appendChild(download_dropdown_button);
+                media_container.appendChild(download_dropdown);
 
                 const upload_button = document.createElement("button");
                 upload_button.title = "Upload graph";
@@ -222,6 +269,7 @@
                     await trigger("app::icon", ["upload", "icon"]),
                 );
 
+                download_dropdown.appendChild(inner);
                 media_container.appendChild(upload_button);
                 upload_button.setAttribute("type", "button");
                 upload_button.addEventListener("click", () => {
@@ -347,10 +395,10 @@
             return URL.createObjectURL(blob);
         }
 
-        /// Export lines as string
-        as_string() {
+        /// Create JSON representation of the graph
+        as_json() {
             this.push_state();
-            return JSON.stringify({
+            return {
                 // Canvas info
                 i: {
                     // Canvas width
@@ -360,7 +408,12 @@
                 },
                 // Canvas data
                 d: this.LINES,
-            });
+            };
+        }
+
+        /// Export lines as string
+        as_string() {
+            return JSON.stringify(this.as_json());
         }
 
         /// Import string as lines
@@ -430,6 +483,31 @@
             anchor.remove();
 
             URL.revokeObjectURL(url);
+        }
+
+        /// Download image as `.svg`
+        download_svg() {
+            fetch("/api/v0/util/carpsvg", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(this.as_json()),
+            })
+                .then((res) => res.text())
+                .then((res) => {
+                    const blob = new Blob([res], { type: "image/svg+xml" });
+                    const url = URL.createObjectURL(blob);
+
+                    const anchor = document.createElement("a");
+                    anchor.href = url;
+                    anchor.setAttribute("download", "image.svg");
+                    document.body.appendChild(anchor);
+                    anchor.click();
+                    anchor.remove();
+
+                    URL.revokeObjectURL(url);
+                });
         }
     }
 })();

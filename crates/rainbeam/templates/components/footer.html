@@ -1,5 +1,9 @@
 <footer class="fade">
-    <span class="item">{{ config.name }}</span>
+    <span class="item"
+        ><a href='https://github.com/swmff/rainbeam/commit/{{ var "commit" }}'
+            >{{ config.name }}</a
+        ></span
+    >
 
     <span class="item"
         ><a href="/site/about">{{ text "base.html:link.about" }}</a></span
@@ -16,12 +20,4 @@
             >{{ text "general:link.privacy_policy" }}</a
         ></span
     >
-
-    <span class="item">
-        <a href='https://github.com/swmff/rainbeam/commit/{{ var "commit" }}'
-            >{{ var "commit_short" }}</a
-        >
-
-        (built <span class="date">{{ var "time_unix" }}</span>)
-    </span>
 </footer>
