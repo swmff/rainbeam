@@ -5,6 +5,7 @@ use crate::model::{
     SetProfileMetadata, SetProfilePassword, SetProfileTier, SetProfileUsername, TOTPDisable,
     TokenContext, TokenPermission,
 };
+use crate::simplify;
 use databeam::prelude::DefaultReturn;
 use pathbufd::pathd;
 
@@ -285,11 +286,7 @@ pub async fn get_request(
     let mut auth_user = match database.get_profile(id).await {
         Ok(ua) => ua,
         Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: None,
-            });
+            return Json(e.to_json());
         }
     };
 
@@ -313,11 +310,7 @@ pub async fn get_from_token_request(
     let auth_user = match database.get_profile_by_unhashed(token).await {
         Ok(ua) => ua,
         Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: None,
-            });
+            return Json(e.to_json());
         }
     };
 
@@ -363,13 +356,7 @@ pub async fn update_tier_request(
     // check permission
     let group = match database.get_group_by_id(auth_user.group).await {
         Ok(g) => g,
-        Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: None,
-            })
-        }
+        Err(e) => return Json(e.to_json()),
     };
 
     if !group.permissions.check(FinePermission::MANAGE_PROFILE_TIER) {
@@ -385,24 +372,14 @@ pub async fn update_tier_request(
     let other_user = match database.get_profile(id.clone()).await {
         Ok(ua) => ua,
         Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: None,
-            });
+            return Json(e.to_json());
         }
     };
 
     // check permission
     let group = match database.get_group_by_id(other_user.group).await {
         Ok(g) => g,
-        Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: None,
-            })
-        }
+        Err(e) => return Json(e.to_json()),
     };
 
     if group.permissions.check(FinePermission::MANAGE_PROFILE_TIER) {
@@ -445,9 +422,7 @@ pub async fn update_group_request(
             .await
         {
             Ok(ua) => ua,
-            Err(e) => {
-                return Json(e.to_json());
-            }
+            Err(e) => return Json(e.to_json()),
         },
         None => return Json(DatabaseError::NotAllowed.to_json()),
     };
@@ -565,13 +540,7 @@ pub async fn update_coins_request(
     // check permission
     let group = match database.get_group_by_id(auth_user.group).await {
         Ok(g) => g,
-        Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: None,
-            })
-        }
+        Err(e) => return Json(e.to_json()),
     };
 
     if !group.permissions.check(FinePermission::ECON_MASTER) {
@@ -587,11 +556,7 @@ pub async fn update_coins_request(
     let other_user = match database.get_profile(id.clone()).await {
         Ok(ua) => ua,
         Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: None,
-            });
+            return Json(e.to_json());
         }
     };
 
@@ -791,11 +756,7 @@ pub async fn generate_token_request(
     let mut other = match database.get_profile(id).await {
         Ok(o) => o,
         Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: None,
-            });
+            return Json(e.to_json());
         }
     };
 
@@ -809,13 +770,7 @@ pub async fn generate_token_request(
 
     let group = match database.get_group_by_id(auth_user.group).await {
         Ok(g) => g,
-        Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: None,
-            })
-        }
+        Err(e) => return Json(e.to_json()),
     };
 
     if !group.permissions.check(FinePermission::EDIT_USER) {
@@ -830,13 +785,7 @@ pub async fn generate_token_request(
     // check permission
     let group = match database.get_group_by_id(other.group).await {
         Ok(g) => g,
-        Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: None,
-            })
-        }
+        Err(e) => return Json(e.to_json()),
     };
 
     if group.permissions.check(FinePermission::ADMINISTRATOR) {
@@ -1496,13 +1445,7 @@ pub async fn delete_request(
             .await
         {
             Ok(ua) => ua,
-            Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: (),
-                });
-            }
+            Err(e) => return Json(e.to_json()),
         },
         None => return Json(DatabaseError::NotAllowed.to_json()),
     };
@@ -1523,13 +1466,7 @@ pub async fn delete_request(
         // get other user
         let other_user = match database.get_profile_by_id(id.clone()).await {
             Ok(ua) => ua,
-            Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: (),
-                });
-            }
+            Err(e) => return Json(e.to_json()),
         };
 
         if !group.permissions.check(FinePermission::DELETE_USER) {
@@ -1537,7 +1474,8 @@ pub async fn delete_request(
             return Json(DatabaseError::NotAllowed.to_json());
         } else {
             let actor_id = auth_user.id;
-            if let Err(e) = database
+            simplify!(
+                database
                 .create_notification(
                     NotificationCreate {
                         title: format!("[{actor_id}](/+u/{actor_id})"),
@@ -1547,14 +1485,8 @@ pub async fn delete_request(
                     },
                     None,
                 )
-                .await
-            {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: (),
-                });
-            }
+                .await; Err; Json(DatabaseError::Other.to_json())
+            );
         }
 
         // check permission

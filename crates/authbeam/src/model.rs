@@ -16,39 +16,41 @@ use crate::layout::LayoutComponent;
 /// Basic user structure
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Profile {
-    /// User ID
+    /// User ID.
     pub id: String,
-    /// User name
+    /// User name.
     pub username: String,
-    /// Hashed user password
+    /// Hashed user password.
     pub password: String,
-    /// User password salt
+    /// User password salt.
     pub salt: String,
-    /// User login tokens
+    /// User login tokens.
     pub tokens: Vec<String>,
-    /// User IPs (these line up with the tokens in `tokens`)
+    /// User IPs (these line up with the tokens in `tokens`).
     pub ips: Vec<String>,
-    /// Extra information about tokens (these line up with the tokens in `tokens`)
+    /// Extra information about tokens (these line up with the tokens in `tokens`).
     pub token_context: Vec<TokenContext>,
-    /// Extra user information
+    /// Extra user information.
     pub metadata: ProfileMetadata,
-    /// User badges
+    /// User badges.
     ///
     /// `Vec<(Text, Background, Text Color)>`
     pub badges: Vec<(String, String, String)>,
-    /// User group
+    /// User group.
     pub group: i32,
-    /// User join timestamp
+    /// User join timestamp.
     pub joined: u128,
-    /// User tier for paid benefits
+    /// User tier for paid benefits.
     pub tier: i32,
-    /// The labels applied to the user (comma separated when as string with 1 comma at the end which creates an empty label)
-    pub labels: Vec<String>,
-    /// User coin balance
+    /// The labels applied to the user (comma separated when as string with 1 comma at the end which creates an empty label).
+    ///
+    /// `Vec<id>` - ID references a label in the `xlabels` table.
+    pub labels: Vec<i64>,
+    /// User coin balance.
     pub coins: i32,
-    /// User links
+    /// User links.
     pub links: BTreeMap<String, String>,
-    /// User layout
+    /// User layout.
     pub layout: LayoutComponent,
     /// The number of questions the profile has asked.
     pub question_count: usize,
@@ -139,6 +141,13 @@ impl Profile {
         }
 
         return TokenContext::default();
+    }
+
+    // labels
+
+    /// Check if the user has the given label by `id`.
+    pub fn has_label(&self, id: i64) -> bool {
+        self.labels.contains(&id)
     }
 
     // totp
@@ -497,11 +506,13 @@ pub struct Mail {
     pub recipient: Vec<String>,
 }
 
+pub const RESERVED_LABEL_QUARANTINE: i64 = -1;
+
 /// A label which describes a user
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct UserLabel {
     /// The ID of the label (unique)
-    pub id: String,
+    pub id: i64,
     /// The name of the label
     pub name: String,
     /// The timestamp of when the label was created
@@ -646,7 +657,7 @@ pub struct SetProfileBadges {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SetProfileLabels {
-    pub labels: Vec<String>,
+    pub labels: Vec<i64>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -766,6 +777,12 @@ pub struct SetItemStatus {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TOTPDisable {
     pub totp: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct LabelCreate {
+    pub id: i64,
+    pub name: String,
 }
 
 /// General API errors

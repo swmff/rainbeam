@@ -22,13 +22,7 @@ pub async fn follow_request(
             .await
         {
             Ok(ua) => ua,
-            Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: (),
-                });
-            }
+            Err(e) => return Json(e.to_json()),
         },
         None => return Json(DatabaseError::NotAllowed.to_json()),
     };
@@ -306,13 +300,7 @@ pub async fn block_request(
                 payload: Some(export),
             })
         }
-        Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: None,
-            })
-        }
+        Err(e) => return Json(e.to_json()),
     }
 }
 
@@ -383,12 +371,6 @@ pub async fn delete_request(
                 payload: Some(export),
             })
         }
-        Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: None,
-            })
-        }
+        Err(e) => return Json(e.to_json()),
     }
 }

@@ -69,13 +69,7 @@ pub async fn create_request(
     // return
     let item = match database.create_item(props, auth_user.id.clone()).await {
         Ok(m) => m,
-        Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: None,
-            })
-        }
+        Err(e) => return Json(e.to_json()),
     };
 
     Json(DefaultReturn {
@@ -98,13 +92,7 @@ pub async fn delete_request(
             .await
         {
             Ok(ua) => ua,
-            Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: (),
-                });
-            }
+            Err(e) => return Json(e.to_json()),
         },
         None => return Json(DatabaseError::NotAllowed.to_json()),
     };
@@ -135,13 +123,7 @@ pub async fn update_status_request(
             .await
         {
             Ok(ua) => ua,
-            Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: (),
-                });
-            }
+            Err(e) => return Json(e.to_json()),
         },
         None => return Json(DatabaseError::NotAllowed.to_json()),
     };
@@ -175,13 +157,7 @@ pub async fn update_item_request(
             .await
         {
             Ok(ua) => ua,
-            Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: (),
-                });
-            }
+            Err(e) => return Json(e.to_json()),
         },
         None => return Json(DatabaseError::NotAllowed.to_json()),
     };
@@ -212,13 +188,7 @@ pub async fn update_item_content_request(
             .await
         {
             Ok(ua) => ua,
-            Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: (),
-                });
-            }
+            Err(e) => return Json(e.to_json()),
         },
         None => return Json(DatabaseError::NotAllowed.to_json()),
     };
@@ -248,13 +218,7 @@ pub async fn buy_request(
             .await
         {
             Ok(ua) => ua,
-            Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: (),
-                });
-            }
+            Err(e) => return Json(e.to_json()),
         },
         None => return Json(DatabaseError::NotAllowed.to_json()),
     };

@@ -4,7 +4,8 @@
     {% if (relationship != crate::model::RelationshipStatus::Friends
         && question.0.author.metadata.is_true("sparkler:private_profile"))
         | (question.0.author.group == -1)
-        | (relationship == crate::model::RelationshipStatus::Blocked) %}
+        | (relationship == crate::model::RelationshipStatus::Blocked)
+        | question.0.author.has_label(authbeam::model::RESERVED_LABEL_QUARANTINE) %}
         {% include "components/private_question.html" %}
     {% else %}
         {% let show_responses = true %}

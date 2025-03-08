@@ -218,13 +218,7 @@ pub async fn export_request(
                 payload: Some(export),
             })
         }
-        Err(e) => {
-            return Json(DefaultReturn {
-                success: false,
-                message: e.to_string(),
-                payload: None,
-            })
-        }
+        Err(e) => return Json(e.to_json()),
     }
 }
 

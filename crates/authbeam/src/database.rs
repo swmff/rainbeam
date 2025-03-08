@@ -1,5 +1,4 @@
 use std::collections::BTreeMap;
-use std::str::Split;
 
 use crate::layout::LayoutComponent;
 use crate::model::{
@@ -189,7 +188,6 @@ impl Database {
                 badges             TEXT,
                 tier               TEXT,
                 token_context      TEXT,
-                labels             TEXT,
                 coins              TEXT DEFAULT '0',
                 links              TEXT DEFAULT '{}',
                 layout             TEXT DEFAULT '{\"json\":\"default.json\"}',
@@ -199,6 +197,7 @@ impl Database {
                 recovery_codes     TEXT DEFAULT '[]'
                 notification_count TEXT DEFAULT '0',
                 inbox_count        TEXT DEFAULT '0'
+                labels             TEXT DEFAULT '[]',
             )",
         )
         .execute(c)
@@ -341,17 +340,6 @@ impl Database {
 
     // util
 
-    /// Collect from `Split<&str>` while cloning everything to make everything owned.
-    pub fn collect_split_owned(input: Split<&str>) -> Vec<String> {
-        let mut out = Vec::new();
-
-        for section in input {
-            out.push(section.to_owned())
-        }
-
-        out
-    }
-
     /// Create a moderator audit log entry.
     pub async fn audit(&self, actor_id: String, content: String) -> Result<()> {
         match self
@@ -394,7 +382,7 @@ impl Database {
             group: from_row!(row->gid(i32); 0),
             joined: from_row!(row->joined(u128); 0),
             tier: from_row!(row->tier(i32); 0),
-            labels: Database::collect_split_owned(row.get("labels").unwrap().split(",")),
+            labels: from_row!(row->labels(json); DatabaseError::ValueError),
             coins: from_row!(row->coins(i32); 0),
             links: from_row!(row->links(json); DatabaseError::ValueError),
             layout: from_row!(row->layout(json); DatabaseError::ValueError),
@@ -762,8 +750,7 @@ impl Database {
             .bind::<&str>("[]")
             .bind::<i8>(0)
             .bind::<&str>("[]")
-            .bind::<&str>("")
-            .bind::<i8>(0) // start with 100 coins
+            .bind::<i8>(0)
             .bind::<&str>("{}")
             .bind::<&str>("{\"json\":\"default.json\"}")
             .bind::<i8>(0)
@@ -772,6 +759,7 @@ impl Database {
             .bind::<&str>("[]")
             .bind::<i8>(0)
             .bind::<i8>(0)
+            .bind::<&str>("[]")
             .execute(c)
             .await
         {
@@ -938,7 +926,7 @@ impl Database {
     }
 
     /// Update a [`Profile`]'s labels by its `id`
-    pub async fn update_profile_labels(&self, id: String, labels: Vec<String>) -> Result<()> {
+    pub async fn update_profile_labels(&self, id: String, labels: Vec<i64>) -> Result<()> {
         // make sure user exists
         let ua = match self.get_profile(id.clone()).await {
             Ok(ua) => ua,
@@ -2049,7 +2037,7 @@ impl Database {
         {
             "INSERT INTO \"xfollows\" VALUES (?, ?)"
         } else {
-            "INSERT INTO \"xfollows\" VALEUS ($1, $2)"
+            "INSERT INTO \"xfollows\" VALUES ($1, $2)"
         }
         .to_string();
 
@@ -2375,7 +2363,7 @@ impl Database {
         {
             "INSERT INTO \"xnotifications\" VALUES (?, ?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xnotifications\" VALEUS ($1, $2, $3, $4, $5, $6)"
+            "INSERT INTO \"xnotifications\" VALUES ($1, $2, $3, $4, $5, $6)"
         }
         .to_string();
 
@@ -2712,7 +2700,7 @@ impl Database {
         {
             "INSERT INTO \"xwarnings\" VALUES (?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xwarnings\" VALEUS ($1, $2, $3, $4, $5)"
+            "INSERT INTO \"xwarnings\" VALUES ($1, $2, $3, $4, $5)"
         }
         .to_string();
 
@@ -3010,7 +2998,7 @@ impl Database {
         {
             "INSERT INTO \"xbans\" VALUES (?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xbans\" VALEUS ($1, $2, $3, $4, $5)"
+            "INSERT INTO \"xbans\" VALUES ($1, $2, $3, $4, $5)"
         }
         .to_string();
 
@@ -3237,7 +3225,7 @@ impl Database {
                         if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
                             "INSERT INTO \"xrelationships\" VALUES (?, ?, ?, ?)"
                         } else {
-                            "INSERT INTO \"xrelationships\" VALEUS ($1, $2, $3, $4)"
+                            "INSERT INTO \"xrelationships\" VALUES ($1, $2, $3, $4)"
                         }
                         .to_string();
 
@@ -3268,7 +3256,7 @@ impl Database {
                     if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
                         "INSERT INTO \"xrelationships\" VALUES (?, ?, ?, ?)"
                     } else {
-                        "INSERT INTO \"xrelationships\" VALEUS ($1, $2, $3, $4)"
+                        "INSERT INTO \"xrelationships\" VALUES ($1, $2, $3, $4)"
                     }
                     .to_string();
 
@@ -3803,7 +3791,7 @@ impl Database {
         {
             "INSERT INTO \"xipblocks\" VALUES (?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xipblocks\" VALEUS ($1, $2, $3, $4, $5)"
+            "INSERT INTO \"xipblocks\" VALUES ($1, $2, $3, $4, $5)"
         }
         .to_string();
 
@@ -4167,7 +4155,7 @@ impl Database {
         {
             "INSERT INTO \"xmail\" VALUES (?, ?, ?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xmail\" VALEUS ($1, $2, $3, $4, $5, $6, $7)"
+            "INSERT INTO \"xmail\" VALUES ($1, $2, $3, $4, $5, $6, $7)"
         }
         .to_string();
 
@@ -4330,10 +4318,10 @@ impl Database {
     /// Get a [`UserLabel`] from a database result
     pub async fn gimme_label(&self, res: BTreeMap<String, String>) -> Result<UserLabel> {
         Ok(UserLabel {
-            id: from_row!(res->id()),
-            name: res.get("name").unwrap().to_string(),
+            id: from_row!(res->id(i64); 0),
+            name: from_row!(res->name()),
             timestamp: from_row!(res->timestamp(u128); 0),
-            creator: res.get("author").unwrap().to_string(),
+            creator: from_row!(res->creator()),
         })
     }
 
@@ -4341,7 +4329,7 @@ impl Database {
     ///
     /// # Arguments
     /// * `id`
-    pub async fn get_label(&self, id: String) -> Result<UserLabel> {
+    pub async fn get_label(&self, id: i64) -> Result<UserLabel> {
         // check in cache
         match self
             .base
@@ -4371,7 +4359,7 @@ impl Database {
         .to_string();
 
         let c = &self.base.db.client;
-        let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
+        let res = match sqlquery(&query).bind::<i64>(id).fetch_one(c).await {
             Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
@@ -4399,8 +4387,9 @@ impl Database {
     ///
     /// # Arguments
     /// * `name` - the name of the label
+    /// * `id` - the ID of the label
     /// * `author` - the ID of the user creating the label
-    pub async fn create_label(&self, name: String, author: String) -> Result<UserLabel> {
+    pub async fn create_label(&self, name: String, id: i64, author: String) -> Result<UserLabel> {
         // check author permissions
         let author = match self.get_profile(author.clone()).await {
             Ok(ua) => ua,
@@ -4428,24 +4417,24 @@ impl Database {
         // ...
         let label = UserLabel {
             // id: utility::random_id(),
-            id: AlmostSnowflake::new(self.config.snowflake_server_id).to_string(),
+            id,
             name,
             timestamp: utility::unix_epoch_timestamp(),
             creator: author.id,
         };
 
-        // create page
+        // create label
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
             "INSERT INTO \"xlabels\" VALUES (?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xlabels\" VALEUS ($1, $2, $3, $4)"
+            "INSERT INTO \"xlabels\" VALUES ($1, $2, $3, $4)"
         }
         .to_string();
 
         let c = &self.base.db.client;
         match sqlquery(&query)
-            .bind::<&String>(&label.id)
+            .bind::<i64>(label.id)
             .bind::<&String>(&label.name)
             .bind::<&String>(&label.timestamp.to_string())
             .bind::<&String>(&label.creator)
@@ -4455,6 +4444,45 @@ impl Database {
             Ok(_) => Ok(label),
             Err(_) => Err(DatabaseError::Other),
         }
+    }
+
+    /// Create a new user label
+    ///
+    /// # Arguments
+    /// * `id` - the ID of the label
+    /// * `author` - the ID of the user creating the label
+    pub async fn delete_label(&self, id: i64, author: Box<Profile>) -> Result<()> {
+        // check author permissions
+        let group = match self.get_group_by_id(author.group).await {
+            Ok(g) => g,
+            Err(e) => return Err(e),
+        };
+
+        if !group.permissions.check(FinePermission::MANAGE_LABELS) {
+            return Err(DatabaseError::NotAllowed);
+        }
+
+        // delete label
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            "DELETE FROM \"xlabels\" WHERE \"id\" = ?"
+        } else {
+            "DELETE FROM \"xlabels\" WHERE \"id\" = $1"
+        }
+        .to_string();
+
+        let c = &self.base.db.client;
+        let res = match sqlquery(&query).bind::<i64>(id).execute(c).await {
+            Ok(_) => Ok(()),
+            Err(_) => Err(DatabaseError::Other),
+        };
+
+        self.base
+            .cachedb
+            .remove(format!("rbeam.auth.label:{}", id))
+            .await;
+
+        res
     }
 
     // ugc transactions
@@ -4757,7 +4785,7 @@ impl Database {
         {
             "INSERT INTO \"xugc_transactions\" VALUES (?, ?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xugc_transactions\" VALEUS ($1, $2, $3, $4, $5, $6)"
+            "INSERT INTO \"xugc_transactions\" VALUES ($1, $2, $3, $4, $5, $6)"
         }
         .to_string();
 
@@ -5214,7 +5242,7 @@ impl Database {
         {
             "INSERT INTO \"xugc_items\" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xugc_items\" VALEUS ($1, $2, $3, $4, $5, $6, $7, $8, $9)"
+            "INSERT INTO \"xugc_items\" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)"
         }
         .to_string();
 

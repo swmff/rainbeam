@@ -59,13 +59,7 @@ pub async fn delete_request(
             .await
         {
             Ok(ua) => ua,
-            Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: (),
-                });
-            }
+            Err(e) => return Json(e.to_json()),
         },
         None => return Json(DatabaseError::NotAllowed.to_json()),
     };

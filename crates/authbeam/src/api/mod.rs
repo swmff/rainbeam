@@ -14,6 +14,7 @@ pub mod general;
 pub mod ipbans;
 pub mod ipblocks;
 pub mod items;
+pub mod labels;
 pub mod mail;
 pub mod me;
 pub mod notifications;
@@ -104,6 +105,10 @@ pub fn routes(database: Database) -> Router {
             post(items::update_item_content_request),
         )
         .route("/item/{id}", delete(items::delete_request))
+        // labels
+        .route("/labels", post(labels::create_request))
+        .route("/label/{id}", get(labels::get_request))
+        .route("/label/{id}", delete(labels::delete_request))
         // notifications
         .route("/notifications/{id}", delete(notifications::delete_request))
         .route(

@@ -1501,7 +1501,7 @@ impl Database {
         {
             "INSERT INTO \"xquestions\" VALUES (?, ?, ?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xquestions\" VALEUS ($1, $2, $3, $4, $5, $6, $7)"
+            "INSERT INTO \"xquestions\" VALUES ($1, $2, $3, $4, $5, $6, $7)"
         }
         .to_string();
 
@@ -1531,41 +1531,46 @@ impl Database {
                     // create ref questions for all friends
                     // we're doing friends here instead of followers because are probably
                     // going to have many more followers than friends
-                    let friends = simplify!(
-                        self.auth
-                            .get_user_participating_relationships_of_status(question.author.id.clone(), RelationshipStatus::Friends)
-                            .await;
-                        Result; Vec::new()
-                    );
-
-                    for friend in friends {
-                        let friend = if friend.0.id == question.author.id {
-                            friend.1
-                        } else {
-                            friend.0
-                        };
-
-                        if friend
-                            .metadata
-                            .is_true("rainbeam:do_not_send_global_questions_to_inbox")
-                        {
-                            continue;
-                        }
-
-                        ignore!(
-                            self.create_question(
-                                QuestionCreate {
-                                    recipient: friend.id,
-                                    content: String::new(),
-                                    anonymous: false,
-                                    media: String::new(),
-                                    ref_id: question.id.clone(),
-                                },
-                                question.author.id.clone(),
-                                ip.clone(),
-                            )
-                            .await
+                    if !question
+                        .author
+                        .has_label(authbeam::model::RESERVED_LABEL_QUARANTINE)
+                    {
+                        let friends = simplify!(
+                            self.auth
+                                .get_user_participating_relationships_of_status(question.author.id.clone(), RelationshipStatus::Friends)
+                                .await;
+                            Result; Vec::new()
                         );
+
+                        for friend in friends {
+                            let friend = if friend.0.id == question.author.id {
+                                friend.1
+                            } else {
+                                friend.0
+                            };
+
+                            if friend
+                                .metadata
+                                .is_true("rainbeam:do_not_send_global_questions_to_inbox")
+                            {
+                                continue;
+                            }
+
+                            ignore!(
+                                self.create_question(
+                                    QuestionCreate {
+                                        recipient: friend.id,
+                                        content: String::new(),
+                                        anonymous: false,
+                                        media: String::new(),
+                                        ref_id: question.id.clone(),
+                                    },
+                                    question.author.id.clone(),
+                                    ip.clone(),
+                                )
+                                .await
+                            );
+                        }
                     }
                 }
 
@@ -2814,7 +2819,7 @@ impl Database {
         {
             "INSERT INTO \"xresponses\" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xresponses\" VALEUS ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)"
+            "INSERT INTO \"xresponses\" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)"
         }
         .to_string();
 
@@ -4174,7 +4179,7 @@ impl Database {
         {
             "INSERT INTO \"xcomments\" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xcomments\" VALEUS ($1, $2, $3, $4, $5, $6, $7, $8, $9)"
+            "INSERT INTO \"xcomments\" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)"
         }
         .to_string();
 
@@ -4666,7 +4671,7 @@ impl Database {
         {
             "INSERT INTO \"xreactions\" VALUES (?, ?, ?)"
         } else {
-            "INSERT INTO \"xreactions\" VALEUS ($1, $2, $3)"
+            "INSERT INTO \"xreactions\" VALUES ($1, $2, $3)"
         }
         .to_string();
 
@@ -5052,7 +5057,7 @@ impl Database {
         {
             "INSERT INTO \"xchats\" VALUES (?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xchats\" VALEUS ($1, $2, $3, $4, $5)"
+            "INSERT INTO \"xchats\" VALUES ($1, $2, $3, $4, $5)"
         }
         .to_string();
 
@@ -5641,7 +5646,7 @@ impl Database {
         {
             "INSERT INTO \"xmessages\" VALUES (?, ?, ?, ?, ?, ?, ?)"
         } else {
-            "INSERT INTO \"xmessages\" VALEUS ($1, $2, $3, $4, $5, $6, $7)"
+            "INSERT INTO \"xmessages\" VALUES ($1, $2, $3, $4, $5, $6, $7)"
         }
         .to_string();
 

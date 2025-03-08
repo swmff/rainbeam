@@ -30,6 +30,7 @@
 
     <a href="#/sessions" data-tab-button="sessions"><span>Sessions</span></a>
     <a href="#/chats" data-tab-button="chats"><span>Chats</span></a>
+    <a href="#/labels" data-tab-button="labels"><span>Labels</span></a>
     <a href="#/warnings" data-tab-button="warnings"><span>Warnings</span></a>
 </div>
 
@@ -381,6 +382,182 @@
     <div id="chats" class="card flex flex-col gap-4">
         {% for chat in chats %} {% include "chats/components/listing.html" %} {%
         endfor %}
+    </div>
+</div>
+
+<!-- labels -->
+<div data-tab="labels" class="hidden flex flex-col gap-4">
+    <div class="card flex flex-col gap-4">
+        <b>This user</b>
+
+        <form
+            class="card secondary flex flex-col gap-2"
+            onsubmit="event.preventDefault(); add_label(Number.parseInt(event.target.id_.value))"
+        >
+            <label for="add_label_input">Label numeric ID</label>
+            <input type="number" id="add_label_input" name="id_" required />
+            <button class="green secondary">Add label</button>
+        </form>
+
+        <hr />
+
+        <b>Labels</b>
+        <ul id="labels">
+            {% for label in other.labels %}
+            <li>
+                <span>{{ label }}</span>
+                (<a href="javascript:load_label_information({{ label }})"
+                    >info</a
+                >) (<a href="javascript:remove_label({{ label }})">remove</a>)
+            </li>
+
+            <div
+                id="label:{{ label }}"
+                class="card secondary"
+                style="display: none"
+            ></div>
+            {% endfor %}
+        </ul>
+
+        {% let labels =
+        authbeam::macros::serde_json_to_string(other.labels).unwrap() %}
+        <script>
+            const loaded_info = [];
+            let labels = {{ labels }};
+
+            function load_label_information(id) {
+                if (!loaded_info.includes(id)) {
+                    fetch(`/api/v0/auth/label/${id}`)
+                        .then((res) => res.json())
+                        .then((l) => {
+                            document.getElementById(`label:${id}`).innerText = (l.payload || { name: l.message }).name;
+                        });
+
+                    loaded_info.push(id)
+                }
+
+                trigger("app::toggle_flex", [document.getElementById(`label:${id}`)]);
+            }
+
+            function add_label(id) {
+                const clone = structuredClone(labels);
+
+                if (clone.includes(id)) {
+                    alert("User already has label");
+                    return;
+                }
+
+                clone.push(id);
+
+                fetch("/api/v0/auth/profile/{{ other.id }}/labels", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        labels: clone,
+                    })
+                })
+                    .then((res) => res.json())
+                    .then(() => {
+                        alert("Labels updated");
+                        labels = clone;
+                    });
+            }
+
+            function remove_label(id) {
+                const clone = structuredClone(labels);
+                clone.splice(clone.indexOf(id, 1));
+
+                fetch("/api/v0/auth/profile/{{ other.id }}/labels", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        labels: clone,
+                    })
+                })
+                    .then((res) => res.json())
+                    .then(() => {
+                        alert("Labels updated");
+                        labels = clone;
+                    });
+            }
+        </script>
+    </div>
+
+    <div class="card flex flex-col gap-4">
+        <b>Global</b>
+
+        <form
+            class="card secondary flex flex-col gap-2"
+            onsubmit="event.preventDefault(); create_label(event)"
+        >
+            <label for="create_label_input">Label numeric ID</label>
+            <input type="number" id="create_label_input" name="id_" required />
+
+            <label for="create_label_input_1">Label name</label>
+            <input
+                type="text"
+                id="create_label_input_1"
+                name="name_"
+                required
+            />
+
+            <button class="green secondary">Create</button>
+        </form>
+
+        <form
+            class="card secondary flex flex-col gap-2"
+            onsubmit="event.preventDefault(); delete_label(event)"
+        >
+            <label for="delete_label_input">Label numeric ID</label>
+            <input type="number" id="delete_label_input" name="id_" required />
+            <button class="red secondary">Delete</button>
+        </form>
+
+        <script>
+            function create_label(event) {
+                fetch("/api/v0/auth/labels", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        id: Number.parseInt(event.target.id_.value),
+                        name: event.target.name_.value,
+                    }),
+                })
+                    .then((res) => res.json())
+                    .then(() => {
+                        alert("Label created");
+                        event.target.reset();
+                    });
+            }
+
+            async function delete_label(event) {
+                if (
+                    !(await trigger("app::confirm", [
+                        "Are you sure you would like to delete this label globally?",
+                    ]))
+                ) {
+                    return;
+                }
+
+                fetch(`/api/v0/auth/label/${event.target.id_.value}`, {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                })
+                    .then((res) => res.json())
+                    .then(() => {
+                        alert("Label deleted");
+                        event.target.reset();
+                    });
+            }
+        </script>
     </div>
 </div>
 

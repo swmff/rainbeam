@@ -189,7 +189,7 @@ macro_rules! simplify {
     };
 
     ($e:expr; Err; $v:expr) => {
-        if let Err(e) = $e {
+        if let Err(_) = $e {
             return $v;
         }
     };
@@ -214,4 +214,8 @@ macro_rules! ignore {
     ($e:expr) => {
         let _ = $e;
     };
+}
+
+pub fn serde_json_to_string<T: serde::Serialize>(value: T) -> Result<String, serde_json::Error> {
+    serde_json::to_string(&value)
 }

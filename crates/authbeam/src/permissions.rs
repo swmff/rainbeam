@@ -36,6 +36,7 @@ bitflags! {
         const MANAGE_WARNINGS = 1 << 25;
         const MANAGE_REACTIONS = 1 << 26;
         const EXPORT_DATA = 1 << 27;
+        const MANAGE_LABELS = 1 << 28;
 
         const _ = !0;
     }
