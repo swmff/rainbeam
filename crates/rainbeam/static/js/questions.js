@@ -15,7 +15,7 @@
                         recipient,
                         content,
                         anonymous,
-                        media: media || "",
+                        media: media || [],
                     }),
                 })
                     .then((res) => res.json())

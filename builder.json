@@ -24,7 +24,7 @@
         "move-down",
         "plus",
         "type",
-        "file-json",
-        "code-xml"
+        "code-xml",
+        "binary"
     ]
 }

@@ -251,9 +251,7 @@
                 ? `${e.target.content.value}\n\n/+r/${reply_intent}`
                 : e.target.content.value,
             (e.target.anonymous || { checked: false }).checked,
-            e.target.carp_content.value.length != 0
-                ? e.target.carp_content.value
-                : "",
+            Array.from(globalThis.media_bytes),
         ]).then((_) => {
             // reset if successful
             e.target.reset();
@@ -286,8 +284,8 @@
             const sammy = carp.new(document.getElementById("carp_context"));
 
             sammy.create_canvas();
-            sammy.onedit = (text) => {
-                document.getElementById("carp_content").value = `--CARP${text}`;
+            sammy.onedit = async (text) => {
+                globalThis.media_bytes = await sammy.as_carp2();
             };
 
             globalThis.sammy = sammy;

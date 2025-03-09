@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 use authbeam::model::{IpBlock, Profile, UserFollow};
 use databeam::prelude::*;
 pub use authbeam::model::RelationshipStatus;
-use crate::carp::CarpGraph;
+use carp::CarpGraph;
 
 /// Trait for simple asset contexts
 pub trait Context {}
@@ -102,6 +102,23 @@ impl Question {
             0,
         )
     }
+
+    pub fn render_media(&self) -> String {
+        if self.context.media.starts_with("--CARP") {
+            if let Ok(g) =
+                carp::carp1::Graph::from_str(self.context.media.replace("--CARP", "").as_str())
+            {
+                return g.to_svg();
+            }
+        } else {
+            return format!(
+                "<img src=\"/api/v1/questions/{}/media.svg\" loading=\"lazy\" class=\"carpgraph\" style=\"width: 300px; height: 200px\" />",
+                self.id
+            );
+        }
+
+        String::new()
+    }
 }
 
 /// Basic information which changes the way the response is deserialized
@@ -110,8 +127,9 @@ pub struct QuestionContext {
     /// The media property of the question
     ///
     /// Media is prefixed to decide what its type is:
-    /// * (no prefix): URL
+    /// * `(no prefix)`: carp2 drawing
     /// * `--CARP`: carp canvas drawing
+    // #[deprecated = "use carp2"]
     #[serde(default)]
     pub media: String,
     /// The real ID of this question (for aliasing a global question).
@@ -131,16 +149,6 @@ impl Default for QuestionContext {
             ref_id: String::new(),
             source_id: String::new(),
         }
-    }
-}
-
-impl QuestionContext {
-    pub fn render_media(&self) -> String {
-        if let Ok(g) = CarpGraph::from_str(self.media.replace("--CARP", "").as_str()) {
-            return g.to_svg();
-        }
-
-        String::new()
     }
 }
 
@@ -561,7 +569,7 @@ pub struct QuestionCreate {
     pub content: String,
     pub anonymous: bool,
     #[serde(default)]
-    pub media: String,
+    pub media: Vec<u8>,
     #[serde(default)]
     pub ref_id: String,
 }

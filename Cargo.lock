@@ -517,6 +517,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f61dac84819c6588b558454b194026eb1f09c293b9036ae9b159e74e73ab6cf9"
 
 [[package]]
+name = "carp"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "caseless"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3035,7 +3043,7 @@ dependencies = [
 
 [[package]]
 name = "rainbeam"
-version = "8.0.0"
+version = "8.0.1"
 dependencies = [
  "ammonia",
  "async-recursion",
@@ -3065,13 +3073,14 @@ dependencies = [
 
 [[package]]
 name = "rainbeam-core"
-version = "8.0.0"
+version = "8.0.1"
 dependencies = [
  "ammonia",
  "async-recursion",
  "authbeam",
  "axum",
  "axum-extra",
+ "carp",
  "databeam 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "hcaptcha-no-wasm",
  "langbeam",
@@ -3283,13 +3292,14 @@ dependencies = [
 
 [[package]]
 name = "rb"
-version = "8.0.0"
+version = "8.0.1"
 dependencies = [
  "ammonia",
  "async-recursion",
  "authbeam",
  "axum",
  "axum-extra",
+ "carp",
  "databeam 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "hcaptcha-no-wasm",
  "langbeam",

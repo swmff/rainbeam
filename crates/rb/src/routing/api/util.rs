@@ -1,13 +1,13 @@
 use authbeam::api::profile::read_image;
-use rainbeam::carp::CarpGraph;
+use carp::{Graph, CarpGraph};
 use crate::database::Database;
 use axum::{
-    body::Body,
+    body::{Body, Bytes},
     extract::{Query, State},
     http::HeaderMap,
+    response::IntoResponse,
     routing::{get, post},
     Json, Router,
-    response::IntoResponse,
 };
 use serde::{Deserialize, Serialize};
 use pathbufd::pathd;
@@ -159,6 +159,6 @@ pub async fn set_langfile_request(Query(props): Query<LangFileQuery>) -> impl In
     )
 }
 
-pub async fn render_carpgraph(Json(data): Json<CarpGraph>) -> impl IntoResponse {
-    data.to_svg()
+pub async fn render_carpgraph(data: Bytes) -> impl IntoResponse {
+    Graph::from_bytes(data.to_vec()).to_svg()
 }

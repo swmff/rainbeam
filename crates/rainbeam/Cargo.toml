@@ -1,6 +1,6 @@
 [package]
 name = "rainbeam"
-version = "8.0.0"
+version = "8.0.1"
 edition = "2021"
 authors = ["trisuaso", "swmff"]
 description = "Ask, share, socialize!"

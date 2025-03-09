@@ -5,6 +5,67 @@
 (() => {
     const self = reg_ns("carp", ["app"]);
 
+    const END_OF_HEADER = 0x1a;
+    const COLOR = 0x1b;
+    const SIZE = 0x2b;
+    const LINE = 0x3b;
+    const POINT = 0x4b;
+    const EOF = 0x1f;
+
+    function enc(s, as = "guess") {
+        if ((as === "guess" && typeof s === "number") || as === "u32") {
+            // encode u32
+            const view = new DataView(new ArrayBuffer(16));
+            view.setUint32(0, s);
+            return new Uint8Array(view.buffer).slice(0, 4);
+        }
+
+        if (as === "u16") {
+            // encode u16
+            const view = new DataView(new ArrayBuffer(16));
+            view.setUint16(0, s);
+            return new Uint8Array(view.buffer).slice(0, 2);
+        }
+
+        // encode string
+        const encoder = new TextEncoder();
+        return encoder.encode(s);
+    }
+
+    function dec(as, from) {
+        if (as === "u32") {
+            // decode u32
+            const view = new DataView(new Uint8Array(from).buffer);
+            return view.getUint32(0);
+        }
+
+        if (as === "u16") {
+            // decode u16
+            const view = new DataView(new Uint8Array(from).buffer);
+            return view.getUint16(0);
+        }
+
+        // decode string
+        const decoder = new TextDecoder();
+        return decoder.decode(from);
+    }
+
+    function lpad(size, input) {
+        if (input.length === size) {
+            return input;
+        }
+
+        for (let i = 0; i < size - (input.length - 1); i++) {
+            input = [0, ...input];
+        }
+
+        return input;
+    }
+
+    self.enc = enc;
+    self.dec = dec;
+    self.lpad = lpad;
+
     self.CARPS = {};
     self.define("new", function ({ $ }, bind_to, read_only = false) {
         const canvas = new CarpCanvas(bind_to, read_only);
@@ -22,9 +83,9 @@
         COLOR = "#000000";
         #color_old = "#000000";
 
-        LINES = [];
+        COMMANDS = [];
         HISTORY = [];
-        #line_store = [];
+        #cmd_store = [];
 
         onedit;
         read_only;
@@ -36,36 +97,11 @@
         }
 
         /// Push #line_store to LINES
-        push_state(resolution = 1) {
-            // clean line_store
-            const seen_points = [];
-            for (const line of this.LINES) {
-                for (const point of line) {
-                    if (seen_points.includes(point)) {
-                        const index = line.indexOf(point);
-                        line.splice(index, 1);
-                        continue;
-                    }
+        push_state() {
+            this.COMMANDS = [...this.COMMANDS, ...this.#cmd_store];
+            this.#cmd_store = [];
 
-                    for (const i in point) {
-                        // remove null values from point
-                        if (point[i] === null) {
-                            point.splice(i, 1);
-                        }
-                    }
-
-                    seen_points.push(point);
-                }
-            }
-
-            if (this.#line_store.length === 0) {
-                return;
-            }
-
-            // push
-            this.LINES.push(this.#line_store);
-            this.HISTORY.push(this.LINES);
-            this.#line_store = [];
+            this.HISTORY.push(this.COMMANDS);
 
             if (this.onedit) {
                 this.onedit(this.as_string());
@@ -103,6 +139,11 @@
                 canvas.addEventListener(
                     "mousedown",
                     (e) => {
+                        this.#cmd_store.push({
+                            type: "Line",
+                            data: [],
+                        });
+
                         this.move_event(e);
                     },
                     false,
@@ -137,6 +178,11 @@
 
                         e.clientX = e.changedTouches[0].clientX;
                         e.clientY = e.changedTouches[0].clientY;
+
+                        this.#cmd_store.push({
+                            type: "Line",
+                            data: [],
+                        });
 
                         this.move_event(e);
                     },
@@ -184,7 +230,6 @@
                 color_picker.addEventListener("change", (e) => {
                     this.set_old_color(this.COLOR);
                     this.COLOR = e.target.value;
-                    color_button.style.color = this.COLOR;
                 });
 
                 control_container.appendChild(color_picker);
@@ -227,7 +272,7 @@
                     document.createElement("button");
                 download_as_carpgraph_button.setAttribute("type", "button");
                 download_as_carpgraph_button.appendChild(
-                    await trigger("app::icon", ["file-json", "icon"]),
+                    await trigger("app::icon", ["binary", "icon"]),
                 );
                 download_as_carpgraph_button.appendChild(
                     (() => {
@@ -283,8 +328,8 @@
                         }
 
                         const file = input.files[0];
-                        const text = await file.text();
-                        this.from_string(text);
+                        const bytes = await file.bytes();
+                        this.from_bytes(Array.from(bytes));
                     });
 
                     input.click();
@@ -360,21 +405,30 @@
                 const point = [
                     Math.floor(this.#pos.x),
                     Math.floor(this.#pos.y),
-                    // only include these values if they changed
-                    this.#color_old !== this.COLOR ? this.COLOR : null,
-                    this.#stroke_size_old !== this.STROKE_SIZE
-                        ? this.STROKE_SIZE
-                        : null,
                 ];
 
-                for (const i in point) {
-                    // remove null values from point
-                    if (point[i] === null) {
-                        point.splice(i, 1);
-                    }
+                if (this.#color_old !== this.COLOR) {
+                    this.#cmd_store.push({
+                        type: "Color",
+                        data: enc(this.COLOR.replace("#", "")),
+                    });
                 }
 
-                this.#line_store.push(point);
+                if (this.#stroke_size_old !== this.STROKE_SIZE) {
+                    this.#cmd_store.push({
+                        type: "Size",
+                        data: lpad(2, enc(this.STROKE_SIZE, "u16")), // u16
+                    });
+                }
+
+                this.#cmd_store.push({
+                    type: "Point",
+                    data: [
+                        // u32
+                        ...lpad(4, enc(point[0])),
+                        ...lpad(4, enc(point[1])),
+                    ],
+                });
 
                 if (this.#color_old !== this.COLOR) {
                     // we've already seen it once, time to update it
@@ -395,84 +449,213 @@
             return URL.createObjectURL(blob);
         }
 
-        /// Create JSON representation of the graph
-        as_json() {
-            this.push_state();
-            return {
-                // Canvas info
-                i: {
-                    // Canvas width
-                    w: this.#ctx.canvas.width,
-                    // Canvas height
-                    h: this.#ctx.canvas.height,
-                },
-                // Canvas data
-                d: this.LINES,
-            };
+        /// Create Carp2 representation of the graph
+        as_carp2() {
+            // most stuff should have an lpad of 4 to make sure it's a u32 (4 bytes)
+            const header = [
+                ...enc("CG"),
+                ...enc("02"),
+                ...lpad(4, enc(this.#ctx.canvas.width)),
+                ...lpad(4, enc(this.#ctx.canvas.height)),
+                END_OF_HEADER,
+            ];
+
+            // build commands
+            const commands = [];
+            commands.push(COLOR);
+            commands.push(...enc("000000"));
+            commands.push(SIZE);
+            commands.push(...lpad(4, enc(2)).slice(2));
+
+            for (const command of this.COMMANDS) {
+                // this is `impl Into<Vec<u8>> for Command`
+                switch (command.type) {
+                    case "Point":
+                        commands.push(POINT);
+                        break;
+
+                    case "Line":
+                        commands.push(LINE);
+                        break;
+
+                    case "Color":
+                        commands.push(COLOR);
+                        break;
+
+                    case "Size":
+                        commands.push(SIZE);
+                        break;
+                }
+
+                commands.push(...command.data);
+            }
+
+            // return
+            return [...header, ...commands, EOF];
+        }
+
+        /// Export as SVG
+        async as_svg() {
+            return await (
+                await fetch("/api/v0/util/carpsvg", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/octet-stream",
+                    },
+                    body: new Uint8Array(this.as_carp2()),
+                })
+            ).text();
         }
 
         /// Export lines as string
         as_string() {
-            return JSON.stringify(this.as_json());
+            return JSON.stringify(this.COMMANDS);
         }
 
-        /// Import string as lines
-        from_string(input) {
-            let parsed = JSON.parse(input);
+        /// From an array of bytes
+        from_bytes(input) {
+            this.clear();
 
-            if (Array.isArray(parsed)) {
-                // legacy format
-                parsed = { d: parsed };
-            } else {
-                // new format, includes width and height
-                if (parsed.i && parsed.i.w && parsed.i.h) {
-                    this.resize({ x: parsed.i.w, y: parsed.i.h });
-                }
+            let idx = -1;
+            function next() {
+                idx += 1;
+                return [idx, input[idx]];
             }
 
-            this.LINES = parsed.d;
-            const rendered = [];
+            function select_bytes(count) {
+                // select_bytes! macro
+                const data = [];
+                let seen_bytes = 0;
 
-            // lines format:
-            // [[[x, y, Option<color>, Option<stroke_size>], ...], ...]
-            for (const line of this.LINES) {
-                if (line[0]) {
-                    // if line has at least one point, go ahead and start at that
-                    // point for drawing
-                    this.move({ x: line[0][0], y: line[0][1] });
-                }
+                let [_, byte] = next();
+                while (byte !== undefined) {
+                    seen_bytes += 1;
+                    data.push(byte);
 
-                for (const point of line) {
-                    if (rendered.includes(point)) {
-                        // we've already seen this, let's skip it
-                        continue;
+                    if (seen_bytes === count) {
+                        break;
                     }
 
-                    const x = point[0];
-                    const y = point[1];
-                    rendered.push(point);
+                    [_, byte] = next();
+                }
 
-                    if (point[2]) {
-                        if (point[2].startsWith("#")) {
-                            this.COLOR = point[2] || "#000000";
-                        } else {
-                            this.STROKE_SIZE = point[2] || 2;
+                return data;
+            }
+
+            // everything past this is just a reverse implementation of carp2.rs in js
+            const commands = [];
+            const dimensions = { x: 0, y: 0 };
+            let in_header = true;
+            let seen_point = false;
+            let byte_buffer = [];
+
+            let [i, byte] = next();
+            while (byte !== undefined) {
+                switch (byte) {
+                    case END_OF_HEADER:
+                        in_header = false;
+                        break;
+
+                    case COLOR:
+                        {
+                            const data = select_bytes(6);
+                            commands.push({
+                                type: "Color",
+                                data,
+                            });
+                            this.COLOR = `#${dec("string", new Uint8Array(data))}`;
                         }
-                    }
+                        break;
 
-                    if (point[3]) {
-                        this.STROKE_SIZE = point[3] || 2;
-                    }
+                    case SIZE:
+                        {
+                            const data = select_bytes(2);
+                            commands.push({
+                                type: "Size",
+                                data,
+                            });
+                            this.STROKE_SIZE = dec("u16", data);
+                        }
+                        break;
 
-                    this.draw({ x, y }, true);
+                    case POINT:
+                        {
+                            const data = select_bytes(8);
+                            commands.push({
+                                type: "Point",
+                                data,
+                            });
+
+                            const point = {
+                                x: dec("u32", data.slice(0, 4)),
+                                y: dec("u32", data.slice(4, 8)),
+                            };
+
+                            if (!seen_point) {
+                                // this is the FIRST POINT that has been seen...
+                                // we need to start drawing from here to avoid a line
+                                // from 0,0 to the point
+                                this.move(point);
+                                seen_point = true;
+                            }
+
+                            this.draw(point, true);
+                        }
+                        break;
+
+                    case LINE:
+                        // each line starts at a new place (probably)
+                        seen_point = false;
+                        break;
+
+                    case EOF:
+                        break;
+
+                    default:
+                        if (in_header) {
+                            if (0 <= i < 2) {
+                                // tag
+                            } else if (2 <= i < 4) {
+                                //version
+                            } else if (4 <= i < 8) {
+                                // width
+                                byte_buffer.push(byte);
+
+                                if (i === 7) {
+                                    dimensions.x = dec("u32", byte_buffer);
+                                    byte_buffer = [];
+                                }
+                            } else if (8 <= i < 12) {
+                                // height
+                                byte_buffer.push(byte);
+
+                                if (i === 7) {
+                                    dimensions.y = dec("u32", byte_buffer);
+                                    byte_buffer = [];
+                                    this.resize(dimensions); // update canvas
+                                }
+                            }
+                        } else {
+                            // misc byte
+                            console.log(`extraneous byte at ${i}`);
+                        }
+
+                        break;
                 }
+
+                // ...
+                [i, byte] = next();
             }
+
+            return commands;
         }
 
         /// Download image as `.carpgraph`
         download() {
-            const string = this.as_string();
-            const blob = new Blob([string], { type: "image/carpgraph" });
+            const blob = new Blob([new Uint8Array(this.as_carp2())], {
+                type: "image/carpgraph",
+            });
+
             const url = URL.createObjectURL(blob);
 
             const anchor = document.createElement("a");
@@ -485,29 +668,37 @@
             URL.revokeObjectURL(url);
         }
 
+        /// Download image as `.carpgraph1`
+        download_json() {
+            const string = this.as_string();
+            const blob = new Blob([string], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+
+            const anchor = document.createElement("a");
+            anchor.href = url;
+            anchor.setAttribute("download", "image.carpgraph_json");
+            document.body.appendChild(anchor);
+            anchor.click();
+            anchor.remove();
+
+            URL.revokeObjectURL(url);
+        }
+
         /// Download image as `.svg`
         download_svg() {
-            fetch("/api/v0/util/carpsvg", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(this.as_json()),
-            })
-                .then((res) => res.text())
-                .then((res) => {
-                    const blob = new Blob([res], { type: "image/svg+xml" });
-                    const url = URL.createObjectURL(blob);
+            this.as_svg().then((res) => {
+                const blob = new Blob([res], { type: "image/svg+xml" });
+                const url = URL.createObjectURL(blob);
 
-                    const anchor = document.createElement("a");
-                    anchor.href = url;
-                    anchor.setAttribute("download", "image.svg");
-                    document.body.appendChild(anchor);
-                    anchor.click();
-                    anchor.remove();
+                const anchor = document.createElement("a");
+                anchor.href = url;
+                anchor.setAttribute("download", "image.svg");
+                document.body.appendChild(anchor);
+                anchor.click();
+                anchor.remove();
 
-                    URL.revokeObjectURL(url);
-                });
+                URL.revokeObjectURL(url);
+            });
         }
     }
 })();

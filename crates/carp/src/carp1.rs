@@ -1,5 +1,5 @@
 use serde::{Serialize, Deserialize};
-use crate::{database::Result, model::DatabaseError};
+use crate::model::{CarpGraph, Error, Result};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Point(
@@ -18,22 +18,33 @@ pub struct ImageConfig {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct CarpGraph {
+pub struct Graph {
     #[serde(alias = "i")]
     pub image: ImageConfig,
     #[serde(alias = "d")]
     pub data: Vec<Line>,
 }
 
-impl CarpGraph {
+impl Graph {
     pub fn from_str(input: &str) -> Result<Self> {
         match serde_json::from_str(input) {
             Ok(de) => Ok(de),
-            Err(_) => Err(DatabaseError::ValueError),
+            Err(e) => Err(Error::DeserializeError(e.to_string())),
         }
     }
+}
 
-    pub fn to_svg(&self) -> String {
+impl CarpGraph for Graph {
+    fn to_bytes(&self) -> Vec<u8> {
+        serde_json::to_string(&self).unwrap().as_bytes().to_owned()
+    }
+
+    fn from_bytes(bytes: Vec<u8>) -> Self {
+        Self::from_str(&String::from_utf8(bytes).expect("invalid input"))
+            .expect("failed to deserialize")
+    }
+
+    fn to_svg(&self) -> String {
         let mut out: String = String::new();
         out.push_str(&format!(
             "<svg viewBox=\"0 0 {} {}\" xmlns=\"http://www.w3.org/2000/svg\" style=\"background: white; width: {}px; height: {}px\" class=\"carpgraph\">",

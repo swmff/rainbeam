@@ -1,6 +1,6 @@
 [package]
 name = "rainbeam-core"
-version = "8.0.0"
+version = "8.0.1"
 edition = "2021"
 authors = ["trisuaso", "swmff"]
 description = "Rainbeam backend core"
@@ -38,6 +38,7 @@ langbeam = { path = "../langbeam" }
 mime_guess = "2.0.5"
 pathbufd = "0.1.4"
 # pathbufd = { path = "../../../pathbufd" }
+carp = { path = "../carp" }
 
 [lib]
 crate-type = ["cdylib", "lib"]

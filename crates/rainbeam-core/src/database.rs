@@ -1,5 +1,6 @@
 use async_recursion::async_recursion;
 use authbeam::ignore;
+use pathbufd::pathd;
 use rainbeam_shared::snow::AlmostSnowflake;
 use std::collections::{BTreeMap, HashMap};
 
@@ -1276,12 +1277,6 @@ impl Database {
             return Err(DatabaseError::ContentTooLong);
         }
 
-        if !props.media.is_empty() {
-            if !props.media.starts_with("https://") && !props.media.starts_with("--CARP") {
-                return Err(DatabaseError::Other);
-            }
-        }
-
         // check recipient
         // "@" is the recipient we use for global questions (questions anybody can respond to)
         let tag = Database::anonymous_tag(&author);
@@ -1490,7 +1485,7 @@ impl Database {
             timestamp: utility::unix_epoch_timestamp(),
             ip: ip.clone(),
             context: QuestionContext {
-                media: props.media,
+                media: props.media.len().to_string(),
                 ref_id: props.ref_id,
                 source_id: String::new(),
             },
@@ -1562,7 +1557,7 @@ impl Database {
                                         recipient: friend.id,
                                         content: String::new(),
                                         anonymous: false,
-                                        media: String::new(),
+                                        media: Vec::new(),
                                         ref_id: question.id.clone(),
                                     },
                                     question.author.id.clone(),
@@ -1572,6 +1567,19 @@ impl Database {
                             );
                         }
                     }
+                }
+
+                // upload carpgraph
+                if !props.media.is_empty() {
+                    std::fs::write(
+                        pathd!(
+                            "{}/carpgraph/{}.carpgraph",
+                            self.config.media_dir,
+                            question.id
+                        ),
+                        props.media,
+                    )
+                    .expect("failed to write carpgraph image");
                 }
 
                 // ...
@@ -1660,9 +1668,21 @@ impl Database {
                         .await;
 
                     // clear reactions
-                    if let Err(e) = self.clear_reactions(question.id).await {
+                    if let Err(e) = self.clear_reactions(question.id.clone()).await {
                         return Err(e);
                     }
+                }
+
+                // remove image
+                if !question.context.media.is_empty()
+                    && !question.context.media.starts_with("--CARP")
+                {
+                    std::fs::remove_file(pathd!(
+                        "{}/carpgraph/{}.carpgraph",
+                        self.config.media_dir,
+                        question.id
+                    ))
+                    .expect("failed to remove carpgraph image");
                 }
 
                 // remove from cache

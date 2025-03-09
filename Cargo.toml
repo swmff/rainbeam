@@ -9,6 +9,7 @@ members = [
     "crates/shared",
     "crates/langbeam",
     "crates/rainbeam-plugins",
+    "crates/carp",
 ]
 
 [profile.dev]

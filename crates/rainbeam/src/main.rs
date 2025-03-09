@@ -49,6 +49,8 @@ pub async fn main() {
         fs::mkdir(&config.media_dir).expect("failed to create media dir");
         fs::mkdir(pathd!("{}/avatars", config.media_dir)).expect("failed to create avatars dir");
         fs::mkdir(pathd!("{}/banners", config.media_dir)).expect("failed to create banners dir");
+        fs::mkdir(pathd!("{}/carpgraph", config.media_dir))
+            .expect("failed to create carpgraph dir");
     }
 
     // load plugins

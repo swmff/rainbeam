@@ -2,6 +2,7 @@ use crate::database::Database;
 use crate::model::{anonymous_profile, DatabaseError, QuestionCreate};
 use axum::http::{HeaderMap, HeaderValue};
 use authbeam::model::{IpBlockCreate, NotificationCreate};
+use carp::CarpGraph;
 use databeam::prelude::DefaultReturn;
 
 use axum::response::{IntoResponse, Redirect};
@@ -13,6 +14,7 @@ use axum::{
 use hcaptcha_no_wasm::Hcaptcha;
 
 use axum_extra::extract::cookie::CookieJar;
+use pathbufd::pathd;
 
 pub fn routes(database: Database) -> Router {
     Router::new()
@@ -23,6 +25,8 @@ pub fn routes(database: Database) -> Router {
         .route("/inbox/me/clear", post(delete_my_inbox_request))
         .route("/{id}/report", post(report_request))
         .route("/{id}/ipblock", post(ipblock_request))
+        .route("/{id}/media.svg", get(carpgraph_svg_request))
+        .route("/{id}/media.carpgraph", get(carpgraph_request))
         // ...
         .with_state(database)
 }
@@ -436,4 +440,41 @@ pub async fn ipblock_request(
             payload: (),
         }),
     }
+}
+
+/// Read a question's image (as svg)
+pub async fn carpgraph_svg_request(
+    State(database): State<Database>,
+    Path(id): Path<String>,
+) -> impl IntoResponse {
+    let bytes = match std::fs::read(pathd!(
+        "{}/carpgraph/{}.carpgraph",
+        database.config.media_dir,
+        id
+    )) {
+        Ok(b) => b,
+        Err(_) => return ([("Content-Type", "image/svg+xml")], String::new()),
+    };
+
+    (
+        [("Content-Type", "image/svg+xml")],
+        carp::Graph::from_bytes(bytes).to_svg(),
+    )
+}
+
+/// Read a question's image
+pub async fn carpgraph_request(
+    State(database): State<Database>,
+    Path(id): Path<String>,
+) -> impl IntoResponse {
+    let bytes = match std::fs::read(pathd!(
+        "{}/carpgraph/{}.carpgraph",
+        database.config.media_dir,
+        id
+    )) {
+        Ok(b) => b,
+        Err(_) => return ([("Content-Type", "image/carpgraph")], Vec::new()),
+    };
+
+    ([("Content-Type", "image/carpgraph")], bytes)
 }

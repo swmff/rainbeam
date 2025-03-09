@@ -137,7 +137,7 @@
                 <!-- prettier-ignore -->
                 <span class="question_content" hook="long" hook-arg="lowered">
                     {% if !question.context.media.is_empty() %}
-                        {{ question.context.render_media()|safe }}
+                        {{ question.render_media()|safe }}
                     {% endif %}
 
                     {{ rainbeam_shared::ui::render_markdown(question.content)|safe }}
