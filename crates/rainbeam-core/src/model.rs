@@ -104,6 +104,10 @@ impl Question {
     }
 
     pub fn render_media(&self) -> String {
+        if self.context.media.is_empty() | (self.context.media == "0") {
+            return String::new();
+        }
+
         if self.context.media.starts_with("--CARP") {
             if let Ok(g) =
                 carp::carp1::Graph::from_str(self.context.media.replace("--CARP", "").as_str())

@@ -251,7 +251,7 @@
                 ? `${e.target.content.value}\n\n/+r/${reply_intent}`
                 : e.target.content.value,
             (e.target.anonymous || { checked: false }).checked,
-            Array.from(globalThis.media_bytes),
+            Array.from(globalThis.media_bytes || []),
         ]).then((_) => {
             // reset if successful
             e.target.reset();
