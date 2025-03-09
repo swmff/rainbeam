@@ -259,6 +259,26 @@
         <div class="checkbox_container">
             <input
                 type="checkbox"
+                name="rainbeam:do_not_send_global_questions_to_friends"
+                id="rainbeam:do_not_send_global_questions_to_friends"
+                onchange="update_kv('rainbeam:do_not_send_global_questions_to_friends', event.target.checked.toString())"
+            />
+
+            <label
+                for="rainbeam:do_not_send_global_questions_to_friends"
+                class="normal"
+            >
+                {{ text
+                "settings:account.html:label.do_not_send_global_questions_to_friends"
+                }}
+            </label>
+        </div>
+    </div>
+
+    <div class="flex flex-col gap-1">
+        <div class="checkbox_container">
+            <input
+                type="checkbox"
                 name="rainbeam:do_not_clear_inbox_count_on_view"
                 id="rainbeam:do_not_clear_inbox_count_on_view"
                 onchange="update_kv('rainbeam:do_not_clear_inbox_count_on_view', event.target.checked.toString())"

@@ -81,6 +81,7 @@ pub static ALLOWED_CUSTOM_KEYS: LazyLock<Vec<&'static str>> = LazyLock::new(|| {
         "rainbeam:view_password",
         "rainbeam:do_not_send_global_questions_to_inbox",
         "rainbeam:do_not_clear_inbox_count_on_view",
+        "rainbeam:do_not_send_global_questions_to_friends",
     ]
 });
 

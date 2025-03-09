@@ -1529,6 +1529,10 @@ impl Database {
                     if !question
                         .author
                         .has_label(authbeam::model::RESERVED_LABEL_QUARANTINE)
+                        | !question
+                            .author
+                            .metadata
+                            .is_true("rainbeam:do_not_send_global_questions_to_friends")
                     {
                         let friends = simplify!(
                             self.auth

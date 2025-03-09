@@ -175,6 +175,7 @@
         "settings:account.html:label.limited_chats": "Only allow friends to add you to chats",
         "settings:account.html:label.allow_drawings": "Allow drawings in your questions",
         "settings:account.html:label.do_not_send_global_questions_to_inbox": "Do not send global questions to my inbox",
+        "settings:account.html:label.do_not_send_global_questions_to_friends": "Do not send my global questions friend's inboxes",
         "settings:account.html:label.do_not_clear_inbox_count_on_view": "Do not clear inbox count on view",
         "settings:account.html:label.share_hashtag": "Share hashtag",
 
