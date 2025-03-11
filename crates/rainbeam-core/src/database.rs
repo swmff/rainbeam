@@ -3189,6 +3189,86 @@ impl Database {
         }
     }
 
+    /// Update the tags of multiple responses. **All responses MUST be created by the same user.**
+    ///
+    /// # Arguments
+    /// * `id`
+    /// * `tags`
+    /// * `user` - the user doing this
+    pub async fn update_response_tags_multiple(
+        &self,
+        ids: Vec<String>,
+        tags: Vec<String>,
+        user: Box<Profile>,
+    ) -> Result<()> {
+        // make sure the response exists
+        let first_id = ids.get(0).unwrap();
+        let response = match self.get_response_short(first_id.clone()).await {
+            Ok(q) => q,
+            Err(e) => return Err(e),
+        };
+
+        // check user permissions
+        if user.group == -1 {
+            // group -1 (even if it exists) is for marking users as banned
+            return Err(DatabaseError::NotAllowed);
+        }
+
+        if user.id != response.author.id {
+            // check permission
+            let group = match self.auth.get_group_by_id(user.group).await {
+                Ok(g) => g,
+                Err(_) => return Err(DatabaseError::Other),
+            };
+
+            if !group.permissions.check(FinePermission::MANAGE_RESPONSES) {
+                return Err(DatabaseError::NotAllowed);
+            }
+        }
+
+        // build sql
+        let mut sql: String = String::new();
+
+        for (i, id) in ids.clone().iter().enumerate() {
+            let id = id.replace("'", "");
+            if i == 0 {
+                sql.push_str(&format!("\"id\" = '{id}'"));
+            } else {
+                sql.push_str(&format!(" OR \"id\" = '{id}'"));
+            }
+        }
+
+        // update response
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            format!("UPDATE \"xresponses\" SET \"tags\" = ? WHERE {sql}")
+        } else {
+            format!("UPDATE \"xresponses\" SET (\"tags\") = ($1) WHERE {sql}")
+        };
+
+        let c = &self.base.db.client;
+        match sqlquery(&query)
+            .bind::<&String>(&match serde_json::to_string(&tags) {
+                Ok(t) => t,
+                Err(_) => return Err(DatabaseError::ValueError),
+            })
+            .execute(c)
+            .await
+        {
+            Ok(_) => {
+                for id in ids {
+                    self.base
+                        .cachedb
+                        .remove(format!("rbeam.app.response:{id}"))
+                        .await;
+                }
+
+                Ok(())
+            }
+            Err(_) => Err(DatabaseError::Other),
+        }
+    }
+
     /// Update an existing response's context
     ///
     /// # Arguments

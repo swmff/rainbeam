@@ -15,7 +15,7 @@ use axum::{
 };
 
 use axum_extra::extract::cookie::CookieJar;
-use rainbeam::model::ResponseEditWarning;
+use rainbeam::model::{ResponseEditTagsMultiple, ResponseEditWarning};
 
 pub fn routes(database: Database) -> Router {
     Router::new()
@@ -28,6 +28,7 @@ pub fn routes(database: Database) -> Router {
         .route("/{id}", delete(delete_request))
         .route("/{id}/unsend", post(unsend_request))
         .route("/{id}/report", post(report_request))
+        .route("/tags/multiple", post(edit_tags_multiple_request))
         // timelines
         .route("/timeline/home", get(home_timeline_request))
         // ...
@@ -172,10 +173,49 @@ pub async fn edit_tags_request(
     // ...
     Json(
         match database.update_response_tags(id, req.tags, auth_user).await {
-            Ok(r) => DefaultReturn {
+            Ok(_) => DefaultReturn {
                 success: true,
-                message: String::new(),
-                payload: Some(r),
+                message: "Response updated!".to_string(),
+                payload: (),
+            },
+            Err(e) => e.into(),
+        },
+    )
+}
+
+/// [`Database::update_response_tags_multiple`]
+pub async fn edit_tags_multiple_request(
+    jar: CookieJar,
+    State(database): State<Database>,
+    Json(req): Json<ResponseEditTagsMultiple>,
+) -> impl IntoResponse {
+    // get user from token
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => {
+                return Json(DatabaseError::NotAllowed.into());
+            }
+        },
+        None => {
+            return Json(DatabaseError::NotAllowed.into());
+        }
+    };
+
+    // ...
+    Json(
+        match database
+            .update_response_tags_multiple(req.ids, req.tags, auth_user)
+            .await
+        {
+            Ok(_) => DefaultReturn {
+                success: true,
+                message: "Responses updated!".to_string(),
+                payload: (),
             },
             Err(e) => e.into(),
         },

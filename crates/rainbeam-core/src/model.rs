@@ -605,6 +605,12 @@ pub struct ResponseEditTags {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct ResponseEditTagsMultiple {
+    pub ids: Vec<String>,
+    pub tags: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ResponseEditContext {
     pub context: ResponseContext,
 }
