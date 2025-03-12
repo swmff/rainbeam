@@ -90,8 +90,8 @@
         </style>
 
         {% if (relationship != crate::model::RelationshipStatus::Friends &&
-        other.metadata.is_true("sparkler:private_profile")) | (other.group ==
-        -1) %}
+        other.metadata.is_true("sparkler:private_profile")) && !is_self |
+        (other.group == -1) %}
         <!-- locked message -->
         <div style="display: none" aria-hidden="true">
             <div id="use:panel" aria-hidden="true">

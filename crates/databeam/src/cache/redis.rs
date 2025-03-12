@@ -14,9 +14,9 @@ impl Cache for RedisCache {
     type Client = redis::Connection;
 
     async fn new() -> Self {
-        return Self {
+        Self {
             client: redis::Client::open("redis://127.0.0.1:6379").unwrap(),
-        };
+        }
     }
 
     async fn get_con(&self) -> Self::Client {
@@ -24,20 +24,14 @@ impl Cache for RedisCache {
     }
 
     async fn get(&self, id: Self::Item) -> Option<String> {
-        match self.get_con().await.get(id) {
-            Ok(d) => Some(d),
-            Err(_) => None,
-        }
+        self.get_con().await.get(id).ok()
     }
 
     async fn set(&self, id: Self::Item, content: Self::Item) -> bool {
         let mut c = self.get_con().await;
         let res: Result<String, redis::RedisError> = c.set(id, content);
 
-        match res {
-            Ok(_) => true,
-            Err(_) => false,
-        }
+        res.is_ok()
     }
 
     async fn update(&self, id: Self::Item, content: Self::Item) -> bool {
@@ -48,10 +42,7 @@ impl Cache for RedisCache {
         let mut c = self.get_con().await;
         let res: Result<String, redis::RedisError> = c.del(id);
 
-        match res {
-            Ok(_) => true,
-            Err(_) => false,
-        }
+        res.is_ok()
     }
 
     async fn remove_starting_with(&self, id: Self::Item) -> bool {
@@ -68,30 +59,21 @@ impl Cache for RedisCache {
         // remove
         let res: Result<String, redis::RedisError> = cmd.query(&mut c);
 
-        match res {
-            Ok(_) => true,
-            Err(_) => false,
-        }
+        res.is_ok()
     }
 
     async fn incr(&self, id: Self::Item) -> bool {
         let mut c = self.get_con().await;
         let res: Result<String, redis::RedisError> = c.incr(id, 1);
 
-        match res {
-            Ok(_) => true,
-            Err(_) => false,
-        }
+        res.is_ok()
     }
 
     async fn decr(&self, id: Self::Item) -> bool {
         let mut c = self.get_con().await;
         let res: Result<String, redis::RedisError> = c.decr(id, 1);
 
-        match res {
-            Ok(_) => true,
-            Err(_) => false,
-        }
+        res.is_ok()
     }
 
     async fn get_timed<T: Serialize + DeserializeOwned>(
@@ -135,9 +117,6 @@ impl Cache for RedisCache {
             },
         );
 
-        match res {
-            Ok(_) => true,
-            Err(_) => false,
-        }
+        res.is_ok()
     }
 }

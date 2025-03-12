@@ -61,6 +61,7 @@ impl Default for Tiers {
 
 /// File locations for template files. Relative to the config file's parent directory.
 #[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Default)]
 pub struct TemplatesConfig {
     /// The `header.html` file. HTML `<head>`
     pub header: String,
@@ -68,16 +69,8 @@ pub struct TemplatesConfig {
     pub body: String,
 }
 
-impl Default for TemplatesConfig {
-    fn default() -> Self {
-        Self {
-            header: String::new(),
-            body: String::new(),
-        }
-    }
-}
 
-pub static TEMPLATE_ADDONS: LazyLock<RwLock<TemplatesConfig>> = LazyLock::new(|| RwLock::default());
+pub static TEMPLATE_ADDONS: LazyLock<RwLock<TemplatesConfig>> = LazyLock::new(RwLock::default);
 
 macro_rules! get_tmpl {
     ($name:ident) => {
@@ -104,14 +97,11 @@ macro_rules! read_tmpl {
 impl TemplatesConfig {
     /// Read a template to string given its `path`.
     pub fn read_template(path: PathBufD) -> String {
-        match read_to_string(path) {
-            Ok(s) => s,
-            Err(_) => String::new(),
-        }
+        read_to_string(path).unwrap_or_default()
     }
 
     /// Read the configuration and fill the static `template_addons`.
-    pub fn read_config(&self, relative: &str) -> () {
+    pub fn read_config(&self, relative: &str) {
         let mut w = TEMPLATE_ADDONS.write().unwrap();
         *w = TemplatesConfig {
             header: read_tmpl!(&self => relative->header),

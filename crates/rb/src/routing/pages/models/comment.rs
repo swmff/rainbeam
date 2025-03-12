@@ -47,7 +47,7 @@ pub async fn comment_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => Some(ua),
@@ -57,9 +57,7 @@ pub async fn comment_request(
     };
 
     let unread = if let Some(ref ua) = auth_user {
-        database
-            .get_inbox_count_by_recipient(ua.id.to_owned())
-            .await
+        database.get_inbox_count_by_recipient(&ua.id).await
     } else {
         0
     };
@@ -67,7 +65,7 @@ pub async fn comment_request(
     let notifs = if let Some(ref ua) = auth_user {
         database
             .auth
-            .get_notification_count_by_recipient(ua.id.to_owned())
+            .get_notification_count_by_recipient(&ua.id)
             .await
     } else {
         0
@@ -166,7 +164,7 @@ pub async fn partial_comments_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => Some(ua),
@@ -248,7 +246,7 @@ pub async fn partial_response_comments_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => Some(ua),

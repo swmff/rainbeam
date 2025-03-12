@@ -19,7 +19,7 @@ pub fn unix_epoch_timestamp() -> u128 {
         .duration_since(UNIX_EPOCH)
         .expect("Time travel is not allowed");
 
-    return time_since.as_millis();
+    time_since.as_millis()
 }
 
 /// Get a [`i64`] timestamp from the given `year` epoch
@@ -30,5 +30,5 @@ pub fn epoch_timestamp(year: i32) -> i64 {
         .unwrap()
         .timestamp_millis();
 
-    return now - then;
+    now - then
 }

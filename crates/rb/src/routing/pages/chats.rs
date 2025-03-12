@@ -34,7 +34,7 @@ pub async fn chats_homepage_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -43,16 +43,14 @@ pub async fn chats_homepage_request(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = database
-        .get_inbox_count_by_recipient(auth_user.id.to_owned())
-        .await;
+    let unread = database.get_inbox_count_by_recipient(&auth_user.id).await;
 
     let notifs = database
         .auth
-        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .get_notification_count_by_recipient(&auth_user.id)
         .await;
 
-    let chats = match database.get_chats_for_user(auth_user.id.clone()).await {
+    let chats = match database.get_chats_for_user(&auth_user.id).await {
         Ok(c) => c,
         Err(e) => return Html(e.to_html(database)),
     };
@@ -102,7 +100,7 @@ pub async fn chat_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -111,13 +109,11 @@ pub async fn chat_request(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = database
-        .get_inbox_count_by_recipient(auth_user.id.to_owned())
-        .await;
+    let unread = database.get_inbox_count_by_recipient(&auth_user.id).await;
 
     let notifs = database
         .auth
-        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .get_notification_count_by_recipient(&auth_user.id)
         .await;
 
     let chat = match database.get_chat(id.clone()).await {
@@ -164,7 +160,7 @@ pub async fn chat_request(
             friends: database
                 .auth
                 .get_user_participating_relationships_of_status(
-                    auth_user.id.clone(),
+                    &auth_user.id,
                     RelationshipStatus::Friends,
                 )
                 .await
@@ -197,7 +193,7 @@ pub async fn render_message_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,

@@ -55,7 +55,7 @@ pub async fn expand_ip_request(
         Some(c) => {
             if let Err(_) = database
                 .auth
-                .get_profile_by_unhashed(c.value_trimmed().to_string())
+                .get_profile_by_unhashed(c.value_trimmed())
                 .await
             {
                 return Redirect::to("/");
@@ -67,7 +67,7 @@ pub async fn expand_ip_request(
     };
 
     // return
-    match database.auth.get_profile_by_ip(ip).await {
+    match database.auth.get_profile_by_ip(&ip).await {
         Ok(r) => Redirect::to(&format!("/@{}", r.username)),
         Err(_) => Redirect::to("/"),
     }
@@ -111,7 +111,7 @@ pub async fn report_request(
     };
 
     // check ip
-    if database.auth.get_ipban_by_ip(real_ip.clone()).await.is_ok() {
+    if database.auth.get_ipban_by_ip(&real_ip).await.is_ok() {
         return Json(DefaultReturn {
             success: false,
             message: DatabaseError::Banned.to_string(),
@@ -159,17 +159,11 @@ pub async fn export_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
-            Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: None,
-                });
-            }
+            Err(e) => return Json(e.to_json()),
         },
         None => return Json(DatabaseError::NotAllowed.to_json()),
     };
@@ -194,11 +188,7 @@ pub async fn export_request(
     }
 
     // ...
-    let other_user = match database
-        .auth
-        .get_profile_by_username(username.to_owned())
-        .await
-    {
+    let other_user = match database.auth.get_profile_by_username(&username).await {
         Ok(ua) => ua,
         Err(_) => {
             return Json(DefaultReturn {
@@ -232,7 +222,7 @@ pub async fn ipblock_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -246,7 +236,7 @@ pub async fn ipblock_request(
     };
 
     // get profile
-    let profile = match database.auth.get_profile(id.clone()).await {
+    let profile = match database.auth.get_profile(&id).await {
         Ok(p) => p,
         Err(e) => return Json(e.to_json()),
     };

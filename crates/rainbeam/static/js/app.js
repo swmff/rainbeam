@@ -541,25 +541,6 @@
                 uses="app::clean_date_codes,app::link_filter,app::hooks::alt"
             ></include-partial>`;
         }
-
-        for (const paragraph of Array.from(
-            document.querySelectorAll("span[class] p"),
-        )) {
-            const groups = /(\/inbox\/mail\/letter\/)([\w]+)/.exec(
-                paragraph.innerText,
-            );
-
-            if (groups === null) {
-                continue;
-            }
-
-            // add embed
-            paragraph.innerText = paragraph.innerText.replace(groups[0], "");
-            paragraph.parentElement.innerHTML = `<include-partial
-                src="/inbox/mail/_app/components/mail.html?id=${groups[2]}&do_render_nested=false"
-                uses="app::clean_date_codes,app::link_filter,app::hooks::alt,app::hooks::partial_embeds"
-            ></include-partial>${paragraph.parentElement.innerHTML}`;
-        }
     });
 
     app.define("hooks::check_reactions", async function ({ $ }) {

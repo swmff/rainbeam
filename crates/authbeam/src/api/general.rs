@@ -38,7 +38,7 @@ pub async fn create_request(
     };
 
     // check ip
-    if database.get_ipban_by_ip(real_ip.clone()).await.is_ok() {
+    if database.get_ipban_by_ip(&real_ip).await.is_ok() {
         return (
             HeaderMap::new(),
             serde_json::to_string(&DatabaseError::NotAllowed.to_json::<()>()).unwrap(),
@@ -46,7 +46,7 @@ pub async fn create_request(
     }
 
     // create profile
-    let res = match database.create_profile(props, real_ip).await {
+    let res = match database.create_profile(props, &real_ip).await {
         Ok(r) => r,
         Err(e) => {
             return (
@@ -109,10 +109,7 @@ pub async fn login_request(
     }
 
     // ...
-    let mut ua = match database
-        .get_profile_by_username(props.username.clone())
-        .await
-    {
+    let mut ua = match database.get_profile_by_username(&props.username).await {
         Ok(ua) => ua,
         Err(e) => {
             return (
@@ -151,7 +148,7 @@ pub async fn login_request(
     };
 
     // check ip
-    if database.get_ipban_by_ip(real_ip.clone()).await.is_ok() {
+    if database.get_ipban_by_ip(&real_ip).await.is_ok() {
         return (
             HeaderMap::new(),
             serde_json::to_string(&DatabaseError::NotAllowed.to_json::<()>()).unwrap(),
@@ -175,7 +172,7 @@ pub async fn login_request(
     ua.token_context.push(TokenContext::default());
 
     database
-        .update_profile_tokens(props.username.clone(), ua.tokens, ua.ips, ua.token_context)
+        .update_profile_tokens(&props.username, ua.tokens, ua.ips, ua.token_context)
         .await
         .unwrap();
 

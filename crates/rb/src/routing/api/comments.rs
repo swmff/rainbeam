@@ -41,7 +41,7 @@ pub async fn create_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => {
@@ -71,7 +71,7 @@ pub async fn create_request(
     };
 
     // check ip
-    if database.auth.get_ipban_by_ip(real_ip.clone()).await.is_ok() {
+    if database.auth.get_ipban_by_ip(&real_ip).await.is_ok() {
         return (
             [
                 ("Content-Type".to_string(), "text/plain".to_string()),
@@ -195,7 +195,7 @@ pub async fn edit_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -234,7 +234,7 @@ pub async fn delete_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -299,7 +299,7 @@ pub async fn report_request(
     };
 
     // check ip
-    if database.auth.get_ipban_by_ip(real_ip.clone()).await.is_ok() {
+    if database.auth.get_ipban_by_ip(&real_ip).await.is_ok() {
         return Json(DefaultReturn {
             success: false,
             message: DatabaseError::Banned.to_string(),
@@ -346,7 +346,7 @@ pub async fn ipblock_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,

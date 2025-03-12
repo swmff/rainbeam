@@ -44,7 +44,7 @@ pub async fn create_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -75,7 +75,7 @@ pub async fn get_last_message_request(
     match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -108,7 +108,7 @@ pub async fn get_messages_request(
     match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -152,7 +152,7 @@ pub async fn edit_name_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -193,7 +193,7 @@ pub async fn add_friend_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -233,7 +233,7 @@ pub async fn delete_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -298,7 +298,7 @@ pub async fn report_request(
     };
 
     // check ip
-    if database.auth.get_ipban_by_ip(real_ip.clone()).await.is_ok() {
+    if database.auth.get_ipban_by_ip(&real_ip).await.is_ok() {
         return Json(DefaultReturn {
             success: false,
             message: DatabaseError::Banned.to_string(),

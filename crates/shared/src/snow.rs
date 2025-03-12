@@ -36,9 +36,9 @@ impl AlmostSnowflake {
         }
 
         // build id
-        let mut id = bigint(epoch_timestamp(2024) as usize) << 22 as u128;
-        id = id | bigint((server_id % 1024) << 12);
-        id = id | bigint((bytes.parse::<usize>().unwrap() + 1) % 4096);
+        let mut id = bigint(epoch_timestamp(2024) as usize) << 22_u128;
+        id |= bigint((server_id % 1024) << 12);
+        id |= bigint((bytes.parse::<usize>().unwrap() + 1) % 4096);
 
         // return
         Self(id.to_string())

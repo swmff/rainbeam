@@ -776,35 +776,6 @@
     </form>
 </dialog>
 
-<dialog id="set_signature_dialog">
-    <div class="inner">
-        <textarea
-            name="sparkler:mail_signature"
-            id="sparkler:mail_signature"
-            onchange="update_kv('sparkler:mail_signature', event.target.value)"
-        ></textarea>
-
-        <p class="fade">{{ text "settings:account.html:text.signature" }}</p>
-
-        <hr />
-        <div class="flex gap-2">
-            <button
-                class="primary bold"
-                onclick="globalThis.save_settings().then(() => window.close())"
-            >
-                {{ text "general:dialog.continue" }}
-            </button>
-            <button
-                class="bold"
-                onclick="document.getElementById('set_signature_dialog').close(); window.close()"
-                type="button"
-            >
-                {{ text "general:dialog.cancel" }}
-            </button>
-        </div>
-    </div>
-</dialog>
-
 <script>
     (() => {
         globalThis.update_theme = (theme) => {

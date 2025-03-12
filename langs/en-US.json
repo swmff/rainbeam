@@ -33,7 +33,6 @@
         "general:link.discover": "Discover",
 
         "general:service.chats": "Chats",
-        "general:service.mail": "Mail",
         "general:service.market": "Market",
 
         "general:title.services": "Services",
@@ -206,7 +205,6 @@
         "settings:account.html:text.status_note": "Your status note is shown to signed-in users when they view your profile.",
         "settings:account.html:label.choose_emoji": "Choose emoji",
         "settings:account.html:text.status_emoji": "Your status emoji is shown in place of the default thought balloon.",
-        "settings:account.html:text.signature": "Your signature is automatically appended to mail sent from your account.",
 
         "settings:profile_options.html:title.about_me": "About me",
         "settings:profile_options.html:label.display_name": "Display name",
@@ -278,16 +276,6 @@
         "chats:chat.html:link.go_back": "Go back",
         "chats:chat.html:label.edit_chat_name": "Edit chat name",
         "chats:chat.html:label.select_a_friend": "Select a friend",
-
-        "mail:link.received": "Received",
-        "mail:link.sent": "Sent",
-        "mail:compose.html:title.compose_mail": "Compose mail",
-        "mail:compose.html:label.to": "To",
-        "mail:compose.html:label.subject": "Subject",
-        "mail:compose.html:label.content": "Content",
-        "mail:mail.html:label.from": "From",
-        "mail:mail.html:label.sent": "Sent",
-        "mail:mail.html:text.system": "This mail was sent to the system account. It may be seen and replied to by any staff member with access.",
 
         "market:label.name": "Name",
         "market:label.description": "Description",

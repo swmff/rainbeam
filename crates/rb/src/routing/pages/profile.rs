@@ -61,7 +61,7 @@ pub async fn profile_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => Some(ua),
@@ -71,9 +71,7 @@ pub async fn profile_request(
     };
 
     let unread = if let Some(ref ua) = auth_user {
-        database
-            .get_inbox_count_by_recipient(ua.id.to_owned())
-            .await
+        database.get_inbox_count_by_recipient(&ua.id).await
     } else {
         0
     };
@@ -81,13 +79,13 @@ pub async fn profile_request(
     let notifs = if let Some(ref ua) = auth_user {
         database
             .auth
-            .get_notification_count_by_recipient(ua.id.to_owned())
+            .get_notification_count_by_recipient(&ua.id)
             .await
     } else {
         0
     };
 
-    let other = match database.auth.get_profile(username.clone()).await {
+    let other = match database.auth.get_profile(&username).await {
         Ok(ua) => ua,
         Err(_) => return Html(DatabaseError::NotFound.to_html(database)),
     };
@@ -132,11 +130,7 @@ pub async fn profile_request(
     }
 
     let is_following = if let Some(ref ua) = auth_user {
-        match database
-            .auth
-            .get_follow(ua.id.to_owned(), other.id.clone())
-            .await
-        {
+        match database.auth.get_follow(&ua.id, &other.id).await {
             Ok(_) => true,
             Err(_) => false,
         }
@@ -145,11 +139,7 @@ pub async fn profile_request(
     };
 
     let is_following_you = if let Some(ref ua) = auth_user {
-        match database
-            .auth
-            .get_follow(other.id.clone(), ua.id.to_owned())
-            .await
-        {
+        match database.auth.get_follow(&other.id, &ua.id).await {
             Ok(_) => true,
             Err(_) => false,
         }
@@ -212,7 +202,7 @@ pub async fn profile_request(
         if let Some(ref profile) = auth_user {
             database
                 .auth
-                .get_user_relationship(other.id.clone(), profile.id.clone())
+                .get_user_relationship(&other.id, &profile.id)
                 .await
                 .0
         } else {
@@ -239,18 +229,13 @@ pub async fn profile_request(
             unread,
             notifs,
             other: other.clone(),
-            response_count: database
-                .get_response_count_by_author(other.id.clone())
-                .await,
+            response_count: database.get_response_count_by_author(&other.id).await,
             questions_count: database
-                .get_global_questions_count_by_author(other.id.clone())
+                .get_global_questions_count_by_author(&other.id)
                 .await,
-            followers_count: database.auth.get_followers_count(other.id.clone()).await,
-            following_count: database.auth.get_following_count(other.id.clone()).await,
-            friends_count: database
-                .auth
-                .get_friendship_count_by_user(other.id.clone())
-                .await,
+            followers_count: database.auth.get_followers_count(&other.id).await,
+            following_count: database.auth.get_following_count(&other.id).await,
+            friends_count: database.auth.get_friendship_count_by_user(&other.id).await,
             is_following,
             is_following_you,
             metadata: clean_metadata(&other.metadata),
@@ -326,7 +311,7 @@ pub async fn partial_profile_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => Some(ua),
@@ -335,11 +320,7 @@ pub async fn partial_profile_request(
         None => None,
     };
 
-    let other = match database
-        .auth
-        .get_profile_by_username(username.clone())
-        .await
-    {
+    let other = match database.auth.get_profile_by_username(&username).await {
         Ok(ua) => ua,
         Err(_) => return Html(DatabaseError::NotFound.to_html(database)),
     };
@@ -410,7 +391,7 @@ pub async fn partial_profile_request(
         if let Some(ref profile) = auth_user {
             database
                 .auth
-                .get_user_relationship(other.id.clone(), profile.id.clone())
+                .get_user_relationship(&other.id, &profile.id)
                 .await
                 .0
         } else {
@@ -449,7 +430,7 @@ pub async fn partial_profile_request(
                 response.1.author.id.clone(),
                 database
                     .auth
-                    .get_user_relationship(response.1.author.id.clone(), ua.id.clone())
+                    .get_user_relationship(&response.1.author.id, &ua.id)
                     .await
                     .0,
             );
@@ -514,7 +495,7 @@ pub async fn profile_layout_editor_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => Some(ua),
@@ -523,7 +504,7 @@ pub async fn profile_layout_editor_request(
         None => None,
     };
 
-    let other = match database.auth.get_profile(username.clone()).await {
+    let other = match database.auth.get_profile(&username).await {
         Ok(ua) => ua,
         Err(_) => return Html(DatabaseError::NotFound.to_html(database)),
     };
@@ -565,7 +546,7 @@ pub async fn profile_layout_editor_request(
                 other.layout.clone()
             } else {
                 // fetch market item
-                let item = match database.auth.get_item(props.id.clone()).await {
+                let item = match database.auth.get_item(&props.id).await {
                     Ok(i) => i,
                     Err(e) => return Html(e.to_string()),
                 };
@@ -576,10 +557,7 @@ pub async fn profile_layout_editor_request(
 
                 if !database
                     .auth
-                    .get_transaction_by_customer_item(
-                        auth_user.unwrap().id.clone(),
-                        item.id.clone(),
-                    )
+                    .get_transaction_by_customer_item(&auth_user.unwrap().id, &item.id)
                     .await
                     .is_ok()
                 {
@@ -631,7 +609,7 @@ pub async fn profile_embed_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => Some(ua),
@@ -640,11 +618,7 @@ pub async fn profile_embed_request(
         None => None,
     };
 
-    let other = match database
-        .auth
-        .get_profile_by_username(username.clone())
-        .await
-    {
+    let other = match database.auth.get_profile_by_username(&username).await {
         Ok(ua) => ua,
         Err(_) => return Html(DatabaseError::NotFound.to_html(database)),
     };
@@ -719,7 +693,7 @@ pub async fn profile_embed_request(
     let relationship = if let Some(ref profile) = auth_user {
         database
             .auth
-            .get_user_relationship(other.id.clone(), profile.id.clone())
+            .get_user_relationship(&other.id, &profile.id)
             .await
             .0
     } else {
@@ -784,7 +758,7 @@ pub async fn followers_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => Some(ua),
@@ -794,9 +768,7 @@ pub async fn followers_request(
     };
 
     let unread = if let Some(ref ua) = auth_user {
-        database
-            .get_inbox_count_by_recipient(ua.id.to_owned())
-            .await
+        database.get_inbox_count_by_recipient(&ua.id).await
     } else {
         0
     };
@@ -804,17 +776,13 @@ pub async fn followers_request(
     let notifs = if let Some(ref ua) = auth_user {
         database
             .auth
-            .get_notification_count_by_recipient(ua.id.to_owned())
+            .get_notification_count_by_recipient(&ua.id)
             .await
     } else {
         0
     };
 
-    let other = match database
-        .auth
-        .get_profile_by_username(username.clone())
-        .await
-    {
+    let other = match database.auth.get_profile_by_username(&username).await {
         Ok(ua) => ua,
         Err(e) => return Html(e.to_string()),
     };
@@ -862,7 +830,7 @@ pub async fn followers_request(
         if let Some(ref profile) = auth_user {
             database
                 .auth
-                .get_user_relationship(other.id.clone(), profile.id.clone())
+                .get_user_relationship(&other.id, &profile.id)
                 .await
                 .0
         } else {
@@ -890,15 +858,12 @@ pub async fn followers_request(
             other: other.clone(),
             followers: database
                 .auth
-                .get_followers_paginated(other.id.clone(), query.page)
+                .get_followers_paginated(&other.id, query.page)
                 .await
                 .unwrap(),
-            followers_count: database.auth.get_followers_count(other.id.clone()).await,
-            following_count: database.auth.get_following_count(other.id.clone()).await,
-            friends_count: database
-                .auth
-                .get_friendship_count_by_user(other.id.clone())
-                .await,
+            followers_count: database.auth.get_followers_count(&other.id).await,
+            following_count: database.auth.get_following_count(&other.id).await,
+            friends_count: database.auth.get_friendship_count_by_user(&other.id).await,
             page: query.page,
             // ...
             is_self,
@@ -938,7 +903,7 @@ pub async fn following_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => Some(ua),
@@ -948,9 +913,7 @@ pub async fn following_request(
     };
 
     let unread = if let Some(ref ua) = auth_user {
-        database
-            .get_inbox_count_by_recipient(ua.id.to_owned())
-            .await
+        database.get_inbox_count_by_recipient(&ua.id).await
     } else {
         0
     };
@@ -958,17 +921,13 @@ pub async fn following_request(
     let notifs = if let Some(ref ua) = auth_user {
         database
             .auth
-            .get_notification_count_by_recipient(ua.id.to_owned())
+            .get_notification_count_by_recipient(&ua.id)
             .await
     } else {
         0
     };
 
-    let other = match database
-        .auth
-        .get_profile_by_username(username.clone())
-        .await
-    {
+    let other = match database.auth.get_profile_by_username(&username).await {
         Ok(ua) => ua,
         Err(e) => return Html(e.to_string()),
     };
@@ -1016,7 +975,7 @@ pub async fn following_request(
         if let Some(ref profile) = auth_user {
             database
                 .auth
-                .get_user_relationship(other.id.clone(), profile.id.clone())
+                .get_user_relationship(&other.id, &profile.id)
                 .await
                 .0
         } else {
@@ -1042,17 +1001,14 @@ pub async fn following_request(
             unread,
             notifs,
             other: other.clone(),
-            followers_count: database.auth.get_followers_count(other.id.clone()).await,
-            following_count: database.auth.get_following_count(other.id.clone()).await,
+            followers_count: database.auth.get_followers_count(&other.id).await,
+            following_count: database.auth.get_following_count(&other.id).await,
             following: database
                 .auth
-                .get_following_paginated(other.id.clone(), query.page)
+                .get_following_paginated(&other.id, query.page)
                 .await
                 .unwrap(),
-            friends_count: database
-                .auth
-                .get_friendship_count_by_user(other.id.clone())
-                .await,
+            friends_count: database.auth.get_friendship_count_by_user(&other.id).await,
             page: query.page,
             // ...
             is_self,
@@ -1092,7 +1048,7 @@ pub async fn friends_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => Some(ua),
@@ -1102,9 +1058,7 @@ pub async fn friends_request(
     };
 
     let unread = if let Some(ref ua) = auth_user {
-        database
-            .get_inbox_count_by_recipient(ua.id.to_owned())
-            .await
+        database.get_inbox_count_by_recipient(&ua.id).await
     } else {
         0
     };
@@ -1112,17 +1066,13 @@ pub async fn friends_request(
     let notifs = if let Some(ref ua) = auth_user {
         database
             .auth
-            .get_notification_count_by_recipient(ua.id.to_owned())
+            .get_notification_count_by_recipient(&ua.id)
             .await
     } else {
         0
     };
 
-    let other = match database
-        .auth
-        .get_profile_by_username(username.clone())
-        .await
-    {
+    let other = match database.auth.get_profile_by_username(&username).await {
         Ok(ua) => ua,
         Err(e) => return Html(e.to_string()),
     };
@@ -1170,7 +1120,7 @@ pub async fn friends_request(
         if let Some(ref profile) = auth_user {
             database
                 .auth
-                .get_user_relationship(other.id.clone(), profile.id.clone())
+                .get_user_relationship(&other.id, &profile.id)
                 .await
                 .0
         } else {
@@ -1199,18 +1149,15 @@ pub async fn friends_request(
             friends: database
                 .auth
                 .get_user_participating_relationships_of_status_paginated(
-                    other.id.clone(),
+                    &other.id,
                     RelationshipStatus::Friends,
                     query.page,
                 )
                 .await
                 .unwrap_or_default(),
-            followers_count: database.auth.get_followers_count(other.id.clone()).await,
-            following_count: database.auth.get_following_count(other.id.clone()).await,
-            friends_count: database
-                .auth
-                .get_friendship_count_by_user(other.id.clone())
-                .await,
+            followers_count: database.auth.get_followers_count(&other.id).await,
+            following_count: database.auth.get_following_count(&other.id).await,
+            friends_count: database.auth.get_friendship_count_by_user(&other.id).await,
             page: query.page,
             // ...
             is_self,
@@ -1250,7 +1197,7 @@ pub async fn friend_requests_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -1259,13 +1206,11 @@ pub async fn friend_requests_request(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = database
-        .get_inbox_count_by_recipient(auth_user.id.to_owned())
-        .await;
+    let unread = database.get_inbox_count_by_recipient(&auth_user.id).await;
 
     let notifs = database
         .auth
-        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .get_notification_count_by_recipient(&auth_user.id)
         .await;
 
     let is_helper = {
@@ -1277,11 +1222,7 @@ pub async fn friend_requests_request(
         group.permissions.check_helper()
     };
 
-    let other = match database
-        .auth
-        .get_profile_by_username(username.clone())
-        .await
-    {
+    let other = match database.auth.get_profile_by_username(&username).await {
         Ok(ua) => ua,
         Err(e) => return Html(e.to_string()),
     };
@@ -1307,18 +1248,15 @@ pub async fn friend_requests_request(
             requests: database
                 .auth
                 .get_user_participating_relationships_of_status_paginated(
-                    other.id.clone(),
+                    &other.id,
                     RelationshipStatus::Pending,
                     query.page,
                 )
                 .await
                 .unwrap(),
-            followers_count: database.auth.get_followers_count(other.id.clone()).await,
-            following_count: database.auth.get_following_count(other.id.clone()).await,
-            friends_count: database
-                .auth
-                .get_friendship_count_by_user(other.id.clone())
-                .await,
+            followers_count: database.auth.get_followers_count(&other.id).await,
+            following_count: database.auth.get_following_count(&other.id).await,
+            friends_count: database.auth.get_friendship_count_by_user(&other.id).await,
             page: query.page,
             // ...
             is_self,
@@ -1358,7 +1296,7 @@ pub async fn blocks_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -1367,13 +1305,11 @@ pub async fn blocks_request(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = database
-        .get_inbox_count_by_recipient(auth_user.id.to_owned())
-        .await;
+    let unread = database.get_inbox_count_by_recipient(&auth_user.id).await;
 
     let notifs = database
         .auth
-        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .get_notification_count_by_recipient(&auth_user.id)
         .await;
 
     let is_helper = {
@@ -1389,11 +1325,7 @@ pub async fn blocks_request(
         return Html(DatabaseError::NotAllowed.to_html(database));
     }
 
-    let other = match database
-        .auth
-        .get_profile_by_username(username.clone())
-        .await
-    {
+    let other = match database.auth.get_profile_by_username(&username).await {
         Ok(ua) => ua,
         Err(e) => return Html(e.to_string()),
     };
@@ -1419,18 +1351,15 @@ pub async fn blocks_request(
             blocks: database
                 .auth
                 .get_user_participating_relationships_of_status_paginated(
-                    other.id.clone(),
+                    &other.id,
                     RelationshipStatus::Blocked,
                     query.page,
                 )
                 .await
                 .unwrap(),
-            followers_count: database.auth.get_followers_count(other.id.clone()).await,
-            following_count: database.auth.get_following_count(other.id.clone()).await,
-            friends_count: database
-                .auth
-                .get_friendship_count_by_user(other.id.clone())
-                .await,
+            followers_count: database.auth.get_followers_count(&other.id).await,
+            following_count: database.auth.get_following_count(&other.id).await,
+            friends_count: database.auth.get_friendship_count_by_user(&other.id).await,
             page: query.page,
             // ...
             is_self,
@@ -1483,7 +1412,7 @@ pub async fn questions_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => Some(ua),
@@ -1493,9 +1422,7 @@ pub async fn questions_request(
     };
 
     let unread = if let Some(ref ua) = auth_user {
-        database
-            .get_inbox_count_by_recipient(ua.id.to_owned())
-            .await
+        database.get_inbox_count_by_recipient(&ua.id).await
     } else {
         0
     };
@@ -1503,17 +1430,13 @@ pub async fn questions_request(
     let notifs = if let Some(ref ua) = auth_user {
         database
             .auth
-            .get_notification_count_by_recipient(ua.id.to_owned())
+            .get_notification_count_by_recipient(&ua.id)
             .await
     } else {
         0
     };
 
-    let other = match database
-        .auth
-        .get_profile_by_username(username.clone())
-        .await
-    {
+    let other = match database.auth.get_profile_by_username(&username).await {
         Ok(ua) => ua,
         Err(e) => return Html(e.to_string()),
     };
@@ -1524,11 +1447,7 @@ pub async fn questions_request(
     }
 
     let is_following = if let Some(ref ua) = auth_user {
-        match database
-            .auth
-            .get_follow(ua.id.to_owned(), other.id.clone())
-            .await
-        {
+        match database.auth.get_follow(&ua.id, &other.id).await {
             Ok(_) => true,
             Err(_) => false,
         }
@@ -1537,11 +1456,7 @@ pub async fn questions_request(
     };
 
     let is_following_you = if let Some(ref ua) = auth_user {
-        match database
-            .auth
-            .get_follow(other.id.clone(), ua.id.to_owned())
-            .await
-        {
+        match database.auth.get_follow(&other.id, &ua.id).await {
             Ok(_) => true,
             Err(_) => false,
         }
@@ -1598,7 +1513,7 @@ pub async fn questions_request(
         if let Some(ref profile) = auth_user {
             database
                 .auth
-                .get_user_relationship(other.id.clone(), profile.id.clone())
+                .get_user_relationship(&other.id, &profile.id)
                 .await
                 .0
         } else {
@@ -1626,17 +1541,12 @@ pub async fn questions_request(
             other: other.clone(),
             questions,
             questions_count: database
-                .get_global_questions_count_by_author(other.id.clone())
+                .get_global_questions_count_by_author(&other.id)
                 .await,
-            response_count: database
-                .get_response_count_by_author(other.id.clone())
-                .await,
-            followers_count: database.auth.get_followers_count(other.id.clone()).await,
-            following_count: database.auth.get_following_count(other.id.clone()).await,
-            friends_count: database
-                .auth
-                .get_friendship_count_by_user(other.id.clone())
-                .await,
+            response_count: database.get_response_count_by_author(&other.id).await,
+            followers_count: database.auth.get_followers_count(&other.id).await,
+            following_count: database.auth.get_following_count(&other.id).await,
+            friends_count: database.auth.get_friendship_count_by_user(&other.id).await,
             is_following,
             is_following_you,
             metadata: clean_metadata(&other.metadata),
@@ -1729,7 +1639,7 @@ pub async fn mod_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -1738,38 +1648,24 @@ pub async fn mod_request(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = database
-        .get_inbox_count_by_recipient(auth_user.id.to_owned())
-        .await;
+    let unread = database.get_inbox_count_by_recipient(&auth_user.id).await;
 
     let notifs = database
         .auth
-        .get_notification_count_by_recipient(auth_user.to_owned().id)
+        .get_notification_count_by_recipient(&auth_user.id)
         .await;
 
-    let mut other = match database
-        .auth
-        .get_profile_by_username(username.clone())
-        .await
-    {
+    let mut other = match database.auth.get_profile_by_username(&username).await {
         Ok(ua) => ua,
         Err(_) => return Html(DatabaseError::NotFound.to_html(database)),
     };
 
-    let is_following = match database
-        .auth
-        .get_follow(auth_user.id.to_owned(), other.id.clone())
-        .await
-    {
+    let is_following = match database.auth.get_follow(&auth_user.id, &other.id).await {
         Ok(_) => true,
         Err(_) => false,
     };
 
-    let is_following_you = match database
-        .auth
-        .get_follow(other.id.clone(), auth_user.id.to_owned())
-        .await
-    {
+    let is_following_you = match database.auth.get_follow(&other.id, &auth_user.id).await {
         Ok(_) => true,
         Err(_) => false,
     };
@@ -1799,7 +1695,7 @@ pub async fn mod_request(
 
     let warnings = match database
         .auth
-        .get_warnings_by_recipient(other.id.clone(), auth_user.clone())
+        .get_warnings_by_recipient(&other.id, auth_user.clone())
         .await
     {
         Ok(r) => r,
@@ -1809,7 +1705,7 @@ pub async fn mod_request(
     let is_self = auth_user.id == other.id;
     let relationship = RelationshipStatus::Friends; // moderators should always be your friend! (bypass private profile)
 
-    let chats = match database.get_chats_for_user(other.id.clone()).await {
+    let chats = match database.get_chats_for_user(&other.id).await {
         Ok(c) => c,
         Err(e) => return Html(e.to_html(database)),
     };
@@ -1827,18 +1723,13 @@ pub async fn mod_request(
             notifs,
             other: other.clone(),
             warnings,
-            response_count: database
-                .get_response_count_by_author(other.id.clone())
-                .await,
+            response_count: database.get_response_count_by_author(&other.id).await,
             questions_count: database
-                .get_global_questions_count_by_author(other.id.clone())
+                .get_global_questions_count_by_author(&other.id)
                 .await,
-            followers_count: database.auth.get_followers_count(other.id.clone()).await,
-            following_count: database.auth.get_following_count(other.id.clone()).await,
-            friends_count: database
-                .auth
-                .get_friendship_count_by_user(other.id.clone())
-                .await,
+            followers_count: database.auth.get_followers_count(&other.id).await,
+            following_count: database.auth.get_following_count(&other.id).await,
+            friends_count: database.auth.get_friendship_count_by_user(&other.id).await,
             is_following,
             is_following_you,
             metadata: clean_metadata(&other.metadata),
@@ -1929,7 +1820,7 @@ pub async fn inbox_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -1938,46 +1829,29 @@ pub async fn inbox_request(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = database
-        .get_inbox_count_by_recipient(auth_user.id.to_owned())
-        .await;
+    let unread = database.get_inbox_count_by_recipient(&auth_user.id).await;
 
     let notifs = database
         .auth
-        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .get_notification_count_by_recipient(&auth_user.id)
         .await;
 
-    let other = match database
-        .auth
-        .get_profile_by_username(username.clone())
-        .await
-    {
+    let other = match database.auth.get_profile_by_username(&username).await {
         Ok(ua) => ua,
         Err(e) => return Html(e.to_string()),
     };
 
-    let is_following = match database
-        .auth
-        .get_follow(auth_user.id.to_owned(), other.id.clone())
-        .await
-    {
+    let is_following = match database.auth.get_follow(&auth_user.id, &other.id).await {
         Ok(_) => true,
         Err(_) => false,
     };
 
-    let is_following_you = match database
-        .auth
-        .get_follow(other.id.clone(), auth_user.id.to_owned())
-        .await
-    {
+    let is_following_you = match database.auth.get_follow(&other.id, &auth_user.id).await {
         Ok(_) => true,
         Err(_) => false,
     };
 
-    let questions = match database
-        .get_questions_by_recipient(other.id.to_owned())
-        .await
-    {
+    let questions = match database.get_questions_by_recipient(&other.id).await {
         Ok(responses) => responses,
         Err(e) => return Html(e.to_html(database)),
     };
@@ -2004,7 +1878,7 @@ pub async fn inbox_request(
 
     let relationship = database
         .auth
-        .get_user_relationship(other.id.clone(), auth_user.id.clone())
+        .get_user_relationship(&other.id, &auth_user.id)
         .await
         .0;
 
@@ -2028,17 +1902,12 @@ pub async fn inbox_request(
             other: other.clone(),
             questions,
             questions_count: database
-                .get_global_questions_count_by_author(other.id.clone())
+                .get_global_questions_count_by_author(&other.id)
                 .await,
-            response_count: database
-                .get_response_count_by_author(other.id.clone())
-                .await,
-            followers_count: database.auth.get_followers_count(other.id.clone()).await,
-            following_count: database.auth.get_following_count(other.id.clone()).await,
-            friends_count: database
-                .auth
-                .get_friendship_count_by_user(other.id.clone())
-                .await,
+            response_count: database.get_response_count_by_author(&other.id).await,
+            followers_count: database.auth.get_followers_count(&other.id).await,
+            following_count: database.auth.get_following_count(&other.id).await,
+            friends_count: database.auth.get_friendship_count_by_user(&other.id).await,
             is_following,
             is_following_you,
             metadata: clean_metadata(&other.metadata),
@@ -2126,7 +1995,7 @@ pub async fn outbox_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -2135,38 +2004,24 @@ pub async fn outbox_request(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = database
-        .get_inbox_count_by_recipient(auth_user.id.to_owned())
-        .await;
+    let unread = database.get_inbox_count_by_recipient(&auth_user.id).await;
 
     let notifs = database
         .auth
-        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .get_notification_count_by_recipient(&auth_user.id)
         .await;
 
-    let other = match database
-        .auth
-        .get_profile_by_username(username.clone())
-        .await
-    {
+    let other = match database.auth.get_profile_by_username(&username).await {
         Ok(ua) => ua,
         Err(e) => return Html(e.to_string()),
     };
 
-    let is_following = match database
-        .auth
-        .get_follow(auth_user.id.to_owned(), other.id.clone())
-        .await
-    {
+    let is_following = match database.auth.get_follow(&auth_user.id, &other.id).await {
         Ok(_) => true,
         Err(_) => false,
     };
 
-    let is_following_you = match database
-        .auth
-        .get_follow(other.id.clone(), auth_user.id.to_owned())
-        .await
-    {
+    let is_following_you = match database.auth.get_follow(&other.id, &auth_user.id).await {
         Ok(_) => true,
         Err(_) => false,
     };
@@ -2201,7 +2056,7 @@ pub async fn outbox_request(
 
     let relationship = database
         .auth
-        .get_user_relationship(other.id.clone(), auth_user.id.clone())
+        .get_user_relationship(&other.id, &auth_user.id)
         .await
         .0;
 
@@ -2225,17 +2080,12 @@ pub async fn outbox_request(
             other: other.clone(),
             questions,
             questions_count: database
-                .get_global_questions_count_by_author(other.id.clone())
+                .get_global_questions_count_by_author(&other.id)
                 .await,
-            response_count: database
-                .get_response_count_by_author(other.id.clone())
-                .await,
-            followers_count: database.auth.get_followers_count(other.id.clone()).await,
-            following_count: database.auth.get_following_count(other.id.clone()).await,
-            friends_count: database
-                .auth
-                .get_friendship_count_by_user(other.id.clone())
-                .await,
+            response_count: database.get_response_count_by_author(&other.id).await,
+            followers_count: database.auth.get_followers_count(&other.id).await,
+            following_count: database.auth.get_following_count(&other.id).await,
+            friends_count: database.auth.get_friendship_count_by_user(&other.id).await,
             is_following,
             is_following_you,
             metadata: clean_metadata(&other.metadata),
@@ -2303,7 +2153,7 @@ pub async fn friend_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -2312,27 +2162,21 @@ pub async fn friend_request(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = database
-        .get_inbox_count_by_recipient(auth_user.id.to_owned())
-        .await;
+    let unread = database.get_inbox_count_by_recipient(&auth_user.id).await;
 
     let notifs = database
         .auth
-        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .get_notification_count_by_recipient(&auth_user.id)
         .await;
 
-    let other = match database
-        .auth
-        .get_profile_by_username(username.clone())
-        .await
-    {
+    let other = match database.auth.get_profile_by_username(&username).await {
         Ok(ua) => ua,
         Err(e) => return Html(e.to_string()),
     };
 
     let relationship = database
         .auth
-        .get_user_relationship(other.id.clone(), auth_user.id.clone())
+        .get_user_relationship(&other.id, &auth_user.id)
         .await;
 
     // the relationship status must be pending AND we must be user 2 (the user who got sent the request)
@@ -2375,7 +2219,7 @@ pub async fn render_card_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => Some(ua),
@@ -2420,7 +2264,7 @@ pub async fn warning_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => Some(ua),
@@ -2429,11 +2273,7 @@ pub async fn warning_request(
         None => None,
     };
 
-    let other = match database
-        .auth
-        .get_profile_by_username(username.clone())
-        .await
-    {
+    let other = match database.auth.get_profile_by_username(&username).await {
         Ok(ua) => ua,
         Err(e) => return Html(e.to_string()),
     };

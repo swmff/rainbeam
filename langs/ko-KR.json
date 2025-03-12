@@ -33,7 +33,6 @@
         "general:link.discover": "Discover",
 
         "general:service.chats": "채팅",
-        "general:service.mail": "메일",
         "general:service.market": "Market",
 
         "general:title.services": "서비스",
@@ -279,16 +278,6 @@
         "chats:chat.html:label.edit_chat_name": "채팅명 수정",
         "chats:chat.html:label.select_a_friend": "친구 선택",
 
-        "mail:link.received": "받음",
-        "mail:link.sent": "보냄",
-        "mail:compose.html:title.compose_mail": "매일 작성",
-        "mail:compose.html:label.to": "To",
-        "mail:compose.html:label.subject": "제목",
-        "mail:compose.html:label.content": "내용",
-        "mail:mail.html:label.from": "From",
-        "mail:mail.html:label.sent": "보냄",
-        "mail:mail.html:text.system": "이 메일은 시스템 계정으로 전송되었습니다. 액세스 권한이 있는 모든 직원이 보고 답장할 수 있습니다.",
-
         "market:label.name": "Name",
         "market:label.description": "Description",
         "market:label.cost": "Cost",
@@ -313,4 +302,3 @@
         "market:action.clone_layout": "Clone layout"
     }
 }
-

@@ -42,7 +42,7 @@ pub async fn homepage_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -51,13 +51,11 @@ pub async fn homepage_request(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = database
-        .get_inbox_count_by_recipient(auth_user.id.to_owned())
-        .await;
+    let unread = database.get_inbox_count_by_recipient(&auth_user.id).await;
 
     let notifs = database
         .auth
-        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .get_notification_count_by_recipient(&auth_user.id)
         .await;
 
     // permissions
@@ -95,11 +93,7 @@ pub async fn homepage_request(
         } else {
             match database
                 .auth
-                .get_items_by_status_searched_paginated(
-                    props.status.clone(),
-                    props.page,
-                    props.q.clone(),
-                )
+                .get_items_by_status_searched_paginated(props.status.clone(), props.page, &props.q)
                 .await
             {
                 Ok(i) => i,
@@ -109,7 +103,7 @@ pub async fn homepage_request(
     } else if !props.customer.is_empty() {
         match database
             .auth
-            .get_transactions_by_customer_paginated(props.customer.clone(), props.page)
+            .get_transactions_by_customer_paginated(&props.customer, props.page)
             .await
         {
             Ok(i) => {
@@ -139,7 +133,7 @@ pub async fn homepage_request(
             // creator and type
             match database
                 .auth
-                .get_items_by_creator_type_paginated(props.creator.clone(), r#type, props.page)
+                .get_items_by_creator_type_paginated(&props.creator, r#type, props.page)
                 .await
             {
                 Ok(i) => i,
@@ -149,7 +143,7 @@ pub async fn homepage_request(
             // no type, just creator
             match database
                 .auth
-                .get_items_by_creator_paginated(props.creator.clone(), props.page)
+                .get_items_by_creator_paginated(&props.creator, props.page)
                 .await
             {
                 Ok(i) => i,
@@ -198,7 +192,7 @@ pub async fn create_request(jar: CookieJar, State(database): State<Database>) ->
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -207,13 +201,11 @@ pub async fn create_request(jar: CookieJar, State(database): State<Database>) ->
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = database
-        .get_inbox_count_by_recipient(auth_user.id.to_owned())
-        .await;
+    let unread = database.get_inbox_count_by_recipient(&auth_user.id).await;
 
     let notifs = database
         .auth
-        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .get_notification_count_by_recipient(&auth_user.id)
         .await;
 
     Html(
@@ -257,7 +249,7 @@ pub async fn item_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -266,13 +258,11 @@ pub async fn item_request(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = database
-        .get_inbox_count_by_recipient(auth_user.id.to_owned())
-        .await;
+    let unread = database.get_inbox_count_by_recipient(&auth_user.id).await;
 
     let notifs = database
         .auth
-        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .get_notification_count_by_recipient(&auth_user.id)
         .await;
 
     // permissions
@@ -284,7 +274,7 @@ pub async fn item_request(
     let is_helper = group.permissions.check_helper();
 
     // data
-    let item = match database.auth.get_item(id.clone()).await {
+    let item = match database.auth.get_item(&id).await {
         Ok(i) => i,
         Err(e) => return Html(e.to_string()),
     };
@@ -309,13 +299,13 @@ pub async fn item_request(
             }),
             is_owned: database
                 .auth
-                .get_transaction_by_customer_item(auth_user.id.clone(), item.id.clone())
+                .get_transaction_by_customer_item(&auth_user.id, &item.id)
                 .await
                 .is_ok(),
             profile: Some(auth_user),
             unread,
             notifs,
-            creator: match database.auth.get_profile(item.creator.clone()).await {
+            creator: match database.auth.get_profile(&item.creator).await {
                 Ok(ua) => ua,
                 Err(e) => return Html(e.to_string()),
             },
@@ -346,7 +336,7 @@ pub async fn theme_playground_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -356,7 +346,7 @@ pub async fn theme_playground_request(
     };
 
     // data
-    let item = match database.auth.get_item(id.clone()).await {
+    let item = match database.auth.get_item(&id).await {
         Ok(i) => i,
         Err(e) => return Html(e.to_string()),
     };
@@ -400,7 +390,7 @@ pub async fn layout_playground_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -410,7 +400,7 @@ pub async fn layout_playground_request(
     };
 
     // data
-    let item = match database.auth.get_item(id.clone()).await {
+    let item = match database.auth.get_item(&id).await {
         Ok(i) => i,
         Err(e) => return Html(e.to_string()),
     };

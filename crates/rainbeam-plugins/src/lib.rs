@@ -18,7 +18,7 @@ pub fn run(cnf: config::PluginConfig) -> Result<()> {
     linker
         .root()
         .func_wrap("name", move |_store, _params: ()| {
-            Ok((String::from(cnf.name.clone()),))
+            Ok((cnf.name.clone(),))
         })
         .unwrap();
 

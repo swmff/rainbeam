@@ -611,6 +611,11 @@ pub struct ResponseEditTagsMultiple {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct ResponseDeleteMultiple {
+    pub ids: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ResponseEditContext {
     pub context: ResponseContext,
 }

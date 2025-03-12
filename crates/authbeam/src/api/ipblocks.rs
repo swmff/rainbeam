@@ -17,10 +17,7 @@ pub async fn create_request(
 ) -> impl IntoResponse {
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
+        Some(c) => match database.get_profile_by_unhashed(c.value_trimmed()).await {
             Ok(ua) => ua,
             Err(e) => return Json(e.to_json()),
         },
@@ -46,10 +43,7 @@ pub async fn delete_request(
 ) -> impl IntoResponse {
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
+        Some(c) => match database.get_profile_by_unhashed(c.value_trimmed()).await {
             Ok(ua) => ua,
             Err(e) => return Json(e.to_json()),
         },
@@ -57,7 +51,7 @@ pub async fn delete_request(
     };
 
     // return
-    match database.delete_ipblock(id, auth_user).await {
+    match database.delete_ipblock(&id, auth_user).await {
         Ok(_) => Json(DefaultReturn {
             success: true,
             message: "Acceptable".to_string(),

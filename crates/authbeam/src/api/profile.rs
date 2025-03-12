@@ -37,7 +37,7 @@ pub async fn avatar_request(
     State(database): State<Database>,
 ) -> impl IntoResponse {
     // get user
-    let auth_user = match database.get_profile(id).await {
+    let auth_user = match database.get_profile(&id).await {
         Ok(ua) => ua,
         Err(_) => {
             return (
@@ -61,7 +61,7 @@ pub async fn avatar_request(
             [("Content-Type", "image/avif")],
             Body::from(read_image(
                 pathd!("{}/avatars", database.config.media_dir),
-                format!("{}.avif", auth_user.id.clone()),
+                format!("{}.avif", &auth_user.id),
             )),
         );
     }
@@ -160,7 +160,7 @@ pub async fn banner_request(
     State(database): State<Database>,
 ) -> impl IntoResponse {
     // get user
-    let auth_user = match database.get_profile(id).await {
+    let auth_user = match database.get_profile(&id).await {
         Ok(ua) => ua,
         Err(_) => {
             return (
@@ -184,7 +184,7 @@ pub async fn banner_request(
             [("Content-Type", "image/avif")],
             Body::from(read_image(
                 pathd!("{}/banners", database.config.media_dir),
-                format!("{}.avif", auth_user.id.clone()),
+                format!("{}.avif", &auth_user.id),
             )),
         );
     }
@@ -283,11 +283,9 @@ pub async fn get_request(
     State(database): State<Database>,
 ) -> impl IntoResponse {
     // get user
-    let mut auth_user = match database.get_profile(id).await {
+    let mut auth_user = match database.get_profile(&id).await {
         Ok(ua) => ua,
-        Err(e) => {
-            return Json(e.to_json());
-        }
+        Err(e) => return Json(e.to_json()),
     };
 
     // clean profile
@@ -307,11 +305,9 @@ pub async fn get_from_token_request(
     State(database): State<Database>,
 ) -> impl IntoResponse {
     // get user
-    let auth_user = match database.get_profile_by_unhashed(token).await {
+    let auth_user = match database.get_profile_by_unhashed(&token).await {
         Ok(ua) => ua,
-        Err(e) => {
-            return Json(e.to_json());
-        }
+        Err(e) => return Json(e.to_json()),
     };
 
     // return
@@ -332,9 +328,9 @@ pub async fn update_tier_request(
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => {
-            let token = c.value_trimmed().to_string();
+            let token = c.value_trimmed();
 
-            match database.get_profile_by_unhashed(token.clone()).await {
+            match database.get_profile_by_unhashed(token).await {
                 Ok(ua) => {
                     // check token permission
                     if !ua
@@ -369,11 +365,9 @@ pub async fn update_tier_request(
     }
 
     // get other user
-    let other_user = match database.get_profile(id.clone()).await {
+    let other_user = match database.get_profile(&id).await {
         Ok(ua) => ua,
-        Err(e) => {
-            return Json(e.to_json());
-        }
+        Err(e) => return Json(e.to_json()),
     };
 
     // check permission
@@ -392,12 +386,8 @@ pub async fn update_tier_request(
 
     // push update
     // TODO: try not to clone
-    if let Err(e) = database.update_profile_tier(id, props.tier).await {
-        return Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: None,
-        });
+    if let Err(e) = database.update_profile_tier(&id, props.tier).await {
+        return Json(e.to_json());
     }
 
     // return
@@ -417,10 +407,7 @@ pub async fn update_group_request(
 ) -> impl IntoResponse {
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
+        Some(c) => match database.get_profile_by_unhashed(c.value_trimmed()).await {
             Ok(ua) => ua,
             Err(e) => return Json(e.to_json()),
         },
@@ -442,11 +429,9 @@ pub async fn update_group_request(
     }
 
     // get other user
-    let other_user = match database.get_profile(id.clone()).await {
+    let other_user = match database.get_profile(&id).await {
         Ok(ua) => ua,
-        Err(e) => {
-            return Json(e.to_json());
-        }
+        Err(e) => return Json(e.to_json()),
     };
 
     // check permission
@@ -477,32 +462,24 @@ pub async fn update_group_request(
     // push update
     // TODO: try not to clone
     if let Err(e) = database
-        .update_profile_group(other_user.id.clone(), props.group)
+        .update_profile_group(&other_user.id, props.group)
         .await
     {
-        return Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: None,
-        });
+        return Json(e.to_json());
     }
 
     // return
     if let Err(e) = database
         .audit(
-            auth_user.id,
-            format!(
+            &auth_user.id,
+            &format!(
                 "Changed user group: [{}](/+u/{})",
                 other_user.id, other_user.id
             ),
         )
         .await
     {
-        return Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: None,
-        });
+        return Json(e.to_json());
     };
 
     Json(DefaultReturn {
@@ -521,18 +498,9 @@ pub async fn update_coins_request(
 ) -> impl IntoResponse {
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
+        Some(c) => match database.get_profile_by_unhashed(c.value_trimmed()).await {
             Ok(ua) => ua,
-            Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: None,
-                });
-            }
+            Err(e) => return Json(e.to_json()),
         },
         None => return Json(DatabaseError::NotAllowed.to_json()),
     };
@@ -553,42 +521,32 @@ pub async fn update_coins_request(
     }
 
     // get other user
-    let other_user = match database.get_profile(id.clone()).await {
+    let other_user = match database.get_profile(&id).await {
         Ok(ua) => ua,
-        Err(e) => {
-            return Json(e.to_json());
-        }
+        Err(e) => return Json(e.to_json()),
     };
 
     // push update
     // TODO: try not to clone
     if let Err(e) = database
-        .update_profile_coins(other_user.id.clone(), props.coins)
+        .update_profile_coins(&other_user.id, props.coins)
         .await
     {
-        return Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: None,
-        });
+        return Json(e.to_json());
     }
 
     // return
     if let Err(e) = database
         .audit(
-            auth_user.id,
-            format!(
+            &auth_user.id,
+            &format!(
                 "Updated user coin balance: [{}](/+u/{})",
                 other_user.id, other_user.id
             ),
         )
         .await
     {
-        return Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: None,
-        });
+        return Json(e.to_json());
     };
 
     Json(DefaultReturn {
@@ -608,9 +566,9 @@ pub async fn update_tokens_request(
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => {
-            let token = c.value_trimmed().to_string();
+            let token = c.value_trimmed();
 
-            match database.get_profile_by_unhashed(token.clone()).await {
+            match database.get_profile_by_unhashed(token).await {
                 Ok(ua) => {
                     // check token permission
                     if !ua
@@ -629,11 +587,9 @@ pub async fn update_tokens_request(
         None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
-    let mut other = match database.get_profile(id).await {
+    let mut other = match database.get_profile(&id).await {
         Ok(o) => o,
-        Err(e) => {
-            return Json(e.to_json());
-        }
+        Err(e) => return Json(e.to_json()),
     };
 
     if auth_user.id == other.id {
@@ -708,7 +664,7 @@ pub async fn update_tokens_request(
 
     // return
     if let Err(e) = database
-        .update_profile_tokens(other.id, req.tokens, other.ips, other.token_context)
+        .update_profile_tokens(&other.id, req.tokens, other.ips, other.token_context)
         .await
     {
         return Json(e.to_json());
@@ -732,9 +688,9 @@ pub async fn generate_token_request(
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => {
-            let token = c.value_trimmed().to_string();
+            let token = c.value_trimmed();
 
-            match database.get_profile_by_unhashed(token.clone()).await {
+            match database.get_profile_by_unhashed(token).await {
                 Ok(ua) => {
                     // check token permission
                     if !ua
@@ -753,11 +709,9 @@ pub async fn generate_token_request(
         None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
-    let mut other = match database.get_profile(id).await {
+    let mut other = match database.get_profile(&id).await {
         Ok(o) => o,
-        Err(e) => {
-            return Json(e.to_json());
-        }
+        Err(e) => return Json(e.to_json()),
     };
 
     if auth_user.id == other.id {
@@ -817,7 +771,7 @@ pub async fn generate_token_request(
     };
 
     // check ip
-    if database.get_ipban_by_ip(real_ip.clone()).await.is_ok() {
+    if database.get_ipban_by_ip(&real_ip).await.is_ok() {
         return Json(DefaultReturn {
             success: false,
             message: DatabaseError::NotAllowed.to_string(),
@@ -834,7 +788,7 @@ pub async fn generate_token_request(
     other.token_context.push(props);
 
     database
-        .update_profile_tokens(other.id, other.tokens, other.ips, other.token_context)
+        .update_profile_tokens(&other.id, other.tokens, other.ips, other.token_context)
         .await
         .unwrap();
 
@@ -856,9 +810,9 @@ pub async fn update_password_request(
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => {
-            let token = c.value_trimmed().to_string();
+            let token = c.value_trimmed();
 
-            match database.get_profile_by_unhashed(token.clone()).await {
+            match database.get_profile_by_unhashed(token).await {
                 Ok(ua) => {
                     // check token permission
                     if !ua
@@ -914,14 +868,10 @@ pub async fn update_password_request(
     // push update
     // TODO: try not to clone
     if let Err(e) = database
-        .update_profile_password(id, props.password, props.new_password.clone(), !is_manager)
+        .update_profile_password(&id, &props.password, &props.new_password, !is_manager)
         .await
     {
-        return Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: None,
-        });
+        return Json(e.to_json());
     }
 
     // return
@@ -942,9 +892,9 @@ pub async fn update_username_request(
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => {
-            let token = c.value_trimmed().to_string();
+            let token = c.value_trimmed();
 
-            match database.get_profile_by_unhashed(token.clone()).await {
+            match database.get_profile_by_unhashed(token).await {
                 Ok(ua) => {
                     // check token permission
                     if !ua
@@ -997,14 +947,10 @@ pub async fn update_username_request(
     // push update
     // TODO: try not to clone
     if let Err(e) = database
-        .update_profile_username(id, props.password, props.new_name.clone())
+        .update_profile_username(&id, &props.password, &props.new_name)
         .await
     {
-        return Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: None,
-        });
+        return Json(e.to_json());
     }
 
     // return
@@ -1025,9 +971,9 @@ pub async fn update_metdata_request(
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => {
-            let token = c.value_trimmed().to_string();
+            let token = c.value_trimmed();
 
-            match database.get_profile_by_unhashed(token.clone()).await {
+            match database.get_profile_by_unhashed(token).await {
                 Ok(ua) => {
                     // check token permission
                     if !ua
@@ -1081,7 +1027,7 @@ pub async fn update_metdata_request(
     }
 
     // return
-    match database.update_profile_metadata(id, props.metadata).await {
+    match database.update_profile_metadata(&id, props.metadata).await {
         Ok(_) => Json(DefaultReturn {
             success: true,
             message: "Acceptable".to_string(),
@@ -1101,9 +1047,9 @@ pub async fn patch_metdata_request(
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => {
-            let token = c.value_trimmed().to_string();
+            let token = c.value_trimmed();
 
-            match database.get_profile_by_unhashed(token.clone()).await {
+            match database.get_profile_by_unhashed(token).await {
                 Ok(ua) => {
                     // check token permission
                     if !ua
@@ -1123,11 +1069,9 @@ pub async fn patch_metdata_request(
     };
 
     // get other user
-    let other_user = match database.get_profile(id.clone()).await {
+    let other_user = match database.get_profile(&id).await {
         Ok(ua) => ua,
-        Err(e) => {
-            return Json(e.to_json());
-        }
+        Err(e) => return Json(e.to_json()),
     };
 
     // check permission
@@ -1176,7 +1120,7 @@ pub async fn patch_metdata_request(
     }
 
     // return
-    match database.update_profile_metadata(id, metadata).await {
+    match database.update_profile_metadata(&id, metadata).await {
         Ok(_) => Json(DefaultReturn {
             success: true,
             message: "Acceptable".to_string(),
@@ -1196,9 +1140,9 @@ pub async fn update_badges_request(
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => {
-            let token = c.value_trimmed().to_string();
+            let token = c.value_trimmed();
 
-            match database.get_profile_by_unhashed(token.clone()).await {
+            match database.get_profile_by_unhashed(token).await {
                 Ok(ua) => {
                     // check token permission
                     if !ua
@@ -1236,7 +1180,7 @@ pub async fn update_badges_request(
     }
 
     // return
-    match database.update_profile_badges(id, props.badges).await {
+    match database.update_profile_badges(&id, props.badges).await {
         Ok(_) => Json(DefaultReturn {
             success: true,
             message: "Acceptable".to_string(),
@@ -1256,9 +1200,9 @@ pub async fn update_labels_request(
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => {
-            let token = c.value_trimmed().to_string();
+            let token = c.value_trimmed();
 
-            match database.get_profile_by_unhashed(token.clone()).await {
+            match database.get_profile_by_unhashed(token).await {
                 Ok(ua) => {
                     // check token permission
                     if !ua
@@ -1296,7 +1240,7 @@ pub async fn update_labels_request(
     }
 
     // return
-    match database.update_profile_labels(id, props.labels).await {
+    match database.update_profile_labels(&id, props.labels).await {
         Ok(_) => Json(DefaultReturn {
             success: true,
             message: "Acceptable".to_string(),
@@ -1316,9 +1260,9 @@ pub async fn update_links_request(
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => {
-            let token = c.value_trimmed().to_string();
+            let token = c.value_trimmed();
 
-            match database.get_profile_by_unhashed(token.clone()).await {
+            match database.get_profile_by_unhashed(token).await {
                 Ok(ua) => {
                     // check token permission
                     if !ua
@@ -1352,7 +1296,7 @@ pub async fn update_links_request(
     }
 
     // return
-    match database.update_profile_links(id, props.links).await {
+    match database.update_profile_links(&id, props.links).await {
         Ok(_) => Json(DefaultReturn {
             success: true,
             message: "Acceptable".to_string(),
@@ -1372,9 +1316,9 @@ pub async fn update_layout_request(
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => {
-            let token = c.value_trimmed().to_string();
+            let token = c.value_trimmed();
 
-            match database.get_profile_by_unhashed(token.clone()).await {
+            match database.get_profile_by_unhashed(token).await {
                 Ok(ua) => {
                     // check token permission
                     if !ua
@@ -1408,7 +1352,7 @@ pub async fn update_layout_request(
     }
 
     // return
-    match database.update_profile_layout(id, props.layout).await {
+    match database.update_profile_layout(&id, props.layout).await {
         Ok(_) => Json(DefaultReturn {
             success: true,
             message: "Acceptable".to_string(),
@@ -1440,10 +1384,7 @@ pub async fn delete_request(
 ) -> impl IntoResponse {
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
+        Some(c) => match database.get_profile_by_unhashed(c.value_trimmed()).await {
             Ok(ua) => ua,
             Err(e) => return Json(e.to_json()),
         },
@@ -1464,7 +1405,7 @@ pub async fn delete_request(
         };
 
         // get other user
-        let other_user = match database.get_profile_by_id(id.clone()).await {
+        let other_user = match database.get_profile_by_id(&id).await {
             Ok(ua) => ua,
             Err(e) => return Json(e.to_json()),
         };
@@ -1520,7 +1461,7 @@ pub async fn delete_request(
     }
 
     // return
-    match database.delete_profile_by_id(id).await {
+    match database.delete_profile_by_id(&id).await {
         Ok(_) => Json(DefaultReturn {
             success: true,
             message: "Acceptable".to_string(),
@@ -1536,7 +1477,7 @@ pub async fn css_request(
     State(database): State<Database>,
 ) -> impl IntoResponse {
     // get user
-    let auth_user = match database.get_profile(id).await {
+    let auth_user = match database.get_profile(&id).await {
         Ok(ua) => ua,
         Err(_) => {
             return String::new();
@@ -1576,9 +1517,9 @@ pub async fn enable_totp_request(
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => {
-            let token = c.value_trimmed().to_string();
+            let token = c.value_trimmed();
 
-            match database.get_profile_by_unhashed(token.clone()).await {
+            match database.get_profile_by_unhashed(token).await {
                 Ok(ua) => {
                     // check token permission
                     if !ua
@@ -1598,7 +1539,7 @@ pub async fn enable_totp_request(
     };
 
     // update
-    match database.enable_totp(auth_user, id).await {
+    match database.enable_totp(auth_user, &id).await {
         Ok(t) => {
             return Json(DefaultReturn {
                 success: true,
@@ -1620,9 +1561,9 @@ pub async fn disable_totp_request(
     // get user from token
     match jar.get("__Secure-Token") {
         Some(c) => {
-            let token = c.value_trimmed().to_string();
+            let token = c.value_trimmed();
 
-            match database.get_profile_by_unhashed(token.clone()).await {
+            match database.get_profile_by_unhashed(token).await {
                 Ok(ua) => {
                     // check token permission
                     if !ua
@@ -1642,7 +1583,7 @@ pub async fn disable_totp_request(
     };
 
     // get profile
-    let profile = match database.get_profile(id).await {
+    let profile = match database.get_profile(&id).await {
         Ok(p) => p,
         Err(e) => return Json(e.to_json()),
     };
@@ -1654,7 +1595,7 @@ pub async fn disable_totp_request(
 
     // disable
     if let Err(e) = database
-        .update_profile_totp_secret(profile.id, String::new(), &Vec::new())
+        .update_profile_totp_secret(&profile.id, "", &Vec::new())
         .await
     {
         return Json(e.to_json());
@@ -1678,9 +1619,9 @@ pub async fn refresh_totp_recovery_codes_request(
     // get user from token
     match jar.get("__Secure-Token") {
         Some(c) => {
-            let token = c.value_trimmed().to_string();
+            let token = c.value_trimmed();
 
-            match database.get_profile_by_unhashed(token.clone()).await {
+            match database.get_profile_by_unhashed(token).await {
                 Ok(ua) => {
                     // check token permission
                     if !ua
@@ -1700,7 +1641,7 @@ pub async fn refresh_totp_recovery_codes_request(
     };
 
     // get profile
-    let profile = match database.get_profile(id).await {
+    let profile = match database.get_profile(&id).await {
         Ok(p) => p,
         Err(e) => return Json(e.to_json()),
     };
@@ -1714,7 +1655,7 @@ pub async fn refresh_totp_recovery_codes_request(
     let recovery = Database::generate_totp_recovery_codes();
 
     if let Err(e) = database
-        .update_profile_totp_secret(profile.id, profile.totp, &recovery)
+        .update_profile_totp_secret(&profile.id, &profile.totp, &recovery)
         .await
     {
         return Json(e.to_json());

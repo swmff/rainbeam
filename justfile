@@ -29,6 +29,12 @@ test:
     just build-assets
     cargo run --bin rainbeam
 
+# test (profiling)
+test-perf:
+    just build-assets
+    cargo build --bin rainbeam
+    perf record ./target/debug/rainbeam
+
 # ...
 doc:
     cargo doc --no-deps --document-private-items --workspace --exclude neospring-desktop
@@ -36,6 +42,10 @@ doc:
 clean-deps:
     cargo upgrade -i
     cargo machete
+
+fix:
+    cargo fix --allow-dirty
+    cargo clippy --fix --allow-dirty
 
 help-rust-analyzer-wont-work:
     # ...yeah I bet it doesn't with 236,366 files (175 GB) sitting about in target

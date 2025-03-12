@@ -35,7 +35,7 @@ pub async fn search_homepage_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => Some(ua),
@@ -45,9 +45,7 @@ pub async fn search_homepage_request(
     };
 
     let unread = if let Some(ref ua) = auth_user {
-        database
-            .get_inbox_count_by_recipient(ua.id.to_owned())
-            .await
+        database.get_inbox_count_by_recipient(&ua.id).await
     } else {
         0
     };
@@ -55,7 +53,7 @@ pub async fn search_homepage_request(
     let notifs = if let Some(ref ua) = auth_user {
         database
             .auth
-            .get_notification_count_by_recipient(ua.id.to_owned())
+            .get_notification_count_by_recipient(&ua.id)
             .await
     } else {
         0
@@ -107,7 +105,7 @@ pub async fn search_responses_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => Some(ua),
@@ -117,9 +115,7 @@ pub async fn search_responses_request(
     };
 
     let unread = if let Some(ref ua) = auth_user {
-        database
-            .get_inbox_count_by_recipient(ua.id.to_owned())
-            .await
+        database.get_inbox_count_by_recipient(&ua.id).await
     } else {
         0
     };
@@ -127,7 +123,7 @@ pub async fn search_responses_request(
     let notifs = if let Some(ref ua) = auth_user {
         database
             .auth
-            .get_notification_count_by_recipient(ua.id.to_owned())
+            .get_notification_count_by_recipient(&ua.id)
             .await
     } else {
         0
@@ -185,7 +181,7 @@ pub async fn search_responses_request(
                 response.1.author.id.clone(),
                 database
                     .auth
-                    .get_user_relationship(response.1.author.id.clone(), ua.id.clone())
+                    .get_user_relationship(&response.1.author.id, &ua.id)
                     .await
                     .0,
             );
@@ -254,7 +250,7 @@ pub async fn search_posts_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => Some(ua),
@@ -264,9 +260,7 @@ pub async fn search_posts_request(
     };
 
     let unread = if let Some(ref ua) = auth_user {
-        database
-            .get_inbox_count_by_recipient(ua.id.to_owned())
-            .await
+        database.get_inbox_count_by_recipient(&ua.id).await
     } else {
         0
     };
@@ -274,7 +268,7 @@ pub async fn search_posts_request(
     let notifs = if let Some(ref ua) = auth_user {
         database
             .auth
-            .get_notification_count_by_recipient(ua.id.to_owned())
+            .get_notification_count_by_recipient(&ua.id)
             .await
     } else {
         0
@@ -322,7 +316,7 @@ pub async fn search_posts_request(
                 response.1.author.id.clone(),
                 database
                     .auth
-                    .get_user_relationship(response.1.author.id.clone(), ua.id.clone())
+                    .get_user_relationship(&response.1.author.id, &ua.id)
                     .await
                     .0,
             );
@@ -390,7 +384,7 @@ pub async fn search_questions_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => Some(ua),
@@ -400,9 +394,7 @@ pub async fn search_questions_request(
     };
 
     let unread = if let Some(ref ua) = auth_user {
-        database
-            .get_inbox_count_by_recipient(ua.id.to_owned())
-            .await
+        database.get_inbox_count_by_recipient(&ua.id).await
     } else {
         0
     };
@@ -410,7 +402,7 @@ pub async fn search_questions_request(
     let notifs = if let Some(ref ua) = auth_user {
         database
             .auth
-            .get_notification_count_by_recipient(ua.id.to_owned())
+            .get_notification_count_by_recipient(&ua.id)
             .await
     } else {
         0
@@ -444,7 +436,7 @@ pub async fn search_questions_request(
                 question.0.author.id.clone(),
                 database
                     .auth
-                    .get_user_relationship(question.0.author.id.clone(), ua.id.clone())
+                    .get_user_relationship(&question.0.author.id, &ua.id)
                     .await
                     .0,
             );
@@ -521,7 +513,7 @@ pub async fn search_users_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => Some(ua),
@@ -531,9 +523,7 @@ pub async fn search_users_request(
     };
 
     let unread = if let Some(ref ua) = auth_user {
-        database
-            .get_inbox_count_by_recipient(ua.id.to_owned())
-            .await
+        database.get_inbox_count_by_recipient(&ua.id).await
     } else {
         0
     };
@@ -541,7 +531,7 @@ pub async fn search_users_request(
     let notifs = if let Some(ref ua) = auth_user {
         database
             .auth
-            .get_notification_count_by_recipient(ua.id.to_owned())
+            .get_notification_count_by_recipient(&ua.id)
             .await
     } else {
         0

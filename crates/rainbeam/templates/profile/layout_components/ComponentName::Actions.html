@@ -164,9 +164,6 @@
         <button onclick="trigger('chats::create', ['{{ other.id }}'])">
             {{ icon "message-circle-plus" }} {{ text "general:link.chat" }}
         </button>
-        <a href="/inbox/mail/compose?to={{ other.id }}">
-            {{ icon "mail-plus" }} {{ text "general:service.mail" }}
-        </a>
         <a
             href="/settings?block={{ other.username }}#sparkler:block_somebody"
             target="_blank"

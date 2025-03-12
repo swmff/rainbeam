@@ -17,10 +17,7 @@ pub async fn delete_request(
 ) -> impl IntoResponse {
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
+        Some(c) => match database.get_profile_by_unhashed(c.value_trimmed()).await {
             Ok(ua) => ua,
             Err(e) => return Json(e.to_json()),
         },
@@ -28,7 +25,7 @@ pub async fn delete_request(
     };
 
     // return
-    if let Err(e) = database.delete_notification(id, auth_user).await {
+    if let Err(e) = database.delete_notification(&id, auth_user).await {
         return Json(e.to_json());
     }
 
@@ -46,10 +43,7 @@ pub async fn delete_all_request(
 ) -> impl IntoResponse {
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
+        Some(c) => match database.get_profile_by_unhashed(c.value_trimmed()).await {
             Ok(ua) => ua,
             Err(e) => return Json(e.to_json()),
         },
@@ -58,7 +52,7 @@ pub async fn delete_all_request(
 
     // return
     if let Err(e) = database
-        .delete_notifications_by_recipient(auth_user.id.clone(), auth_user)
+        .delete_notifications_by_recipient(&auth_user.id.clone(), auth_user)
         .await
     {
         return Json(e.to_json());

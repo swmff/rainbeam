@@ -23,7 +23,7 @@ impl Default for LangFile {
 impl LangFile {
     /// Check if a value exists in `data` (and isn't empty)
     pub fn exists(&self, key: &str) -> bool {
-        if let Some(ref value) = self.data.get(key) {
+        if let Some(value) = self.data.get(key) {
             if value.is_empty() {
                 return false;
             }

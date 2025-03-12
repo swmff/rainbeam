@@ -34,7 +34,7 @@ pub async fn create_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -96,7 +96,7 @@ pub async fn create_request(
             // check relationship
             let relationship = database
                 .auth
-                .get_user_relationship(asset.author.id.clone(), auth_user.id.clone())
+                .get_user_relationship(&asset.author.id, &auth_user.id)
                 .await
                 .0;
 
@@ -147,7 +147,7 @@ pub async fn create_request(
             // check relationship
             let relationship = database
                 .auth
-                .get_user_relationship(asset.author.id.clone(), auth_user.id.clone())
+                .get_user_relationship(&asset.author.id, &auth_user.id)
                 .await
                 .0;
 
@@ -184,7 +184,7 @@ pub async fn create_request(
             }
         }
         AssetType::Item => {
-            let asset = match database.auth.get_item(id.clone()).await {
+            let asset = match database.auth.get_item(&id).await {
                 Ok(i) => i,
                 Err(e) => {
                     return Json(DefaultReturn {
@@ -198,7 +198,7 @@ pub async fn create_request(
             // check relationship
             let relationship = database
                 .auth
-                .get_user_relationship(asset.creator.clone(), auth_user.id.clone())
+                .get_user_relationship(&asset.creator, &auth_user.id)
                 .await
                 .0;
 
@@ -257,7 +257,7 @@ pub async fn get_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -290,7 +290,7 @@ pub async fn delete_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,

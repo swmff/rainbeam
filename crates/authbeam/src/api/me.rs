@@ -15,18 +15,9 @@ use crate::avif::{save_avif_buffer, Image};
 pub async fn get_request(jar: CookieJar, State(database): State<Database>) -> impl IntoResponse {
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
+        Some(c) => match database.get_profile_by_unhashed(c.value_trimmed()).await {
             Ok(ua) => ua,
-            Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: None,
-                });
-            }
+            Err(e) => return Json(e.to_json()),
         },
         None => return Json(DatabaseError::NotAllowed.to_json()),
     };
@@ -34,7 +25,7 @@ pub async fn get_request(jar: CookieJar, State(database): State<Database>) -> im
     // return
     Json(DefaultReturn {
         success: true,
-        message: auth_user.id.clone(),
+        message: auth_user.id.to_string(),
         payload: Some(auth_user),
     })
 }
@@ -54,10 +45,7 @@ pub async fn delete_request(
 ) -> impl IntoResponse {
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
+        Some(c) => match database.get_profile_by_unhashed(c.value_trimmed()).await {
             Ok(ua) => ua,
             Err(e) => return Json(e.to_json()),
         },
@@ -81,7 +69,7 @@ pub async fn delete_request(
     }
 
     // return
-    if let Err(e) = database.delete_profile_by_id(auth_user.id).await {
+    if let Err(e) = database.delete_profile_by_id(&auth_user.id).await {
         return Json(e.to_json());
     }
 
@@ -103,9 +91,9 @@ pub async fn generate_token_request(
     let mut existing_permissions: Option<Vec<TokenPermission>> = None;
     let mut auth_user = match jar.get("__Secure-Token") {
         Some(c) => {
-            let token = c.value_trimmed().to_string();
+            let token = c.value_trimmed();
 
-            match database.get_profile_by_unhashed(token.clone()).await {
+            match database.get_profile_by_unhashed(token).await {
                 Ok(ua) => {
                     // check token permission
                     let token = ua.token_context_from_token(&token);
@@ -147,7 +135,7 @@ pub async fn generate_token_request(
     };
 
     // check ip
-    if database.get_ipban_by_ip(real_ip.clone()).await.is_ok() {
+    if database.get_ipban_by_ip(&real_ip).await.is_ok() {
         return Json(DefaultReturn {
             success: false,
             message: DatabaseError::NotAllowed.to_string(),
@@ -184,7 +172,7 @@ pub async fn generate_token_request(
 
     database
         .update_profile_tokens(
-            auth_user.id,
+            &auth_user.id,
             auth_user.tokens,
             auth_user.ips,
             auth_user.token_context,
@@ -214,9 +202,9 @@ pub async fn update_tokens_request(
     // get user from token
     let mut auth_user = match jar.get("__Secure-Token") {
         Some(c) => {
-            let token = c.value_trimmed().to_string();
+            let token = c.value_trimmed();
 
-            match database.get_profile_by_unhashed(token.clone()).await {
+            match database.get_profile_by_unhashed(token).await {
                 Ok(ua) => {
                     // check token permission
                     if !ua
@@ -271,7 +259,7 @@ pub async fn update_tokens_request(
     // return
     if let Err(e) = database
         .update_profile_tokens(
-            auth_user.id,
+            &auth_user.id,
             req.tokens,
             auth_user.ips,
             auth_user.token_context,
@@ -298,10 +286,7 @@ pub async fn upload_avatar_request(
 ) -> impl IntoResponse {
     // get user from token
     let mut auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
+        Some(c) => match database.get_profile_by_unhashed(c.value_trimmed()).await {
             Ok(ua) => ua,
             Err(e) => {
                 return Redirect::to(&format!(
@@ -321,7 +306,7 @@ pub async fn upload_avatar_request(
     let path = pathd!(
         "{}/avatars/{}.avif",
         database.config.media_dir,
-        auth_user.id.clone()
+        &auth_user.id
     );
 
     // check file size
@@ -348,7 +333,7 @@ pub async fn upload_avatar_request(
                 .insert("sparkler:avatar_url".to_string(), "rb://".to_string());
 
             match database
-                .update_profile_metadata(auth_user.id.clone(), auth_user.metadata)
+                .update_profile_metadata(&auth_user.id, auth_user.metadata)
                 .await
             {
                 Ok(_) => Redirect::to(&format!(
@@ -376,10 +361,7 @@ pub async fn upload_banner_request(
 ) -> impl IntoResponse {
     // get user from token
     let mut auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
+        Some(c) => match database.get_profile_by_unhashed(c.value_trimmed()).await {
             Ok(ua) => ua,
             Err(e) => {
                 return Redirect::to(&format!(
@@ -399,7 +381,7 @@ pub async fn upload_banner_request(
     let path = pathd!(
         "{}/banners/{}.avif",
         database.config.media_dir,
-        auth_user.id.clone()
+        &auth_user.id
     );
 
     // check file size
@@ -426,7 +408,7 @@ pub async fn upload_banner_request(
                 .insert("sparkler:banner_url".to_string(), "rb://".to_string());
 
             match database
-                .update_profile_metadata(auth_user.id.clone(), auth_user.metadata)
+                .update_profile_metadata(&auth_user.id, auth_user.metadata)
                 .await
             {
                 Ok(_) => Redirect::to(&format!(

@@ -39,7 +39,7 @@ pub async fn account_settings(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -48,13 +48,11 @@ pub async fn account_settings(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = database
-        .get_inbox_count_by_recipient(auth_user.id.to_owned())
-        .await;
+    let unread = database.get_inbox_count_by_recipient(&auth_user.id).await;
 
     let notifs = database
         .auth
-        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .get_notification_count_by_recipient(&auth_user.id)
         .await;
 
     let user = if props.profile.is_empty() {
@@ -79,20 +77,20 @@ pub async fn account_settings(
     };
 
     if viewing_other_profile && !is_helper {
-        // we cannot view the mail of other users if we are not a helper
+        // we cannot view the settings of other users if we are not a helper
         return Html(DatabaseError::NotAllowed.to_html(database));
     }
 
     let relationships = match database
         .auth
-        .get_user_relationships_of_status(user.id.clone(), RelationshipStatus::Blocked)
+        .get_user_relationships_of_status(&user.id, RelationshipStatus::Blocked)
         .await
     {
         Ok(r) => r,
         Err(_) => Vec::new(),
     };
 
-    let ipblocks = match database.auth.get_ipblocks(user.id.clone()).await {
+    let ipblocks = match database.auth.get_ipblocks(&user.id).await {
         Ok(r) => r,
         Err(_) => Vec::new(),
     };
@@ -141,7 +139,7 @@ pub async fn profile_settings(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -150,13 +148,11 @@ pub async fn profile_settings(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = database
-        .get_inbox_count_by_recipient(auth_user.id.to_owned())
-        .await;
+    let unread = database.get_inbox_count_by_recipient(&auth_user.id).await;
 
     let notifs = database
         .auth
-        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .get_notification_count_by_recipient(&auth_user.id)
         .await;
 
     let user = if props.profile.is_empty() {
@@ -181,7 +177,7 @@ pub async fn profile_settings(
     };
 
     if viewing_other_profile && !is_helper {
-        // we cannot view the mail of other users if we are not a helper
+        // we cannot view the settings of other users if we are not a helper
         return Html(DatabaseError::NotAllowed.to_html(database));
     }
 
@@ -227,7 +223,7 @@ pub async fn theme_settings(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -236,13 +232,11 @@ pub async fn theme_settings(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = database
-        .get_inbox_count_by_recipient(auth_user.id.to_owned())
-        .await;
+    let unread = database.get_inbox_count_by_recipient(&auth_user.id).await;
 
     let notifs = database
         .auth
-        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .get_notification_count_by_recipient(&auth_user.id)
         .await;
 
     let user = if props.profile.is_empty() {
@@ -267,7 +261,7 @@ pub async fn theme_settings(
     };
 
     if viewing_other_profile && !is_helper {
-        // we cannot view the mail of other users if we are not a helper
+        // we cannot view the settings of other users if we are not a helper
         return Html(DatabaseError::NotAllowed.to_html(database));
     }
 
@@ -313,7 +307,7 @@ pub async fn privacy_settings(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -322,13 +316,11 @@ pub async fn privacy_settings(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = database
-        .get_inbox_count_by_recipient(auth_user.id.to_owned())
-        .await;
+    let unread = database.get_inbox_count_by_recipient(&auth_user.id).await;
 
     let notifs = database
         .auth
-        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .get_notification_count_by_recipient(&auth_user.id)
         .await;
 
     let user = if props.profile.is_empty() {
@@ -353,7 +345,7 @@ pub async fn privacy_settings(
     };
 
     if viewing_other_profile && !is_helper {
-        // we cannot view the mail of other users if we are not a helper
+        // we cannot view the settings of other users if we are not a helper
         return Html(DatabaseError::NotAllowed.to_html(database));
     }
 
@@ -402,7 +394,7 @@ pub async fn sessions_settings(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -411,13 +403,11 @@ pub async fn sessions_settings(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = database
-        .get_inbox_count_by_recipient(auth_user.id.to_owned())
-        .await;
+    let unread = database.get_inbox_count_by_recipient(&auth_user.id).await;
 
     let notifs = database
         .auth
-        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .get_notification_count_by_recipient(&auth_user.id)
         .await;
 
     let user = if props.profile.is_empty() {
@@ -442,7 +432,7 @@ pub async fn sessions_settings(
     };
 
     if viewing_other_profile && !is_helper {
-        // we cannot view the mail of other users if we are not a helper
+        // we cannot view the settings of other users if we are not a helper
         return Html(DatabaseError::NotAllowed.to_html(database));
     }
 
@@ -498,7 +488,7 @@ pub async fn coins_settings(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -507,13 +497,11 @@ pub async fn coins_settings(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = database
-        .get_inbox_count_by_recipient(auth_user.id.to_owned())
-        .await;
+    let unread = database.get_inbox_count_by_recipient(&auth_user.id).await;
 
     let notifs = database
         .auth
-        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .get_notification_count_by_recipient(&auth_user.id)
         .await;
 
     let user = if props.profile.is_empty() {
@@ -538,13 +526,13 @@ pub async fn coins_settings(
     };
 
     if viewing_other_profile && !is_helper {
-        // we cannot view the mail of other users if we are not a helper
+        // we cannot view the settings of other users if we are not a helper
         return Html(DatabaseError::NotAllowed.to_html(database));
     }
 
     let transactions = match database
         .auth
-        .get_participating_transactions_paginated(user.id.clone(), props.page)
+        .get_participating_transactions_paginated(&user.id, props.page)
         .await
     {
         Ok(t) => t,

@@ -27,7 +27,7 @@ macro_rules! cache_sync {
                     )
                     .await;
             } else {
-                $self.$update($id.clone(), count).await.unwrap();
+                $self.$update(&$id, count).await.unwrap();
             };
 
             // ...
@@ -121,7 +121,7 @@ macro_rules! update_profile_count {
         /// # Arguments
         /// * `id`
         /// * `count`
-        pub async fn $name(&self, id: String, count: usize) -> Result<()> {
+        pub async fn $name(&self, id: &str, count: usize) -> Result<()> {
             // update profile
             let col_name = stringify!($col);
             let query: String =
@@ -134,7 +134,7 @@ macro_rules! update_profile_count {
             let c = &self.base.db.client;
             match sqlquery(&query)
                 .bind::<&i64>(&(count as i64))
-                .bind::<&String>(&id)
+                .bind::<&str>(&id)
                 .execute(c)
                 .await
             {

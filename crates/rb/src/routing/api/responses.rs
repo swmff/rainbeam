@@ -15,7 +15,7 @@ use axum::{
 };
 
 use axum_extra::extract::cookie::CookieJar;
-use rainbeam::model::{ResponseEditTagsMultiple, ResponseEditWarning};
+use rainbeam::model::{ResponseDeleteMultiple, ResponseEditTagsMultiple, ResponseEditWarning};
 
 pub fn routes(database: Database) -> Router {
     Router::new()
@@ -28,7 +28,8 @@ pub fn routes(database: Database) -> Router {
         .route("/{id}", delete(delete_request))
         .route("/{id}/unsend", post(unsend_request))
         .route("/{id}/report", post(report_request))
-        .route("/tags/multiple", post(edit_tags_multiple_request))
+        .route("/mass/tags", post(edit_tags_multiple_request))
+        .route("/mass/delete", post(delete_multiple_request))
         // timelines
         .route("/timeline/home", get(home_timeline_request))
         // ...
@@ -47,7 +48,7 @@ pub async fn create_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua.id,
@@ -117,7 +118,7 @@ pub async fn edit_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -157,7 +158,7 @@ pub async fn edit_tags_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -193,7 +194,7 @@ pub async fn edit_tags_multiple_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -233,7 +234,7 @@ pub async fn edit_context_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -273,7 +274,7 @@ pub async fn edit_warning_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -321,7 +322,7 @@ pub async fn delete_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -345,6 +346,42 @@ pub async fn delete_request(
     })
 }
 
+/// [`Database::delete_response_multiple`]
+pub async fn delete_multiple_request(
+    jar: CookieJar,
+    State(database): State<Database>,
+    Json(req): Json<ResponseDeleteMultiple>,
+) -> impl IntoResponse {
+    // get user from token
+    let auth_user = match jar.get("__Secure-Token") {
+        Some(c) => match database
+            .auth
+            .get_profile_by_unhashed(c.value_trimmed())
+            .await
+        {
+            Ok(ua) => ua,
+            Err(_) => {
+                return Json(DatabaseError::NotAllowed.into());
+            }
+        },
+        None => {
+            return Json(DatabaseError::NotAllowed.into());
+        }
+    };
+
+    // ...
+    Json(
+        match database.delete_response_multiple(req.ids, auth_user).await {
+            Ok(_) => DefaultReturn {
+                success: true,
+                message: "Responses delete!".to_string(),
+                payload: (),
+            },
+            Err(e) => e.into(),
+        },
+    )
+}
+
 /// [`Database::unsend_response`]
 pub async fn unsend_request(
     jar: CookieJar,
@@ -355,7 +392,7 @@ pub async fn unsend_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -420,7 +457,7 @@ pub async fn report_request(
     };
 
     // check ip
-    if database.auth.get_ipban_by_ip(real_ip.clone()).await.is_ok() {
+    if database.auth.get_ipban_by_ip(&real_ip).await.is_ok() {
         return Json(DefaultReturn {
             success: false,
             message: DatabaseError::Banned.to_string(),
@@ -467,7 +504,7 @@ pub async fn home_timeline_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -483,7 +520,7 @@ pub async fn home_timeline_request(
     // ...
     Json(
         match database
-            .get_responses_by_following_paginated(auth_user.id.to_owned(), props.page)
+            .get_responses_by_following_paginated(&auth_user.id, props.page)
             .await
         {
             Ok(mut r) => {

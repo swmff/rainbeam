@@ -3,9 +3,9 @@ use std::collections::BTreeMap;
 use crate::layout::LayoutComponent;
 use crate::model::{
     DatabaseError, FinePermission, IpBan, IpBanCreate, IpBlock, IpBlockCreate, Item, ItemCreate,
-    ItemEdit, ItemEditContent, ItemStatus, ItemType, Mail, MailCreate, MailState, Profile,
-    ProfileCreate, ProfileMetadata, RelationshipStatus, TokenContext, Transaction,
-    TransactionCreate, UserLabel, Warning, WarningCreate,
+    ItemEdit, ItemEditContent, ItemStatus, ItemType, Profile, ProfileCreate, ProfileMetadata,
+    RelationshipStatus, TokenContext, Transaction, TransactionCreate, UserLabel, Warning,
+    WarningCreate,
 };
 use crate::model::{Group, Notification, NotificationCreate, UserFollow};
 use hcaptcha_no_wasm::Hcaptcha;
@@ -67,9 +67,7 @@ pub static ALLOWED_CUSTOM_KEYS: LazyLock<Vec<&'static str>> = LazyLock::new(|| {
         "sparkler:disallow_anonymous_comments",
         "sparkler:require_account",
         "sparkler:private_social",
-        "sparkler:disable_mailbox",
         "sparkler:filter",
-        "sparkler:mail_signature",
         "rainbeam:verify_url",
         "rainbeam:verify_code",
         "rainbeam:market_theme_template",
@@ -284,20 +282,6 @@ impl Database {
         .await;
 
         let _ = sqlquery(
-            "CREATE TABLE IF NOT EXISTS \"xmail\" (
-                title     TEXT,
-                content   TEXT,
-                timestamp TEXT,
-                id        TEXT,
-                state     TEXT,
-                author    TEXT,
-                recipient TEXT
-            )",
-        )
-        .execute(c)
-        .await;
-
-        let _ = sqlquery(
             "CREATE TABLE IF NOT EXISTS \"xlabels\" (
                 id        TEXT,
                 name      TEXT,
@@ -342,12 +326,12 @@ impl Database {
     // util
 
     /// Create a moderator audit log entry.
-    pub async fn audit(&self, actor_id: String, content: String) -> Result<()> {
+    pub async fn audit(&self, actor_id: &str, content: &str) -> Result<()> {
         match self
             .create_notification(
                 NotificationCreate {
                     title: format!("[{actor_id}](/+u/{actor_id})"),
-                    content,
+                    content: content.to_string(),
                     address: format!("/+u/{actor_id}"),
                     recipient: "*(audit)".to_string(), // all staff, audit registry
                 },
@@ -391,7 +375,7 @@ impl Database {
             response_count: cache_sync!(
                 |row, id| response_count->(update_profile_response_count in self) {1}
             ),
-            totp: row.get("totp").unwrap().to_string(),
+            totp: from_row!(row->totp()),
             recovery_codes: from_row!(row->recovery_codes(json); DatabaseError::ValueError),
             notification_count: from_row!(row->notification_count(usize); 0),
             inbox_count: if do_not_clear_inbox_count_on_view {
@@ -414,7 +398,8 @@ impl Database {
         true
     }
     /// Fetch a profile correctly.
-    pub async fn get_profile(&self, mut id: String) -> Result<Box<Profile>> {
+    pub async fn get_profile(&self, id: &str) -> Result<Box<Profile>> {
+        let mut id = id.to_string();
         if id.starts_with("ANSWERED:") {
             // we use the "ANSWERED" prefix whenever we answer a question so it doesn't show up in inboxes
             id = id.replace("ANSWERED:", "");
@@ -441,13 +426,13 @@ impl Database {
 
         // handle legacy IDs (usernames)
         if (id.len() <= 32) && (!self.is_digit(&id) | (id.len() < 18)) {
-            return match self.get_profile_by_username(id).await {
+            return match self.get_profile_by_username(&id).await {
                 Ok(ua) => Ok(ua),
                 Err(e) => return Err(e),
             };
         }
 
-        match self.get_profile_by_id(id).await {
+        match self.get_profile_by_id(&id).await {
             Ok(ua) => Ok(ua),
             Err(e) => return Err(e),
         }
@@ -457,9 +442,9 @@ impl Database {
     ///
     /// # Arguments:
     /// * `hashed` - `String` of the profile's hashed ID
-    pub async fn get_profile_by_hashed(&self, hashed: String) -> Result<Box<Profile>> {
+    pub async fn get_profile_by_hashed(&self, hashed: &str) -> Result<Box<Profile>> {
         // fetch from database
-        let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "SELECT * FROM \"xprofiles\" WHERE \"tokens\" LIKE ?"
         } else {
             "SELECT * FROM \"xprofiles\" WHERE \"tokens\" LIKE $1"
@@ -467,7 +452,7 @@ impl Database {
 
         let c = &self.base.db.client;
         let row = match sqlquery(query)
-            .bind::<&String>(&format!("%\"{hashed}\"%"))
+            .bind::<&str>(&format!("%\"{hashed}\"%"))
             .fetch_one(c)
             .await
         {
@@ -486,8 +471,8 @@ impl Database {
     ///
     /// # Arguments:
     /// * `unhashed` - `String` of the user's unhashed ID
-    pub async fn get_profile_by_unhashed(&self, unhashed: String) -> Result<Box<Profile>> {
-        self.get_profile_by_hashed(utility::hash(unhashed.clone()))
+    pub async fn get_profile_by_unhashed(&self, unhashed: &str) -> Result<Box<Profile>> {
+        self.get_profile_by_hashed(&utility::hash(unhashed.to_string()))
             .await
     }
 
@@ -495,9 +480,9 @@ impl Database {
     ///
     /// # Arguments:
     /// * `hashed` - `String` of the profile's IP
-    pub async fn get_profile_by_ip(&self, ip: String) -> Result<Box<Profile>> {
+    pub async fn get_profile_by_ip(&self, ip: &str) -> Result<Box<Profile>> {
         // fetch from database
-        let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "SELECT * FROM \"xprofiles\" WHERE \"ips\" LIKE ?"
         } else {
             "SELECT * FROM \"xprofiles\" WHERE \"ips\" LIKE $1"
@@ -505,7 +490,7 @@ impl Database {
 
         let c = &self.base.db.client;
         let row = match sqlquery(query)
-            .bind::<&String>(&format!("%\"{ip}\"%"))
+            .bind::<&str>(&format!("%\"{ip}\"%"))
             .fetch_one(c)
             .await
         {
@@ -524,8 +509,8 @@ impl Database {
     ///
     /// # Arguments:
     /// * `username` - `String` of the user's username
-    pub async fn get_profile_by_username(&self, mut username: String) -> Result<Box<Profile>> {
-        username = username.to_lowercase();
+    pub async fn get_profile_by_username(&self, username: &str) -> Result<Box<Profile>> {
+        let username = username.to_lowercase();
 
         // check in cache
         let cached = self
@@ -547,18 +532,14 @@ impl Database {
         }
 
         // ...
-        let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "SELECT * FROM \"xprofiles\" WHERE \"username\" = ?"
         } else {
             "SELECT * FROM \"xprofiles\" WHERE \"username\" = $1"
         };
 
         let c = &self.base.db.client;
-        let row = match sqlquery(query)
-            .bind::<&String>(&username)
-            .fetch_one(c)
-            .await
-        {
+        let row = match sqlquery(query).bind::<&str>(&username).fetch_one(c).await {
             Ok(r) => self.base.textify_row(r).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
@@ -585,8 +566,8 @@ impl Database {
     ///
     /// # Arguments:
     /// * `id` - `String` of the user's username
-    pub async fn get_profile_by_id(&self, mut id: String) -> Result<Box<Profile>> {
-        id = id.to_lowercase();
+    pub async fn get_profile_by_id(&self, id: &str) -> Result<Box<Profile>> {
+        let id = id.to_lowercase();
 
         // check in cache
         let cached = self
@@ -608,7 +589,7 @@ impl Database {
         }
 
         // ...
-        let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "SELECT * FROM \"xprofiles\" WHERE \"id\" = ?"
         } else {
             "SELECT * FROM \"xprofiles\" WHERE \"id\" = $1"
@@ -639,7 +620,7 @@ impl Database {
     }
 
     /// Validate a username.
-    pub fn validate_username(username: String) -> Result<()> {
+    pub fn validate_username(username: &str) -> Result<()> {
         let banned_usernames = &[
             "admin",
             "account",
@@ -679,7 +660,7 @@ impl Database {
             return Err(DatabaseError::ValueError);
         }
 
-        if banned_usernames.contains(&username.as_str()) {
+        if banned_usernames.contains(&username) {
             return Err(DatabaseError::ValueError);
         }
 
@@ -692,14 +673,14 @@ impl Database {
     /// # Arguments:
     /// * `username` - `String` of the user's `username`
     /// * `user_ip` - the ip address of the user registering
-    pub async fn create_profile(&self, props: ProfileCreate, user_ip: String) -> Result<String> {
+    pub async fn create_profile(&self, props: ProfileCreate, user_ip: &str) -> Result<String> {
         if self.config.registration_enabled == false {
             return Err(DatabaseError::NotAllowed);
         }
 
         // ...
-        let username = props.username.trim().to_string();
-        let password = props.password.trim().to_string();
+        let username = props.username.trim();
+        let password = props.password.trim();
 
         // check captcha
         if let Err(_) = props
@@ -710,44 +691,45 @@ impl Database {
         }
 
         // make sure user doesn't already exists
-        if let Ok(_) = &self.get_profile_by_username(username.clone()).await {
+        if let Ok(_) = &self.get_profile_by_username(username).await {
             return Err(DatabaseError::MustBeUnique);
         };
 
         // check username
-        if let Err(e) = Database::validate_username(username.clone()) {
+        if let Err(e) = Database::validate_username(username) {
             return Err(e);
         }
 
         // ...
-        let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "INSERT INTO \"xprofiles\" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         } else {
             "INSERT INTO \"xprofiles\" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)"
         };
 
-        let user_token_unhashed: String = databeam::utility::uuid();
-        let user_token_hashed: String = databeam::utility::hash(user_token_unhashed.clone());
-        let salt: String = rainbeam_shared::hash::salt();
+        let user_token_unhashed: &str = &databeam::utility::uuid();
+        let user_token_hashed: &str = &databeam::utility::hash(user_token_unhashed.to_string());
+        let salt: &str = &rainbeam_shared::hash::salt();
 
-        let timestamp = utility::unix_epoch_timestamp().to_string();
+        let timestamp = utility::unix_epoch_timestamp();
 
         let c = &self.base.db.client;
         match sqlquery(query)
-            // .bind::<&String>(&databeam::utility::uuid())
-            .bind::<&String>(&AlmostSnowflake::new(self.config.snowflake_server_id).to_string())
-            .bind::<&String>(&username.to_lowercase())
-            .bind::<&String>(&rainbeam_shared::hash::hash_salted(password, salt.clone()))
-            .bind::<&String>(
-                &serde_json::to_string::<Vec<String>>(&vec![user_token_hashed]).unwrap(),
-            )
-            .bind::<&String>(
+            // .bind::<&str>(&databeam::utility::uuid())
+            .bind::<&str>(&AlmostSnowflake::new(self.config.snowflake_server_id).to_string())
+            .bind::<&str>(&username.to_lowercase())
+            .bind::<&str>(&rainbeam_shared::hash::hash_salted(
+                password.to_string(),
+                salt.to_string(),
+            ))
+            .bind::<&str>(&serde_json::to_string::<Vec<&str>>(&vec![user_token_hashed]).unwrap())
+            .bind::<&str>(
                 &serde_json::to_string::<ProfileMetadata>(&ProfileMetadata::default()).unwrap(),
             )
-            .bind::<&String>(&timestamp)
+            .bind::<&String>(&timestamp.to_string())
             .bind::<i8>(0)
-            .bind::<&String>(&salt)
-            .bind::<&String>(&serde_json::to_string::<Vec<String>>(&vec![user_ip]).unwrap())
+            .bind::<&str>(&salt)
+            .bind::<&str>(&serde_json::to_string::<Vec<&str>>(&vec![user_ip]).unwrap())
             .bind::<&str>("[]")
             .bind::<i8>(0)
             .bind::<&str>("[]")
@@ -764,7 +746,7 @@ impl Database {
             .execute(c)
             .await
         {
-            Ok(_) => Ok(user_token_unhashed),
+            Ok(_) => Ok(user_token_unhashed.to_string()),
             Err(_) => Err(DatabaseError::Other),
         }
     }
@@ -777,11 +759,11 @@ impl Database {
     /// Update a [`Profile`]'s metadata by its `id`.
     pub async fn update_profile_metadata(
         &self,
-        id: String,
+        id: &str,
         mut metadata: ProfileMetadata,
     ) -> Result<()> {
         // make sure user exists
-        let profile = match self.get_profile(id.clone()).await {
+        let profile = match self.get_profile(&id).await {
             Ok(ua) => ua,
             Err(e) => return Err(e),
         };
@@ -798,7 +780,7 @@ impl Database {
         }
 
         // update user
-        let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "UPDATE \"xprofiles\" SET \"metadata\" = ? WHERE \"id\" = ?"
         } else {
             "UPDATE \"xprofiles\" SET (\"metadata\") = ($1) WHERE \"id\" = $2"
@@ -807,8 +789,8 @@ impl Database {
         let c = &self.base.db.client;
         let meta = &serde_json::to_string(&metadata).unwrap();
         match sqlquery(query)
-            .bind::<&String>(meta)
-            .bind::<&String>(&id)
+            .bind::<&str>(meta)
+            .bind::<&str>(&id)
             .execute(c)
             .await
         {
@@ -832,19 +814,19 @@ impl Database {
     /// Update a [`Profile`]'s tokens (and IPs/token_contexts) by its `id`
     pub async fn update_profile_tokens(
         &self,
-        id: String,
+        id: &str,
         tokens: Vec<String>,
         ips: Vec<String>,
         token_context: Vec<TokenContext>,
     ) -> Result<()> {
         // make sure user exists
-        let ua = match self.get_profile(id.clone()).await {
+        let ua = match self.get_profile(&id).await {
             Ok(ua) => ua,
             Err(e) => return Err(e),
         };
 
         // update user
-        let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "UPDATE \"xprofiles\" SET \"tokens\" = ?, \"ips\" = ?, \"token_context\" = ? WHERE \"id\" = ?"
         } else {
             "UPDATE \"xprofiles\" SET (\"tokens\", \"ips\") = ($1, $2, $3) WHERE \"id\" = $4"
@@ -857,10 +839,10 @@ impl Database {
         let token_context = &serde_json::to_string(&token_context).unwrap();
 
         match sqlquery(query)
-            .bind::<&String>(tokens)
-            .bind::<&String>(ips)
-            .bind::<&String>(token_context)
-            .bind::<&String>(&ua.id)
+            .bind::<&str>(tokens)
+            .bind::<&str>(ips)
+            .bind::<&str>(token_context)
+            .bind::<&str>(&ua.id)
             .execute(c)
             .await
         {
@@ -884,17 +866,17 @@ impl Database {
     /// Update a [`Profile`]'s badges by its `id`
     pub async fn update_profile_badges(
         &self,
-        id: String,
+        id: &str,
         badges: Vec<(String, String, String)>,
     ) -> Result<()> {
         // make sure user exists
-        let ua = match self.get_profile(id.clone()).await {
+        let ua = match self.get_profile(&id).await {
             Ok(ua) => ua,
             Err(e) => return Err(e),
         };
 
         // update user
-        let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "UPDATE \"xprofiles\" SET \"badges\" = ? WHERE \"id\" = ?"
         } else {
             "UPDATE \"xprofiles\" SET (\"badges\") = ($1) WHERE \"id\" = $2"
@@ -904,8 +886,8 @@ impl Database {
         let badges = &serde_json::to_string(&badges).unwrap();
 
         match sqlquery(query)
-            .bind::<&String>(badges)
-            .bind::<&String>(&id)
+            .bind::<&str>(badges)
+            .bind::<&str>(&id)
             .execute(c)
             .await
         {
@@ -927,15 +909,15 @@ impl Database {
     }
 
     /// Update a [`Profile`]'s labels by its `id`
-    pub async fn update_profile_labels(&self, id: String, labels: Vec<i64>) -> Result<()> {
+    pub async fn update_profile_labels(&self, id: &str, labels: Vec<i64>) -> Result<()> {
         // make sure user exists
-        let ua = match self.get_profile(id.clone()).await {
+        let ua = match self.get_profile(&id).await {
             Ok(ua) => ua,
             Err(e) => return Err(e),
         };
 
         // update user
-        let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "UPDATE \"xprofiles\" SET \"labels\" = ? WHERE \"id\" = ?"
         } else {
             "UPDATE \"xprofiles\" SET (\"labels\") = ($1) WHERE \"id\" = $2"
@@ -945,8 +927,8 @@ impl Database {
         let labels = &serde_json::to_string(&labels).unwrap();
 
         match sqlquery(query)
-            .bind::<&String>(labels)
-            .bind::<&String>(&id)
+            .bind::<&str>(labels)
+            .bind::<&str>(&id)
             .execute(c)
             .await
         {
@@ -970,17 +952,17 @@ impl Database {
     /// Update a [`Profile`]'s links by its `id`
     pub async fn update_profile_links(
         &self,
-        id: String,
+        id: &str,
         links: BTreeMap<String, String>,
     ) -> Result<()> {
         // make sure user exists
-        let ua = match self.get_profile(id.clone()).await {
+        let ua = match self.get_profile(&id).await {
             Ok(ua) => ua,
             Err(e) => return Err(e),
         };
 
         // update user
-        let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "UPDATE \"xprofiles\" SET \"links\" = ? WHERE \"id\" = ?"
         } else {
             "UPDATE \"xprofiles\" SET (\"links\") = ($1) WHERE \"id\" = $2"
@@ -990,8 +972,8 @@ impl Database {
         let links = &serde_json::to_string(&links).unwrap();
 
         match sqlquery(query)
-            .bind::<&String>(links)
-            .bind::<&String>(&id)
+            .bind::<&str>(links)
+            .bind::<&str>(&id)
             .execute(c)
             .await
         {
@@ -1013,15 +995,15 @@ impl Database {
     }
 
     /// Update a [`Profile`]'s links by its `id`
-    pub async fn update_profile_layout(&self, id: String, layout: LayoutComponent) -> Result<()> {
+    pub async fn update_profile_layout(&self, id: &str, layout: LayoutComponent) -> Result<()> {
         // make sure user exists
-        let ua = match self.get_profile(id.clone()).await {
+        let ua = match self.get_profile(&id).await {
             Ok(ua) => ua,
             Err(e) => return Err(e),
         };
 
         // update user
-        let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "UPDATE \"xprofiles\" SET \"layout\" = ? WHERE \"id\" = ?"
         } else {
             "UPDATE \"xprofiles\" SET (\"layout\") = ($1) WHERE \"id\" = $2"
@@ -1031,8 +1013,8 @@ impl Database {
         let layout = &serde_json::to_string(&layout).unwrap();
 
         match sqlquery(query)
-            .bind::<&String>(layout)
-            .bind::<&String>(&id)
+            .bind::<&str>(layout)
+            .bind::<&str>(&id)
             .execute(c)
             .await
         {
@@ -1054,15 +1036,15 @@ impl Database {
     }
 
     /// Update a [`Profile`]'s tier by its ID
-    pub async fn update_profile_tier(&self, id: String, tier: i32) -> Result<()> {
+    pub async fn update_profile_tier(&self, id: &str, tier: i32) -> Result<()> {
         // make sure user exists
-        let ua = match self.get_profile(id.clone()).await {
+        let ua = match self.get_profile(&id).await {
             Ok(ua) => ua,
             Err(e) => return Err(e),
         };
 
         // update user
-        let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "UPDATE \"xprofiles\" SET \"tier\" = ? WHERE \"id\" = ?"
         } else {
             "UPDATE \"xprofiles\" SET (\"tier\") = ($1) WHERE \"id\" = $2"
@@ -1070,8 +1052,8 @@ impl Database {
 
         let c = &self.base.db.client;
         match sqlquery(query)
-            .bind::<&String>(&tier.to_string())
-            .bind::<&String>(&id)
+            .bind::<i32>(tier)
+            .bind::<&str>(&id)
             .execute(c)
             .await
         {
@@ -1093,15 +1075,15 @@ impl Database {
     }
 
     /// Update a [`Profile`]'s `gid` by its `id`
-    pub async fn update_profile_group(&self, id: String, group: i32) -> Result<()> {
+    pub async fn update_profile_group(&self, id: &str, group: i32) -> Result<()> {
         // make sure user exists
-        let ua = match self.get_profile(id.clone()).await {
+        let ua = match self.get_profile(&id).await {
             Ok(ua) => ua,
             Err(e) => return Err(e),
         };
 
         // update user
-        let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "UPDATE \"xprofiles\" SET \"gid\" = ? WHERE \"id\" = ?"
         } else {
             "UPDATE \"xprofiles\" SET (\"gid\") = ($1) WHERE \"id\" = $2"
@@ -1110,7 +1092,7 @@ impl Database {
         let c = &self.base.db.client;
         match sqlquery(query)
             .bind::<&i32>(&group)
-            .bind::<&String>(&id)
+            .bind::<&str>(&id)
             .execute(c)
             .await
         {
@@ -1135,15 +1117,15 @@ impl Database {
     ///
     /// # Arguments
     /// * `coins` - the amount to ADD to the existing coins value
-    pub async fn update_profile_coins(&self, id: String, coins: i32) -> Result<()> {
+    pub async fn update_profile_coins(&self, id: &str, coins: i32) -> Result<()> {
         // make sure user exists
-        let ua = match self.get_profile(id.clone()).await {
+        let ua = match self.get_profile(&id).await {
             Ok(ua) => ua,
             Err(e) => return Err(e),
         };
 
         // update user
-        let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "UPDATE \"xprofiles\" SET \"coins\" = ? WHERE \"id\" = ?"
         } else {
             "UPDATE \"xprofiles\" SET (\"coins\") = ($1) WHERE \"id\" = $2"
@@ -1151,8 +1133,8 @@ impl Database {
 
         let c = &self.base.db.client;
         match sqlquery(query)
-            .bind::<&String>(&(ua.coins + coins).to_string())
-            .bind::<&String>(&id)
+            .bind::<i32>(ua.coins + coins)
+            .bind::<&str>(&id)
             .execute(c)
             .await
         {
@@ -1176,20 +1158,20 @@ impl Database {
     /// Update a [`Profile`]'s `password` by its name and password
     pub async fn update_profile_password(
         &self,
-        id: String,
-        password: String,
-        new_password: String,
+        id: &str,
+        password: &str,
+        new_password: &str,
         do_password_check: bool,
     ) -> Result<()> {
         // make sure user exists
-        let ua = match self.get_profile(id.clone()).await {
+        let ua = match self.get_profile(&id).await {
             Ok(ua) => ua,
             Err(e) => return Err(e),
         };
 
         // check password
         if do_password_check {
-            let password_hashed = rainbeam_shared::hash::hash_salted(password, ua.salt);
+            let password_hashed = rainbeam_shared::hash::hash_salted(password.to_string(), ua.salt);
 
             if password_hashed != ua.password {
                 return Err(DatabaseError::NotAllowed);
@@ -1197,7 +1179,7 @@ impl Database {
         }
 
         // update user
-        let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "UPDATE \"xprofiles\" SET \"password\" = ?, \"salt\" = ? WHERE \"id\" = ?"
         } else {
             "UPDATE \"xprofiles\" SET (\"password\", \"salt\") = ($1, $2) WHERE \"id\" = $3"
@@ -1207,12 +1189,12 @@ impl Database {
 
         let c = &self.base.db.client;
         match sqlquery(query)
-            .bind::<&String>(&rainbeam_shared::hash::hash_salted(
-                new_password,
+            .bind::<&str>(&rainbeam_shared::hash::hash_salted(
+                new_password.to_string(),
                 new_salt.clone(),
             ))
-            .bind::<&String>(&new_salt)
-            .bind::<&String>(&id)
+            .bind::<&str>(&new_salt)
+            .bind::<&str>(&id)
             .execute(c)
             .await
         {
@@ -1236,37 +1218,37 @@ impl Database {
     /// Update a [`Profile`]'s `username` by its id and password
     pub async fn update_profile_username(
         &self,
-        id: String,
-        password: String,
-        mut new_name: String,
+        id: &str,
+        password: &str,
+        new_name: &str,
     ) -> Result<()> {
-        new_name = new_name.to_lowercase();
+        let new_name = new_name.to_lowercase();
 
         // make sure user exists
-        let ua = match self.get_profile(id.clone()).await {
+        let ua = match self.get_profile(&id).await {
             Ok(ua) => ua,
             Err(e) => return Err(e),
         };
 
         // make sure username isn't in use
-        if let Ok(_) = self.get_profile_by_username(new_name.clone()).await {
+        if let Ok(_) = self.get_profile_by_username(&new_name).await {
             return Err(DatabaseError::MustBeUnique);
         }
 
         // check username
-        if let Err(e) = Database::validate_username(new_name.clone()) {
+        if let Err(e) = Database::validate_username(&new_name) {
             return Err(e);
         }
 
         // check password
-        let password_hashed = rainbeam_shared::hash::hash_salted(password, ua.salt);
+        let password_hashed = rainbeam_shared::hash::hash_salted(password.to_string(), ua.salt);
 
         if password_hashed != ua.password {
             return Err(DatabaseError::NotAllowed);
         }
 
         // update user
-        let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "UPDATE \"xprofiles\" SET \"username\" = ? WHERE \"id\" = ?"
         } else {
             "UPDATE \"xprofiles\" SET (\"username\") = ($1) WHERE \"id\" = $2"
@@ -1274,8 +1256,8 @@ impl Database {
 
         let c = &self.base.db.client;
         match sqlquery(query)
-            .bind::<&String>(&new_name)
-            .bind::<&String>(&id)
+            .bind::<&str>(&new_name)
+            .bind::<&str>(&id)
             .execute(c)
             .await
         {
@@ -1299,8 +1281,8 @@ impl Database {
     /// Delete a profile
     ///
     /// **VALIDATION SHOULD BE DONE *BEFORE* THIS!!**
-    async fn delete_profile(&self, id: String) -> Result<()> {
-        let user = self.get_profile_by_id(id.clone()).await.unwrap();
+    async fn delete_profile(&self, id: &str) -> Result<()> {
+        let user = self.get_profile_by_id(&id).await.unwrap();
 
         // delete user
         let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
@@ -1310,7 +1292,7 @@ impl Database {
         };
 
         let c = &self.base.db.client;
-        match sqlquery(query).bind::<&String>(&id).execute(c).await {
+        match sqlquery(query).bind::<&str>(&id).execute(c).await {
             Ok(_) => {
                 let query: &str =
                     if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
@@ -1319,7 +1301,7 @@ impl Database {
                         "DELETE FROM \"xnotifications\" WHERE \"recipient\" = $1"
                     };
 
-                if let Err(_) = sqlquery(query).bind::<&String>(&id).execute(c).await {
+                if let Err(_) = sqlquery(query).bind::<&str>(&id).execute(c).await {
                     return Err(DatabaseError::Other);
                 };
 
@@ -1330,7 +1312,7 @@ impl Database {
                         "DELETE FROM \"xwarnings\" WHERE \"recipient\" = $1"
                     };
 
-                if let Err(_) = sqlquery(query).bind::<&String>(&id).execute(c).await {
+                if let Err(_) = sqlquery(query).bind::<&str>(&id).execute(c).await {
                     return Err(DatabaseError::Other);
                 };
 
@@ -1342,8 +1324,8 @@ impl Database {
                     };
 
                 if let Err(_) = sqlquery(query)
-                    .bind::<&String>(&id)
-                    .bind::<&String>(&id)
+                    .bind::<&str>(&id)
+                    .bind::<&str>(&id)
                     .execute(c)
                     .await
                 {
@@ -1359,7 +1341,7 @@ impl Database {
                         "DELETE FROM \"xquestions\" WHERE \"recipient\" = $1"
                     };
 
-                if let Err(_) = sqlquery(query).bind::<&String>(&id).execute(c).await {
+                if let Err(_) = sqlquery(query).bind::<&str>(&id).execute(c).await {
                     return Err(DatabaseError::Other);
                 };
 
@@ -1371,7 +1353,7 @@ impl Database {
                         "DELETE FROM \"xquestions\" WHERE \"author\" = $1"
                     };
 
-                if let Err(_) = sqlquery(query).bind::<&String>(&id).execute(c).await {
+                if let Err(_) = sqlquery(query).bind::<&str>(&id).execute(c).await {
                     return Err(DatabaseError::Other);
                 };
 
@@ -1383,7 +1365,7 @@ impl Database {
                         "DELETE FROM \"xresponses\" WHERE \"author\" = $1"
                     };
 
-                if let Err(_) = sqlquery(query).bind::<&String>(&id).execute(c).await {
+                if let Err(_) = sqlquery(query).bind::<&str>(&id).execute(c).await {
                     return Err(DatabaseError::Other);
                 };
 
@@ -1396,7 +1378,7 @@ impl Database {
                     };
 
                 if let Err(_) = sqlquery(query)
-                    .bind::<&String>(&format!("%\"author\":\"{id}\"%"))
+                    .bind::<&str>(&format!("%\"author\":\"{id}\"%"))
                     .execute(c)
                     .await
                 {
@@ -1413,30 +1395,6 @@ impl Database {
                     .remove(format!("rbeam.app.global_question_count:{}", id))
                     .await;
 
-                // circles by user
-                let query: &str =
-                    if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
-                        "DELETE FROM \"xcircles\" WHERE \"owner\" = ?"
-                    } else {
-                        "DELETE FROM \"xcircles\" WHERE \"owner\" = $1"
-                    };
-
-                if let Err(_) = sqlquery(query).bind::<&String>(&id).execute(c).await {
-                    return Err(DatabaseError::Other);
-                };
-
-                // user circle memberships
-                let query: &str =
-                    if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
-                        "DELETE FROM \"xcircle_memberships\" WHERE \"user\" = ?"
-                    } else {
-                        "DELETE FROM \"xcircle_memberships\" WHERE \"user\" = $1"
-                    };
-
-                if let Err(_) = sqlquery(query).bind::<&String>(&id).execute(c).await {
-                    return Err(DatabaseError::Other);
-                };
-
                 // relationships involving user
                 let query: &str =
                     if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
@@ -1446,8 +1404,8 @@ impl Database {
                     };
 
                 if let Err(_) = sqlquery(query)
-                    .bind::<&String>(&id)
-                    .bind::<&String>(&id)
+                    .bind::<&str>(&id)
+                    .bind::<&str>(&id)
                     .execute(c)
                     .await
                 {
@@ -1467,7 +1425,7 @@ impl Database {
                         "DELETE FROM \"xipblocks\" WHERE \"user\" = $1"
                     };
 
-                if let Err(_) = sqlquery(query).bind::<&String>(&id).execute(c).await {
+                if let Err(_) = sqlquery(query).bind::<&str>(&id).execute(c).await {
                     return Err(DatabaseError::Other);
                 };
 
@@ -1481,8 +1439,8 @@ impl Database {
                 };
 
                 if let Err(_) = sqlquery(query)
-                    .bind::<&String>(&id)
-                    .bind::<&String>(&id)
+                    .bind::<&str>(&id)
+                    .bind::<&str>(&id)
                     .execute(c)
                     .await
                 {
@@ -1497,7 +1455,7 @@ impl Database {
                         "DELETE FROM \"xugc_items\" WHERE \"creator\" = $1"
                     };
 
-                if let Err(_) = sqlquery(query).bind::<&String>(&id).execute(c).await {
+                if let Err(_) = sqlquery(query).bind::<&str>(&id).execute(c).await {
                     return Err(DatabaseError::Other);
                 };
 
@@ -1528,7 +1486,6 @@ impl Database {
                     .await;
 
                 // delete images
-                // TODO: Implement `.is_empty()` for `PathBufD`
                 if !self.config.media_dir.to_string().is_empty() {
                     let avatar = pathd!("{}/avatars/{}.avif", self.config.media_dir, id);
                     if let Ok(_) = rainbeam_shared::fs::fstat(&avatar) {
@@ -1553,8 +1510,8 @@ impl Database {
     }
 
     /// Delete an existing [`Profile`] by its `id`
-    pub async fn delete_profile_by_id(&self, id: String) -> Result<()> {
-        let user = match self.get_profile_by_id(id.clone()).await {
+    pub async fn delete_profile_by_id(&self, id: &str) -> Result<()> {
+        let user = match self.get_profile_by_id(&id).await {
             Ok(ua) => ua,
             Err(e) => return Err(e),
         };
@@ -1593,7 +1550,7 @@ impl Database {
         }
 
         // ...
-        let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "SELECT * FROM \"xgroups\" WHERE \"id\" = ?"
         } else {
             "SELECT * FROM \"xgroups\" WHERE \"id\" = $1"
@@ -1607,7 +1564,7 @@ impl Database {
 
         // store in cache
         let group = Group {
-            name: row.get("name").unwrap().to_string(),
+            name: from_row!(row->name()),
             id: row.get("id").unwrap().parse::<i32>().unwrap(),
             permissions: match serde_json::from_str(row.get("permissions").unwrap()) {
                 Ok(m) => m,
@@ -1635,9 +1592,9 @@ impl Database {
     /// # Arguments:
     /// * `user`
     /// * `following`
-    pub async fn get_follow(&self, user: String, following: String) -> Result<UserFollow> {
+    pub async fn get_follow(&self, user: &str, following: &str) -> Result<UserFollow> {
         // fetch from database
-        let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "SELECT * FROM \"xfollows\" WHERE \"user\" = ? AND \"following\" = ?"
         } else {
             "SELECT * FROM \"xfollows\" WHERE \"user\" = $1 AND \"following\" = $2"
@@ -1645,8 +1602,8 @@ impl Database {
 
         let c = &self.base.db.client;
         let row = match sqlquery(query)
-            .bind::<&String>(&user)
-            .bind::<&String>(&following)
+            .bind::<&str>(&user)
+            .bind::<&str>(&following)
             .fetch_one(c)
             .await
         {
@@ -1656,8 +1613,8 @@ impl Database {
 
         // return
         Ok(UserFollow {
-            user: row.get("user").unwrap().to_string(),
-            following: row.get("following").unwrap().to_string(),
+            user: from_row!(row->user()),
+            following: from_row!(row->following()),
         })
     }
 
@@ -1667,36 +1624,36 @@ impl Database {
     /// * `user`
     pub async fn get_followers(
         &self,
-        user: String,
+        user: &str,
     ) -> Result<Vec<(UserFollow, Box<Profile>, Box<Profile>)>> {
         // fetch from database
-        let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "SELECT * FROM \"xfollows\" WHERE \"following\" = ?"
         } else {
             "SELECT * FROM \"xfollows\" WHERE \"following\" = $1"
         };
 
         let c = &self.base.db.client;
-        let res = match sqlquery(query).bind::<&String>(&user).fetch_all(c).await {
+        let res = match sqlquery(query).bind::<&str>(&user).fetch_all(c).await {
             Ok(u) => {
                 let mut out = Vec::new();
 
                 for row in u {
                     let row = self.base.textify_row(row).0;
 
-                    let user = row.get("user").unwrap().to_string();
-                    let following = row.get("following").unwrap().to_string();
+                    let user = from_row!(row->user());
+                    let following = from_row!(row->following());
 
                     out.push((
                         UserFollow {
                             user: user.clone(),
                             following: following.clone(),
                         },
-                        match self.get_profile_by_id(user).await {
+                        match self.get_profile_by_id(&user).await {
                             Ok(ua) => ua,
                             Err(e) => return Err(e),
                         },
-                        match self.get_profile_by_id(following).await {
+                        match self.get_profile_by_id(&following).await {
                             Ok(ua) => ua,
                             Err(e) => return Err(e),
                         },
@@ -1719,12 +1676,11 @@ impl Database {
     /// * `page`
     pub async fn get_followers_paginated(
         &self,
-        user: String,
+        user: &str,
         page: i32,
     ) -> Result<Vec<(UserFollow, Box<Profile>, Box<Profile>)>> {
         // fetch from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             format!(
                 "SELECT * FROM \"xfollows\" WHERE \"following\" = ? LIMIT 12 OFFSET {}",
                 page * 12
@@ -1737,36 +1693,28 @@ impl Database {
         };
 
         let c = &self.base.db.client;
-        let res = match sqlquery(&query).bind::<&String>(&user).fetch_all(c).await {
+        let res = match sqlquery(&query).bind::<&str>(&user).fetch_all(c).await {
             Ok(u) => {
                 let mut out = Vec::new();
 
                 for row in u {
                     let row = self.base.textify_row(row).0;
 
-                    let user = row.get("user").unwrap().to_string();
-                    let following = row.get("following").unwrap().to_string();
+                    let user = from_row!(row->user());
+                    let following = from_row!(row->following());
 
                     out.push((
                         UserFollow {
                             user: user.clone(),
                             following: following.clone(),
                         },
-                        match self.get_profile_by_id(user.clone()).await {
+                        match self.get_profile_by_id(&user).await {
                             Ok(ua) => ua,
-                            Err(e) => {
-                                println!("({}) UID 'user' {}", e.to_string(), user);
-
-                                continue;
-                            }
+                            Err(_) => continue,
                         },
-                        match self.get_profile_by_id(following.clone()).await {
+                        match self.get_profile_by_id(&following).await {
                             Ok(ua) => ua,
-                            Err(e) => {
-                                println!("({}) UID 'following' {}", e.to_string(), following);
-
-                                continue;
-                            }
+                            Err(_) => continue,
                         },
                     ))
                 }
@@ -1784,7 +1732,7 @@ impl Database {
     ///
     /// # Arguments:
     /// * `user`
-    pub async fn get_followers_count(&self, user: String) -> usize {
+    pub async fn get_followers_count(&self, user: &str) -> usize {
         // attempt to fetch from cache
         if let Some(count) = self
             .base
@@ -1796,11 +1744,7 @@ impl Database {
         };
 
         // fetch from database
-        let count = self
-            .get_followers(user.clone())
-            .await
-            .unwrap_or(Vec::new())
-            .len();
+        let count = self.get_followers(user).await.unwrap_or(Vec::new()).len();
 
         self.base
             .cachedb
@@ -1819,46 +1763,38 @@ impl Database {
     /// * `user`
     pub async fn get_following(
         &self,
-        user: String,
+        user: &str,
     ) -> Result<Vec<(UserFollow, Box<Profile>, Box<Profile>)>> {
         // fetch from database
-        let query: &str = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "SELECT * FROM \"xfollows\" WHERE \"user\" = ?"
         } else {
             "SELECT * FROM \"xfollows\" WHERE \"user\" = $1"
         };
 
         let c = &self.base.db.client;
-        let res = match sqlquery(query).bind::<&String>(&user).fetch_all(c).await {
+        let res = match sqlquery(query).bind::<&str>(&user).fetch_all(c).await {
             Ok(u) => {
                 let mut out = Vec::new();
 
                 for row in u {
                     let row = self.base.textify_row(row).0;
 
-                    let user = row.get("user").unwrap().to_string();
-                    let following = row.get("following").unwrap().to_string();
+                    let user = from_row!(row->user());
+                    let following = from_row!(row->following());
 
                     out.push((
                         UserFollow {
                             user: user.clone(),
                             following: following.clone(),
                         },
-                        match self.get_profile_by_id(user.clone()).await {
+                        match self.get_profile_by_id(&user).await {
                             Ok(ua) => ua,
-                            Err(e) => {
-                                println!("({}) UID 'user' {}", e.to_string(), user);
-
-                                continue;
-                            }
+                            Err(_) => continue,
                         },
-                        match self.get_profile_by_id(following.clone()).await {
+                        match self.get_profile_by_id(&following).await {
                             Ok(ua) => ua,
-                            Err(e) => {
-                                println!("({}) UID 'following' {}", e.to_string(), following);
-
-                                continue;
-                            }
+                            Err(_) => continue,
                         },
                     ))
                 }
@@ -1879,12 +1815,11 @@ impl Database {
     /// * `page`
     pub async fn get_following_paginated(
         &self,
-        user: String,
+        user: &str,
         page: i32,
     ) -> Result<Vec<(UserFollow, Box<Profile>, Box<Profile>)>> {
         // fetch from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             format!(
                 "SELECT * FROM \"xfollows\" WHERE \"user\" = ? LIMIT 12 OFFSET {}",
                 page * 12
@@ -1897,36 +1832,28 @@ impl Database {
         };
 
         let c = &self.base.db.client;
-        let res = match sqlquery(&query).bind::<&String>(&user).fetch_all(c).await {
+        let res = match sqlquery(&query).bind::<&str>(&user).fetch_all(c).await {
             Ok(u) => {
                 let mut out = Vec::new();
 
                 for row in u {
                     let row = self.base.textify_row(row).0;
 
-                    let user = row.get("user").unwrap().to_string();
-                    let following = row.get("following").unwrap().to_string();
+                    let user = from_row!(row->user());
+                    let following = from_row!(row->following());
 
                     out.push((
                         UserFollow {
                             user: user.clone(),
                             following: following.clone(),
                         },
-                        match self.get_profile_by_id(user.clone()).await {
+                        match self.get_profile_by_id(&user).await {
                             Ok(ua) => ua,
-                            Err(e) => {
-                                println!("({}) UID 'user' {}", e.to_string(), user);
-
-                                continue;
-                            }
+                            Err(_) => continue,
                         },
-                        match self.get_profile_by_id(following.clone()).await {
+                        match self.get_profile_by_id(&following).await {
                             Ok(ua) => ua,
-                            Err(e) => {
-                                println!("({}) UID 'following' {}", e.to_string(), following);
-
-                                continue;
-                            }
+                            Err(_) => continue,
                         },
                     ))
                 }
@@ -1944,7 +1871,7 @@ impl Database {
     ///
     /// # Arguments:
     /// * `user`
-    pub async fn get_following_count(&self, user: String) -> usize {
+    pub async fn get_following_count(&self, user: &str) -> usize {
         // attempt to fetch from cache
         if let Some(count) = self
             .base
@@ -1956,11 +1883,7 @@ impl Database {
         };
 
         // fetch from database
-        let count = self
-            .get_following(user.clone())
-            .await
-            .unwrap_or(Vec::new())
-            .len();
+        let count = self.get_following(user).await.unwrap_or(Vec::new()).len();
 
         self.base
             .cachedb
@@ -1985,34 +1908,29 @@ impl Database {
         }
 
         // make sure both users exist
-        let user_1 = match self.get_profile(props.user.to_owned()).await {
+        let user_1 = match self.get_profile(&props.user).await {
             Ok(ua) => ua,
             Err(e) => return Err(e),
         };
 
         // make sure both users exist
-        if let Err(e) = self.get_profile(props.following.to_owned()).await {
+        if let Err(e) = self.get_profile(&props.following).await {
             return Err(e);
         };
 
         // check if follow exists
-        if let Ok(_) = self
-            .get_follow(props.user.to_owned(), props.following.to_owned())
-            .await
-        {
+        if let Ok(_) = self.get_follow(&props.user, &props.following).await {
             // delete
-            let query: String =
-                if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
-                    "DELETE FROM \"xfollows\" WHERE \"user\" = ? AND \"following\" = ?"
-                } else {
-                    "DELETE FROM \"xfollows\" WHERE \"user\" = $1 AND \"following\" = $2"
-                }
-                .to_string();
+            let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+                "DELETE FROM \"xfollows\" WHERE \"user\" = ? AND \"following\" = ?"
+            } else {
+                "DELETE FROM \"xfollows\" WHERE \"user\" = $1 AND \"following\" = $2"
+            };
 
             let c = &self.base.db.client;
             match sqlquery(&query)
-                .bind::<&String>(&props.user)
-                .bind::<&String>(&props.following)
+                .bind::<&str>(&props.user)
+                .bind::<&str>(&props.following)
                 .execute(c)
                 .await
             {
@@ -2034,18 +1952,16 @@ impl Database {
         }
 
         // return
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "INSERT INTO \"xfollows\" VALUES (?, ?)"
         } else {
             "INSERT INTO \"xfollows\" VALUES ($1, $2)"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
         match sqlquery(&query)
-            .bind::<&String>(&props.user)
-            .bind::<&String>(&props.following)
+            .bind::<&str>(&props.user)
+            .bind::<&str>(&props.following)
             .execute(c)
             .await
         {
@@ -2098,23 +2014,18 @@ impl Database {
         }
 
         // check if follow exists
-        if let Ok(_) = self
-            .get_follow(props.user.to_owned(), props.following.to_owned())
-            .await
-        {
+        if let Ok(_) = self.get_follow(&props.user, &props.following).await {
             // delete
-            let query: String =
-                if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
-                    "DELETE FROM \"xfollows\" WHERE \"user\" = ? AND \"following\" = ?"
-                } else {
-                    "DELETE FROM \"xfollows\" WHERE \"user\" = $1 AND \"following\" = $2"
-                }
-                .to_string();
+            let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+                "DELETE FROM \"xfollows\" WHERE \"user\" = ? AND \"following\" = ?"
+            } else {
+                "DELETE FROM \"xfollows\" WHERE \"user\" = $1 AND \"following\" = $2"
+            };
 
             let c = &self.base.db.client;
             match sqlquery(&query)
-                .bind::<&String>(&props.user)
-                .bind::<&String>(&props.following)
+                .bind::<&str>(&props.user)
+                .bind::<&str>(&props.following)
                 .execute(c)
                 .await
             {
@@ -2147,7 +2058,7 @@ impl Database {
     ///
     /// # Arguments
     /// * `id`
-    pub async fn get_notification(&self, id: String) -> Result<Notification> {
+    pub async fn get_notification(&self, id: &str) -> Result<Notification> {
         // check in cache
         match self
             .base
@@ -2160,28 +2071,26 @@ impl Database {
         };
 
         // pull from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "SELECT * FROM \"xnotifications\" WHERE \"id\" = ?"
         } else {
             "SELECT * FROM \"xnotifications\" WHERE \"id\" = $1"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
-        let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
+        let res = match sqlquery(&query).bind::<&str>(&id).fetch_one(c).await {
             Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
 
         // return
         let notification = Notification {
-            title: res.get("title").unwrap().to_string(),
-            content: res.get("content").unwrap().to_string(),
-            address: res.get("address").unwrap().to_string(),
+            title: from_row!(res->title()),
+            content: from_row!(res->content()),
+            address: from_row!(res->address()),
             timestamp: from_row!(res->timestamp(u128); 0),
             id: from_row!(res->id()),
-            recipient: res.get("recipient").unwrap().to_string(),
+            recipient: from_row!(res->recipient()),
         };
 
         // store in cache
@@ -2203,20 +2112,18 @@ impl Database {
     /// * `recipient`
     pub async fn get_notifications_by_recipient(
         &self,
-        recipient: String,
+        recipient: &str,
     ) -> Result<Vec<Notification>> {
         // pull from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "SELECT * FROM \"xnotifications\" WHERE \"recipient\" = ? ORDER BY \"timestamp\" DESC"
         } else {
             "SELECT * FROM \"xnotifications\" WHERE \"recipient\" = $1 ORDER BY \"timestamp\" DESC"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query)
-            .bind::<&String>(&recipient.to_lowercase())
+            .bind::<&str>(&recipient.to_lowercase())
             .fetch_all(c)
             .await
         {
@@ -2226,12 +2133,12 @@ impl Database {
                 for row in p {
                     let res = self.base.textify_row(row).0;
                     out.push(Notification {
-                        title: res.get("title").unwrap().to_string(),
-                        content: res.get("content").unwrap().to_string(),
-                        address: res.get("address").unwrap().to_string(),
+                        title: from_row!(res->title()),
+                        content: from_row!(res->content()),
+                        address: from_row!(res->address()),
                         timestamp: from_row!(res->timestamp(u128); 0),
                         id: from_row!(res->id()),
-                        recipient: res.get("recipient").unwrap().to_string(),
+                        recipient: from_row!(res->recipient()),
                     });
                 }
 
@@ -2248,7 +2155,7 @@ impl Database {
     ///
     /// # Arguments
     /// * `recipient`
-    pub async fn get_notification_count_by_recipient_cache(&self, recipient: String) -> usize {
+    pub async fn get_notification_count_by_recipient_cache(&self, recipient: &str) -> usize {
         // attempt to fetch from cache
         if let Some(count) = self
             .base
@@ -2261,7 +2168,7 @@ impl Database {
 
         // fetch from database
         let count = self
-            .get_notifications_by_recipient(recipient.clone())
+            .get_notifications_by_recipient(recipient)
             .await
             .unwrap_or(Vec::new())
             .len();
@@ -2281,7 +2188,7 @@ impl Database {
     ///
     /// # Arguments
     /// * `recipient`
-    pub async fn get_notification_count_by_recipient(&self, recipient: String) -> usize {
+    pub async fn get_notification_count_by_recipient(&self, recipient: &str) -> usize {
         match self.get_profile(recipient).await {
             Ok(x) => x.notification_count,
             Err(_) => 0,
@@ -2295,12 +2202,11 @@ impl Database {
     /// * `page`
     pub async fn get_notifications_by_recipient_paginated(
         &self,
-        recipient: String,
+        recipient: &str,
         page: i32,
     ) -> Result<Vec<Notification>> {
         // pull from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             format!("SELECT * FROM \"xnotifications\" WHERE \"recipient\" = ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
             format!("SELECT * FROM \"xnotifications\" WHERE \"recipient\" = $1 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
@@ -2308,7 +2214,7 @@ impl Database {
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query)
-            .bind::<&String>(&recipient.to_lowercase())
+            .bind::<&str>(&recipient.to_lowercase())
             .fetch_all(c)
             .await
         {
@@ -2318,12 +2224,12 @@ impl Database {
                 for row in p {
                     let res = self.base.textify_row(row).0;
                     out.push(Notification {
-                        title: res.get("title").unwrap().to_string(),
-                        content: res.get("content").unwrap().to_string(),
-                        address: res.get("address").unwrap().to_string(),
+                        title: from_row!(res->title()),
+                        content: from_row!(res->content()),
+                        address: from_row!(res->address()),
                         timestamp: from_row!(res->timestamp(u128); 0),
                         id: from_row!(res->id()),
-                        recipient: res.get("recipient").unwrap().to_string(),
+                        recipient: from_row!(res->recipient()),
                     });
                 }
 
@@ -2360,22 +2266,20 @@ impl Database {
         };
 
         // create notification
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "INSERT INTO \"xnotifications\" VALUES (?, ?, ?, ?, ?, ?)"
         } else {
             "INSERT INTO \"xnotifications\" VALUES ($1, $2, $3, $4, $5, $6)"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
         match sqlquery(&query)
-            .bind::<&String>(&notification.title)
-            .bind::<&String>(&notification.content)
-            .bind::<&String>(&notification.address)
-            .bind::<&String>(&notification.timestamp.to_string())
-            .bind::<&String>(&notification.id)
-            .bind::<&String>(&notification.recipient)
+            .bind::<&str>(&notification.title)
+            .bind::<&str>(&notification.content)
+            .bind::<&str>(&notification.address)
+            .bind::<&str>(&notification.timestamp.to_string())
+            .bind::<&str>(&notification.id)
+            .bind::<&str>(&notification.recipient)
             .execute(c)
             .await
         {
@@ -2392,11 +2296,11 @@ impl Database {
                 // check recipient
                 if !notification.recipient.starts_with("*") {
                     let recipient =
-                        simplify!(self.get_profile(notification.recipient.clone()).await; Result);
+                        simplify!(self.get_profile(&notification.recipient).await; Result);
 
                     simplify!(
                         self.update_profile_notification_count(
-                            notification.recipient,
+                            &notification.recipient,
                             recipient.notification_count + 1,
                         )
                         .await; Err
@@ -2417,9 +2321,9 @@ impl Database {
     /// # Arguments
     /// * `id` - the ID of the notification
     /// * `user` - the user doing this
-    pub async fn delete_notification(&self, id: String, user: Box<Profile>) -> Result<()> {
+    pub async fn delete_notification(&self, id: &str, user: Box<Profile>) -> Result<()> {
         // make sure notification exists
-        let notification = match self.get_notification(id.clone()).await {
+        let notification = match self.get_notification(id).await {
             Ok(n) => n,
             Err(e) => return Err(e),
         };
@@ -2441,16 +2345,14 @@ impl Database {
         }
 
         // delete notification
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "DELETE FROM \"xnotifications\" WHERE \"id\" = ?"
         } else {
             "DELETE FROM \"xnotifications\" WHERE \"id\" = $1"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
-        match sqlquery(&query).bind::<&String>(&id).execute(c).await {
+        match sqlquery(&query).bind::<&str>(&id).execute(c).await {
             Ok(_) => {
                 // decr notifications count
                 self.base
@@ -2481,11 +2383,11 @@ impl Database {
     /// * `user` - the user doing this
     pub async fn delete_notifications_by_recipient(
         &self,
-        recipient: String,
+        recipient: &str,
         user: Box<Profile>,
     ) -> Result<()> {
         // make sure notifications exists
-        let notifications = match self.get_notifications_by_recipient(recipient.clone()).await {
+        let notifications = match self.get_notifications_by_recipient(recipient).await {
             Ok(n) => n,
             Err(e) => return Err(e),
         };
@@ -2507,20 +2409,14 @@ impl Database {
         }
 
         // delete notifications
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "DELETE FROM \"xnotifications\" WHERE \"recipient\" = ?"
         } else {
             "DELETE FROM \"xnotifications\" WHERE \"recipient\" = $1"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
-        match sqlquery(&query)
-            .bind::<&String>(&recipient)
-            .execute(c)
-            .await
-        {
+        match sqlquery(&query).bind::<&str>(&recipient).execute(c).await {
             Ok(_) => {
                 // clear notifications count
                 self.base
@@ -2551,7 +2447,7 @@ impl Database {
     ///
     /// # Arguments
     /// * `id`
-    pub async fn get_warning(&self, id: String) -> Result<Warning> {
+    pub async fn get_warning(&self, id: &str) -> Result<Warning> {
         // check in cache
         match self
             .base
@@ -2564,16 +2460,14 @@ impl Database {
         };
 
         // pull from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "SELECT * FROM \"xwarnings\" WHERE \"id\" = ?"
         } else {
             "SELECT * FROM \"xwarnings\" WHERE \"id\" = $1"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
-        let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
+        let res = match sqlquery(&query).bind::<&str>(&id).fetch_one(c).await {
             Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
@@ -2581,13 +2475,10 @@ impl Database {
         // return
         let warning = Warning {
             id: from_row!(res->id()),
-            content: res.get("content").unwrap().to_string(),
+            content: from_row!(res->content()),
             timestamp: from_row!(res->timestamp(u128); 0),
-            recipient: res.get("recipient").unwrap().to_string(),
-            moderator: match self
-                .get_profile_by_id(res.get("moderator").unwrap().to_string())
-                .await
-            {
+            recipient: from_row!(res->recipient()),
+            moderator: match self.get_profile_by_id(res.get("moderator").unwrap()).await {
                 Ok(ua) => ua,
                 Err(e) => return Err(e),
             },
@@ -2613,7 +2504,7 @@ impl Database {
     /// * `user` - the user doing this
     pub async fn get_warnings_by_recipient(
         &self,
-        recipient: String,
+        recipient: &str,
         user: Box<Profile>,
     ) -> Result<Vec<Warning>> {
         // make sure user is a manager
@@ -2627,17 +2518,15 @@ impl Database {
         }
 
         // pull from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "SELECT * FROM \"xwarnings\" WHERE \"recipient\" = ? ORDER BY \"timestamp\" DESC"
         } else {
             "SELECT * FROM \"xwarnings\" WHERE \"recipient\" = $1 ORDER BY \"timestamp\" DESC"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query)
-            .bind::<&String>(&recipient.to_lowercase())
+            .bind::<&str>(&recipient.to_lowercase())
             .fetch_all(c)
             .await
         {
@@ -2648,12 +2537,10 @@ impl Database {
                     let res = self.base.textify_row(row).0;
                     out.push(Warning {
                         id: from_row!(res->id()),
-                        content: res.get("content").unwrap().to_string(),
+                        content: from_row!(res->content()),
                         timestamp: from_row!(res->timestamp(u128); 0),
-                        recipient: res.get("recipient").unwrap().to_string(),
-                        moderator: match self
-                            .get_profile_by_id(res.get("moderator").unwrap().to_string())
-                            .await
+                        recipient: from_row!(res->recipient()),
+                        moderator: match self.get_profile_by_id(res.get("moderator").unwrap()).await
                         {
                             Ok(ua) => ua,
                             Err(_) => continue,
@@ -2697,21 +2584,19 @@ impl Database {
         };
 
         // create notification
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "INSERT INTO \"xwarnings\" VALUES (?, ?, ?, ?, ?)"
         } else {
             "INSERT INTO \"xwarnings\" VALUES ($1, $2, $3, $4, $5)"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
         match sqlquery(&query)
-            .bind::<&String>(&warning.id)
-            .bind::<&String>(&warning.content)
-            .bind::<&String>(&warning.timestamp.to_string())
-            .bind::<&String>(&warning.recipient)
-            .bind::<&String>(&warning.moderator.id)
+            .bind::<&str>(&warning.id)
+            .bind::<&str>(&warning.content)
+            .bind::<&str>(&warning.timestamp.to_string())
+            .bind::<&str>(&warning.recipient)
+            .bind::<&str>(&warning.moderator.id)
             .execute(c)
             .await
         {
@@ -2746,9 +2631,9 @@ impl Database {
     /// # Arguments
     /// * `id` - the ID of the warning
     /// * `user` - the user doing this
-    pub async fn delete_warning(&self, id: String, user: Box<Profile>) -> Result<()> {
+    pub async fn delete_warning(&self, id: &str, user: Box<Profile>) -> Result<()> {
         // make sure warning exists
-        let warning = match self.get_warning(id.clone()).await {
+        let warning = match self.get_warning(id).await {
             Ok(n) => n,
             Err(e) => return Err(e),
         };
@@ -2767,16 +2652,14 @@ impl Database {
         }
 
         // delete warning
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "DELETE FROM \"xwarnings\" WHERE \"id\" = ?"
         } else {
             "DELETE FROM \"xwarnings\" WHERE \"id\" = $1"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
-        match sqlquery(&query).bind::<&String>(&id).execute(c).await {
+        match sqlquery(&query).bind::<&str>(&id).execute(c).await {
             Ok(_) => {
                 // remove from cache
                 self.base
@@ -2798,7 +2681,7 @@ impl Database {
     ///
     /// # Arguments
     /// * `id`
-    pub async fn get_ipban(&self, id: String) -> Result<IpBan> {
+    pub async fn get_ipban(&self, id: &str) -> Result<IpBan> {
         // check in cache
         match self
             .base
@@ -2811,16 +2694,14 @@ impl Database {
         };
 
         // pull from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "SELECT * FROM \"xbans\" WHERE \"id\" = ?"
         } else {
             "SELECT * FROM \"xbans\" WHERE \"id\" = $1"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
-        let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
+        let res = match sqlquery(&query).bind::<&str>(&id).fetch_one(c).await {
             Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
@@ -2830,10 +2711,7 @@ impl Database {
             id: from_row!(res->id()),
             ip: from_row!(res->ip()),
             reason: from_row!(res->reason()),
-            moderator: match self
-                .get_profile_by_id(res.get("moderator").unwrap().to_string())
-                .await
-            {
+            moderator: match self.get_profile_by_id(res.get("moderator").unwrap()).await {
                 Ok(ua) => ua,
                 Err(e) => return Err(e),
             },
@@ -2857,18 +2735,16 @@ impl Database {
     ///
     /// # Arguments
     /// * `ip`
-    pub async fn get_ipban_by_ip(&self, ip: String) -> Result<IpBan> {
+    pub async fn get_ipban_by_ip(&self, ip: &str) -> Result<IpBan> {
         // pull from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "SELECT * FROM \"xbans\" WHERE \"ip\" = ?"
         } else {
             "SELECT * FROM \"xbans\" WHERE \"ip\" = $1"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
-        let res = match sqlquery(&query).bind::<&String>(&ip).fetch_one(c).await {
+        let res = match sqlquery(&query).bind::<&str>(&ip).fetch_one(c).await {
             Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
@@ -2878,10 +2754,7 @@ impl Database {
             id: from_row!(res->id()),
             ip: from_row!(res->ip()),
             reason: from_row!(res->reason()),
-            moderator: match self
-                .get_profile_by_id(res.get("moderator").unwrap().to_string())
-                .await
-            {
+            moderator: match self.get_profile_by_id(res.get("moderator").unwrap()).await {
                 Ok(ua) => ua,
                 Err(e) => return Err(e),
             },
@@ -2908,13 +2781,11 @@ impl Database {
         }
 
         // pull from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "SELECT * FROM \"xbans\" ORDER BY \"timestamp\" DESC"
         } else {
             "SELECT * FROM \"xbans\" ORDER BY \"timestamp\" DESC"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query).fetch_all(c).await {
@@ -2927,9 +2798,7 @@ impl Database {
                         id: from_row!(res->id()),
                         ip: from_row!(res->ip()),
                         reason: from_row!(res->reason()),
-                        moderator: match self
-                            .get_profile_by_id(res.get("moderator").unwrap().to_string())
-                            .await
+                        moderator: match self.get_profile_by_id(res.get("moderator").unwrap()).await
                         {
                             Ok(ua) => ua,
                             Err(_) => continue,
@@ -2981,7 +2850,7 @@ impl Database {
         }
 
         // make sure this ip isn't already banned
-        if self.get_ipban_by_ip(props.ip.clone()).await.is_ok() {
+        if self.get_ipban_by_ip(&props.ip).await.is_ok() {
             return Err(DatabaseError::MustBeUnique);
         }
 
@@ -2995,21 +2864,19 @@ impl Database {
         };
 
         // create notification
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "INSERT INTO \"xbans\" VALUES (?, ?, ?, ?, ?)"
         } else {
             "INSERT INTO \"xbans\" VALUES ($1, $2, $3, $4, $5)"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
         match sqlquery(&query)
-            .bind::<&String>(&ban.id)
-            .bind::<&String>(&ban.ip)
-            .bind::<&String>(&ban.reason)
-            .bind::<&String>(&ban.moderator.id)
-            .bind::<&String>(&ban.timestamp.to_string())
+            .bind::<&str>(&ban.id)
+            .bind::<&str>(&ban.ip)
+            .bind::<&str>(&ban.reason)
+            .bind::<&str>(&ban.moderator.id)
+            .bind::<&str>(&ban.timestamp.to_string())
             .execute(c)
             .await
         {
@@ -3023,9 +2890,9 @@ impl Database {
     /// # Arguments
     /// * `id` - the ID of the ban
     /// * `user` - the user doing this
-    pub async fn delete_ipban(&self, id: String, user: Box<Profile>) -> Result<()> {
+    pub async fn delete_ipban(&self, id: &str, user: Box<Profile>) -> Result<()> {
         // make sure ban exists
-        let ipban = match self.get_ipban(id.clone()).await {
+        let ipban = match self.get_ipban(id).await {
             Ok(n) => n,
             Err(e) => return Err(e),
         };
@@ -3060,16 +2927,14 @@ impl Database {
         }
 
         // delete ban
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "DELETE FROM \"xbans\" WHERE \"id\" = ?"
         } else {
             "DELETE FROM \"xbans\" WHERE \"id\" = $1"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
-        match sqlquery(&query).bind::<&String>(&id).execute(c).await {
+        match sqlquery(&query).bind::<&str>(&id).execute(c).await {
             Ok(_) => {
                 // remove from cache
                 self.base
@@ -3093,36 +2958,40 @@ impl Database {
     /// * `other` - the ID of the second user
     pub async fn get_user_relationship(
         &self,
-        user: String,
-        other: String,
+        user: &str,
+        other: &str,
     ) -> (RelationshipStatus, String, String) {
         // pull from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "SELECT * FROM \"xrelationships\" WHERE (\"one\" = ? AND \"two\" = ?) OR (\"one\" = ? AND \"two\" = ?)"
         } else {
-             "SELECT * FROM \"xrelationships\" WHERE (\"one\" = $1 AND \"two\" = $2) OR (\"one\" = $3 AND \"two\" = $4)"
-        }
-        .to_string();
+            "SELECT * FROM \"xrelationships\" WHERE (\"one\" = $1 AND \"two\" = $2) OR (\"one\" = $3 AND \"two\" = $4)"
+        };
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query)
-            .bind::<&String>(&user)
-            .bind::<&String>(&other)
-            .bind::<&String>(&other)
-            .bind::<&String>(&user)
+            .bind::<&str>(&user)
+            .bind::<&str>(&other)
+            .bind::<&str>(&other)
+            .bind::<&str>(&user)
             .fetch_one(c)
             .await
         {
             Ok(p) => self.base.textify_row(p).0,
-            Err(_) => return (RelationshipStatus::default(), user, other),
+            Err(_) => {
+                return (
+                    RelationshipStatus::default(),
+                    user.to_string(),
+                    other.to_string(),
+                )
+            }
         };
 
         // return
         (
             serde_json::from_str(&res.get("status").unwrap()).unwrap(),
-            res.get("one").unwrap().to_owned(),
-            res.get("two").unwrap().to_owned(),
+            res.get("one").unwrap().to_string(),
+            res.get("two").unwrap().to_string(),
         )
     }
 
@@ -3135,24 +3004,24 @@ impl Database {
     /// * `disable_notifications`
     pub async fn set_user_relationship_status(
         &self,
-        one: String,
-        two: String,
+        one: &str,
+        two: &str,
         status: RelationshipStatus,
         disable_notifications: bool,
     ) -> Result<()> {
         // get current membership status
-        let mut relationship = self.get_user_relationship(one.clone(), two.clone()).await;
+        let mut relationship = self.get_user_relationship(one, two).await;
 
         if relationship.0 == status {
             return Ok(());
         }
 
-        let mut uone = match self.get_profile(relationship.1).await {
+        let mut uone = match self.get_profile(&relationship.1).await {
             Ok(ua) => ua,
             Err(e) => return Err(e),
         };
 
-        let mut utwo = match self.get_profile(relationship.2).await {
+        let mut utwo = match self.get_profile(&relationship.2).await {
             Ok(ua) => ua,
             Err(e) => return Err(e),
         };
@@ -3163,18 +3032,17 @@ impl Database {
                 // if the relationship exists but we aren't user one, delete it
                 if relationship.0 != RelationshipStatus::Unknown && uone.id != one {
                     // delete
-                    let query: String =
+                    let query =
                         if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
                             "DELETE FROM \"xrelationships\" WHERE \"one\" = ? AND \"two\" = ?"
                         } else {
                             "DELETE FROM \"xrelationships\" WHERE \"one\" = ? AND \"two\" = ?"
-                        }
-                        .to_string();
+                        };
 
                     let c = &self.base.db.client;
                     if let Err(_) = sqlquery(&query)
-                        .bind::<&String>(&uone.id)
-                        .bind::<&String>(&utwo.id)
+                        .bind::<&str>(&uone.id)
+                        .bind::<&str>(&utwo.id)
                         .execute(c)
                         .await
                     {
@@ -3182,8 +3050,8 @@ impl Database {
                     };
 
                     relationship.0 = RelationshipStatus::Unknown; // act like it never happened
-                    uone.id = one;
-                    utwo.id = two;
+                    uone.id = one.to_string();
+                    utwo.id = two.to_string();
                 }
 
                 // ...
@@ -3202,19 +3070,19 @@ impl Database {
                     }
 
                     // update
-                    let query: String =
-                    if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+                    let query = if (self.base.db.r#type == "sqlite")
+                        | (self.base.db.r#type == "mysql")
+                    {
                         "UPDATE \"xrelationships\" SET \"status\" = ? WHERE \"one\" = ? AND \"two\" = ?"
                     } else {
                         "UPDATE \"xrelationships\" SET (\"status\") = (?) WHERE \"one\" = ? AND \"two\" = ?"
-                    }
-                    .to_string();
+                    };
 
                     let c = &self.base.db.client;
                     if let Err(_) = sqlquery(&query)
-                        .bind::<&String>(&serde_json::to_string(&status).unwrap())
-                        .bind::<&String>(&uone.id)
-                        .bind::<&String>(&utwo.id)
+                        .bind::<&str>(&serde_json::to_string(&status).unwrap())
+                        .bind::<&str>(&uone.id)
+                        .bind::<&str>(&utwo.id)
                         .execute(c)
                         .await
                     {
@@ -3222,20 +3090,19 @@ impl Database {
                     };
                 } else {
                     // add
-                    let query: String =
+                    let query =
                         if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
                             "INSERT INTO \"xrelationships\" VALUES (?, ?, ?, ?)"
                         } else {
                             "INSERT INTO \"xrelationships\" VALUES ($1, $2, $3, $4)"
-                        }
-                        .to_string();
+                        };
 
                     let c = &self.base.db.client;
                     if let Err(_) = sqlquery(&query)
-                        .bind::<&String>(&uone.id)
-                        .bind::<&String>(&utwo.id)
-                        .bind::<&String>(&serde_json::to_string(&status).unwrap())
-                        .bind::<&String>(&rainbeam_shared::unix_epoch_timestamp().to_string())
+                        .bind::<&str>(&uone.id)
+                        .bind::<&str>(&utwo.id)
+                        .bind::<&str>(&serde_json::to_string(&status).unwrap())
+                        .bind::<&str>(&rainbeam_shared::unix_epoch_timestamp().to_string())
                         .execute(c)
                         .await
                     {
@@ -3247,26 +3114,25 @@ impl Database {
                 // check utwo permissions
                 if utwo.metadata.is_true("sparkler:limited_friend_requests") {
                     // make sure utwo is following uone
-                    if let Err(_) = self.get_follow(utwo.id.clone(), uone.id.clone()).await {
+                    if let Err(_) = self.get_follow(&utwo.id, &uone.id).await {
                         return Err(DatabaseError::NotAllowed);
                     }
                 }
 
                 // add
-                let query: String =
-                    if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
-                        "INSERT INTO \"xrelationships\" VALUES (?, ?, ?, ?)"
-                    } else {
-                        "INSERT INTO \"xrelationships\" VALUES ($1, $2, $3, $4)"
-                    }
-                    .to_string();
+                let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+                {
+                    "INSERT INTO \"xrelationships\" VALUES (?, ?, ?, ?)"
+                } else {
+                    "INSERT INTO \"xrelationships\" VALUES ($1, $2, $3, $4)"
+                };
 
                 let c = &self.base.db.client;
                 if let Err(_) = sqlquery(&query)
-                    .bind::<&String>(&uone.id)
-                    .bind::<&String>(&utwo.id)
-                    .bind::<&String>(&serde_json::to_string(&status).unwrap())
-                    .bind::<&String>(&rainbeam_shared::unix_epoch_timestamp().to_string())
+                    .bind::<&str>(&uone.id)
+                    .bind::<&str>(&utwo.id)
+                    .bind::<&str>(&serde_json::to_string(&status).unwrap())
+                    .bind::<&str>(&rainbeam_shared::unix_epoch_timestamp().to_string())
                     .execute(c)
                     .await
                 {
@@ -3296,19 +3162,18 @@ impl Database {
             }
             RelationshipStatus::Friends => {
                 // update
-                let query: String =
-                    if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
-                        "UPDATE \"xrelationships\" SET \"status\" = ? WHERE \"one\" = ? AND \"two\" = ?"
-                    } else {
-                        "UPDATE \"xrelationships\" SET (\"status\") = (?) WHERE \"one\" = ? AND \"two\" = ?"
-                    }
-                    .to_string();
+                let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+                {
+                    "UPDATE \"xrelationships\" SET \"status\" = ? WHERE \"one\" = ? AND \"two\" = ?"
+                } else {
+                    "UPDATE \"xrelationships\" SET (\"status\") = (?) WHERE \"one\" = ? AND \"two\" = ?"
+                };
 
                 let c = &self.base.db.client;
                 if let Err(_) = sqlquery(&query)
-                    .bind::<&String>(&serde_json::to_string(&status).unwrap())
-                    .bind::<&String>(&uone.id)
-                    .bind::<&String>(&utwo.id)
+                    .bind::<&str>(&serde_json::to_string(&status).unwrap())
+                    .bind::<&str>(&uone.id)
+                    .bind::<&str>(&utwo.id)
                     .execute(c)
                     .await
                 {
@@ -3348,18 +3213,17 @@ impl Database {
             }
             RelationshipStatus::Unknown => {
                 // delete
-                let query: String =
-                    if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
-                        "DELETE FROM \"xrelationships\" WHERE \"one\" = ? AND \"two\" = ?"
-                    } else {
-                        "DELETE FROM \"xrelationships\" WHERE \"one\" = ? AND \"two\" = ?"
-                    }
-                    .to_string();
+                let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+                {
+                    "DELETE FROM \"xrelationships\" WHERE \"one\" = ? AND \"two\" = ?"
+                } else {
+                    "DELETE FROM \"xrelationships\" WHERE \"one\" = ? AND \"two\" = ?"
+                };
 
                 let c = &self.base.db.client;
                 if let Err(_) = sqlquery(&query)
-                    .bind::<&String>(&uone.id)
-                    .bind::<&String>(&utwo.id)
+                    .bind::<&str>(&uone.id)
+                    .bind::<&str>(&utwo.id)
                     .execute(c)
                     .await
                 {
@@ -3391,19 +3255,17 @@ impl Database {
     /// * `user`
     pub async fn get_user_relationships(
         &self,
-        user: String,
+        user: &str,
     ) -> Result<Vec<(Box<Profile>, RelationshipStatus)>> {
         // pull from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "SELECT * FROM \"xrelationships\" WHERE \"one\" = ?"
         } else {
             "SELECT * FROM \"xrelationships\" WHERE \"one\" = $1"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
-        match sqlquery(&query).bind::<&String>(&user).fetch_all(c).await {
+        match sqlquery(&query).bind::<&str>(&user).fetch_all(c).await {
             Ok(p) => {
                 let mut out = Vec::new();
 
@@ -3411,8 +3273,7 @@ impl Database {
                     let res = self.base.textify_row(row).0;
 
                     // get profile
-                    let profile = match self.get_profile(res.get("two").unwrap().to_string()).await
-                    {
+                    let profile = match self.get_profile(res.get("two").unwrap()).await {
                         Ok(c) => c,
                         Err(e) => return Err(e),
                     };
@@ -3437,22 +3298,20 @@ impl Database {
     /// * `status`
     pub async fn get_user_relationships_of_status(
         &self,
-        user: String,
+        user: &str,
         status: RelationshipStatus,
     ) -> Result<Vec<(Box<Profile>, RelationshipStatus)>> {
         // pull from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "SELECT * FROM \"xrelationships\" WHERE \"one\" = ? AND \"status\" = ?"
         } else {
             "SELECT * FROM \"xrelationships\" WHERE \"one\" = $1 AND \"status\" = $2"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
         match sqlquery(&query)
-            .bind::<&String>(&user)
-            .bind::<&String>(&serde_json::to_string(&status).unwrap())
+            .bind::<&str>(&user)
+            .bind::<&str>(&serde_json::to_string(&status).unwrap())
             .fetch_all(c)
             .await
         {
@@ -3463,8 +3322,7 @@ impl Database {
                     let res = self.base.textify_row(row).0;
 
                     // get profile
-                    let profile = match self.get_profile(res.get("two").unwrap().to_string()).await
-                    {
+                    let profile = match self.get_profile(res.get("two").unwrap()).await {
                         Ok(c) => c,
                         Err(_) => continue,
                     };
@@ -3489,22 +3347,21 @@ impl Database {
     /// * `status`
     pub async fn get_user_participating_relationships_of_status(
         &self,
-        user: String,
+        user: &str,
         status: RelationshipStatus,
     ) -> Result<Vec<(Box<Profile>, Box<Profile>)>> {
         // pull from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
-           "SELECT * FROM \"xrelationships\" WHERE (\"one\" = ? OR \"two\" = ?) AND \"status\" = ?"
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+            "SELECT * FROM \"xrelationships\" WHERE (\"one\" = ? OR \"two\" = ?) AND \"status\" = ?"
         } else {
-           "SELECT * FROM \"xrelationships\" WHERE (\"one\" = $1 OR \"two\" = $2) AND \"status\" = $3"
-        }.to_string();
+            "SELECT * FROM \"xrelationships\" WHERE (\"one\" = $1 OR \"two\" = $2) AND \"status\" = $3"
+        };
 
         let c = &self.base.db.client;
         match sqlquery(&query)
-            .bind::<&String>(&user)
-            .bind::<&String>(&user)
-            .bind::<&String>(&serde_json::to_string(&status).unwrap())
+            .bind::<&str>(&user)
+            .bind::<&str>(&user)
+            .bind::<&str>(&serde_json::to_string(&status).unwrap())
             .fetch_all(c)
             .await
         {
@@ -3515,17 +3372,15 @@ impl Database {
                     let res = self.base.textify_row(row).0;
 
                     // get profiles
-                    let profile = match self.get_profile(res.get("one").unwrap().to_string()).await
-                    {
+                    let profile = match self.get_profile(res.get("one").unwrap()).await {
                         Ok(c) => c,
                         Err(_) => continue,
                     };
 
-                    let profile_2 =
-                        match self.get_profile(res.get("two").unwrap().to_string()).await {
-                            Ok(c) => c,
-                            Err(_) => continue,
-                        };
+                    let profile_2 = match self.get_profile(res.get("two").unwrap()).await {
+                        Ok(c) => c,
+                        Err(_) => continue,
+                    };
 
                     // add to out
                     out.push((profile, profile_2));
@@ -3545,13 +3400,12 @@ impl Database {
     /// * `page`
     pub async fn get_user_participating_relationships_of_status_paginated(
         &self,
-        user: String,
+        user: &str,
         status: RelationshipStatus,
         page: i32,
     ) -> Result<Vec<(Box<Profile>, Box<Profile>)>> {
         // pull from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             format!("SELECT * FROM \"xrelationships\" WHERE (\"one\" = ? OR \"two\" = ?) AND \"status\" = ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
             format!("SELECT * FROM \"xrelationships\" WHERE (\"one\" = $1 OR \"two\" = $2) AND \"status\" = $3 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
@@ -3559,9 +3413,9 @@ impl Database {
 
         let c = &self.base.db.client;
         match sqlquery(&query)
-            .bind::<&String>(&user)
-            .bind::<&String>(&user)
-            .bind::<&String>(&serde_json::to_string(&status).unwrap())
+            .bind::<&str>(&user)
+            .bind::<&str>(&user)
+            .bind::<&str>(&serde_json::to_string(&status).unwrap())
             .fetch_all(c)
             .await
         {
@@ -3572,17 +3426,15 @@ impl Database {
                     let res = self.base.textify_row(row).0;
 
                     // get profiles
-                    let profile = match self.get_profile(res.get("one").unwrap().to_string()).await
-                    {
+                    let profile = match self.get_profile(res.get("one").unwrap()).await {
                         Ok(c) => c,
                         Err(e) => return Err(e),
                     };
 
-                    let profile_2 =
-                        match self.get_profile(res.get("two").unwrap().to_string()).await {
-                            Ok(c) => c,
-                            Err(e) => return Err(e),
-                        };
+                    let profile_2 = match self.get_profile(res.get("two").unwrap()).await {
+                        Ok(c) => c,
+                        Err(e) => return Err(e),
+                    };
 
                     // add to out
                     out.push((profile, profile_2));
@@ -3598,7 +3450,7 @@ impl Database {
     ///
     /// # Arguments
     /// * `id`
-    pub async fn get_friendship_count_by_user(&self, id: String) -> usize {
+    pub async fn get_friendship_count_by_user(&self, id: &str) -> usize {
         // attempt to fetch from cache
         if let Some(count) = self
             .base
@@ -3611,7 +3463,7 @@ impl Database {
 
         // fetch from database
         let count = self
-            .get_user_participating_relationships_of_status(id.clone(), RelationshipStatus::Friends)
+            .get_user_participating_relationships_of_status(id, RelationshipStatus::Friends)
             .await
             .unwrap_or(Vec::new())
             .len();
@@ -3631,7 +3483,7 @@ impl Database {
     ///
     /// # Arguments
     /// * `id`
-    pub async fn get_ipblock(&self, id: String) -> Result<IpBlock> {
+    pub async fn get_ipblock(&self, id: &str) -> Result<IpBlock> {
         // check in cache
         match self
             .base
@@ -3644,16 +3496,14 @@ impl Database {
         };
 
         // pull from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "SELECT * FROM \"xipblocks\" WHERE \"id\" = ?"
         } else {
             "SELECT * FROM \"xipblocks\" WHERE \"id\" = $1"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
-        let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
+        let res = match sqlquery(&query).bind::<&str>(&id).fetch_one(c).await {
             Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
@@ -3662,8 +3512,8 @@ impl Database {
         let block = IpBlock {
             id: from_row!(res->id()),
             ip: from_row!(res->ip()),
-            user: res.get("user").unwrap().to_string(),
-            context: res.get("context").unwrap().to_string(),
+            user: from_row!(res->user()),
+            context: from_row!(res->context()),
             timestamp: from_row!(res->timestamp(u128); 0),
         };
 
@@ -3685,20 +3535,18 @@ impl Database {
     /// # Arguments
     /// * `ip`
     /// * `user`
-    pub async fn get_ipblock_by_ip(&self, ip: String, user: String) -> Result<IpBlock> {
+    pub async fn get_ipblock_by_ip(&self, ip: &str, user: &str) -> Result<IpBlock> {
         // pull from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "SELECT * FROM \"xipblocks\" WHERE \"ip\" = ? AND \"user\" = ?"
         } else {
             "SELECT * FROM \"xipblocks\" WHERE \"ip\" = $1 AND \"user\" = $2"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query)
-            .bind::<&String>(&ip)
-            .bind::<&String>(&user)
+            .bind::<&str>(&ip)
+            .bind::<&str>(&user)
             .fetch_one(c)
             .await
         {
@@ -3710,8 +3558,8 @@ impl Database {
         let block = IpBlock {
             id: from_row!(res->id()),
             ip: from_row!(res->ip()),
-            user: res.get("user").unwrap().to_string(),
-            context: res.get("context").unwrap().to_string(),
+            user: from_row!(res->user()),
+            context: from_row!(res->context()),
             timestamp: from_row!(res->timestamp(u128); 0),
         };
 
@@ -3723,19 +3571,17 @@ impl Database {
     ///
     /// # Arguments
     /// * `query_user` - the ID of the user the blocks belong to
-    pub async fn get_ipblocks(&self, query_user: String) -> Result<Vec<IpBlock>> {
+    pub async fn get_ipblocks(&self, query_user: &str) -> Result<Vec<IpBlock>> {
         // pull from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "SELECT * FROM \"xipblocks\" WHERE \"user\" = ? ORDER BY \"timestamp\" DESC"
         } else {
             "SELECT * FROM \"xipblocks\" WHERE \"user\" = $1 ORDER BY \"timestamp\" DESC"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query)
-            .bind::<&String>(&query_user)
+            .bind::<&str>(&query_user)
             .fetch_all(c)
             .await
         {
@@ -3747,8 +3593,8 @@ impl Database {
                     out.push(IpBlock {
                         id: from_row!(res->id()),
                         ip: from_row!(res->ip()),
-                        user: res.get("user").unwrap().to_string(),
-                        context: res.get("context").unwrap().to_string(),
+                        user: from_row!(res->user()),
+                        context: from_row!(res->context()),
                         timestamp: from_row!(res->timestamp(u128); 0),
                     });
                 }
@@ -3770,11 +3616,7 @@ impl Database {
     /// * `user` - the user creating this block
     pub async fn create_ipblock(&self, props: IpBlockCreate, user: Box<Profile>) -> Result<()> {
         // make sure this ip isn't already banned
-        if self
-            .get_ipblock_by_ip(props.ip.clone(), user.id.clone())
-            .await
-            .is_ok()
-        {
+        if self.get_ipblock_by_ip(&props.ip, &user.id).await.is_ok() {
             return Err(DatabaseError::MustBeUnique);
         }
 
@@ -3788,21 +3630,19 @@ impl Database {
         };
 
         // create notification
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "INSERT INTO \"xipblocks\" VALUES (?, ?, ?, ?, ?)"
         } else {
             "INSERT INTO \"xipblocks\" VALUES ($1, $2, $3, $4, $5)"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
         match sqlquery(&query)
-            .bind::<&String>(&block.id)
-            .bind::<&String>(&block.ip)
-            .bind::<&String>(&block.user)
-            .bind::<&String>(&block.context)
-            .bind::<&String>(&block.timestamp.to_string())
+            .bind::<&str>(&block.id)
+            .bind::<&str>(&block.ip)
+            .bind::<&str>(&block.user)
+            .bind::<&str>(&block.context)
+            .bind::<&str>(&block.timestamp.to_string())
             .execute(c)
             .await
         {
@@ -3816,9 +3656,9 @@ impl Database {
     /// # Arguments
     /// * `id` - the ID of the block
     /// * `user` - the user doing this
-    pub async fn delete_ipblock(&self, id: String, user: Box<Profile>) -> Result<()> {
+    pub async fn delete_ipblock(&self, id: &str, user: Box<Profile>) -> Result<()> {
         // make sure block exists
-        let block = match self.get_ipblock(id.clone()).await {
+        let block = match self.get_ipblock(id).await {
             Ok(n) => n,
             Err(e) => return Err(e),
         };
@@ -3853,16 +3693,14 @@ impl Database {
         }
 
         // delete block
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "DELETE FROM \"xipblocks\" WHERE \"id\" = ?"
         } else {
             "DELETE FROM \"xipblocks\" WHERE \"id\" = $1"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
-        match sqlquery(&query).bind::<&String>(&id).execute(c).await {
+        match sqlquery(&query).bind::<&str>(&id).execute(c).await {
             Ok(_) => {
                 // remove from cache
                 self.base
@@ -3871,443 +3709,6 @@ impl Database {
                     .await;
 
                 // return
-                return Ok(());
-            }
-            Err(_) => return Err(DatabaseError::Other),
-        };
-    }
-
-    // mail
-
-    // GET
-    /// Get an existing mail
-    ///
-    /// # Arguments
-    /// * `id`
-    pub async fn get_mail(&self, id: String) -> Result<Mail> {
-        // check in cache
-        match self
-            .base
-            .cachedb
-            .get(format!("rbeam.auth.mail:{}", id))
-            .await
-        {
-            Some(c) => match serde_json::from_str::<Mail>(c.as_str()) {
-                Ok(c) => return Ok(c),
-                Err(_) => {
-                    self.base
-                        .cachedb
-                        .remove(format!("rbeam.auth.mail:{}", id))
-                        .await;
-                }
-            },
-            None => (),
-        };
-
-        // pull from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
-            "SELECT * FROM \"xmail\" WHERE \"id\" = ?"
-        } else {
-            "SELECT * FROM \"xmail\" WHERE \"id\" = $1"
-        }
-        .to_string();
-
-        let c = &self.base.db.client;
-        let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
-            Ok(p) => self.base.textify_row(p).0,
-            Err(_) => return Err(DatabaseError::NotFound),
-        };
-
-        // return
-        let recipient = res.get("recipient").unwrap();
-        let mail = Mail {
-            title: res.get("title").unwrap().to_string(),
-            content: res.get("content").unwrap().to_string(),
-            timestamp: from_row!(res->timestamp(u128); 0),
-            id: from_row!(res->id()),
-            state: serde_json::from_str(res.get("state").unwrap()).unwrap(),
-            author: res.get("author").unwrap().to_string(),
-            recipient: serde_json::from_str(recipient).unwrap_or(vec![recipient.to_string()]),
-        };
-
-        // store in cache
-        self.base
-            .cachedb
-            .set(
-                format!("rbeam.auth.mail:{}", id),
-                serde_json::to_string::<Mail>(&mail).unwrap(),
-            )
-            .await;
-
-        // return
-        Ok(mail)
-    }
-
-    /// Get all mail by their recipient, 12 at a time
-    ///
-    /// # Arguments
-    /// * `recipient`
-    /// * `page`
-    pub async fn get_mail_by_recipient_paginated(
-        &self,
-        recipient: String,
-        page: i32,
-    ) -> Result<Vec<(Mail, Box<Profile>)>> {
-        // pull from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
-            format!("SELECT * FROM \"xmail\" WHERE \"recipient\" LIKE ? OR \"recipient\" = ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
-        } else {
-            format!("SELECT * FROM \"xmail\" WHERE \"recipient\" LIKE $1 OR \"recipient\" = $2 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
-        };
-
-        let c = &self.base.db.client;
-        let res = match sqlquery(&query)
-            .bind::<&String>(&format!("%\"{}\"%", recipient.to_lowercase()))
-            .bind::<&String>(&recipient.to_lowercase())
-            .fetch_all(c)
-            .await
-        {
-            Ok(p) => {
-                let mut out: Vec<(Mail, Box<Profile>)> = Vec::new();
-
-                for row in p {
-                    let res = self.base.textify_row(row).0;
-
-                    let author = res.get("author").unwrap();
-                    let recipient = res.get("recipient").unwrap();
-
-                    out.push((
-                        Mail {
-                            title: res.get("title").unwrap().to_string(),
-                            content: res.get("content").unwrap().to_string(),
-                            timestamp: from_row!(res->timestamp(u128); 0),
-                            id: from_row!(res->id()),
-                            state: serde_json::from_str(res.get("state").unwrap()).unwrap(),
-                            author: author.to_string(),
-                            recipient: serde_json::from_str(recipient)
-                                .unwrap_or(vec![recipient.to_string()]),
-                        },
-                        match self.get_profile(author.to_string()).await {
-                            Ok(ua) => ua,
-                            Err(_) => continue,
-                        },
-                    ));
-                }
-
-                out
-            }
-            Err(_) => return Err(DatabaseError::Other),
-        };
-
-        // return
-        Ok(res)
-    }
-
-    /// Get all mail by their recipient, 12 at a time
-    ///
-    /// # Arguments
-    /// * `recipient`
-    /// * `page`
-    pub async fn get_mail_by_recipient_sent_paginated(
-        &self,
-        recipient: String,
-        page: i32,
-    ) -> Result<Vec<(Mail, Box<Profile>)>> {
-        // pull from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
-            format!("SELECT * FROM \"xmail\" WHERE \"author\" LIKE ? OR \"author\" = ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
-        } else {
-            format!("SELECT * FROM \"xmail\" WHERE \"author\" LIKE $1 OR \"author\" = $2 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
-        };
-
-        let c = &self.base.db.client;
-        let res = match sqlquery(&query)
-            .bind::<&String>(&format!("%\"{}\"%", recipient.to_lowercase()))
-            .bind::<&String>(&recipient.to_lowercase())
-            .fetch_all(c)
-            .await
-        {
-            Ok(p) => {
-                let mut out: Vec<(Mail, Box<Profile>)> = Vec::new();
-
-                for row in p {
-                    let res = self.base.textify_row(row).0;
-
-                    let author = res.get("author").unwrap();
-                    let recipient = res.get("recipient").unwrap();
-
-                    out.push((
-                        Mail {
-                            title: res.get("title").unwrap().to_string(),
-                            content: res.get("content").unwrap().to_string(),
-                            timestamp: from_row!(res->timestamp(u128); 0),
-                            id: from_row!(res->id()),
-                            state: serde_json::from_str(res.get("state").unwrap()).unwrap(),
-                            author: author.to_string(),
-                            recipient: serde_json::from_str(recipient)
-                                .unwrap_or(vec![recipient.to_string()]),
-                        },
-                        match self.get_profile(author.to_string()).await {
-                            Ok(ua) => ua,
-                            Err(_) => continue,
-                        },
-                    ));
-                }
-
-                out
-            }
-            Err(_) => return Err(DatabaseError::Other),
-        };
-
-        // return
-        Ok(res)
-    }
-
-    // SET
-    /// Create a new mail
-    ///
-    /// # Arguments
-    /// * `props` - [`MailCreate`]
-    pub async fn create_mail(&self, props: MailCreate, author: String) -> Result<Mail> {
-        // check content length
-        if props.title.len() > (64 * 4) {
-            return Err(DatabaseError::Other);
-        }
-
-        if props.title.len() < 2 {
-            return Err(DatabaseError::Other);
-        }
-
-        if props.content.len() > (64 * 8) {
-            return Err(DatabaseError::Other);
-        }
-
-        if props.content.len() < 2 {
-            return Err(DatabaseError::Other);
-        }
-
-        // check markdown content
-        let markdown = rainbeam_shared::ui::render_markdown(&props.content);
-
-        if markdown.trim().len() == 0 {
-            return Err(DatabaseError::Other);
-        }
-
-        // make sure author and recipient exist
-        let author = match self.get_profile(author.clone()).await {
-            Ok(ua) => ua,
-            Err(e) => return Err(e),
-        };
-
-        let mut recipients = Vec::new();
-
-        for recipient in props.recipient {
-            if recipient.is_empty() {
-                continue;
-            }
-
-            match self.get_profile(recipient.clone()).await {
-                Ok(ua) => {
-                    if ua.metadata.is_true("sparkler:disable_mailbox") {
-                        // continue so the mail is not delivered to this person
-                        continue;
-                    }
-
-                    // check relationship
-                    let relationship = self
-                        .get_user_relationship(ua.id.clone(), author.id.clone())
-                        .await
-                        .0;
-
-                    if relationship == RelationshipStatus::Blocked {
-                        // continue so the mail is not delivered to this person
-                        continue;
-                    }
-
-                    // ...
-                    recipients.push(ua.id)
-                }
-                Err(e) => return Err(e),
-            }
-        }
-
-        if recipients.len() == 0 {
-            // can't send to nobody!
-            return Err(DatabaseError::ValueError);
-        };
-
-        // ...
-        let mail = Mail {
-            title: props.title,
-            content: props.content,
-            timestamp: utility::unix_epoch_timestamp(),
-            // id: utility::random_id(),
-            id: AlmostSnowflake::new(self.config.snowflake_server_id).to_string(),
-            state: MailState::Unread,
-            author: author.id.clone(),
-            recipient: recipients.clone(),
-        };
-
-        // create mail
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
-            "INSERT INTO \"xmail\" VALUES (?, ?, ?, ?, ?, ?, ?)"
-        } else {
-            "INSERT INTO \"xmail\" VALUES ($1, $2, $3, $4, $5, $6, $7)"
-        }
-        .to_string();
-
-        let c = &self.base.db.client;
-        match sqlquery(&query)
-            .bind::<&String>(&mail.title)
-            .bind::<&String>(&mail.content)
-            .bind::<&String>(&mail.timestamp.to_string())
-            .bind::<&String>(&mail.id)
-            .bind::<&String>(&serde_json::to_string(&mail.state).unwrap())
-            .bind::<&String>(&mail.author)
-            .bind::<&String>(&serde_json::to_string(&mail.recipient).unwrap())
-            .execute(c)
-            .await
-        {
-            Ok(_) => {
-                // send notification
-                for recipient in recipients {
-                    if let Err(e) = self
-                        .create_notification(
-                            NotificationCreate {
-                                title: format!(
-                                    "[@{}](/+u/{}) sent you new mail!",
-                                    author.username, author.id
-                                ),
-                                content: String::new(),
-                                address: format!("/inbox/mail/letter/{}", mail.id),
-                                recipient: recipient.clone(),
-                            },
-                            None,
-                        )
-                        .await
-                    {
-                        return Err(e);
-                    };
-                }
-
-                // ...
-                return Ok(mail);
-            }
-            Err(_) => return Err(DatabaseError::Other),
-        };
-    }
-
-    /// Delete an existing mail
-    ///
-    /// Mail can only be deleted by their recipient.
-    ///
-    /// # Arguments
-    /// * `id` - the ID of the mail
-    /// * `user` - the user doing this
-    pub async fn delete_mail(&self, id: String, user: Box<Profile>) -> Result<()> {
-        // make sure mail exists
-        let mail = match self.get_mail(id.clone()).await {
-            Ok(n) => n,
-            Err(e) => return Err(e),
-        };
-
-        // check username
-        if !mail.recipient.contains(&user.id) && (user.id != mail.author) {
-            // check permission
-            let group = match self.get_group_by_id(user.group).await {
-                Ok(g) => g,
-                Err(_) => return Err(DatabaseError::Other),
-            };
-
-            if !group.permissions.check(FinePermission::MANAGE_MAILS) {
-                return Err(DatabaseError::NotAllowed);
-            }
-        }
-
-        // delete mail
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
-            "DELETE FROM \"xmail\" WHERE \"id\" = ?"
-        } else {
-            "DELETE FROM \"xmail\" WHERE \"id\" = $1"
-        }
-        .to_string();
-
-        let c = &self.base.db.client;
-        match sqlquery(&query).bind::<&String>(&id).execute(c).await {
-            Ok(_) => {
-                // remove from cache
-                self.base
-                    .cachedb
-                    .remove(format!("rbeam.auth.mail:{}", id))
-                    .await;
-
-                // return
-                return Ok(());
-            }
-            Err(_) => return Err(DatabaseError::Other),
-        };
-    }
-
-    /// Update mail state
-    ///
-    /// # Arguments
-    /// * `id`
-    /// * `state` - [`MailState`]
-    /// * `user`
-    pub async fn update_mail_state(
-        &self,
-        id: String,
-        state: MailState,
-        user: Box<Profile>,
-    ) -> Result<()> {
-        // make sure mail exists and check permission
-        let mail = match self.get_mail(id.clone()).await {
-            Ok(n) => n,
-            Err(e) => return Err(e),
-        };
-
-        // check username
-        if user.id != mail.author {
-            // check permission
-            let group = match self.get_group_by_id(user.group).await {
-                Ok(g) => g,
-                Err(_) => return Err(DatabaseError::Other),
-            };
-
-            if !group.permissions.check(FinePermission::MANAGE_MAILS) {
-                return Err(DatabaseError::NotAllowed);
-            }
-        }
-
-        // update mail
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
-            "UPDATE \"xmail\" SET \"state\" = ? WHERE \"id\" = ?"
-        } else {
-            "UPDATE \"xmail\" SET (\"state\") = ($1) WHERE \"id\" = $2"
-        }
-        .to_string();
-
-        let c = &self.base.db.client;
-        match sqlquery(&query)
-            .bind::<&String>(&serde_json::to_string(&state).unwrap())
-            .bind::<&String>(&id)
-            .execute(c)
-            .await
-        {
-            Ok(_) => {
-                // remove from cache
-                self.base
-                    .cachedb
-                    .remove(format!("rbeam.auth.mail:{}", id))
-                    .await;
-
-                // ...
                 return Ok(());
             }
             Err(_) => return Err(DatabaseError::Other),
@@ -4351,13 +3752,11 @@ impl Database {
         };
 
         // pull from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "SELECT * FROM \"xlabels\" WHERE \"id\" = ?"
         } else {
             "SELECT * FROM \"xlabels\" WHERE \"id\" = $1"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query).bind::<i64>(id).fetch_one(c).await {
@@ -4390,9 +3789,9 @@ impl Database {
     /// * `name` - the name of the label
     /// * `id` - the ID of the label
     /// * `author` - the ID of the user creating the label
-    pub async fn create_label(&self, name: String, id: i64, author: String) -> Result<UserLabel> {
+    pub async fn create_label(&self, name: &str, id: i64, author: &str) -> Result<UserLabel> {
         // check author permissions
-        let author = match self.get_profile(author.clone()).await {
+        let author = match self.get_profile(author).await {
             Ok(ua) => ua,
             Err(e) => return Err(e),
         };
@@ -4419,26 +3818,24 @@ impl Database {
         let label = UserLabel {
             // id: utility::random_id(),
             id,
-            name,
+            name: name.to_string(),
             timestamp: utility::unix_epoch_timestamp(),
             creator: author.id,
         };
 
         // create label
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "INSERT INTO \"xlabels\" VALUES (?, ?, ?, ?)"
         } else {
             "INSERT INTO \"xlabels\" VALUES ($1, $2, $3, $4)"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
         match sqlquery(&query)
             .bind::<i64>(label.id)
-            .bind::<&String>(&label.name)
-            .bind::<&String>(&label.timestamp.to_string())
-            .bind::<&String>(&label.creator)
+            .bind::<&str>(&label.name)
+            .bind::<&str>(&label.timestamp.to_string())
+            .bind::<&str>(&label.creator)
             .execute(c)
             .await
         {
@@ -4464,13 +3861,11 @@ impl Database {
         }
 
         // delete label
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "DELETE FROM \"xlabels\" WHERE \"id\" = ?"
         } else {
             "DELETE FROM \"xlabels\" WHERE \"id\" = $1"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query).bind::<i64>(id).execute(c).await {
@@ -4493,16 +3888,16 @@ impl Database {
         &self,
         row: BTreeMap<String, String>,
     ) -> Result<(Transaction, Option<Item>)> {
-        let item = row.get("item").unwrap().to_string();
+        let item = row.get("item").unwrap();
 
         Ok((
             Transaction {
-                id: row.get("id").unwrap().to_string(),
+                id: from_row!(row->id()),
                 amount: row.get("amount").unwrap().parse::<i32>().unwrap_or(0),
                 item: item.clone(),
                 timestamp: row.get("timestamp").unwrap().parse::<u128>().unwrap(),
-                customer: row.get("customer").unwrap().to_string(),
-                merchant: row.get("merchant").unwrap().to_string(),
+                customer: from_row!(row->customer()),
+                merchant: from_row!(row->merchant()),
             },
             match self.get_item(item).await {
                 Ok(i) => Some(i),
@@ -4516,7 +3911,7 @@ impl Database {
     ///
     /// # Arguments
     /// * `id`
-    pub async fn get_transaction(&self, id: String) -> Result<(Transaction, Option<Item>)> {
+    pub async fn get_transaction(&self, id: &str) -> Result<(Transaction, Option<Item>)> {
         // check in cache
         match self
             .base
@@ -4542,16 +3937,14 @@ impl Database {
         };
 
         // pull from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "SELECT * FROM \"xugc_transactions\" WHERE \"id\" = ?"
         } else {
             "SELECT * FROM \"xugc_transactions\" WHERE \"id\" = $1"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
-        let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
+        let res = match sqlquery(&query).bind::<&str>(&id).fetch_one(c).await {
             Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
@@ -4582,22 +3975,20 @@ impl Database {
     /// * `item`
     pub async fn get_transaction_by_customer_item(
         &self,
-        customer: String,
-        item: String,
+        customer: &str,
+        item: &str,
     ) -> Result<(Transaction, Option<Item>)> {
         // pull from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "SELECT * FROM \"xugc_transactions\" WHERE \"customer\" = ? AND \"item\" = ?"
         } else {
             "SELECT * FROM \"xugc_transactions\" WHERE \"customer\" = $1 AND \"item\" = $2"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query)
-            .bind::<&String>(&customer)
-            .bind::<&String>(&item)
+            .bind::<&str>(&customer)
+            .bind::<&str>(&item)
             .fetch_one(c)
             .await
         {
@@ -4625,12 +4016,11 @@ impl Database {
     /// `Vec<(Transaction, Customer, Merchant)>`
     pub async fn get_transactions_by_customer_paginated(
         &self,
-        user: String,
+        user: &str,
         page: i32,
     ) -> Result<Vec<((Transaction, Option<Item>), Box<Profile>, Box<Profile>)>> {
         // pull from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             format!("SELECT * FROM \"xugc_transactions\" WHERE \"customer\" = ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
             format!("SELECT * FROM \"xugc_transactions\" WHERE \"customer\" = $1 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
@@ -4638,8 +4028,8 @@ impl Database {
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query)
-            .bind::<&String>(&user)
-            .bind::<&String>(&user)
+            .bind::<&str>(&user)
+            .bind::<&str>(&user)
             .fetch_all(c)
             .await
         {
@@ -4657,12 +4047,12 @@ impl Database {
                     let merchant = transaction.0.merchant.clone();
 
                     out.push((
-                        transaction,
-                        match self.get_profile(customer.to_string()).await {
+                        transaction.clone(),
+                        match self.get_profile(&customer).await {
                             Ok(ua) => ua,
                             Err(_) => continue,
                         },
-                        match self.get_profile(merchant.to_string()).await {
+                        match self.get_profile(&merchant).await {
                             Ok(ua) => ua,
                             Err(_) => continue,
                         },
@@ -4688,12 +4078,11 @@ impl Database {
     /// `Vec<(Transaction, Customer, Merchant)>`
     pub async fn get_participating_transactions_paginated(
         &self,
-        user: String,
+        user: &str,
         page: i32,
     ) -> Result<Vec<((Transaction, Option<Item>), Box<Profile>, Box<Profile>)>> {
         // pull from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             format!("SELECT * FROM \"xugc_transactions\" WHERE \"customer\" = ? OR \"merchant\" = ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
             format!("SELECT * FROM \"xugc_transactions\" WHERE \"customer\" = $1 OR \"merchant\" = $2 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
@@ -4701,8 +4090,8 @@ impl Database {
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query)
-            .bind::<&String>(&user)
-            .bind::<&String>(&user)
+            .bind::<&str>(&user)
+            .bind::<&str>(&user)
             .fetch_all(c)
             .await
         {
@@ -4720,12 +4109,12 @@ impl Database {
                     let merchant = transaction.0.merchant.clone();
 
                     out.push((
-                        transaction,
-                        match self.get_profile(customer.to_string()).await {
+                        transaction.clone(),
+                        match self.get_profile(&customer).await {
                             Ok(ua) => ua,
                             Err(_) => continue,
                         },
-                        match self.get_profile(merchant.to_string()).await {
+                        match self.get_profile(&merchant).await {
                             Ok(ua) => ua,
                             Err(_) => continue,
                         },
@@ -4750,15 +4139,15 @@ impl Database {
     pub async fn create_transaction(
         &self,
         props: TransactionCreate,
-        customer: String,
+        customer: &str,
     ) -> Result<Transaction> {
         // make sure customer and merchant exist
-        let customer = match self.get_profile(customer.clone()).await {
+        let customer = match self.get_profile(customer).await {
             Ok(ua) => ua,
             Err(e) => return Err(e),
         };
 
-        let merchant = match self.get_profile(props.merchant.clone()).await {
+        let merchant = match self.get_profile(&props.merchant).await {
             Ok(ua) => ua,
             Err(e) => return Err(e),
         };
@@ -4773,7 +4162,9 @@ impl Database {
         // ...
         let transaction = Transaction {
             // id: utility::random_id(),
-            id: AlmostSnowflake::new(self.config.snowflake_server_id).to_string(),
+            id: AlmostSnowflake::new(self.config.snowflake_server_id)
+                .to_string()
+                .to_string(),
             amount: props.amount,
             item: props.item,
             timestamp: utility::unix_epoch_timestamp(),
@@ -4782,43 +4173,41 @@ impl Database {
         };
 
         // create transaction
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "INSERT INTO \"xugc_transactions\" VALUES (?, ?, ?, ?, ?, ?)"
         } else {
             "INSERT INTO \"xugc_transactions\" VALUES ($1, $2, $3, $4, $5, $6)"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
         match sqlquery(&query)
-            .bind::<&String>(&transaction.id)
-            .bind::<&String>(&transaction.amount.to_string())
-            .bind::<&String>(&transaction.item)
-            .bind::<&String>(&transaction.timestamp.to_string())
-            .bind::<&String>(&transaction.customer)
-            .bind::<&String>(&transaction.merchant)
+            .bind::<&str>(&transaction.id)
+            .bind::<i32>(transaction.amount)
+            .bind::<&str>(&transaction.item)
+            .bind::<&str>(&transaction.timestamp.to_string())
+            .bind::<&str>(&transaction.customer)
+            .bind::<&str>(&transaction.merchant)
             .execute(c)
             .await
         {
             Ok(_) => {
                 // update balances
                 if let Err(e) = self
-                    .update_profile_coins(customer.id.clone(), transaction.amount)
+                    .update_profile_coins(&customer.id, transaction.amount)
                     .await
                 {
                     return Err(e);
                 };
 
                 if let Err(e) = self
-                    .update_profile_coins(merchant.id.clone(), transaction.amount.abs())
+                    .update_profile_coins(&merchant.id, transaction.amount.abs())
                     .await
                 {
                     return Err(e);
                 };
 
                 // send notification
-                if (customer.id != merchant.id) && (merchant.id != "0".to_string()) {
+                if (customer.id != merchant.id) && (merchant.id != "0") {
                     if let Err(e) = self
                         .create_notification(
                             NotificationCreate {
@@ -4851,11 +4240,11 @@ impl Database {
     // Get transaction given the `row` data
     pub fn gimme_item(&self, row: BTreeMap<String, String>) -> Result<Item> {
         Ok(Item {
-            id: row.get("id").unwrap().to_string(),
-            name: row.get("name").unwrap().to_string(),
-            description: row.get("description").unwrap().to_string(),
+            id: from_row!(row->id()),
+            name: from_row!(row->name()),
+            description: from_row!(row->description()),
             cost: row.get("cost").unwrap().parse::<i32>().unwrap_or(0),
-            content: row.get("content").unwrap().to_string(),
+            content: from_row!(row->content()),
             r#type: match serde_json::from_str(row.get("type").unwrap()) {
                 Ok(v) => v,
                 Err(_) => return Err(DatabaseError::ValueError),
@@ -4865,7 +4254,7 @@ impl Database {
                 Err(_) => return Err(DatabaseError::ValueError),
             },
             timestamp: row.get("timestamp").unwrap().parse::<u128>().unwrap(),
-            creator: row.get("creator").unwrap().to_string(),
+            creator: from_row!(row->creator()),
         })
     }
 
@@ -4874,7 +4263,7 @@ impl Database {
     ///
     /// # Arguments
     /// * `id`
-    pub async fn get_item(&self, id: String) -> Result<Item> {
+    pub async fn get_item(&self, id: &str) -> Result<Item> {
         if id == "0" {
             // this item can be charged for things that don't relate to an item
             return Ok(Item {
@@ -4910,16 +4299,14 @@ impl Database {
         };
 
         // pull from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "SELECT * FROM \"xugc_items\" WHERE \"id\" = ?"
         } else {
             "SELECT * FROM \"xugc_items\" WHERE \"id\" = $1"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
-        let res = match sqlquery(&query).bind::<&String>(&id).fetch_one(c).await {
+        let res = match sqlquery(&query).bind::<&str>(&id).fetch_one(c).await {
             Ok(p) => self.base.textify_row(p).0,
             Err(_) => return Err(DatabaseError::NotFound),
         };
@@ -4953,19 +4340,18 @@ impl Database {
     /// `Vec<(Item, Box<Profile>)>`
     pub async fn get_items_by_creator_paginated(
         &self,
-        user: String,
+        user: &str,
         page: i32,
     ) -> Result<Vec<(Item, Box<Profile>)>> {
         // pull from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             format!("SELECT * FROM \"xugc_items\" WHERE \"creator\" = ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
             format!("SELECT * FROM \"xugc_items\" WHERE \"creator\" = $1 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         };
 
         let c = &self.base.db.client;
-        let res = match sqlquery(&query).bind::<&String>(&user).fetch_all(c).await {
+        let res = match sqlquery(&query).bind::<&str>(&user).fetch_all(c).await {
             Ok(p) => {
                 let mut out = Vec::new();
 
@@ -4980,7 +4366,7 @@ impl Database {
 
                     out.push((
                         item,
-                        match self.get_profile(creator.to_string()).await {
+                        match self.get_profile(&creator).await {
                             Ok(ua) => ua,
                             Err(_) => continue,
                         },
@@ -5007,13 +4393,12 @@ impl Database {
     /// `Vec<(Item, Box<Profile>)>`
     pub async fn get_items_by_creator_type_paginated(
         &self,
-        user: String,
+        user: &str,
         r#type: ItemType,
         page: i32,
     ) -> Result<Vec<(Item, Box<Profile>)>> {
         // pull from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             format!("SELECT * FROM \"xugc_items\" WHERE \"creator\" = ? AND \"type\" = ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
             format!("SELECT * FROM \"xugc_items\" WHERE \"creator\" = $1 AND \"type\" = $2 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
@@ -5021,8 +4406,8 @@ impl Database {
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query)
-            .bind::<&String>(&user)
-            .bind::<&String>(&serde_json::to_string(&r#type).unwrap())
+            .bind::<&str>(&user)
+            .bind::<&str>(&serde_json::to_string(&r#type).unwrap())
             .fetch_all(c)
             .await
         {
@@ -5040,7 +4425,7 @@ impl Database {
 
                     out.push((
                         item,
-                        match self.get_profile(creator.to_string()).await {
+                        match self.get_profile(&creator).await {
                             Ok(ua) => ua,
                             Err(_) => continue,
                         },
@@ -5068,11 +4453,10 @@ impl Database {
         &self,
         status: ItemStatus,
         page: i32,
-        search: String,
+        search: &str,
     ) -> Result<Vec<(Item, Box<Profile>)>> {
         // pull from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             format!("SELECT * FROM \"xugc_items\" WHERE \"status\" = ? AND \"name\" LIKE ? AND \"cost\" != '-1' ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
             format!("SELECT * FROM \"xugc_items\" WHERE \"status\" = $1 AND \"name\" LIKE $2 AND \"cost\" != '-1' ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
@@ -5080,8 +4464,8 @@ impl Database {
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query)
-            .bind::<&String>(&serde_json::to_string(&status).unwrap())
-            .bind::<&String>(&format!("%{search}%"))
+            .bind::<&str>(&serde_json::to_string(&status).unwrap())
+            .bind::<&str>(&format!("%{search}%"))
             .fetch_all(c)
             .await
         {
@@ -5099,7 +4483,7 @@ impl Database {
 
                     out.push((
                         item,
-                        match self.get_profile(creator.to_string()).await {
+                        match self.get_profile(&creator).await {
                             Ok(ua) => ua,
                             Err(_) => continue,
                         },
@@ -5129,8 +4513,7 @@ impl Database {
         page: i32,
     ) -> Result<Vec<(Item, Box<Profile>)>> {
         // pull from database
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             format!("SELECT * FROM \"xugc_items\" WHERE \"type\" = ? ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
         } else {
             format!("SELECT * FROM \"xugc_items\" WHERE \"type\" = $2 ORDER BY \"timestamp\" DESC LIMIT 12 OFFSET {}", page * 12)
@@ -5138,7 +4521,7 @@ impl Database {
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query)
-            .bind::<&String>(&serde_json::to_string(&r#type).unwrap())
+            .bind::<&str>(&serde_json::to_string(&r#type).unwrap())
             .fetch_all(c)
             .await
         {
@@ -5156,7 +4539,7 @@ impl Database {
 
                     out.push((
                         item,
-                        match self.get_profile(creator.to_string()).await {
+                        match self.get_profile(&creator).await {
                             Ok(ua) => ua,
                             Err(_) => continue,
                         },
@@ -5178,7 +4561,7 @@ impl Database {
     /// # Arguments
     /// * `props` - [`ItemCreate`]
     /// * `creator` - the user in the `creator` field of the item
-    pub async fn create_item(&self, props: ItemCreate, creator: String) -> Result<Item> {
+    pub async fn create_item(&self, props: ItemCreate, creator: &str) -> Result<Item> {
         // check values
         if props.content.len() > (64 * 128 * 2) {
             return Err(DatabaseError::TooLong);
@@ -5220,15 +4603,15 @@ impl Database {
             r#type: props.r#type,
             status: ItemStatus::Pending,
             timestamp: utility::unix_epoch_timestamp(),
-            creator: creator.clone(),
+            creator: creator.to_string(),
         };
 
         // subtract creation cost from creator
         /* if let Err(e) = self
             .create_transaction(
                 TransactionCreate {
-                    merchant: "0".to_string(),
-                    item: "0".to_string(),
+                    merchant: "0",
+                    item: "0",
                     amount: -25,
                 },
                 creator.clone(),
@@ -5239,25 +4622,23 @@ impl Database {
         }; */
 
         // create item
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "INSERT INTO \"xugc_items\" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
         } else {
             "INSERT INTO \"xugc_items\" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
         match sqlquery(&query)
-            .bind::<&String>(&item.id)
-            .bind::<&String>(&item.name)
-            .bind::<&String>(&item.description)
-            .bind::<&String>(&item.cost.to_string())
-            .bind::<&String>(&item.content)
-            .bind::<&String>(&serde_json::to_string(&item.r#type).unwrap())
-            .bind::<&String>(&serde_json::to_string(&item.status).unwrap())
-            .bind::<&String>(&item.timestamp.to_string())
-            .bind::<&String>(&item.creator)
+            .bind::<&str>(&item.id)
+            .bind::<&str>(&item.name)
+            .bind::<&str>(&item.description)
+            .bind::<i32>(item.cost)
+            .bind::<&str>(&item.content)
+            .bind::<&str>(&serde_json::to_string(&item.r#type).unwrap())
+            .bind::<&str>(&serde_json::to_string(&item.status).unwrap())
+            .bind::<&str>(&item.timestamp.to_string())
+            .bind::<&str>(&item.creator)
             .execute(c)
             .await
         {
@@ -5266,11 +4647,11 @@ impl Database {
                 if let Err(e) = self
                     .create_transaction(
                         TransactionCreate {
-                            merchant: creator.clone(),
+                            merchant: creator.to_string(),
                             item: item.id.clone(),
                             amount: 0,
                         },
-                        creator.clone(),
+                        creator,
                     )
                     .await
                 {
@@ -5292,12 +4673,12 @@ impl Database {
     /// * `user`
     pub async fn update_item_status(
         &self,
-        id: String,
+        id: &str,
         status: ItemStatus,
         user: Box<Profile>,
     ) -> Result<()> {
         // make sure item exists and check permission
-        let item = match self.get_item(id.clone()).await {
+        let item = match self.get_item(id).await {
             Ok(i) => i,
             Err(e) => return Err(e),
         };
@@ -5313,18 +4694,16 @@ impl Database {
         }
 
         // update item
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "UPDATE \"xugc_items\" SET \"status\" = ? WHERE \"id\" = ?"
         } else {
             "UPDATE \"xugc_items\" SET (\"status\") = ($1) WHERE \"id\" = $2"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
         match sqlquery(&query)
-            .bind::<&String>(&serde_json::to_string(&status).unwrap())
-            .bind::<&String>(&id)
+            .bind::<&str>(&serde_json::to_string(&status).unwrap())
+            .bind::<&str>(&id)
             .execute(c)
             .await
         {
@@ -5366,9 +4745,9 @@ impl Database {
     /// * `id`
     /// * `props` - [`ItemEdit`]
     /// * `user`
-    pub async fn update_item(&self, id: String, props: ItemEdit, user: Box<Profile>) -> Result<()> {
+    pub async fn update_item(&self, id: &str, props: ItemEdit, user: Box<Profile>) -> Result<()> {
         // make sure item exists and check permission
-        let item = match self.get_item(id.clone()).await {
+        let item = match self.get_item(id).await {
             Ok(i) => i,
             Err(e) => return Err(e),
         };
@@ -5409,20 +4788,18 @@ impl Database {
         }
 
         // update item
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "UPDATE \"xugc_items\" SET \"name\" = ?, \"description\" = ?, \"cost\" = ? WHERE \"id\" = ?"
         } else {
             "UPDATE \"xugc_items\" SET (\"name\", \"description\", \"cost\") = ($1, $2, $3) WHERE \"id\" = $4"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
         match sqlquery(&query)
-            .bind::<&String>(&props.name)
-            .bind::<&String>(&props.description)
+            .bind::<&str>(&props.name)
+            .bind::<&str>(&props.description)
             .bind::<i32>(props.cost)
-            .bind::<&String>(&id)
+            .bind::<&str>(&id)
             .execute(c)
             .await
         {
@@ -5448,12 +4825,12 @@ impl Database {
     /// * `user`
     pub async fn update_item_content(
         &self,
-        id: String,
+        id: &str,
         props: ItemEditContent,
         user: Box<Profile>,
     ) -> Result<()> {
         // make sure item exists and check permission
-        let item = match self.get_item(id.clone()).await {
+        let item = match self.get_item(id).await {
             Ok(i) => i,
             Err(e) => return Err(e),
         };
@@ -5489,18 +4866,16 @@ impl Database {
         }
 
         // update item
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "UPDATE \"xugc_items\" SET \"content\" = ? WHERE \"id\" = ?"
         } else {
             "UPDATE \"xugc_items\" SET (\"content\") = ($1) WHERE \"id\" = $2"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
         match sqlquery(&query)
-            .bind::<&String>(&props.content)
-            .bind::<&String>(&id)
+            .bind::<&str>(&props.content)
+            .bind::<&str>(&id)
             .execute(c)
             .await
         {
@@ -5525,9 +4900,9 @@ impl Database {
     /// # Arguments
     /// * `id` - the ID of the item
     /// * `user` - the user doing this
-    pub async fn delete_item(&self, id: String, user: Box<Profile>) -> Result<()> {
+    pub async fn delete_item(&self, id: &str, user: Box<Profile>) -> Result<()> {
         // make sure item exists
-        let item = match self.get_item(id.clone()).await {
+        let item = match self.get_item(id).await {
             Ok(n) => n,
             Err(e) => return Err(e),
         };
@@ -5545,17 +4920,15 @@ impl Database {
             }
         }
 
-        // delete mail
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        // delete item
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "DELETE FROM \"xugc_items\" WHERE \"id\" = ?"
         } else {
             "DELETE FROM \"xugc_items\" WHERE \"id\" = $1"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
-        match sqlquery(&query).bind::<&String>(&id).execute(c).await {
+        match sqlquery(&query).bind::<&str>(&id).execute(c).await {
             Ok(_) => {
                 // remove from cache
                 self.base
@@ -5575,29 +4948,27 @@ impl Database {
     /// Update the profile's TOTP secret.
     pub async fn update_profile_totp_secret(
         &self,
-        id: String,
-        secret: String,
+        id: &str,
+        secret: &str,
         recovery: &Vec<String>,
     ) -> Result<()> {
-        let ua = match self.get_profile_by_id(id.clone()).await {
+        let ua = match self.get_profile_by_id(&id).await {
             Ok(ua) => ua,
             Err(e) => return Err(e),
         };
 
         // update profile
-        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
-        {
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
             "UPDATE \"xprofiles\" SET \"totp\" = ?, \"recovery_codes\" = ? WHERE \"id\" = ?"
         } else {
             "UPDATE \"xprofiles\" SET (\"totp\", \"recovery_codes\") = ($1, $2) WHERE \"id\" = $3"
-        }
-        .to_string();
+        };
 
         let c = &self.base.db.client;
         match sqlquery(&query)
-            .bind::<&String>(&secret)
-            .bind::<&String>(&serde_json::to_string(&recovery).unwrap())
-            .bind::<&String>(&id)
+            .bind::<&str>(&secret)
+            .bind::<&str>(&serde_json::to_string(&recovery).unwrap())
+            .bind::<&str>(&id)
             .execute(c)
             .await
         {
@@ -5625,9 +4996,9 @@ impl Database {
     pub async fn enable_totp(
         &self,
         as_user: Box<Profile>,
-        id: String,
+        id: &str,
     ) -> Result<(String, String, Vec<String>)> {
-        let profile = match self.get_profile(id.clone()).await {
+        let profile = match self.get_profile(&id).await {
             Ok(p) => p,
             Err(e) => return Err(e),
         };
@@ -5636,19 +5007,19 @@ impl Database {
             return Err(DatabaseError::NotAllowed);
         }
 
-        let secret = totp_rs::Secret::default();
+        let secret = totp_rs::Secret::default().to_string();
         let recovery = Database::generate_totp_recovery_codes();
 
         // update profile
         if let Err(e) = self
-            .update_profile_totp_secret(id.to_string(), secret.to_string(), &recovery)
+            .update_profile_totp_secret(id, &secret, &recovery)
             .await
         {
             return Err(e);
         }
 
         // fetch profile again (with totp information)
-        let profile = match self.get_profile(id.clone()).await {
+        let profile = match self.get_profile(&id).await {
             Ok(p) => p,
             Err(e) => return Err(e),
         };
@@ -5675,7 +5046,7 @@ impl Database {
         };
 
         // return
-        Ok((secret.to_string(), qr, recovery))
+        Ok((secret, qr, recovery))
     }
 
     /// Validate a given TOTP code for the given profile.

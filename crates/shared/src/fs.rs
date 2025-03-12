@@ -29,7 +29,7 @@ pub fn mkdir<P>(path: P) -> Result<()>
 where
     P: AsRef<Path>,
 {
-    if let Err(_) = read_dir(&path) {
+    if read_dir(&path).is_err() {
         create_dir(path)?
     }
 
@@ -44,7 +44,7 @@ pub fn rmdirr<P: AsRef<Path>>(path: P) -> Result<()>
 where
     P: AsRef<Path>,
 {
-    if let Err(_) = read_dir(&path) {
+    if read_dir(&path).is_err() {
         return Ok(()); // doesn't exist, return ok since there was nothing to remove
     }
 

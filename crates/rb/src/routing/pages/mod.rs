@@ -26,7 +26,6 @@ use std::collections::HashMap;
 use super::api;
 
 pub mod chats;
-pub mod mail;
 pub mod market;
 pub mod models;
 pub mod profile;
@@ -101,7 +100,7 @@ pub async fn homepage_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => Some(ua),
@@ -112,13 +111,11 @@ pub async fn homepage_request(
 
     // timeline
     if let Some(ref ua) = auth_user {
-        let unread = database
-            .get_inbox_count_by_recipient(ua.id.to_owned())
-            .await;
+        let unread = database.get_inbox_count_by_recipient(&ua.id).await;
 
         let notifs = database
             .auth
-            .get_notification_count_by_recipient(ua.id.to_owned())
+            .get_notification_count_by_recipient(&ua.id)
             .await;
 
         // ...
@@ -136,7 +133,7 @@ pub async fn homepage_request(
                 friends: database
                     .auth
                     .get_user_participating_relationships_of_status(
-                        ua.id.clone(),
+                        &ua.id,
                         RelationshipStatus::Friends,
                     )
                     .await
@@ -185,7 +182,7 @@ pub async fn partial_timeline_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -195,7 +192,7 @@ pub async fn partial_timeline_request(
     };
 
     let responses = match database
-        .get_responses_by_following_paginated(auth_user.id.to_owned(), props.page)
+        .get_responses_by_following_paginated(&auth_user.id, props.page)
         .await
     {
         Ok(responses) => responses,
@@ -240,7 +237,7 @@ pub async fn partial_timeline_request(
             response.1.author.id.clone(),
             database
                 .auth
-                .get_user_relationship(response.1.author.id.clone(), auth_user.id.clone())
+                .get_user_relationship(&response.1.author.id, &auth_user.id)
                 .await
                 .0,
         );
@@ -286,7 +283,7 @@ pub async fn public_timeline_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -296,13 +293,11 @@ pub async fn public_timeline_request(
     };
 
     // timeline
-    let unread = database
-        .get_inbox_count_by_recipient(auth_user.id.to_owned())
-        .await;
+    let unread = database.get_inbox_count_by_recipient(&auth_user.id).await;
 
     let notifs = database
         .auth
-        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .get_notification_count_by_recipient(&auth_user.id)
         .await;
 
     // ...
@@ -345,7 +340,7 @@ pub async fn partial_public_timeline_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -397,7 +392,7 @@ pub async fn partial_public_timeline_request(
             response.1.author.id.clone(),
             database
                 .auth
-                .get_user_relationship(response.1.author.id.clone(), auth_user.id.clone())
+                .get_user_relationship(&response.1.author.id, &auth_user.id)
                 .await
                 .0,
         );
@@ -443,7 +438,7 @@ pub async fn partial_top_responses_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => Some(ua),
@@ -498,7 +493,7 @@ pub async fn partial_top_responses_request(
                 response.1.author.id.clone(),
                 database
                     .auth
-                    .get_user_relationship(response.1.author.id.clone(), ua.id.clone())
+                    .get_user_relationship(&response.1.author.id, &ua.id)
                     .await
                     .0,
             );
@@ -617,7 +612,7 @@ pub async fn discover_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -627,13 +622,11 @@ pub async fn discover_request(
     };
 
     // timeline
-    let unread = database
-        .get_inbox_count_by_recipient(auth_user.id.to_owned())
-        .await;
+    let unread = database.get_inbox_count_by_recipient(&auth_user.id).await;
 
     let notifs = database
         .auth
-        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .get_notification_count_by_recipient(&auth_user.id)
         .await;
 
     // ...
@@ -669,7 +662,7 @@ pub async fn about_request(jar: CookieJar, State(database): State<Database>) -> 
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => Some(ua),
@@ -704,7 +697,7 @@ pub async fn tos_request(jar: CookieJar, State(database): State<Database>) -> im
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => Some(ua),
@@ -739,7 +732,7 @@ pub async fn privacy_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => Some(ua),
@@ -782,7 +775,7 @@ pub async fn carp_request(jar: CookieJar, State(database): State<Database>) -> i
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => Some(ua),
@@ -819,7 +812,7 @@ pub async fn login_request(jar: CookieJar, State(database): State<Database>) -> 
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => Some(ua),
@@ -864,7 +857,7 @@ pub async fn sign_up_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => Some(ua),
@@ -1063,7 +1056,7 @@ pub async fn question_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => Some(ua),
@@ -1073,9 +1066,7 @@ pub async fn question_request(
     };
 
     let unread = if let Some(ref ua) = auth_user {
-        database
-            .get_inbox_count_by_recipient(ua.id.to_owned())
-            .await
+        database.get_inbox_count_by_recipient(&ua.id).await
     } else {
         0
     };
@@ -1083,7 +1074,7 @@ pub async fn question_request(
     let notifs = if let Some(ref ua) = auth_user {
         database
             .auth
-            .get_notification_count_by_recipient(ua.id.to_owned())
+            .get_notification_count_by_recipient(&ua.id)
             .await
     } else {
         0
@@ -1128,7 +1119,7 @@ pub async fn question_request(
             }),
             already_responded: if let Some(ref ua) = auth_user {
                 database
-                    .get_response_by_question_and_author(id.clone(), ua.id.clone())
+                    .get_response_by_question_and_author(&id, &ua.id)
                     .await
                     .is_ok()
             } else {
@@ -1168,7 +1159,7 @@ pub async fn public_posts_timeline_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => Some(ua),
@@ -1178,9 +1169,7 @@ pub async fn public_posts_timeline_request(
     };
 
     let unread = if let Some(ref ua) = auth_user {
-        database
-            .get_inbox_count_by_recipient(ua.id.to_owned())
-            .await
+        database.get_inbox_count_by_recipient(&ua.id).await
     } else {
         0
     };
@@ -1188,7 +1177,7 @@ pub async fn public_posts_timeline_request(
     let notifs = if let Some(ref ua) = auth_user {
         database
             .auth
-            .get_notification_count_by_recipient(ua.id.to_owned())
+            .get_notification_count_by_recipient(&ua.id)
             .await
     } else {
         0
@@ -1234,7 +1223,7 @@ pub async fn partial_posts_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => Some(ua),
@@ -1289,7 +1278,7 @@ pub async fn partial_posts_request(
                 response.1.author.id.clone(),
                 database
                     .auth
-                    .get_user_relationship(response.1.author.id.clone(), ua.id.clone())
+                    .get_user_relationship(&response.1.author.id, &ua.id)
                     .await
                     .0,
             );
@@ -1350,7 +1339,7 @@ pub async fn following_posts_timeline_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -1359,17 +1348,15 @@ pub async fn following_posts_timeline_request(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = database
-        .get_inbox_count_by_recipient(auth_user.id.to_owned())
-        .await;
+    let unread = database.get_inbox_count_by_recipient(&auth_user.id).await;
 
     let notifs = database
         .auth
-        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .get_notification_count_by_recipient(&auth_user.id)
         .await;
 
     let responses = match database
-        .get_posts_by_following_paginated(query.page, auth_user.id.clone())
+        .get_posts_by_following_paginated(query.page, &auth_user.id)
         .await
     {
         Ok(responses) => responses,
@@ -1394,7 +1381,7 @@ pub async fn following_posts_timeline_request(
             response.1.author.id.clone(),
             database
                 .auth
-                .get_user_relationship(response.1.author.id.clone(), auth_user.id.clone())
+                .get_user_relationship(&response.1.author.id, &auth_user.id)
                 .await
                 .0,
         );
@@ -1484,7 +1471,7 @@ pub async fn inbox_request(jar: CookieJar, State(database): State<Database>) -> 
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -1501,24 +1488,21 @@ pub async fn inbox_request(jar: CookieJar, State(database): State<Database>) -> 
         simplify!(
             database
                 .auth
-                .update_profile_inbox_count(auth_user.id.clone(), 0)
+                .update_profile_inbox_count(&auth_user.id, 0)
                 .await;
             Err; Html(DatabaseError::Other.to_html(database))
         );
     }
 
     // ...
-    let unread = match database
-        .get_questions_by_recipient(auth_user.id.to_owned())
-        .await
-    {
+    let unread = match database.get_questions_by_recipient(&auth_user.id).await {
         Ok(unread) => unread,
         Err(_) => return Html(DatabaseError::Other.to_html(database)),
     };
 
     let notifs = database
         .auth
-        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .get_notification_count_by_recipient(&auth_user.id)
         .await;
 
     let is_helper: bool = {
@@ -1587,7 +1571,7 @@ pub async fn global_timeline_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -1596,17 +1580,15 @@ pub async fn global_timeline_request(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = database
-        .get_inbox_count_by_recipient(auth_user.id.to_owned())
-        .await;
+    let unread = database.get_inbox_count_by_recipient(&auth_user.id).await;
 
     let notifs = database
         .auth
-        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .get_notification_count_by_recipient(&auth_user.id)
         .await;
 
     let questions = match database
-        .get_global_questions_by_following_paginated(auth_user.id.clone(), query.page)
+        .get_global_questions_by_following_paginated(&auth_user.id, query.page)
         .await
     {
         Ok(r) => r,
@@ -1646,7 +1628,7 @@ pub async fn global_timeline_request(
             question.0.author.id.clone(),
             database
                 .auth
-                .get_user_relationship(question.0.author.id.clone(), auth_user.id.clone())
+                .get_user_relationship(&question.0.author.id, &auth_user.id)
                 .await
                 .0,
         );
@@ -1697,7 +1679,7 @@ pub async fn public_global_timeline_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -1706,13 +1688,11 @@ pub async fn public_global_timeline_request(
         None => return Html(DatabaseError::NotAllowed.to_html(database)),
     };
 
-    let unread = database
-        .get_inbox_count_by_recipient(auth_user.id.to_owned())
-        .await;
+    let unread = database.get_inbox_count_by_recipient(&auth_user.id).await;
 
     let notifs = database
         .auth
-        .get_notification_count_by_recipient(auth_user.id.to_owned())
+        .get_notification_count_by_recipient(&auth_user.id)
         .await;
 
     let is_helper = {
@@ -1753,7 +1733,7 @@ pub async fn public_global_timeline_request(
             question.0.author.id.clone(),
             database
                 .auth
-                .get_user_relationship(question.0.author.id.clone(), auth_user.id.clone())
+                .get_user_relationship(&question.0.author.id, &auth_user.id)
                 .await
                 .0,
         );
@@ -1806,7 +1786,7 @@ pub async fn compose_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -1851,7 +1831,7 @@ pub async fn notifications_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -1864,7 +1844,7 @@ pub async fn notifications_request(
     simplify!(
         database
             .auth
-            .update_profile_notification_count(auth_user.id.clone(), 0)
+            .update_profile_notification_count(&auth_user.id, 0)
             .await;
         Err; Html(DatabaseError::Other.to_html(database))
     );
@@ -1879,21 +1859,19 @@ pub async fn notifications_request(
         group.permissions.check_helper()
     };
 
-    let unread = database
-        .get_inbox_count_by_recipient(auth_user.id.to_owned())
-        .await;
+    let unread = database.get_inbox_count_by_recipient(&auth_user.id).await;
 
     let pid = if is_helper && !props.profile.is_empty() {
         // use the given profile value if we gave one and we are a helper
-        props.profile
+        &props.profile
     } else {
         // otherwise, use the current user
-        auth_user.id.clone()
+        &auth_user.id
     };
 
     let notifs = match database
         .auth
-        .get_notifications_by_recipient_paginated(pid.clone(), props.page)
+        .get_notifications_by_recipient_paginated(&pid, props.page)
         .await
     {
         Ok(r) => r,
@@ -1908,11 +1886,11 @@ pub async fn notifications_request(
             } else {
                 ""
             }),
+            pid: pid.to_string(),
             profile: Some(auth_user),
             unread,
             notifs,
             page: props.page,
-            pid,
         }
         .render()
         .unwrap(),
@@ -1937,7 +1915,7 @@ pub async fn reports_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -1958,15 +1936,9 @@ pub async fn reports_request(
     }
 
     // ...
-    let unread = database
-        .get_inbox_count_by_recipient(auth_user.id.to_owned())
-        .await;
+    let unread = database.get_inbox_count_by_recipient(&auth_user.id).await;
 
-    let reports = match database
-        .auth
-        .get_notifications_by_recipient("*".to_string())
-        .await
-    {
+    let reports = match database.auth.get_notifications_by_recipient("*").await {
         Ok(r) => r,
         Err(_) => return Html(DatabaseError::Other.to_html(database)),
     };
@@ -2008,7 +1980,7 @@ pub async fn audit_log_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -2029,13 +2001,11 @@ pub async fn audit_log_request(
     }
 
     // ...
-    let unread = database
-        .get_inbox_count_by_recipient(auth_user.id.to_owned())
-        .await;
+    let unread = database.get_inbox_count_by_recipient(&auth_user.id).await;
 
     let logs = match database
         .auth
-        .get_notifications_by_recipient_paginated("*(audit)".to_string(), props.page)
+        .get_notifications_by_recipient_paginated("*(audit)", props.page)
         .await
     {
         Ok(r) => r,
@@ -2075,7 +2045,7 @@ pub async fn ipbans_request(jar: CookieJar, State(database): State<Database>) ->
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -2096,9 +2066,7 @@ pub async fn ipbans_request(jar: CookieJar, State(database): State<Database>) ->
     }
 
     // ...
-    let unread = database
-        .get_inbox_count_by_recipient(auth_user.id.to_owned())
-        .await;
+    let unread = database.get_inbox_count_by_recipient(&auth_user.id).await;
 
     let bans = match database.auth.get_ipbans(auth_user.clone()).await {
         Ok(r) => r,
@@ -2135,7 +2103,7 @@ pub async fn report_request(jar: CookieJar, State(database): State<Database>) ->
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => Some(ua),
@@ -2244,15 +2212,6 @@ pub async fn routes(database: Database) -> Router {
         .route("/chats", get(chats::chats_homepage_request))
         .route("/chats/{id}", get(chats::chat_request))
         .route("/chats/_app/msg.html", post(chats::render_message_request))
-        // mail
-        .route("/inbox/mail", get(mail::inbox_request))
-        .route("/inbox/mail/sent", get(mail::outbox_request))
-        .route("/inbox/mail/compose", get(mail::compose_request))
-        .route("/inbox/mail/letter/{id}", get(mail::view_request))
-        .route(
-            "/inbox/mail/_app/components/mail.html",
-            get(mail::partial_mail_request),
-        )
         // market
         .route("/market", get(market::homepage_request))
         .route("/market/new", get(market::create_request))

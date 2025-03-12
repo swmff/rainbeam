@@ -181,8 +181,8 @@ impl Database {
     // profiles
 
     /// Fetch a profile correctly
-    pub async fn get_profile(&self, id: String) -> Result<Box<Profile>> {
-        match self.auth.get_profile(id).await {
+    pub async fn get_profile<T: AsRef<str>>(&self, id: T) -> Result<Box<Profile>> {
+        match self.auth.get_profile(id.as_ref()).await {
             Ok(p) => Ok(p),
             Err(e) => Err(e.into()),
         }
@@ -296,7 +296,7 @@ impl Database {
                 None
             },
             responses: if options.responses | options.all {
-                match self.get_responses_by_author(user.clone()).await {
+                match self.get_responses_by_author(&user).await {
                     Ok(r) => Some(r),
                     Err(e) => return Err(e),
                 }
@@ -312,7 +312,7 @@ impl Database {
                 None
             },
             chats: if options.chats | options.all {
-                match self.get_chats_for_user(user.clone()).await {
+                match self.get_chats_for_user(&user).await {
                     Ok(r) => Some(r),
                     Err(e) => return Err(e),
                 }
@@ -328,7 +328,7 @@ impl Database {
                 None
             },
             ipblocks: if options.ipblocks | options.all {
-                match self.auth.get_ipblocks(user.clone()).await {
+                match self.auth.get_ipblocks(&user).await {
                     Ok(r) => Some(r),
                     Err(_) => return Err(DatabaseError::Other),
                 }
@@ -336,7 +336,7 @@ impl Database {
                 None
             },
             relationships: if options.relationships | options.all {
-                match self.auth.get_user_relationships(user.clone()).await {
+                match self.auth.get_user_relationships(&user).await {
                     Ok(r) => Some(r),
                     Err(_) => return Err(DatabaseError::Other),
                 }
@@ -344,7 +344,7 @@ impl Database {
                 None
             },
             following: if options.following | options.all {
-                match self.auth.get_following(user.clone()).await {
+                match self.auth.get_following(&user).await {
                     Ok(r) => Some(r),
                     Err(_) => return Err(DatabaseError::Other),
                 }
@@ -352,7 +352,7 @@ impl Database {
                 None
             },
             followers: if options.followers | options.all {
-                match self.auth.get_followers(user.clone()).await {
+                match self.auth.get_followers(&user).await {
                     Ok(r) => Some(r),
                     Err(_) => return Err(DatabaseError::Other),
                 }
@@ -366,7 +366,7 @@ impl Database {
 
     /// Create a moderator audit log entry
     pub async fn audit(&self, actor_id: String, content: String) -> Result<()> {
-        match self.auth.audit(actor_id, content).await {
+        match self.auth.audit(&actor_id, &content).await {
             Ok(r) => Ok(r),
             Err(_) => Err(DatabaseError::Other),
         }
@@ -395,8 +395,7 @@ impl Database {
                             .get("author")
                             .unwrap()
                             .to_string()
-                            .trim_matches(|c| c == '"')
-                            .to_string(),
+                            .trim_matches(|c| c == '"'),
                     )
                     .await
                 {
@@ -409,8 +408,7 @@ impl Database {
                             .get("recipient")
                             .unwrap()
                             .to_string()
-                            .trim_matches(|c| c == '"')
-                            .to_string(),
+                            .trim_matches(|c| c == '"'),
                     )
                     .await
                 {
@@ -457,7 +455,7 @@ impl Database {
             Some(c) => match serde_json::from_str::<RefQuestion>(c.as_str()) {
                 Ok(q) => {
                     return Ok(Question {
-                        author: match self.get_profile(q.author.clone()).await {
+                        author: match self.get_profile(&q.author).await {
                             Ok(ua) => ua,
                             Err(_) => anonymous_profile(q.author),
                         },
@@ -556,7 +554,7 @@ impl Database {
     ///
     /// # Arguments
     /// * `recipient`
-    pub async fn get_questions_by_recipient(&self, recipient: String) -> Result<Vec<Question>> {
+    pub async fn get_questions_by_recipient(&self, recipient: &str) -> Result<Vec<Question>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -624,7 +622,7 @@ impl Database {
     ///
     /// # Arguments
     /// * `recipient`
-    pub async fn get_inbox_count_by_recipient(&self, recipient: String) -> usize {
+    pub async fn get_inbox_count_by_recipient(&self, recipient: &str) -> usize {
         match self.get_profile(recipient).await {
             Ok(x) => x.inbox_count,
             Err(_) => 0,
@@ -699,7 +697,7 @@ impl Database {
     /// * `author`
     pub async fn get_global_questions_by_author(
         &self,
-        author: String,
+        author: &str,
     ) -> Result<Vec<(Question, usize, usize)>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
@@ -974,11 +972,11 @@ impl Database {
     /// * `page`
     pub async fn get_global_questions_by_following_paginated(
         &self,
-        user: String,
+        user: &str,
         page: i32,
     ) -> Result<Vec<(Question, usize, usize)>> {
         // get following
-        let following = match self.auth.get_following(user.clone()).await {
+        let following = match self.auth.get_following(&user).await {
             Ok(f) => f,
             Err(_) => return Err(DatabaseError::NotFound),
         };
@@ -986,7 +984,7 @@ impl Database {
         // check user permissions
         // returning NotAllowed here will block them from viewing their global questions timeline
         // we don't want to waste resources on rule breakers
-        let user = match self.auth.get_profile_by_username(user.clone()).await {
+        let user = match self.auth.get_profile_by_username(&user).await {
             Ok(ua) => ua,
             Err(_) => return Err(DatabaseError::NotFound),
         };
@@ -1129,7 +1127,7 @@ impl Database {
     ///
     /// # Arguments
     /// * `author`
-    pub async fn get_global_questions_count_by_author(&self, author: String) -> usize {
+    pub async fn get_global_questions_count_by_author(&self, author: &str) -> usize {
         // attempt to fetch from cache
         if let Some(count) = self
             .base
@@ -1142,7 +1140,7 @@ impl Database {
 
         // fetch from database
         let count = self
-            .get_global_questions_by_author(author.clone())
+            .get_global_questions_by_author(author)
             .await
             .unwrap_or(Vec::new())
             .len();
@@ -1310,7 +1308,7 @@ impl Database {
                 // bump question count
                 if let Err(_) = self
                     .auth
-                    .update_profile_question_count(author.id.clone(), author.question_count + 1)
+                    .update_profile_question_count(&author.id, author.question_count + 1)
                     .await
                 {
                     return Err(DatabaseError::Other);
@@ -1319,7 +1317,7 @@ impl Database {
                 // check relationship
                 let relationship = self
                     .auth
-                    .get_user_relationship(recipient.id.clone(), author.id.clone())
+                    .get_user_relationship(&recipient.id, &author.id)
                     .await
                     .0;
 
@@ -1329,17 +1327,13 @@ impl Database {
             }
 
             // check if we're ip blocked by the recipient
-            if let Ok(_) = self
-                .auth
-                .get_ipblock_by_ip(ip.clone(), recipient.id.clone())
-                .await
-            {
+            if let Ok(_) = self.auth.get_ipblock_by_ip(&ip, &recipient.id).await {
                 return Err(DatabaseError::Blocked);
             }
 
             if self
                 .auth
-                .get_ipblock_by_ip(ip.clone(), recipient.id.clone())
+                .get_ipblock_by_ip(&ip, &recipient.id)
                 .await
                 .is_ok()
             {
@@ -1371,7 +1365,7 @@ impl Database {
             // incr recipient inbox count
             simplify!(
                 self.auth
-                    .update_profile_inbox_count(recipient.id.clone(), recipient.inbox_count + 1)
+                    .update_profile_inbox_count(&recipient.id, recipient.inbox_count + 1)
                     .await;
                 Err; Err(DatabaseError::Other)
             )
@@ -1536,7 +1530,7 @@ impl Database {
                     {
                         let friends = simplify!(
                             self.auth
-                                .get_user_participating_relationships_of_status(question.author.id.clone(), RelationshipStatus::Friends)
+                                .get_user_participating_relationships_of_status(&question.author.id, RelationshipStatus::Friends)
                                 .await;
                             Result; Vec::new()
                         );
@@ -1709,7 +1703,7 @@ impl Database {
     /// * `user`
     pub async fn delete_questions_by_recipient(
         &self,
-        recipient: String,
+        recipient: &str,
         user: Box<Profile>,
     ) -> Result<()> {
         // check username
@@ -2016,8 +2010,8 @@ impl Database {
     /// * `author`
     pub async fn get_response_by_question_and_author(
         &self,
-        question: String,
-        author: String,
+        question: &str,
+        author: &str,
     ) -> Result<FullResponse> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
@@ -2030,8 +2024,8 @@ impl Database {
 
         let c = &self.base.db.client;
         let res = match sqlquery(&query)
-            .bind::<&String>(&question)
-            .bind::<&String>(&author)
+            .bind::<&str>(question)
+            .bind::<&str>(author)
             .fetch_one(c)
             .await
         {
@@ -2089,10 +2083,10 @@ impl Database {
     pub async fn get_posts_by_following_paginated(
         &self,
         page: i32,
-        user: String,
+        user: &str,
     ) -> Result<Vec<FullResponse>> {
         // get following
-        let following = match self.auth.get_following(user.clone()).await {
+        let following = match self.auth.get_following(&user).await {
             Ok(f) => f,
             Err(_) => Vec::new(),
         };
@@ -2100,7 +2094,7 @@ impl Database {
         // check user permissions
         // returning NotAllowed here will block them from viewing their timeline
         // we don't want to waste resources on rule breakers
-        let user = match self.auth.get_profile_by_id(user.clone()).await {
+        let user = match self.auth.get_profile_by_id(&user).await {
             Ok(ua) => ua,
             Err(_) => anonymous_profile(self.create_anonymous().1),
         };
@@ -2230,7 +2224,7 @@ impl Database {
     ///
     /// # Arguments
     /// * `author`
-    pub async fn get_responses_by_author(&self, author: String) -> Result<Vec<FullResponse>> {
+    pub async fn get_responses_by_author(&self, author: &str) -> Result<Vec<FullResponse>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -2448,7 +2442,7 @@ impl Database {
     ///
     /// # Arguments
     /// * `author`
-    pub async fn get_response_count_by_author(&self, author: String) -> usize {
+    pub async fn get_response_count_by_author(&self, author: &str) -> usize {
         // attempt to fetch from cache
         if let Some(count) = self
             .base
@@ -2461,7 +2455,7 @@ impl Database {
 
         // fetch from database
         let count = self
-            .get_responses_by_author(author.clone())
+            .get_responses_by_author(author)
             .await
             .unwrap_or(Vec::new())
             .len();
@@ -2527,7 +2521,7 @@ impl Database {
     /// * `user`
     pub async fn get_responses_by_following_paginated(
         &self,
-        user: String,
+        user: &str,
         page: i32,
     ) -> Result<Vec<FullResponse>> {
         // check in cache
@@ -2545,7 +2539,7 @@ impl Database {
         // };
 
         // get following
-        let following = match self.auth.get_following(user.clone()).await {
+        let following = match self.auth.get_following(&user).await {
             Ok(f) => f,
             Err(_) => Vec::new(),
         };
@@ -2553,7 +2547,7 @@ impl Database {
         // check user permissions
         // returning NotAllowed here will block them from viewing their timeline
         // we don't want to waste resources on rule breakers
-        let user = match self.auth.get_profile_by_id(user.clone()).await {
+        let user = match self.auth.get_profile_by_id(&user).await {
             Ok(ua) => ua,
             Err(_) => anonymous_profile(self.create_anonymous().1),
         };
@@ -2710,7 +2704,7 @@ impl Database {
                 // cannot respond to questions from people who blocked us (or we've blocked)
                 let relationship = self
                     .auth
-                    .get_user_relationship(question.author.id.clone(), author.id.clone())
+                    .get_user_relationship(&question.author.id, &author.id)
                     .await;
 
                 if relationship.0 == RelationshipStatus::Blocked {
@@ -2719,7 +2713,7 @@ impl Database {
 
                 // make sure we haven't already answered this
                 if let Ok(_) = self
-                    .get_response_by_question_and_author(question.id.clone(), author.id.clone())
+                    .get_response_by_question_and_author(&question.id, &author.id)
                     .await
                 {
                     return Err(DatabaseError::Other);
@@ -2739,7 +2733,7 @@ impl Database {
                 // cannot respond to questions from people who blocked us (or we've blocked)
                 let relationship = self
                     .auth
-                    .get_user_relationship(question.author.id.clone(), author.id.clone())
+                    .get_user_relationship(&question.author.id, &author.id)
                     .await;
 
                 if relationship.0 == RelationshipStatus::Blocked {
@@ -2748,7 +2742,7 @@ impl Database {
 
                 // make sure we didn't already answer this
                 if let Ok(_) = self
-                    .get_response_by_question_and_author(question.id.clone(), author.id.clone())
+                    .get_response_by_question_and_author(&question.id, &author.id)
                     .await
                 {
                     // cannot answer the same global question twice
@@ -2807,7 +2801,7 @@ impl Database {
 
         // parse mentions
         for mention in Database::parse_mentions(response.content.clone()) {
-            let profile = match self.auth.get_profile(mention.clone()).await {
+            let profile = match self.auth.get_profile(&mention).await {
                 Ok(p) => p,
                 Err(_) => continue,
             };
@@ -2872,7 +2866,7 @@ impl Database {
 
                 if tag.0 {
                     // allow users who were just hiding their name to receive a notification
-                    if let Ok(ua) = self.auth.get_profile(tag.1).await {
+                    if let Ok(ua) = self.auth.get_profile(&tag.1).await {
                         is_allowed_to_receive_notif = true;
                         question.author = ua;
                     }
@@ -2933,7 +2927,7 @@ impl Database {
 
                     self.auth
                         .update_profile_response_count(
-                            response.author.id.clone(),
+                            &response.author.id,
                             response.author.response_count + 1,
                         )
                         .await
@@ -2968,11 +2962,7 @@ impl Database {
                     .await;
 
                 // give us 2 coins :)
-                if let Err(_) = self
-                    .auth
-                    .update_profile_coins(response.author.id.clone(), 2)
-                    .await
-                {
+                if let Err(_) = self.auth.update_profile_coins(&response.author.id, 2).await {
                     return Err(DatabaseError::Other);
                 }
 
@@ -3192,7 +3182,7 @@ impl Database {
     /// Update the tags of multiple responses. **All responses MUST be created by the same user.**
     ///
     /// # Arguments
-    /// * `id`
+    /// * `ids`
     /// * `tags`
     /// * `user` - the user doing this
     pub async fn update_response_tags_multiple(
@@ -3201,28 +3191,29 @@ impl Database {
         tags: Vec<String>,
         user: Box<Profile>,
     ) -> Result<()> {
-        // make sure the response exists
-        let first_id = ids.get(0).unwrap();
-        let response = match self.get_response_short(first_id.clone()).await {
-            Ok(q) => q,
-            Err(e) => return Err(e),
-        };
-
-        // check user permissions
-        if user.group == -1 {
-            // group -1 (even if it exists) is for marking users as banned
-            return Err(DatabaseError::NotAllowed);
-        }
-
-        if user.id != response.author.id {
-            // check permission
-            let group = match self.auth.get_group_by_id(user.group).await {
-                Ok(g) => g,
-                Err(_) => return Err(DatabaseError::Other),
+        // verify permissions for all responses
+        for id in &ids {
+            let response = match self.get_response_short(id.clone()).await {
+                Ok(q) => q,
+                Err(e) => return Err(e),
             };
 
-            if !group.permissions.check(FinePermission::MANAGE_RESPONSES) {
+            // check user permissions
+            if user.group == -1 {
+                // group -1 (even if it exists) is for marking users as banned
                 return Err(DatabaseError::NotAllowed);
+            }
+
+            if user.id != response.author.id {
+                // check permission
+                let group = match self.auth.get_group_by_id(user.group).await {
+                    Ok(g) => g,
+                    Err(_) => return Err(DatabaseError::Other),
+                };
+
+                if !group.permissions.check(FinePermission::MANAGE_RESPONSES) {
+                    return Err(DatabaseError::NotAllowed);
+                }
             }
         }
 
@@ -3238,7 +3229,7 @@ impl Database {
             }
         }
 
-        // update response
+        // update responses
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
             format!("UPDATE \"xresponses\" SET \"tags\" = ? WHERE {sql}")
@@ -3255,6 +3246,78 @@ impl Database {
             .execute(c)
             .await
         {
+            Ok(_) => {
+                for id in ids {
+                    self.base
+                        .cachedb
+                        .remove(format!("rbeam.app.response:{id}"))
+                        .await;
+                }
+
+                Ok(())
+            }
+            Err(_) => Err(DatabaseError::Other),
+        }
+    }
+
+    /// Delete multiple responses. **All responses MUST be created by the same user.**
+    ///
+    /// # Arguments
+    /// * `ids`
+    /// * `user` - the user doing this
+    pub async fn delete_response_multiple(
+        &self,
+        ids: Vec<String>,
+        user: Box<Profile>,
+    ) -> Result<()> {
+        // verify permissions for all responses
+        for id in &ids {
+            let response = match self.get_response_short(id.clone()).await {
+                Ok(q) => q,
+                Err(e) => return Err(e),
+            };
+
+            // check user permissions
+            if user.group == -1 {
+                // group -1 (even if it exists) is for marking users as banned
+                return Err(DatabaseError::NotAllowed);
+            }
+
+            if user.id != response.author.id {
+                // check permission
+                let group = match self.auth.get_group_by_id(user.group).await {
+                    Ok(g) => g,
+                    Err(_) => return Err(DatabaseError::Other),
+                };
+
+                if !group.permissions.check(FinePermission::MANAGE_RESPONSES) {
+                    return Err(DatabaseError::NotAllowed);
+                }
+            }
+        }
+
+        // build sql
+        let mut sql: String = String::new();
+
+        for (i, id) in ids.clone().iter().enumerate() {
+            let id = id.replace("'", "");
+            if i == 0 {
+                sql.push_str(&format!("\"id\" = '{id}'"));
+            } else {
+                sql.push_str(&format!(" OR \"id\" = '{id}'"));
+            }
+        }
+
+        // delete responses
+        let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
+        {
+            format!("DELETE FROM \"xresponses\" WHERE {sql}")
+        } else {
+            format!("DELTE FROM \"xresponses\" WHERE {sql}")
+        };
+
+        let c = &self.base.db.client;
+        match sqlquery(&query).execute(c).await {
             Ok(_) => {
                 for id in ids {
                     self.base
@@ -4171,7 +4234,7 @@ impl Database {
 
         if self
             .auth
-            .get_ipblock_by_ip(ip.clone(), response.author.id.clone())
+            .get_ipblock_by_ip(&ip, &response.author.id)
             .await
             .is_ok()
         {
@@ -4188,7 +4251,7 @@ impl Database {
         }
 
         // check author permissions
-        let author = match self.auth.get_profile(author.clone()).await {
+        let author = match self.auth.get_profile(&author).await {
             Ok(ua) => ua,
             Err(_) => return Err(DatabaseError::NotFound),
         };
@@ -4201,7 +4264,7 @@ impl Database {
         // check relationship
         let relationship = self
             .auth
-            .get_user_relationship(response.author.id.clone(), author.id.clone())
+            .get_user_relationship(&response.author.id, &author.id)
             .await;
 
         if relationship.0 == RelationshipStatus::Blocked {
@@ -4247,7 +4310,7 @@ impl Database {
 
         // parse mentions
         for mention in Database::parse_mentions(comment.content.clone()) {
-            let profile = match self.auth.get_profile(mention.clone()).await {
+            let profile = match self.auth.get_profile(&mention).await {
                 Ok(p) => p,
                 Err(_) => continue,
             };
@@ -5032,7 +5095,7 @@ impl Database {
     ///
     /// # Arguments
     /// * `id` - the ID of the user
-    pub async fn get_chats_for_user(&self, id: String) -> Result<Vec<(Chat, Vec<Box<Profile>>)>> {
+    pub async fn get_chats_for_user(&self, id: &str) -> Result<Vec<(Chat, Vec<Box<Profile>>)>> {
         // pull from database
         let query: String = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql")
         {
@@ -5056,8 +5119,7 @@ impl Database {
                     let res = self.base.textify_row(row).0;
 
                     let mut profiles_out = Vec::new();
-                    let users: Vec<String> =
-                        serde_json::from_str(res.get("users").unwrap()).unwrap();
+                    let users: Vec<String> = from_row!(res->users(json); DatabaseError::ValueError);
 
                     for user in users.clone() {
                         profiles_out.push(match self.get_profile(user).await {
@@ -5108,11 +5170,7 @@ impl Database {
         let user2_profile = match self.get_profile(user2.clone()).await {
             Ok(p) => {
                 // check permission
-                let relationship = self
-                    .auth
-                    .get_user_relationship(user1.clone(), p.id.clone())
-                    .await
-                    .0;
+                let relationship = self.auth.get_user_relationship(&user1, &p.id).await.0;
 
                 if p.metadata.is_true("sparkler:limited_chats") {
                     // user has it set to only allow friends to add them to chats
@@ -5387,7 +5445,7 @@ impl Database {
         // make sure the other user is actually our friend
         let relationship = self
             .auth
-            .get_user_relationship(user.clone(), props.friend.clone())
+            .get_user_relationship(&user, &props.friend)
             .await
             .0;
 
@@ -5471,17 +5529,16 @@ impl Database {
         };
 
         // return
+        let author = from_row!(res->author(ref));
         let message = Message {
             id: from_row!(res->id()),
-            chat: res.get("chat").unwrap().to_string(),
-            author: res.get("author").unwrap().to_string(),
-            content: res.get("content").unwrap().to_string(),
+            chat: from_row!(res->chat()),
+            author: author.to_string(),
+            content: from_row!(res->content()),
             context: from_row!(res->context(json); DatabaseError::ValueError),
             timestamp: from_row!(res->timestamp(u128); 0),
-            edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
+            edited: from_row!(res->edited(u128); 0),
         };
-
-        let author = message.author.clone();
 
         // return
         Ok((
@@ -5514,17 +5571,16 @@ impl Database {
         };
 
         // return
+        let author = from_row!(res->author(ref));
         let message = Message {
             id: from_row!(res->id()),
-            chat: res.get("chat").unwrap().to_string(),
-            author: res.get("author").unwrap().to_string(),
-            content: res.get("content").unwrap().to_string(),
+            chat: from_row!(res->chat()),
+            author: author.to_string(),
+            content: from_row!(res->content()),
             context: from_row!(res->context(json); DatabaseError::ValueError),
             timestamp: from_row!(res->timestamp(u128); 0),
-            edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
+            edited: from_row!(res->edited(u128); 0),
         };
-
-        let author = message.author.clone();
 
         // return
         Ok((
@@ -5605,17 +5661,17 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row).0;
-                    let author = res.get("author").unwrap().to_string();
+                    let author = res.get("author").unwrap();
 
                     out.push((
                         Message {
                             id: from_row!(res->id()),
-                            chat: res.get("chat").unwrap().to_string(),
-                            author: res.get("author").unwrap().to_string(),
-                            content: res.get("content").unwrap().to_string(),
+                            chat: from_row!(res->chat()),
+                            author: author.to_string(),
+                            content: from_row!(res->content()),
                             context: from_row!(res->context(json); DatabaseError::ValueError),
                             timestamp: from_row!(res->timestamp(u128); 0),
-                            edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
+                            edited: from_row!(res->edited(u128); 0),
                         },
                         match self.auth.get_profile(author).await {
                             Ok(p) => p,
@@ -5658,21 +5714,21 @@ impl Database {
 
                 for row in p {
                     let res = self.base.textify_row(row).0;
-                    let author = res.get("author").unwrap().to_string();
+                    let author = res.get("author").unwrap();
 
                     out.push((
                         Message {
                             id: from_row!(res->id()),
-                            chat: res.get("chat").unwrap().to_string(),
-                            author: res.get("author").unwrap().to_string(),
-                            content: res.get("content").unwrap().to_string(),
+                            chat: from_row!(res->chat()),
+                            author: author.to_string(),
+                            content: from_row!(res->content()),
                             context: from_row!(res->context(json); DatabaseError::ValueError),
                             timestamp: from_row!(res->timestamp(u128); 0),
-                            edited: res.get("edited").unwrap().parse::<u128>().unwrap(),
+                            edited: from_row!(res->edited(u128); 0),
                         },
                         match self.auth.get_profile(author).await {
                             Ok(p) => p,
-                            Err(_) => anonymous_profile("anonymous".to_string()),
+                            Err(_) => return Err(DatabaseError::Other),
                         },
                     ));
                 }

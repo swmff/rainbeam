@@ -15,9 +15,9 @@ bitflags! {
         const MANAGE_QUESTIONS = 1 << 4;
         const MANAGE_CHATS = 1 << 5;
         const MANAGE_MESSAGES = 1 << 6;
-        const MANAGE_MAILS = 1 << 7;
+        const UNUSED = 1 << 7;
         const MANAGE_NOTIFICATIONS = 1 << 8;
-        const MANAGE_CIRCLES = 1 << 9;
+        const UNUSED_1 = 1 << 9;
         const BAN_IP = 1 << 10;
         const UNBAN_IP = 1 << 11;
         const APPROVE_MARKETPLACE_ITEMS = 1 << 12;

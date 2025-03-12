@@ -46,7 +46,7 @@ pub async fn create_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => {
@@ -76,7 +76,7 @@ pub async fn create_request(
     };
 
     // check ip
-    if database.auth.get_ipban_by_ip(real_ip.clone()).await.is_ok() {
+    if database.auth.get_ipban_by_ip(&real_ip).await.is_ok() {
         return (
             [
                 ("Content-Type".to_string(), "text/plain".to_string()),
@@ -210,7 +210,7 @@ pub async fn delete_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -244,7 +244,7 @@ pub async fn delete_inbox_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -259,7 +259,7 @@ pub async fn delete_inbox_request(
 
     // ...
     Json(
-        match database.delete_questions_by_recipient(id, auth_user).await {
+        match database.delete_questions_by_recipient(&id, auth_user).await {
             Ok(r) => DefaultReturn {
                 success: true,
                 message: String::new(),
@@ -279,7 +279,7 @@ pub async fn delete_my_inbox_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,
@@ -295,7 +295,7 @@ pub async fn delete_my_inbox_request(
     // ...
     Json(
         match database
-            .delete_questions_by_recipient(auth_user.id.clone(), auth_user)
+            .delete_questions_by_recipient(&auth_user.id.clone(), auth_user)
             .await
         {
             Ok(r) => DefaultReturn {
@@ -349,7 +349,7 @@ pub async fn report_request(
     };
 
     // check ip
-    if database.auth.get_ipban_by_ip(real_ip.clone()).await.is_ok() {
+    if database.auth.get_ipban_by_ip(&real_ip).await.is_ok() {
         return Json(DefaultReturn {
             success: false,
             message: DatabaseError::Banned.to_string(),
@@ -396,7 +396,7 @@ pub async fn ipblock_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed())
             .await
         {
             Ok(ua) => ua,

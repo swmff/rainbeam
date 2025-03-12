@@ -17,10 +17,7 @@ pub async fn follow_request(
 ) -> impl IntoResponse {
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
+        Some(c) => match database.get_profile_by_unhashed(c.value_trimmed()).await {
             Ok(ua) => ua,
             Err(e) => return Json(e.to_json()),
         },
@@ -28,7 +25,7 @@ pub async fn follow_request(
     };
 
     // check block status
-    let attempting_to_follow = match database.get_profile(id.to_owned()).await {
+    let attempting_to_follow = match database.get_profile(&id).await {
         Ok(ua) => ua,
         Err(_) => {
             return Json(DefaultReturn {
@@ -40,7 +37,7 @@ pub async fn follow_request(
     };
 
     let relationship = database
-        .get_user_relationship(attempting_to_follow.id.clone(), auth_user.id.clone())
+        .get_user_relationship(&attempting_to_follow.id, &auth_user.id)
         .await
         .0;
 
@@ -78,24 +75,15 @@ pub async fn friend_request(
 ) -> impl IntoResponse {
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
+        Some(c) => match database.get_profile_by_unhashed(c.value_trimmed()).await {
             Ok(ua) => ua,
-            Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: None,
-                });
-            }
+            Err(e) => return Json(e.to_json()),
         },
         None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
     // ...
-    let other_user = match database.get_profile(id.to_owned()).await {
+    let other_user = match database.get_profile(&id).await {
         Ok(ua) => ua,
         Err(_) => {
             return Json(DefaultReturn {
@@ -108,7 +96,7 @@ pub async fn friend_request(
 
     // get current relationship
     let current = database
-        .get_user_relationship(auth_user.id.clone(), other_user.id.clone())
+        .get_user_relationship(&auth_user.id, &other_user.id)
         .await;
 
     if current.0 == RelationshipStatus::Blocked && auth_user.id != current.1 {
@@ -127,8 +115,8 @@ pub async fn friend_request(
         // send request
         match database
             .set_user_relationship_status(
-                auth_user.id,
-                other_user.id,
+                &auth_user.id,
+                &other_user.id,
                 RelationshipStatus::Pending,
                 false,
             )
@@ -153,8 +141,8 @@ pub async fn friend_request(
         // accept request
         match database
             .set_user_relationship_status(
-                auth_user.id,
-                other_user.id,
+                &auth_user.id,
+                &other_user.id,
                 RelationshipStatus::Friends,
                 false,
             )
@@ -179,8 +167,8 @@ pub async fn friend_request(
         // no clue, remove friendship?
         match database
             .set_user_relationship_status(
-                auth_user.id,
-                other_user.id,
+                &auth_user.id,
+                &other_user.id,
                 RelationshipStatus::Unknown,
                 false,
             )
@@ -212,24 +200,15 @@ pub async fn block_request(
 ) -> impl IntoResponse {
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
+        Some(c) => match database.get_profile_by_unhashed(c.value_trimmed()).await {
             Ok(ua) => ua,
-            Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: None,
-                });
-            }
+            Err(e) => return Json(e.to_json()),
         },
         None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
     // ...
-    let other_user = match database.get_profile(id.to_owned()).await {
+    let other_user = match database.get_profile(&id).await {
         Ok(ua) => ua,
         Err(_) => {
             return Json(DefaultReturn {
@@ -242,7 +221,7 @@ pub async fn block_request(
 
     // get current relationship
     let current = database
-        .get_user_relationship(auth_user.id.clone(), other_user.id.clone())
+        .get_user_relationship(&auth_user.id, &other_user.id)
         .await;
 
     if current.0 == RelationshipStatus::Blocked && auth_user.id != current.1 {
@@ -257,37 +236,29 @@ pub async fn block_request(
     // force unfollow
     if let Err(e) = database
         .force_remove_user_follow(&mut UserFollow {
-            user: auth_user.id.clone(),
-            following: other_user.id.clone(),
+            user: auth_user.id.to_string(),
+            following: other_user.id.to_string(),
         })
         .await
     {
-        return Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: None,
-        });
+        return Json(e.to_json());
     }
 
     if let Err(e) = database
         .force_remove_user_follow(&mut UserFollow {
-            user: other_user.id.clone(),
-            following: auth_user.id.clone(),
+            user: other_user.id.to_string(),
+            following: auth_user.id.to_string(),
         })
         .await
     {
-        return Json(DefaultReturn {
-            success: false,
-            message: e.to_string(),
-            payload: None,
-        });
+        return Json(e.to_json());
     }
 
     // return
     match database
         .set_user_relationship_status(
-            auth_user.id,
-            other_user.id,
+            &auth_user.id,
+            &other_user.id,
             RelationshipStatus::Blocked,
             false,
         )
@@ -312,24 +283,15 @@ pub async fn delete_request(
 ) -> impl IntoResponse {
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
+        Some(c) => match database.get_profile_by_unhashed(c.value_trimmed()).await {
             Ok(ua) => ua,
-            Err(e) => {
-                return Json(DefaultReturn {
-                    success: false,
-                    message: e.to_string(),
-                    payload: None,
-                });
-            }
+            Err(e) => return Json(e.to_json()),
         },
         None => return Json(DatabaseError::NotAllowed.to_json()),
     };
 
     // ...
-    let other_user = match database.get_profile(id.to_owned()).await {
+    let other_user = match database.get_profile(&id).await {
         Ok(ua) => ua,
         Err(_) => {
             return Json(DefaultReturn {
@@ -342,7 +304,7 @@ pub async fn delete_request(
 
     // get current relationship
     let current = database
-        .get_user_relationship(auth_user.id.clone(), other_user.id.clone())
+        .get_user_relationship(&auth_user.id, &other_user.id)
         .await;
 
     if current.0 == RelationshipStatus::Blocked && auth_user.id != current.1 {
@@ -357,8 +319,8 @@ pub async fn delete_request(
     // return
     match database
         .set_user_relationship_status(
-            auth_user.id,
-            other_user.id,
+            &auth_user.id,
+            &other_user.id,
             RelationshipStatus::Unknown,
             false,
         )

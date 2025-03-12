@@ -6,17 +6,11 @@ use std::io::Result;
 
 /// Configuration file
 #[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Default)]
 pub struct Config {
     pub connection: crate::sql::DatabaseOpts,
 }
 
-impl Default for Config {
-    fn default() -> Self {
-        Self {
-            connection: crate::sql::DatabaseOpts::default(),
-        }
-    }
-}
 
 impl Config {
     /// Read configuration file into [`Config`]

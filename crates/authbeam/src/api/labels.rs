@@ -37,9 +37,9 @@ pub async fn create_request(
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => {
-            let token = c.value_trimmed().to_string();
+            let token = c.value_trimmed();
 
-            match database.get_profile_by_unhashed(token.clone()).await {
+            match database.get_profile_by_unhashed(token).await {
                 Ok(ua) => {
                     // check token permission
                     if !ua
@@ -60,7 +60,7 @@ pub async fn create_request(
 
     // return
     let label = match database
-        .create_label(props.name, props.id, auth_user.id.clone())
+        .create_label(&props.name, props.id, &auth_user.id)
         .await
     {
         Ok(m) => m,
@@ -82,10 +82,7 @@ pub async fn delete_request(
 ) -> impl IntoResponse {
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
+        Some(c) => match database.get_profile_by_unhashed(c.value_trimmed()).await {
             Ok(ua) => ua,
             Err(e) => return Json(e.to_json()),
         },

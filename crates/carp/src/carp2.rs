@@ -58,10 +58,10 @@ pub struct Command {
     pub data: Vec<u8>,
 }
 
-impl Into<Vec<u8>> for Command {
-    fn into(self) -> Vec<u8> {
-        let mut d = self.data;
-        d.insert(0, self.r#type as u8);
+impl From<Command> for Vec<u8> {
+    fn from(val: Command) -> Self {
+        let mut d = val.data;
+        d.insert(0, val.r#type as u8);
         d
     }
 }
@@ -132,7 +132,7 @@ impl CarpGraph for Graph {
         let mut in_header: bool = true;
         let mut byte_buffer: Vec<u8> = Vec::new(); // storage for bytes which need to construct a bigger type (like `u32`)
 
-        let mut bytes_iter = bytes.iter().enumerate().into_iter();
+        let mut bytes_iter = bytes.iter().enumerate();
         while let Some((i, byte)) = bytes_iter.next() {
             let byte = byte.to_owned();
             match byte {

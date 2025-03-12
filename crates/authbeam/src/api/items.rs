@@ -18,7 +18,7 @@ pub async fn get_request(
     Path(id): Path<String>,
 ) -> impl IntoResponse {
     // get item
-    let item = match database.get_item(id).await {
+    let item = match database.get_item(&id).await {
         Ok(i) => i,
         Err(e) => return Json(e.to_json()),
     };
@@ -45,9 +45,8 @@ pub async fn create_request(
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => {
-            let token = c.value_trimmed().to_string();
-
-            match database.get_profile_by_unhashed(token.clone()).await {
+            let token = c.value_trimmed();
+            match database.get_profile_by_unhashed(token).await {
                 Ok(ua) => {
                     // check token permission
                     if !ua
@@ -67,7 +66,7 @@ pub async fn create_request(
     };
 
     // return
-    let item = match database.create_item(props, auth_user.id.clone()).await {
+    let item = match database.create_item(props, &auth_user.id).await {
         Ok(m) => m,
         Err(e) => return Json(e.to_json()),
     };
@@ -87,10 +86,7 @@ pub async fn delete_request(
 ) -> impl IntoResponse {
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
+        Some(c) => match database.get_profile_by_unhashed(c.value_trimmed()).await {
             Ok(ua) => ua,
             Err(e) => return Json(e.to_json()),
         },
@@ -98,7 +94,7 @@ pub async fn delete_request(
     };
 
     // return
-    if let Err(e) = database.delete_item(id, auth_user).await {
+    if let Err(e) = database.delete_item(&id, auth_user).await {
         return Json(e.to_json());
     }
 
@@ -118,10 +114,7 @@ pub async fn update_status_request(
 ) -> impl IntoResponse {
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
+        Some(c) => match database.get_profile_by_unhashed(c.value_trimmed()).await {
             Ok(ua) => ua,
             Err(e) => return Json(e.to_json()),
         },
@@ -130,7 +123,7 @@ pub async fn update_status_request(
 
     // return
     if let Err(e) = database
-        .update_item_status(id, props.status, auth_user)
+        .update_item_status(&id, props.status, auth_user)
         .await
     {
         return Json(e.to_json());
@@ -152,10 +145,7 @@ pub async fn update_item_request(
 ) -> impl IntoResponse {
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
+        Some(c) => match database.get_profile_by_unhashed(c.value_trimmed()).await {
             Ok(ua) => ua,
             Err(e) => return Json(e.to_json()),
         },
@@ -163,7 +153,7 @@ pub async fn update_item_request(
     };
 
     // return
-    if let Err(e) = database.update_item(id, props, auth_user).await {
+    if let Err(e) = database.update_item(&id, props, auth_user).await {
         return Json(e.to_json());
     }
 
@@ -183,10 +173,7 @@ pub async fn update_item_content_request(
 ) -> impl IntoResponse {
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
+        Some(c) => match database.get_profile_by_unhashed(c.value_trimmed()).await {
             Ok(ua) => ua,
             Err(e) => return Json(e.to_json()),
         },
@@ -194,7 +181,7 @@ pub async fn update_item_content_request(
     };
 
     // return
-    if let Err(e) = database.update_item_content(id, props, auth_user).await {
+    if let Err(e) = database.update_item_content(&id, props, auth_user).await {
         return Json(e.to_json());
     }
 
@@ -213,10 +200,7 @@ pub async fn buy_request(
 ) -> impl IntoResponse {
     // get user from token
     let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .get_profile_by_unhashed(c.value_trimmed().to_string())
-            .await
-        {
+        Some(c) => match database.get_profile_by_unhashed(c.value_trimmed()).await {
             Ok(ua) => ua,
             Err(e) => return Json(e.to_json()),
         },
@@ -224,7 +208,7 @@ pub async fn buy_request(
     };
 
     // return
-    let item = match database.get_item(id).await {
+    let item = match database.get_item(&id).await {
         Ok(i) => i,
         Err(e) => return Json(e.to_json()),
     };
@@ -239,7 +223,7 @@ pub async fn buy_request(
 
     // make sure we don't already have this item
     if let Ok(_) = database
-        .get_transaction_by_customer_item(auth_user.id.clone(), item.id.clone())
+        .get_transaction_by_customer_item(&auth_user.id, &item.id)
         .await
     {
         return Json(DefaultReturn {
@@ -257,7 +241,7 @@ pub async fn buy_request(
                 item: item.id.clone(),
                 amount: -(item.cost),
             },
-            auth_user.id,
+            &auth_user.id,
         )
         .await
     {

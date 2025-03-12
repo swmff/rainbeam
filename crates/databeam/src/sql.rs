@@ -116,8 +116,8 @@ pub async fn create_db(options: DatabaseOpts) -> Database<sqlx::SqlitePool> {
         panic!("Failed to connect to database!");
     }
 
-    return Database {
+    Database {
         client: client.unwrap(),
         r#type: String::from("sqlite"),
-    };
+    }
 }
