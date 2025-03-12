@@ -131,7 +131,7 @@ pub async fn login_request(
     if input_password != ua.password {
         return (
             HeaderMap::new(),
-            serde_json::to_string(&DatabaseError::NotAllowed.to_json::<()>()).unwrap(),
+            serde_json::to_string(&DatabaseError::IncorrectPassword.to_json::<()>()).unwrap(),
         );
     }
 

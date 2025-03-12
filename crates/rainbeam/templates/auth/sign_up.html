@@ -121,6 +121,7 @@ endblock %} {% block content %}
                     if (json.success === false) {
                         error.style.display = "block";
                         error.innerHTML = `<div class="mdnote-title">${json.message}</div>`;
+                        grecaptcha.reset();
                     } else {
                         // update tokens
                         const new_tokens = ns("me").LOGIN_ACCOUNT_TOKENS;

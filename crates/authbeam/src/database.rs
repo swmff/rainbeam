@@ -692,7 +692,7 @@ impl Database {
 
         // make sure user doesn't already exists
         if let Ok(_) = &self.get_profile_by_username(username).await {
-            return Err(DatabaseError::MustBeUnique);
+            return Err(DatabaseError::UsernameTaken);
         };
 
         // check username

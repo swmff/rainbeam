@@ -747,6 +747,8 @@ pub struct LabelCreate {
 #[derive(Debug, PartialEq, Eq)]
 pub enum DatabaseError {
     ModulesMustBeOffsale,
+    IncorrectPassword,
+    UsernameTaken,
     TooExpensive,
     MustBeUnique,
     OutOfScope,
@@ -761,16 +763,18 @@ impl DatabaseError {
     pub fn to_string(&self) -> String {
         use DatabaseError::*;
         match self {
-            ModulesMustBeOffsale => String::from("Modules must be off-sale. (ModulesMustBeOffsale)"),
-            TooExpensive => String::from("You cannot afford to do this. (TooExpensive)"),
-            MustBeUnique => String::from("One of the given values must be unique. (MustBeUnique)"),
+            ModulesMustBeOffsale => String::from("Modules must be off-sale."),
+            IncorrectPassword => String::from("Given password is incorrect."),
+            UsernameTaken => String::from("This username is already in use."),
+            TooExpensive => String::from("You cannot afford to do this."),
+            MustBeUnique => String::from("One of the given values must be unique."),
             OutOfScope => String::from(
-                "Cannot generate tokens with permissions the provided token doesn't have. (OutOfScope)",
+                "Cannot generate tokens with permissions the provided token doesn't have.",
             ),
-            NotAllowed => String::from("You are not allowed to access this resource. (NotAllowed)"),
-            ValueError => String::from("One of the field values given is invalid. (ValueError)"),
-            NotFound => String::from("No asset with this ID could be found. (NotFound)"),
-            TooLong => String::from("Given data is too long. (TooLong)"),
+            NotAllowed => String::from("You are not allowed to access this resource."),
+            ValueError => String::from("One of the field values given is invalid."),
+            NotFound => String::from("No asset with this ID could be found."),
+            TooLong => String::from("Given data is too long."),
             _ => String::from("An unspecified error has occured"),
         }
     }
