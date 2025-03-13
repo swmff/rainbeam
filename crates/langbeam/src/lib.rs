@@ -1,7 +1,12 @@
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    sync::{LazyLock, RwLock},
+};
 use serde::{Serialize, Deserialize};
 use rainbeam_shared::fs;
 use pathbufd::PathBufD;
+
+pub static ENGLISH_US: LazyLock<RwLock<LangFile>> = LazyLock::new(RwLock::default);
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LangFile {
@@ -37,7 +42,17 @@ impl LangFile {
     /// Get a value from `data`, returns an empty string if it doesn't exist
     pub fn get(&self, key: &str) -> String {
         if !self.exists(key) {
-            return key.to_string();
+            if (self.name == "net.rainbeam.langs.testing:aa-BB")
+                | (self.name == "net.rainbeam.langs.testing:en-US")
+            {
+                return key.to_string();
+            } else {
+                // load english instead
+                let reader = ENGLISH_US
+                    .read()
+                    .expect("failed to pull reader for ENGLISH_US");
+                return reader.get(key);
+            }
         }
 
         self.data.get(key).unwrap().to_owned()
@@ -63,6 +78,14 @@ pub fn read_langs() -> HashMap<String, LangFile> {
                     Ok(de) => de,
                     Err(_) => continue,
                 };
+
+            if de.name.ends_with("en-US") {
+                let mut writer = ENGLISH_US
+                    .write()
+                    .expect("failed to pull writer for ENGLISH_US");
+                *writer = de.clone();
+                drop(writer);
+            }
 
             out.insert(de.name.clone(), de);
         }

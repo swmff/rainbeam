@@ -486,6 +486,17 @@
                     "css",
                 );
             });
+
+            for (const input of document.querySelectorAll(
+                "input[type=color]",
+            )) {
+                input.value = document.getElementById(
+                    input
+                        .getAttribute("onchange")
+                        .split("link_color('")[1]
+                        .split("'")[0],
+                ).value;
+            }
         }, 500);
     </script>
 
