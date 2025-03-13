@@ -397,6 +397,26 @@ impl Database {
 
         true
     }
+
+    /// Get a profile's username given its `id`.
+    pub async fn get_profile_username(&self, id: &str) -> String {
+        // fetch from database
+        let query = if (self.base.db.r#type == "sqlite") | (self.base.db.r#type == "mysql") {
+            "SELECT \"username\" FROM \"xprofiles\" WHERE \"id\" = ?"
+        } else {
+            "SELECT \"username\" FROM \"xprofiles\" WHERE \"id\" = $1"
+        };
+
+        let c = &self.base.db.client;
+        let row = match sqlquery(query).bind::<&str>(id).fetch_one(c).await {
+            Ok(u) => self.base.textify_row(u).0,
+            Err(_) => return String::new(),
+        };
+
+        // return
+        from_row!(row->username())
+    }
+
     /// Fetch a profile correctly.
     pub async fn get_profile(&self, id: &str) -> Result<Box<Profile>> {
         let mut id = id.to_string();

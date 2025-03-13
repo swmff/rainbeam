@@ -139,9 +139,16 @@ macro_rules! update_profile_count {
                 .await
             {
                 Ok(_) => {
+                    let username = self.get_profile_username(id).await;
+
                     self.base
                         .cachedb
                         .remove(format!("rbeam.auth.profile:{id}"))
+                        .await;
+
+                    self.base
+                        .cachedb
+                        .get(format!("rbeam.auth.profile:{}", username))
                         .await;
 
                     Ok(())
