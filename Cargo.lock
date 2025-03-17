@@ -999,7 +999,7 @@ dependencies = [
 
 [[package]]
 name = "databeam"
-version = "2.0.0"
+version = "2.0.1"
 dependencies = [
  "moka",
  "oysters_client",
@@ -2605,9 +2605,9 @@ checksum = "b15813163c1d831bf4a13c3610c05c0d03b39feb07f7e09fa234dac9b15aaf39"
 
 [[package]]
 name = "oysters_client"
-version = "0.1.3"
+version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f2ec1192bd839a4f0c292450a1630fc5e673eddf7a967e262b56afa79d1d655d"
+checksum = "d0f5713de4050b68b5473000fe11b0711e12a166a9a357799795cf357fa60dd0"
 dependencies = [
  "oysters_core",
  "reqwest",
@@ -2615,9 +2615,9 @@ dependencies = [
 
 [[package]]
 name = "oysters_core"
-version = "0.1.2"
+version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9b9f2e7e8db08a1410f6b194f32acf2cc9387bd264cb13b6707d1b771d89d405"
+checksum = "0c59ef69151110623fc71c63bfc84d398c352908c65436a298cae93720109306"
 dependencies = [
  "pathbufd",
  "serde",
