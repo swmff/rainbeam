@@ -13,16 +13,17 @@ rust-version = "1.83"
 postgres = ["databeam/postgres", "authbeam/postgres"]
 mysql = ["databeam/mysql", "authbeam/mysql"]
 sqlite = ["databeam/sqlite", "authbeam/sqlite"]
-default = ["databeam/sqlite", "authbeam/sqlite"]
 redis = ["databeam/redis", "authbeam/redis"]
 moka = ["databeam/moka", "authbeam/moka"]
+oysters = ["databeam/oysters", "authbeam/oysters"]
+default = ["databeam/sqlite", "authbeam/sqlite"]
 
 [dependencies]
 axum = { version = "0.8.1", features = ["macros", "form"] }
 axum-extra = { version = "0.10.0", features = ["cookie"] }
-reqwest = { version = "0.12.13", features = ["json", "stream"] }
+reqwest = { version = "0.12.14", features = ["json", "stream"] }
 serde = { version = "1.0.219", features = ["derive"] }
-tokio = { version = "1.44.0", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.44.1", features = ["macros", "rt-multi-thread"] }
 toml = "0.8.20"
 serde_json = "1.0.140"
 regex = "1.11.1"
@@ -31,8 +32,7 @@ ammonia = "4.0.0"
 async-recursion = "1.1.1"
 tracing = "0.1.41"
 rainbeam-shared = "1.0.1"
-# databeam = { path = "../databeam", default-features = false }
-databeam = { version = "1.0.0", default-features = false }
+databeam = { path = "../databeam", version = "2.0.0", default-features = false }
 authbeam = { path = "../authbeam", default-features = false }
 langbeam = { path = "../langbeam" }
 mime_guess = "2.0.5"

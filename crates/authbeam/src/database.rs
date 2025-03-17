@@ -535,7 +535,7 @@ impl Database {
         // check in cache
         let cached = self
             .base
-            .cachedb
+            .cache
             .get(format!("rbeam.auth.profile:{}", username))
             .await;
 
@@ -544,7 +544,7 @@ impl Database {
                 Ok(p) => return Ok(Box::new(p)),
                 Err(_) => {
                     self.base
-                        .cachedb
+                        .cache
                         .remove(format!("rbeam.auth.profile:{}", username))
                         .await;
                 }
@@ -571,7 +571,7 @@ impl Database {
         };
 
         self.base
-            .cachedb
+            .cache
             .set(
                 format!("rbeam.auth.profile:{}", username),
                 serde_json::to_string::<Profile>(&user).unwrap(),
@@ -592,7 +592,7 @@ impl Database {
         // check in cache
         let cached = self
             .base
-            .cachedb
+            .cache
             .get(format!("rbeam.auth.profile:{}", id))
             .await;
 
@@ -601,7 +601,7 @@ impl Database {
                 Ok(p) => return Ok(Box::new(p)),
                 Err(_) => {
                     self.base
-                        .cachedb
+                        .cache
                         .remove(format!("rbeam.auth.profile:{}", id))
                         .await;
                 }
@@ -628,7 +628,7 @@ impl Database {
         };
 
         self.base
-            .cachedb
+            .cache
             .set(
                 format!("rbeam.auth.profile:{}", id),
                 serde_json::to_string::<Profile>(&user).unwrap(),
@@ -816,12 +816,12 @@ impl Database {
         {
             Ok(_) => {
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.profile:{}", profile.username))
                     .await;
 
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.profile:{}", profile.id))
                     .await;
 
@@ -868,12 +868,12 @@ impl Database {
         {
             Ok(_) => {
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.profile:{}", ua.username))
                     .await;
 
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.profile:{}", ua.id))
                     .await;
 
@@ -913,12 +913,12 @@ impl Database {
         {
             Ok(_) => {
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.profile:{}", ua.username))
                     .await;
 
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.profile:{}", ua.id))
                     .await;
 
@@ -954,12 +954,12 @@ impl Database {
         {
             Ok(_) => {
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.profile:{}", ua.username))
                     .await;
 
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.profile:{}", ua.id))
                     .await;
 
@@ -999,12 +999,12 @@ impl Database {
         {
             Ok(_) => {
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.profile:{}", ua.username))
                     .await;
 
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.profile:{}", ua.id))
                     .await;
 
@@ -1040,12 +1040,12 @@ impl Database {
         {
             Ok(_) => {
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.profile:{}", ua.username))
                     .await;
 
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.profile:{}", ua.id))
                     .await;
 
@@ -1079,12 +1079,12 @@ impl Database {
         {
             Ok(_) => {
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.profile:{}", ua.username))
                     .await;
 
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.profile:{}", ua.id))
                     .await;
 
@@ -1118,12 +1118,12 @@ impl Database {
         {
             Ok(_) => {
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.profile:{}", ua.username))
                     .await;
 
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.profile:{}", ua.id))
                     .await;
 
@@ -1160,12 +1160,12 @@ impl Database {
         {
             Ok(_) => {
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.profile:{}", ua.username))
                     .await;
 
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.profile:{}", ua.id))
                     .await;
 
@@ -1220,12 +1220,12 @@ impl Database {
         {
             Ok(_) => {
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.profile:{}", ua.username))
                     .await;
 
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.profile:{}", ua.id))
                     .await;
 
@@ -1283,12 +1283,12 @@ impl Database {
         {
             Ok(_) => {
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.profile:{}", ua.username))
                     .await;
 
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.profile:{}", ua.id))
                     .await;
 
@@ -1406,12 +1406,12 @@ impl Database {
                 };
 
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.app.response_count:{}", id))
                     .await;
 
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.app.global_question_count:{}", id))
                     .await;
 
@@ -1433,7 +1433,7 @@ impl Database {
                 };
 
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.app.friends_count:{}", id))
                     .await;
 
@@ -1481,27 +1481,27 @@ impl Database {
 
                 // ...
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.profile:{}", id))
                     .await;
 
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.profile:{}", user.username))
                     .await;
 
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.followers_count:{}", id))
                     .await;
 
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.following_count:{}", id))
                     .await;
 
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.notification_count:{}", id))
                     .await;
 
@@ -1559,11 +1559,7 @@ impl Database {
     /// * `username` - `String` of the user's username
     pub async fn get_group_by_id(&self, id: i32) -> Result<Group> {
         // check in cache
-        let cached = self
-            .base
-            .cachedb
-            .get(format!("rbeam.auth.gid:{}", id))
-            .await;
+        let cached = self.base.cache.get(format!("rbeam.auth.gid:{}", id)).await;
 
         if cached.is_some() {
             return Ok(serde_json::from_str::<Group>(cached.unwrap().as_str()).unwrap());
@@ -1593,7 +1589,7 @@ impl Database {
         };
 
         self.base
-            .cachedb
+            .cache
             .set(
                 format!("rbeam.auth.gid:{}", id),
                 serde_json::to_string::<Group>(&group).unwrap(),
@@ -1756,7 +1752,7 @@ impl Database {
         // attempt to fetch from cache
         if let Some(count) = self
             .base
-            .cachedb
+            .cache
             .get(format!("rbeam.auth.followers_count:{}", user))
             .await
         {
@@ -1767,7 +1763,7 @@ impl Database {
         let count = self.get_followers(user).await.unwrap_or(Vec::new()).len();
 
         self.base
-            .cachedb
+            .cache
             .set(
                 format!("rbeam.auth.followers_count:{}", user),
                 count.to_string(),
@@ -1895,7 +1891,7 @@ impl Database {
         // attempt to fetch from cache
         if let Some(count) = self
             .base
-            .cachedb
+            .cache
             .get(format!("rbeam.auth.following_count:{}", user))
             .await
         {
@@ -1906,7 +1902,7 @@ impl Database {
         let count = self.get_following(user).await.unwrap_or(Vec::new()).len();
 
         self.base
-            .cachedb
+            .cache
             .set(
                 format!("rbeam.auth.following_count:{}", user),
                 count.to_string(),
@@ -1956,12 +1952,12 @@ impl Database {
             {
                 Ok(_) => {
                     self.base
-                        .cachedb
+                        .cache
                         .decr(format!("rbeam.auth.following_count:{}", props.user))
                         .await;
 
                     self.base
-                        .cachedb
+                        .cache
                         .decr(format!("rbeam.auth.followers_count:{}", props.following))
                         .await;
 
@@ -1988,12 +1984,12 @@ impl Database {
             Ok(_) => {
                 // bump counts
                 self.base
-                    .cachedb
+                    .cache
                     .incr(format!("rbeam.auth.following_count:{}", props.user))
                     .await;
 
                 self.base
-                    .cachedb
+                    .cache
                     .incr(format!("rbeam.auth.followers_count:{}", props.following))
                     .await;
 
@@ -2051,12 +2047,12 @@ impl Database {
             {
                 Ok(_) => {
                     self.base
-                        .cachedb
+                        .cache
                         .decr(format!("rbeam.auth.following_count:{}", props.user))
                         .await;
 
                     self.base
-                        .cachedb
+                        .cache
                         .decr(format!("rbeam.auth.followers_count:{}", props.following))
                         .await;
 
@@ -2082,7 +2078,7 @@ impl Database {
         // check in cache
         match self
             .base
-            .cachedb
+            .cache
             .get(format!("rbeam.auth.notification:{}", id))
             .await
         {
@@ -2115,7 +2111,7 @@ impl Database {
 
         // store in cache
         self.base
-            .cachedb
+            .cache
             .set(
                 format!("rbeam.auth.notification:{}", id),
                 serde_json::to_string::<Notification>(&notification).unwrap(),
@@ -2179,7 +2175,7 @@ impl Database {
         // attempt to fetch from cache
         if let Some(count) = self
             .base
-            .cachedb
+            .cache
             .get(format!("rbeam.auth.notification_count:{}", recipient))
             .await
         {
@@ -2194,7 +2190,7 @@ impl Database {
             .len();
 
         self.base
-            .cachedb
+            .cache
             .set(
                 format!("rbeam.auth.notification_count:{}", recipient),
                 count.to_string(),
@@ -2306,7 +2302,7 @@ impl Database {
             Ok(_) => {
                 // incr notifications count
                 self.base
-                    .cachedb
+                    .cache
                     .incr(format!(
                         "rbeam.auth.notification_count:{}",
                         notification.recipient
@@ -2376,7 +2372,7 @@ impl Database {
             Ok(_) => {
                 // decr notifications count
                 self.base
-                    .cachedb
+                    .cache
                     .decr(format!(
                         "rbeam.auth.notification_count:{}",
                         notification.recipient
@@ -2385,7 +2381,7 @@ impl Database {
 
                 // remove from cache
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.notification:{}", id))
                     .await;
 
@@ -2440,7 +2436,7 @@ impl Database {
             Ok(_) => {
                 // clear notifications count
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.notification_count:{}", recipient))
                     .await;
 
@@ -2448,7 +2444,7 @@ impl Database {
                 for notification in notifications {
                     // remove from cache
                     self.base
-                        .cachedb
+                        .cache
                         .remove(format!("rbeam.auth.notification:{}", notification.id))
                         .await;
                 }
@@ -2471,7 +2467,7 @@ impl Database {
         // check in cache
         match self
             .base
-            .cachedb
+            .cache
             .get(format!("rbeam.auth.warning:{}", id))
             .await
         {
@@ -2506,7 +2502,7 @@ impl Database {
 
         // store in cache
         self.base
-            .cachedb
+            .cache
             .set(
                 format!("rbeam.auth.warning:{}", id),
                 serde_json::to_string::<Warning>(&warning).unwrap(),
@@ -2683,7 +2679,7 @@ impl Database {
             Ok(_) => {
                 // remove from cache
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.warning:{}", id))
                     .await;
 
@@ -2705,7 +2701,7 @@ impl Database {
         // check in cache
         match self
             .base
-            .cachedb
+            .cache
             .get(format!("rbeam.auth.ipban:{}", id))
             .await
         {
@@ -2740,7 +2736,7 @@ impl Database {
 
         // store in cache
         self.base
-            .cachedb
+            .cache
             .set(
                 format!("rbeam.auth.ipban:{}", id),
                 serde_json::to_string::<IpBan>(&ban).unwrap(),
@@ -2958,7 +2954,7 @@ impl Database {
             Ok(_) => {
                 // remove from cache
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.ipban:{}", id))
                     .await;
 
@@ -3079,12 +3075,12 @@ impl Database {
                     if relationship.0 == RelationshipStatus::Friends {
                         // decr friendship counts since we were previously friends but are not now
                         self.base
-                            .cachedb
+                            .cache
                             .decr(format!("rbeam.app.friends_count:{}", uone.id))
                             .await;
 
                         self.base
-                            .cachedb
+                            .cache
                             .decr(format!("rbeam.app.friends_count:{}", utwo.id))
                             .await;
                     }
@@ -3201,12 +3197,12 @@ impl Database {
                 };
 
                 self.base
-                    .cachedb
+                    .cache
                     .incr(format!("rbeam.app.friends_count:{}", uone.id))
                     .await;
 
                 self.base
-                    .cachedb
+                    .cache
                     .incr(format!("rbeam.app.friends_count:{}", utwo.id))
                     .await;
 
@@ -3253,12 +3249,12 @@ impl Database {
                 if relationship.0 == RelationshipStatus::Friends {
                     // decr friendship counts since we were previously friends but are not now
                     self.base
-                        .cachedb
+                        .cache
                         .decr(format!("rbeam.app.friends_count:{}", uone.id))
                         .await;
 
                     self.base
-                        .cachedb
+                        .cache
                         .decr(format!("rbeam.app.friends_count:{}", utwo.id))
                         .await;
                 }
@@ -3474,7 +3470,7 @@ impl Database {
         // attempt to fetch from cache
         if let Some(count) = self
             .base
-            .cachedb
+            .cache
             .get(format!("rbeam.app.friends_count:{}", id))
             .await
         {
@@ -3489,7 +3485,7 @@ impl Database {
             .len();
 
         self.base
-            .cachedb
+            .cache
             .set(format!("rbeam.app.friends_count:{}", id), count.to_string())
             .await;
 
@@ -3507,7 +3503,7 @@ impl Database {
         // check in cache
         match self
             .base
-            .cachedb
+            .cache
             .get(format!("rbeam.auth.ipblock:{}", id))
             .await
         {
@@ -3539,7 +3535,7 @@ impl Database {
 
         // store in cache
         self.base
-            .cachedb
+            .cache
             .set(
                 format!("rbeam.auth.ipblock:{}", id),
                 serde_json::to_string::<IpBlock>(&block).unwrap(),
@@ -3724,7 +3720,7 @@ impl Database {
             Ok(_) => {
                 // remove from cache
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.ipblock:{}", id))
                     .await;
 
@@ -3755,7 +3751,7 @@ impl Database {
         // check in cache
         match self
             .base
-            .cachedb
+            .cache
             .get(format!("rbeam.auth.label:{}", id))
             .await
         {
@@ -3763,7 +3759,7 @@ impl Database {
                 Ok(c) => return Ok(c),
                 Err(_) => {
                     self.base
-                        .cachedb
+                        .cache
                         .remove(format!("rbeam.auth.label:{}", id))
                         .await;
                 }
@@ -3792,7 +3788,7 @@ impl Database {
 
         // store in cache
         self.base
-            .cachedb
+            .cache
             .set(
                 format!("rbeam.auth.label:{}", id),
                 serde_json::to_string::<UserLabel>(&label).unwrap(),
@@ -3894,7 +3890,7 @@ impl Database {
         };
 
         self.base
-            .cachedb
+            .cache
             .remove(format!("rbeam.auth.label:{}", id))
             .await;
 
@@ -3935,7 +3931,7 @@ impl Database {
         // check in cache
         match self
             .base
-            .cachedb
+            .cache
             .get(format!("rbeam.auth.econ.transaction:{}", id))
             .await
         {
@@ -3948,7 +3944,7 @@ impl Database {
                 }
                 Err(_) => {
                     self.base
-                        .cachedb
+                        .cache
                         .remove(format!("rbeam.auth.econ.transaction:{}", id))
                         .await;
                 }
@@ -3977,7 +3973,7 @@ impl Database {
 
         // store in cache
         self.base
-            .cachedb
+            .cache
             .set(
                 format!("rbeam.auth.econ.transaction:{}", id),
                 serde_json::to_string::<Transaction>(&transaction.0).unwrap(),
@@ -4302,7 +4298,7 @@ impl Database {
         // check in cache
         match self
             .base
-            .cachedb
+            .cache
             .get(format!("rbeam.auth.econ.item:{}", id))
             .await
         {
@@ -4310,7 +4306,7 @@ impl Database {
                 Ok(c) => return Ok(c),
                 Err(_) => {
                     self.base
-                        .cachedb
+                        .cache
                         .remove(format!("rbeam.auth.econ.item:{}", id))
                         .await;
                 }
@@ -4339,7 +4335,7 @@ impl Database {
 
         // store in cache
         self.base
-            .cachedb
+            .cache
             .set(
                 format!("rbeam.auth.econ.item:{}", id),
                 serde_json::to_string::<Item>(&item).unwrap(),
@@ -4748,7 +4744,7 @@ impl Database {
 
                 // remove from cache
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.econ.item:{}", id))
                     .await;
 
@@ -4826,7 +4822,7 @@ impl Database {
             Ok(_) => {
                 // remove from cache
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.econ.item:{}", id))
                     .await;
 
@@ -4902,7 +4898,7 @@ impl Database {
             Ok(_) => {
                 // remove from cache
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.econ.item:{}", id))
                     .await;
 
@@ -4952,7 +4948,7 @@ impl Database {
             Ok(_) => {
                 // remove from cache
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.econ.item:{}", id))
                     .await;
 
@@ -4994,12 +4990,12 @@ impl Database {
         {
             Ok(_) => {
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.profile:{id}"))
                     .await;
 
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.auth.profile:{}", ua.username))
                     .await;
 

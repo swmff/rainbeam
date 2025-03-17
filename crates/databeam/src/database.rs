@@ -28,9 +28,11 @@ pub struct StarterDatabase {
     pub db: Database<sqlx::PgPool>,
     pub options: DatabaseOpts,
     #[cfg(feature = "redis")]
-    pub cachedb: RedisCache,
+    pub cache: RedisCache,
     #[cfg(feature = "moka")]
-    pub cachedb: MokaCache,
+    pub cache: MokaCache,
+    #[cfg(feature = "oysters")]
+    pub cache: OystersCache,
 }
 
 /// Basic database
@@ -40,9 +42,11 @@ pub struct StarterDatabase {
     pub db: Database<sqlx::MySqlPool>,
     pub options: DatabaseOpts,
     #[cfg(feature = "redis")]
-    pub cachedb: RedisCache,
+    pub cache: RedisCache,
     #[cfg(feature = "moka")]
-    pub cachedb: MokaCache,
+    pub cache: MokaCache,
+    #[cfg(feature = "oysters")]
+    pub cache: OystersCache,
 }
 
 /// Basic database
@@ -52,9 +56,11 @@ pub struct StarterDatabase {
     pub db: Database<sqlx::SqlitePool>,
     pub options: DatabaseOpts,
     #[cfg(feature = "redis")]
-    pub cachedb: RedisCache,
+    pub cache: RedisCache,
     #[cfg(feature = "moka")]
-    pub cachedb: MokaCache,
+    pub cache: MokaCache,
+    #[cfg(feature = "oysters")]
+    pub cache: OystersCache,
 }
 
 impl StarterDatabase {
@@ -63,9 +69,11 @@ impl StarterDatabase {
             db: create_db(options.clone()).await,
             options,
             #[cfg(feature = "redis")]
-            cachedb: RedisCache::new().await,
+            cache: RedisCache::new().await,
             #[cfg(feature = "moka")]
-            cachedb: MokaCache::new().await,
+            cache: MokaCache::new().await,
+            #[cfg(feature = "oysters")]
+            cache: OystersCache::new().await,
         }
     }
 

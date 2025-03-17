@@ -13,19 +13,20 @@ rust-version = "1.83"
 postgres = ["databeam/postgres", "authbeam/postgres", "rainbeam-core/postgres"]
 mysql = ["databeam/mysql", "authbeam/mysql", "rainbeam-core/mysql"]
 sqlite = ["databeam/sqlite", "authbeam/sqlite", "rainbeam-core/sqlite"]
-default = ["databeam/sqlite", "authbeam/sqlite", "rainbeam-core/sqlite"]
 mimalloc = []
 redis = ["databeam/redis", "authbeam/redis", "rainbeam-core/redis"]
 moka = ["databeam/moka", "authbeam/moka", "rainbeam-core/moka"]
+oysters = ["databeam/oysters", "authbeam/oysters", "rainbeam-core/oysters"]
+default = ["databeam/sqlite", "authbeam/sqlite", "rainbeam-core/sqlite"]
 
 [dependencies]
 reva = { version = "0.13.2", features = ["with-axum"] }
 reva_axum = "0.5.1"
 axum = { version = "0.8.1", features = ["macros", "form"] }
 axum-extra = { version = "0.10.0", features = ["cookie"] }
-reqwest = { version = "0.12.13", features = ["json", "stream"] }
+reqwest = { version = "0.12.14", features = ["json", "stream"] }
 serde = { version = "1.0.219", features = ["derive"] }
-tokio = { version = "1.44.0", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.44.1", features = ["macros", "rt-multi-thread"] }
 toml = "0.8.20"
 tower-http = { version = "0.6.2", features = ["fs", "trace"] }
 serde_json = "1.0.140"
@@ -37,8 +38,7 @@ tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
 # rainbeam-shared = { path = "../shared" }
 rainbeam-shared = "1.0.1"
-# databeam = { path = "../databeam", default-features = false }
-databeam = { version = "1.0.0", default-features = false }
+databeam = { path = "../databeam", version = "2.0.0", default-features = false }
 authbeam = { path = "../authbeam", default-features = false }
 langbeam = { path = "../langbeam" }
 rainbeam-core = { path = "../rainbeam-core", default-features = false }

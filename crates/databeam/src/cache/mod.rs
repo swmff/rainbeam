@@ -12,6 +12,9 @@ pub mod redis;
 #[cfg(feature = "moka")]
 pub mod moka;
 
+#[cfg(feature = "oysters")]
+pub mod oysters;
+
 /// A simple cache "database".
 pub trait Cache {
     type Item;

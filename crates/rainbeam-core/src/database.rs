@@ -448,7 +448,7 @@ impl Database {
         // we still prefix rainbeam under the "sparkler" name for compatibility with the first 6 development versions
         match self
             .base
-            .cachedb
+            .cache
             .get(format!("rbeam.app.question:{}", id))
             .await
         {
@@ -480,7 +480,7 @@ impl Database {
                 Err(_) => {
                     // remove bad entry and continue to fetch from database
                     self.base
-                        .cachedb
+                        .cache
                         .remove(format!("rbeam.app.question:{}", id))
                         .await;
                 }
@@ -537,7 +537,7 @@ impl Database {
         // store in cache
         if id.len() == 64 {
             self.base
-                .cachedb
+                .cache
                 .set(
                     format!("rbeam.app.question:{}", id),
                     serde_json::to_string::<RefQuestion>(&RefQuestion::from(question.clone()))
@@ -1131,7 +1131,7 @@ impl Database {
         // attempt to fetch from cache
         if let Some(count) = self
             .base
-            .cachedb
+            .cache
             .get(format!("rbeam.app.global_questions_count:{}", author))
             .await
         {
@@ -1146,7 +1146,7 @@ impl Database {
             .len();
 
         self.base
-            .cachedb
+            .cache
             .set(
                 format!("rbeam.app.global_question_count:{}", author),
                 count.to_string(),
@@ -1232,7 +1232,7 @@ impl Database {
         // attempt to fetch from cache
         if let Some(count) = self
             .base
-            .cachedb
+            .cache
             .get(format!("rbeam.app.question_response_count:{}", id))
             .await
         {
@@ -1247,7 +1247,7 @@ impl Database {
             .len();
 
         self.base
-            .cachedb
+            .cache
             .set(
                 format!("rbeam.app.question_response_count:{}", id),
                 count.to_string(),
@@ -1510,7 +1510,7 @@ impl Database {
                 // incr questions count
                 if question.recipient.username == "@" {
                     self.base
-                        .cachedb
+                        .cache
                         .incr(format!(
                             "rbeam.app.global_question_count:{}",
                             question.author.username
@@ -1652,13 +1652,13 @@ impl Database {
 
                     // delete response counter
                     self.base
-                        .cachedb
+                        .cache
                         .remove(format!("rbeam.app.question_response_count:{}", question.id))
                         .await;
 
                     // decr questions count
                     self.base
-                        .cachedb
+                        .cache
                         .decr(format!(
                             "rbeam.app.global_question_count:{}",
                             question.author.username
@@ -1685,7 +1685,7 @@ impl Database {
 
                 // remove from cache
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.app.question:{}", id))
                     .await;
 
@@ -1807,7 +1807,7 @@ impl Database {
                     } else {
                         // reaction_count = count
                         self.base
-                            .cachedb
+                            .cache
                             .set(
                                 format!("rbeam.app.reaction_count:{}", id),
                                 count.to_string(),
@@ -1873,7 +1873,7 @@ impl Database {
         // check in cache
         match self
             .base
-            .cachedb
+            .cache
             .get(format!("rbeam.app.response:{}", id))
             .await
         {
@@ -1888,7 +1888,7 @@ impl Database {
                     Err(_) => {
                         // we're storing a bad version that couldn't deserialize, we don't need that...
                         self.base
-                            .cachedb
+                            .cache
                             .remove(format!("rbeam.app.response:{}", id))
                             .await
                     }
@@ -1921,7 +1921,7 @@ impl Database {
         // store in cache
         if id.len() == 64 {
             self.base
-                .cachedb
+                .cache
                 .set(
                     format!("rbeam.app.response:{}", id),
                     serde_json::to_string::<QuestionResponse>(&response.1).unwrap(),
@@ -1943,7 +1943,7 @@ impl Database {
         // check in cache
         match self
             .base
-            .cachedb
+            .cache
             .get(format!("rbeam.app.response:{}", id))
             .await
         {
@@ -1958,7 +1958,7 @@ impl Database {
                     Err(_) => {
                         // we're storing a bad version that couldn't deserialize, we don't need that...
                         self.base
-                            .cachedb
+                            .cache
                             .remove(format!("rbeam.app.response:{}", id))
                             .await
                     }
@@ -1991,7 +1991,7 @@ impl Database {
         // store in cache
         if id.len() == 64 {
             self.base
-                .cachedb
+                .cache
                 .set(
                     format!("rbeam.app.response:{}", id),
                     serde_json::to_string::<QuestionResponse>(&response).unwrap(),
@@ -2446,7 +2446,7 @@ impl Database {
         // attempt to fetch from cache
         if let Some(count) = self
             .base
-            .cachedb
+            .cache
             .get(format!("rbeam.app.response_count:{}", author))
             .await
         {
@@ -2461,7 +2461,7 @@ impl Database {
             .len();
 
         self.base
-            .cachedb
+            .cache
             .set(
                 format!("rbeam.app.response_count:{}", author),
                 count.to_string(),
@@ -2592,7 +2592,7 @@ impl Database {
 
         // return
         self.base
-            .cachedb
+            .cache
             .set_timed(
                 format!(
                     "rbeam.app.timeline_save.get_responses_by_following_paginated:{}:{}",
@@ -2909,7 +2909,7 @@ impl Database {
 
                     // bump question response count
                     self.base
-                        .cachedb
+                        .cache
                         .incr(format!(
                             "rbeam.app.question_response_count:{}",
                             response.question
@@ -2918,7 +2918,7 @@ impl Database {
 
                     // bump response count
                     self.base
-                        .cachedb
+                        .cache
                         .incr(format!(
                             "rbeam.app.response_count:{}",
                             response.author.id.clone()
@@ -2957,7 +2957,7 @@ impl Database {
 
                 // bump response count
                 self.base
-                    .cachedb
+                    .cache
                     .incr(format!("rbeam.app.response_count:{}", response.author.id))
                     .await;
 
@@ -2997,7 +2997,7 @@ impl Database {
         {
             Ok(_) => {
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.app.response:{id}"))
                     .await;
 
@@ -3091,7 +3091,7 @@ impl Database {
         {
             Ok(_) => {
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.app.response:{id}"))
                     .await;
 
@@ -3169,7 +3169,7 @@ impl Database {
         {
             Ok(_) => {
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.app.response:{id}"))
                     .await;
 
@@ -3249,7 +3249,7 @@ impl Database {
             Ok(_) => {
                 for id in ids {
                     self.base
-                        .cachedb
+                        .cache
                         .remove(format!("rbeam.app.response:{id}"))
                         .await;
                 }
@@ -3321,7 +3321,7 @@ impl Database {
             Ok(_) => {
                 for id in ids {
                     self.base
-                        .cachedb
+                        .cache
                         .remove(format!("rbeam.app.response:{id}"))
                         .await;
                 }
@@ -3400,7 +3400,7 @@ impl Database {
         {
             Ok(_) => {
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.app.response:{id}"))
                     .await;
 
@@ -3476,20 +3476,20 @@ impl Database {
             Ok(_) => {
                 // remove from cache
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.app.response:{}", id))
                     .await;
 
                 // decr response count
                 self.base
-                    .cachedb
+                    .cache
                     .decr(format!("rbeam.app.response_count:{}", response.1.author.id))
                     .await;
 
                 // decr global question response count
                 if response.0.recipient.username == "@" {
                     self.base
-                        .cachedb
+                        .cache
                         .decr(format!(
                             "rbeam.app.question_response_count:{}",
                             response.0.id
@@ -3610,7 +3610,7 @@ impl Database {
         // check in cache
         match self
             .base
-            .cachedb
+            .cache
             .get(format!("rbeam.app.comment:{}", id))
             .await
         {
@@ -3634,7 +3634,7 @@ impl Database {
                 Err(_) => {
                     // bad cache entry, remove and continue
                     self.base
-                        .cachedb
+                        .cache
                         .remove(format!("rbeam.app.comment:{}", id))
                         .await;
                 }
@@ -3687,7 +3687,7 @@ impl Database {
         // store in cache
         if id.len() == 64 {
             self.base
-                .cachedb
+                .cache
                 .set(
                     format!("rbeam.app.comment:{}", id),
                     serde_json::to_string::<ResponseComment>(&comment).unwrap(),
@@ -3857,7 +3857,7 @@ impl Database {
         // attempt to fetch from cache
         if let Some(count) = self
             .base
-            .cachedb
+            .cache
             .get(format!("rbeam.app.comment_count:{}", id))
             .await
         {
@@ -3872,7 +3872,7 @@ impl Database {
             .len();
 
         self.base
-            .cachedb
+            .cache
             .set(format!("rbeam.app.comment_count:{}", id), count.to_string())
             .await;
 
@@ -4167,7 +4167,7 @@ impl Database {
         // attempt to fetch from cache
         if let Some(count) = self
             .base
-            .cachedb
+            .cache
             .get(format!("rbeam.app.reply_count:{}", id))
             .await
         {
@@ -4182,7 +4182,7 @@ impl Database {
             .len();
 
         self.base
-            .cachedb
+            .cache
             .set(format!("rbeam.app.reply_count:{}", id), count.to_string())
             .await;
 
@@ -4412,7 +4412,7 @@ impl Database {
 
                     // bump reply count
                     self.base
-                        .cachedb
+                        .cache
                         .incr(format!("rbeam.app.reply_count:{}", props.reply))
                         .await;
                 } else if response.author.id != comment.author.id {
@@ -4447,7 +4447,7 @@ impl Database {
 
                 // bump comment count
                 self.base
-                    .cachedb
+                    .cache
                     .incr(format!("rbeam.app.comment_count:{}", response.id))
                     .await;
 
@@ -4542,7 +4542,7 @@ impl Database {
         {
             Ok(_) => {
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.app.comment:{id}"))
                     .await;
 
@@ -4621,20 +4621,20 @@ impl Database {
             Ok(_) => {
                 // remove from cache
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.app.comment:{}", id))
                     .await;
 
                 // decr response count
                 self.base
-                    .cachedb
+                    .cache
                     .decr(format!("rbeam.app.comment_count:{}", comment.response))
                     .await;
 
                 // decr reply count
                 if comment.reply.is_some() {
                     self.base
-                        .cachedb
+                        .cache
                         .incr(format!("rbeam.app.reply_count:{}", comment.id))
                         .await;
                 }
@@ -4662,7 +4662,7 @@ impl Database {
         // check in cache
         match self
             .base
-            .cachedb
+            .cache
             .get(format!("rbeam.app.reaction:{}:{}", user, asset))
             .await
         {
@@ -4672,7 +4672,7 @@ impl Database {
                     // delete invalid cached reaction
                     if self
                         .base
-                        .cachedb
+                        .cache
                         .remove(format!("rbeam.app.reaction:{}:{}", user, asset))
                         .await
                         == false
@@ -4716,7 +4716,7 @@ impl Database {
 
         // store in cache
         self.base
-            .cachedb
+            .cache
             .set(
                 format!("rbeam.app.reaction:{}:{}", user, asset),
                 serde_json::to_string::<Reaction>(&reaction).unwrap(),
@@ -4775,7 +4775,7 @@ impl Database {
         // attempt to fetch from cache
         if let Some(count) = self
             .base
-            .cachedb
+            .cache
             .get(format!("rbeam.app.reaction_count:{}", id))
             .await
         {
@@ -4790,7 +4790,7 @@ impl Database {
             .len();
 
         self.base
-            .cachedb
+            .cache
             .set(
                 format!("rbeam.app.reaction_count:{}", id),
                 count.to_string(),
@@ -4853,7 +4853,7 @@ impl Database {
             Ok(_) => {
                 // bump reaction count
                 self.base
-                    .cachedb
+                    .cache
                     .incr(format!("rbeam.app.reaction_count:{}", reaction.asset))
                     .await;
 
@@ -4929,13 +4929,13 @@ impl Database {
             Ok(_) => {
                 // remove from cache
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.app.reaction:{}:{}", user.id, id))
                     .await;
 
                 // decr response count
                 self.base
-                    .cachedb
+                    .cache
                     .decr(format!("rbeam.app.reaction_count:{}", id))
                     .await;
 
@@ -4965,7 +4965,7 @@ impl Database {
             Ok(_) => {
                 // clear reaction count
                 self.base
-                    .cachedb
+                    .cache
                     .decr(format!("rbeam.app.reaction_count:{}", id))
                     .await;
 
@@ -4984,12 +4984,7 @@ impl Database {
     /// * `id`
     pub async fn get_chat(&self, id: String) -> Result<(Chat, Vec<Box<Profile>>)> {
         // check in cache
-        match self
-            .base
-            .cachedb
-            .get(format!("rbeam.app.chat:{}", id))
-            .await
-        {
+        match self.base.cache.get(format!("rbeam.app.chat:{}", id)).await {
             Some(c) => {
                 let chat = serde_json::from_str::<Chat>(c.as_str()).unwrap();
                 let mut profiles_out = Vec::new();
@@ -5033,7 +5028,7 @@ impl Database {
         // store in cache
         if id.len() == 64 {
             self.base
-                .cachedb
+                .cache
                 .set(
                     format!("rbeam.app.chat:{}", id),
                     serde_json::to_string::<Chat>(&chat).unwrap(),
@@ -5309,7 +5304,7 @@ impl Database {
                         Ok(_) => {
                             // remove from cache
                             self.base
-                                .cachedb
+                                .cache
                                 .remove(format!("rbeam.app.chat:{}", id))
                                 .await;
 
@@ -5341,7 +5336,7 @@ impl Database {
                 Ok(_) => {
                     // remove from cache
                     self.base
-                        .cachedb
+                        .cache
                         .remove(format!("rbeam.app.chat:{}", id))
                         .await;
 
@@ -5394,7 +5389,7 @@ impl Database {
             Ok(_) => {
                 // remove from cache
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.app.chat:{}", chat.id))
                     .await;
 
@@ -5495,7 +5490,7 @@ impl Database {
 
                 // remove from cache
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.app.chat:{}", chat.id))
                     .await;
 
@@ -5941,7 +5936,7 @@ impl Database {
         {
             Ok(_) => {
                 self.base
-                    .cachedb
+                    .cache
                     .remove(format!("rbeam.app.message:{id}"))
                     .await;
 
@@ -6018,7 +6013,7 @@ impl Database {
         // attempt to fetch from cache
         if let Some(res) = self
             .base
-            .cachedb
+            .cache
             .get_timed::<Vec<FullResponse>>("rbeam.app.discover:top_reacted".to_string())
             .await
         {
@@ -6056,7 +6051,7 @@ impl Database {
 
         // store
         self.base
-            .cachedb
+            .cache
             .set_timed::<Vec<FullResponse>>(
                 "rbeam.app.discover:top_reacted".to_string(),
                 res.clone(),
@@ -6075,7 +6070,7 @@ impl Database {
         // attempt to fetch from cache
         if let Some(res) = self
             .base
-            .cachedb
+            .cache
             .get_timed::<Vec<(usize, Box<Profile>)>>("rbeam.app.discover:top_askers".to_string())
             .await
         {
@@ -6112,7 +6107,7 @@ impl Database {
 
         // store
         self.base
-            .cachedb
+            .cache
             .set_timed::<Vec<(usize, Box<Profile>)>>(
                 "rbeam.app.discover:top_askers".to_string(),
                 res.clone(),
@@ -6131,7 +6126,7 @@ impl Database {
         // attempt to fetch from cache
         if let Some(res) = self
             .base
-            .cachedb
+            .cache
             .get_timed::<Vec<(usize, Box<Profile>)>>(
                 "rbeam.app.discover:top_responders".to_string(),
             )
@@ -6170,7 +6165,7 @@ impl Database {
 
         // store
         self.base
-            .cachedb
+            .cache
             .set_timed::<Vec<(usize, Box<Profile>)>>(
                 "rbeam.app.discover:top_responders".to_string(),
                 res.clone(),

@@ -6,7 +6,7 @@ macro_rules! cache_sync {
         let row_count = $row.get(as_str).unwrap().parse::<usize>().unwrap_or(0);
         let count = $self
             .base
-            .cachedb
+            .cache
             .get(format!("rbeam.app.{}:{}", as_str, &$id))
             .await
             .unwrap_or_default()
@@ -20,7 +20,7 @@ macro_rules! cache_sync {
             if row_count > count {
                 $self
                     .base
-                    .cachedb
+                    .cache
                     .set(
                         format!("rbeam.app.{}:{}", as_str, &$id),
                         row_count.to_string(),
@@ -142,12 +142,12 @@ macro_rules! update_profile_count {
                     let username = self.get_profile_username(id).await;
 
                     self.base
-                        .cachedb
+                        .cache
                         .remove(format!("rbeam.auth.profile:{id}"))
                         .await;
 
                     self.base
-                        .cachedb
+                        .cache
                         .get(format!("rbeam.auth.profile:{}", username))
                         .await;
 

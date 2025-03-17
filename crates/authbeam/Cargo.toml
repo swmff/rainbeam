@@ -12,25 +12,25 @@ license = "MIT"
 postgres = ["databeam/postgres"]
 mysql = ["databeam/mysql"]
 sqlite = ["databeam/sqlite"]
-default = ["databeam/sqlite", "redis"] # for development
 redis = ["databeam/redis"]
 moka = ["databeam/moka"]
+oysters = ["databeam/oysters"]
+default = ["databeam/sqlite", "oysters"]
 
 [dependencies]
 axum = { version = "0.8.1", features = ["macros"] }
 axum-macros = "0.5.0"
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.140"
-tokio = { version = "1.44.0", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.44.1", features = ["macros", "rt-multi-thread"] }
 dotenv = "0.15.0"
 axum-extra = { version = "0.10.0", features = ["cookie", "multipart"] }
 regex = "1.11.1"
-reqwest = { version = "0.12.13", features = ["stream"] }
+reqwest = { version = "0.12.14", features = ["stream"] }
 hcaptcha-no-wasm = { version = "3.0.1" }
 mime_guess = "2.0.5"
 rainbeam-shared = { version = "1.0.1" }
-# databeam = { path = "../databeam", default-features = false }
-databeam = { version = "1.0.0", default-features = false }
+databeam = { path = "../databeam", version = "2.0.0", default-features = false }
 image = "0.25.5"
 pathbufd = "0.1.4"
 bitflags = "2.9.0"
