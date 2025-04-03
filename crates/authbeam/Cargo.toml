@@ -15,7 +15,7 @@ sqlite = ["databeam/sqlite"]
 redis = ["databeam/redis"]
 moka = ["databeam/moka"]
 oysters = ["databeam/oysters"]
-default = ["databeam/sqlite", "oysters"]
+default = ["databeam/sqlite", "redis"]
 
 [dependencies]
 axum = { version = "0.8.1", features = ["macros"] }

@@ -29,7 +29,7 @@ impl Cache for RedisCache {
 
     async fn set(&self, id: Self::Item, content: Self::Item) -> bool {
         let mut c = self.get_con().await;
-        let res: Result<String, redis::RedisError> = c.set(id, content);
+        let res: Result<String, redis::RedisError> = c.set_ex(id, content, 604800);
 
         res.is_ok()
     }

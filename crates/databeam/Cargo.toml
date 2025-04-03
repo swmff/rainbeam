@@ -15,7 +15,7 @@ sqlite = []
 redis = ["dep:redis"]
 moka = ["dep:moka"]
 oysters = ["dep:oysters_client"]
-default = ["sqlite", "oysters"]
+default = ["sqlite", "redis"]
 
 [dependencies]
 redis = { version = "0.29.1", optional = true }
