@@ -98,7 +98,7 @@
 <script>
     use("app", (app) => {
         app["hooks::attach_to_partial"](
-            "/@{{ other.username }}/_app/feed.html?password={{ view_password }}",
+            "/@{{ other.username }}/_app/feed.html",
             "/@{{ other.username }}",
             document.getElementById("feed"),
             document.body,
