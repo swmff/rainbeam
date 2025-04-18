@@ -5062,7 +5062,7 @@ impl Database {
         };
 
         // return
-        Ok((secret, qr, recovery))
+        Ok((totp.get_secret_base32(), qr, recovery))
     }
 
     /// Validate a given TOTP code for the given profile.
