@@ -225,10 +225,11 @@ impl CarpGraph for Graph {
             match command.r#type {
                 CommandType::Size => {
                     let (bytes, _) = command.data.split_at(size_of::<u16>());
-                    stroke_size = u16::from_be_bytes(bytes.try_into().unwrap());
+                    stroke_size = u16::from_be_bytes(bytes.try_into().unwrap_or([0, 0]));
                 }
                 CommandType::Color => {
-                    stroke_color = String::from_utf8(command.data.to_owned()).unwrap()
+                    stroke_color =
+                        String::from_utf8(command.data.to_owned()).unwrap_or("#000000".to_string())
                 }
                 CommandType::Line => {
                     if !line_path.is_empty() {

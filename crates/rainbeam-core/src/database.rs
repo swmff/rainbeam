@@ -1675,12 +1675,11 @@ impl Database {
                 if !question.context.media.is_empty()
                     && !question.context.media.starts_with("--CARP")
                 {
-                    std::fs::remove_file(pathd!(
+                    let _ = std::fs::remove_file(pathd!(
                         "{}/carpgraph/{}.carpgraph",
                         self.config.media_dir,
                         question.id
-                    ))
-                    .expect("failed to remove carpgraph image");
+                    ));
                 }
 
                 // remove from cache

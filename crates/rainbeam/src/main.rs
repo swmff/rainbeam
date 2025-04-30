@@ -29,7 +29,7 @@ use mimalloc::MiMalloc;
 static GLOBAL: MiMalloc = MiMalloc;
 
 /// Main server process
-#[tokio::main]
+#[tokio::main(flavor = "multi_thread")]
 pub async fn main() {
     let mut config = config::Config::get_config();
 

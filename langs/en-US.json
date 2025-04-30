@@ -121,7 +121,7 @@
         "response_title.html:action.edit_tags": "Edit tags",
         "response_title.html:action.return_to_inbox": "Return to inbox",
         "response_title.html:action.delete_all": "Delete all",
-        "response_title.html:link.open_question": "Open qustion",
+        "response_title.html:link.open_question": "Open question",
         "response_inner.html:text.click_to_view": "Click to view response content.",
 
         "report.html:label.reason": "Reason",
