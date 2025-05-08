@@ -107,25 +107,6 @@
             </button>
 
             <div class="inner w-content" exclude="dropdown">
-                {% if profile.is_some() %}
-                <button
-                    onclick="trigger('responses::create', ['0', '✨ Boost\n/+r/{{ response.id }}'])
-                        .then((p) => {
-                            p.success ? window.location.href = `/response/${p.payload.id}` : ''
-                        })"
-                >
-                    {{ icon "rocket" }} {{ text
-                    "response_title.html:action.boost" }}
-                </button>
-
-                <a
-                    href="/intents/post?reply={{ response.id }}&title=Quote%20post"
-                >
-                    {{ icon "quote" }} {{ text
-                    "response_title.html:action.quote" }}
-                </a>
-                {% endif %}
-
                 <a
                     href="/@{{ response.author.username }}?reply_intent={{ response.id }}#top"
                     data-turbo="false"

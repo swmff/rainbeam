@@ -1484,46 +1484,6 @@ pub async fn public_global_timeline_request(
 }
 
 #[derive(Template)]
-#[template(path = "intents/post.html")]
-struct ComposeTemplate {
-    config: Config,
-    lang: langbeam::LangFile,
-    profile: Option<Box<Profile>>,
-}
-
-/// GET /_app/components/compose.html
-pub async fn compose_request(
-    jar: CookieJar,
-    State(database): State<Database>,
-) -> impl IntoResponse {
-    let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .auth
-            .get_profile_by_unhashed(c.value_trimmed())
-            .await
-        {
-            Ok(ua) => ua,
-            Err(_) => return Html(DatabaseError::NotAllowed.to_html(database)),
-        },
-        None => return Html(DatabaseError::NotAllowed.to_html(database)),
-    };
-
-    Html(
-        ComposeTemplate {
-            config: database.config.clone(),
-            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
-                c.value_trimmed()
-            } else {
-                ""
-            }),
-            profile: Some(auth_user),
-        }
-        .render()
-        .unwrap(),
-    )
-}
-
-#[derive(Template)]
 #[template(path = "notifications.html")]
 struct NotificationsTemplate {
     config: Config,
@@ -1859,7 +1819,6 @@ pub async fn routes(database: Database) -> Router {
         .route("/inbox/reports", get(reports_request)) // staff
         .route("/inbox/audit", get(audit_log_request)) // staff
         .route("/inbox/audit/ipbans", get(ipbans_request)) // staff
-        .route("/intents/post", get(compose_request))
         // assets
         .route("/@{username}/q/{id}", get(question_request))
         .route(
