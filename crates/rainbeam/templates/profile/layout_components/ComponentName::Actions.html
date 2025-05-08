@@ -161,9 +161,6 @@
 
     <div class="inner w-content left" exclude="dropdown">
         <b class="title">This user</b>
-        <button onclick="trigger('chats::create', ['{{ other.id }}'])">
-            {{ icon "message-circle-plus" }} {{ text "general:link.chat" }}
-        </button>
         <a
             href="/settings?block={{ other.username }}#sparkler:block_somebody"
             target="_blank"

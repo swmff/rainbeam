@@ -12,7 +12,7 @@ use serde::Deserialize;
 
 use crate::config::Config;
 use crate::database::Database;
-use crate::model::{Chat, DatabaseError, FullResponse, Question, RelationshipStatus};
+use crate::model::{DatabaseError, FullResponse, Question, RelationshipStatus};
 use crate::ToHtml;
 
 use super::{clean_metadata, MarkdownTemplate, PaginatedQuery, PasswordQuery, ProfileQuery};
@@ -1614,7 +1614,6 @@ struct ModTemplate {
     is_following_you: bool,
     metadata: String,
     badges: String,
-    chats: Vec<(Chat, Vec<Box<Profile>>)>,
     tokens: String,
     tokens_src: Vec<String>,
     // ...
@@ -1705,11 +1704,6 @@ pub async fn mod_request(
     let is_self = auth_user.id == other.id;
     let relationship = RelationshipStatus::Friends; // moderators should always be your friend! (bypass private profile)
 
-    let chats = match database.get_chats_for_user(&other.id).await {
-        Ok(c) => c,
-        Err(e) => return Html(e.to_html(database)),
-    };
-
     Html(
         ModTemplate {
             config: database.config.clone(),
@@ -1734,7 +1728,6 @@ pub async fn mod_request(
             is_following_you,
             metadata: clean_metadata(&other.metadata),
             badges: serde_json::to_string_pretty(&other.badges).unwrap(),
-            chats,
             tokens: serde_json::to_string(&other.tokens).unwrap(),
             tokens_src: other.tokens.clone(),
             // ...

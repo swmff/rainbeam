@@ -1,6 +1,5 @@
 <div class="card-nest w-full response">
-    {% if (do_not_render_question == false) && (response.context.is_post ==
-    false) %}
+    {% if (do_not_render_question == false) && (response.question != "0") %}
     <div
         class="card flex flex-col gap-1 question {% if !response.context.warning.is_empty() %}hidden{% endif %}"
     >
@@ -142,7 +141,7 @@
 
                     {{ rainbeam_shared::ui::render_markdown(question.content)|safe }}
 
-                    {% if !response.reply.is_empty() && response.context.is_post == false && do_render_nested == true %}
+                    {% if !response.reply.is_empty() && (response.question != "0") && do_render_nested == true %}
                     <include-partial
                         src="/_app/components/response.html?id={{ response.reply }}&do_render_nested=false"
                         uses="app::clean_date_codes,app::link_filter,app::hooks::alt"
@@ -158,7 +157,7 @@
 
     <div class="card flex flex-col gap-1 response_body">
         <!-- prettier-ignore -->
-        {% if (do_not_render_question == true) | (response.context.is_post == true) %}
+        {% if (do_not_render_question == true) | (response.question == "0") %}
             {% include "components/response_title.html" %}
         {% endif %}
 
@@ -166,7 +165,7 @@
         <span class="response_content {% if !response.context.warning.is_empty() %}hidden{% endif %}" hook="long">
             {{ rainbeam_shared::ui::render_markdown(response.content)|safe }}
 
-            {% if !response.reply.is_empty() && response.context.is_post == true && do_render_nested == true %}
+            {% if !response.reply.is_empty() && (response.question == "0") && do_render_nested == true %}
             <include-partial
                 src="/_app/components/response.html?id={{ response.reply }}&do_render_nested=false"
                 uses="app::clean_date_codes,app::link_filter,app::hooks::alt"
@@ -207,7 +206,7 @@
         {% endif %}
 
         <!-- prettier-ignore -->
-        {% if (do_not_render_question == false) && (response.context.is_post == false) %}
+        {% if (do_not_render_question == false) && (response.question != "0") %}
             {% include "components/response_title.html" %}
         {% endif %}
 

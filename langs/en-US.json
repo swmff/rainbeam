@@ -8,7 +8,6 @@
         "general:link.requests": "Requests",
         "general:link.search": "Search",
         "general:link.more": "More",
-        "general:link.chat": "Chat",
         "general:link.actions": "Actions",
         "general:link.open": "Open",
         "general:link.reply": "Reply",
@@ -31,8 +30,6 @@
         "general:link.home": "Home",
         "general:link.inbox": "Inbox",
         "general:link.discover": "Discover",
-
-        "general:service.chats": "Chats",
         "general:service.market": "Market",
 
         "general:title.services": "Services",
@@ -130,7 +127,6 @@
         "report.html:text.details2": "Please try to cite the site rule or possible law that the asset you are reporting breaks. Citing rules will help us get to your report faster, and reports without them may be discarded.",
 
         "timelines:link.timeline": "Timeline",
-        "timelines:link.posts": "Posts",
         "timelines:link.global": "Global",
         "timelines:link.public": "Public",
         "timelines:link.following": "Following",
@@ -171,7 +167,6 @@
         "settings:account.html:label.limited_friend_requests": "Only allow friend requests from people you follow",
         "settings:account.html:label.private_profile": "Private profile",
         "settings:account.html:label.nsfw_profile": "Mark my profile as NSFW",
-        "settings:account.html:label.limited_chats": "Only allow friends to add you to chats",
         "settings:account.html:label.allow_drawings": "Allow drawings in your questions",
         "settings:account.html:label.do_not_send_global_questions_to_inbox": "Do not send global questions to my inbox",
         "settings:account.html:label.do_not_send_global_questions_to_friends": "Do not send my global questions friend's inboxes",
@@ -269,14 +264,6 @@
         "settings:coins.html:text.owned_items": "Owned items",
         "settings:coins.html:text.my_themes": "My themes",
 
-        "chats:chat.html:action.change_name": "Change name",
-        "chats:chat.html:action.add_friend": "Add friend",
-        "chats:chat.html:action.leave": "Leave",
-        "chats:chat.html:link.load_more": "Load more",
-        "chats:chat.html:link.go_back": "Go back",
-        "chats:chat.html:label.edit_chat_name": "Edit chat name",
-        "chats:chat.html:label.select_a_friend": "Select a friend",
-
         "market:label.name": "Name",
         "market:label.description": "Description",
         "market:label.cost": "Cost",
@@ -299,6 +286,9 @@
         "market:action.edit_content": "Edit content",
         "market:action.use_theme": "Use theme base",
         "market:action.copy_to_profile": "Copy to profile",
-        "market:action.clone_layout": "Clone layout"
+        "market:action.clone_layout": "Clone layout",
+
+        "chats:chat.html:link.go_back": "Go back",
+        "chats:chat.html:link.load_more": "Load more"
     }
 }

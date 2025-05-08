@@ -221,7 +221,7 @@ pub async fn partial_response_request(
                 ""
             }),
             profile: auth_user,
-            do_not_render_question: response.1.context.is_post,
+            do_not_render_question: response.1.question == "0",
             is_pinned: false,
             show_comments: true,
             show_pin_button: false,

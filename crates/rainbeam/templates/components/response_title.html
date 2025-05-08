@@ -208,7 +208,7 @@
                     "response_title.html:action.edit_tags" }}
                 </a>
 
-                {% if response.context.is_post == false %}
+                {% if response.question != "0" %}
                 <a
                     href="#"
                     onclick="trigger('responses::unsend', ['{{ response.id }}'])"

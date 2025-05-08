@@ -29,7 +29,6 @@
     {% endif %}
 
     <a href="#/sessions" data-tab-button="sessions"><span>Sessions</span></a>
-    <a href="#/chats" data-tab-button="chats"><span>Chats</span></a>
     <a href="#/labels" data-tab-button="labels"><span>Labels</span></a>
     <a href="#/warnings" data-tab-button="warnings"><span>Warnings</span></a>
 </div>
@@ -374,14 +373,6 @@
             };
         })();
     </script>
-</div>
-
-<!-- chats -->
-<div data-tab="chats" class="hidden">
-    <div id="chats" class="card flex flex-col gap-4">
-        {% for chat in chats %} {% include "chats/components/listing.html" %} {%
-        endfor %}
-    </div>
 </div>
 
 <!-- labels -->

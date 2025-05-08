@@ -63,13 +63,6 @@ note = user.metadata.soft_get("sparkler:status_note") %} {% if !note.is_empty()
                             "general:link.show_profile" }}
                         </a>
 
-                        <button
-                            onclick="trigger('chats::create', ['{{ user.id }}'])"
-                        >
-                            {{ icon "message-circle-plus" }} {{ text
-                            "general:link.chat" }}
-                        </button>
-
                         <a
                             href="javascript:trigger('reports::bootstrap', ['profiles', '{{ user.username }}'])"
                         >

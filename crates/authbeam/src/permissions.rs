@@ -13,7 +13,7 @@ bitflags! {
         const MANAGE_RESPONSES = 1 << 2;
         const MANAGE_COMMENTS = 1 << 3;
         const MANAGE_QUESTIONS = 1 << 4;
-        const MANAGE_CHATS = 1 << 5;
+        const UNUSED_2 = 1 << 5;
         const MANAGE_MESSAGES = 1 << 6;
         const UNUSED = 1 << 7;
         const MANAGE_NOTIFICATIONS = 1 << 8;

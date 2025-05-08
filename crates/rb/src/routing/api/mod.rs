@@ -1,6 +1,4 @@
-pub mod chats;
 pub mod comments;
-pub mod messages;
 pub mod profiles;
 pub mod questions;
 pub mod reactions;
@@ -27,6 +25,4 @@ pub fn routes(database: Database) -> Router {
         .nest("/comments", comments::routes(database.clone()))
         .nest("/reactions", reactions::routes(database.clone()))
         .nest("/profiles", profiles::routes(database.clone()))
-        .nest("/chats", chats::routes(database.clone()))
-        .nest("/messages", messages::routes(database.clone()))
 }

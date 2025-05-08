@@ -262,9 +262,6 @@ impl CtxAsset for FullResponse {
 /// Basic information which changes the way the response is deserialized
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ResponseContext {
-    /// If the response is a post and the question shouldn't be rendered at all
-    #[serde(default)]
-    pub is_post: bool,
     /// If the response is unlisted (not shown on PUBLIC timelines/searches)
     #[serde(default)]
     pub unlisted: bool,
@@ -280,7 +277,6 @@ impl Context for ResponseContext {}
 impl Default for ResponseContext {
     fn default() -> Self {
         Self {
-            is_post: false,
             unlisted: false,
             warning: String::new(),
         }
@@ -461,12 +457,6 @@ pub struct DataExport {
     /// All of the user's [`ResponseComment`]s
     #[serde(default)]
     pub comments: Option<Vec<(ResponseComment, usize, usize)>>,
-    /// All of the user's [`Chat`]s
-    #[serde(default)]
-    pub chats: Option<Vec<(Chat, Vec<Box<Profile>>)>>,
-    /// All of the user's [`Message`]s
-    #[serde(default)]
-    pub messages: Option<Vec<(Message, Box<Profile>)>>,
     /// Get all of the user's ipblocks
     #[serde(default)]
     pub ipblocks: Option<Vec<IpBlock>>,
@@ -495,12 +485,6 @@ pub struct DataExportOptions {
     /// Include `comments`
     #[serde(default)]
     pub comments: bool,
-    /// Include `chats`
-    #[serde(default)]
-    pub chats: bool,
-    /// Include `messages`
-    #[serde(default)]
-    pub messages: bool,
     /// Include `ipblocks`
     #[serde(default)]
     pub ipblocks: bool,
@@ -514,49 +498,6 @@ pub struct DataExportOptions {
     #[serde(default)]
     pub following: bool,
 }
-
-/// Direct message stream
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct Chat {
-    /// The ID of the chat
-    pub id: String,
-    /// The users in the chat
-    pub users: Vec<String>,
-    /// The context of the chat
-    pub context: ChatContext,
-    /// The time the chat was created
-    pub timestamp: u128,
-    /// The name of the chat
-    #[serde(default)]
-    pub name: String,
-}
-
-/// Additional information about a [`Chat`]
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct ChatContext {}
-
-/// Direct message
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct Message {
-    /// The ID of the message
-    pub id: String,
-    /// The ID of the chat the message is in
-    pub chat: String,
-    /// The user who sent the message
-    pub author: String,
-    /// The content of the message
-    pub content: String,
-    /// The context of the message
-    pub context: MessageContext,
-    /// The time the message was sent
-    pub timestamp: u128,
-    /// The time the message was edited
-    pub edited: u128,
-}
-
-/// Additional information about a [`Message`]
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct MessageContext {}
 
 // ...
 
@@ -650,26 +591,6 @@ pub struct EditCircleMetadata {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ReactionCreate {
     pub r#type: AssetType,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct MessageCreate {
-    pub chat: String,
-    pub content: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct ChatNameEdit {
-    #[serde(default)]
-    pub chat: String,
-    pub name: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct ChatAdd {
-    #[serde(default)]
-    pub chat: String,
-    pub friend: String,
 }
 
 /// General API errors

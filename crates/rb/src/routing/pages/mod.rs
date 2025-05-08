@@ -12,7 +12,7 @@ use langbeam::LangFile;
 use axum::{
     extract::{Path, Query, State},
     response::{Html, IntoResponse},
-    routing::{get, post, Router},
+    routing::{get, Router},
 };
 use axum_extra::extract::CookieJar;
 use ammonia::Builder;
@@ -25,7 +25,6 @@ use std::collections::HashMap;
 
 use super::api;
 
-pub mod chats;
 pub mod market;
 pub mod models;
 pub mod profile;
@@ -1140,292 +1139,6 @@ pub async fn question_request(
 }
 
 #[derive(Template)]
-#[template(path = "timelines/posts.html")]
-struct PublicPostsTemplate {
-    config: Config,
-    lang: langbeam::LangFile,
-    profile: Option<Box<Profile>>,
-    unread: usize,
-    notifs: usize,
-    page: i32,
-}
-
-/// GET /inbox/posts
-pub async fn public_posts_timeline_request(
-    jar: CookieJar,
-    State(database): State<Database>,
-    Query(query): Query<PaginatedQuery>,
-) -> impl IntoResponse {
-    let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .auth
-            .get_profile_by_unhashed(c.value_trimmed())
-            .await
-        {
-            Ok(ua) => Some(ua),
-            Err(_) => None,
-        },
-        None => None,
-    };
-
-    let unread = if let Some(ref ua) = auth_user {
-        database.get_inbox_count_by_recipient(&ua.id).await
-    } else {
-        0
-    };
-
-    let notifs = if let Some(ref ua) = auth_user {
-        database
-            .auth
-            .get_notification_count_by_recipient(&ua.id)
-            .await
-    } else {
-        0
-    };
-
-    // ...
-    Html(
-        PublicPostsTemplate {
-            config: database.config.clone(),
-            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
-                c.value_trimmed()
-            } else {
-                ""
-            }),
-            profile: auth_user,
-            unread,
-            notifs,
-            page: query.page,
-        }
-        .render()
-        .unwrap(),
-    )
-}
-
-#[derive(Template)]
-#[template(path = "partials/timelines/posts.html")]
-struct PartialPostsTemplate {
-    config: Config,
-    lang: langbeam::LangFile,
-    profile: Option<Box<Profile>>,
-    responses: Vec<FullResponse>,
-    relationships: HashMap<String, RelationshipStatus>,
-    is_powerful: bool,
-    is_helper: bool,
-}
-
-/// GET /_app/timelines/posts.html
-pub async fn partial_posts_request(
-    jar: CookieJar,
-    State(database): State<Database>,
-    Query(props): Query<PaginatedQuery>,
-) -> impl IntoResponse {
-    let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .auth
-            .get_profile_by_unhashed(c.value_trimmed())
-            .await
-        {
-            Ok(ua) => Some(ua),
-            Err(_) => None,
-        },
-        None => None,
-    };
-
-    let responses = match database.get_posts_paginated(props.page).await {
-        Ok(responses) => responses,
-        Err(e) => return Html(e.to_html(database)),
-    };
-
-    let mut is_helper: bool = false;
-    let is_powerful = if let Some(ref ua) = auth_user {
-        let group = match database.auth.get_group_by_id(ua.group).await {
-            Ok(g) => g,
-            Err(_) => return Html(DatabaseError::Other.to_html(database)),
-        };
-
-        if group.permissions.check_helper() {
-            is_helper = true
-        }
-
-        group.permissions.check_manager()
-    } else {
-        false
-    };
-
-    // build relationships list
-    let mut relationships: HashMap<String, RelationshipStatus> = HashMap::new();
-
-    if let Some(ref ua) = auth_user {
-        for response in &responses {
-            if relationships.contains_key(&response.1.author.id) {
-                continue;
-            }
-
-            if is_helper {
-                // make sure staff can view your responses
-                relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
-                continue;
-            }
-
-            if response.1.author.id == ua.id {
-                // make sure we can view our own responses
-                relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
-                continue;
-            };
-
-            relationships.insert(
-                response.1.author.id.clone(),
-                database
-                    .auth
-                    .get_user_relationship(&response.1.author.id, &ua.id)
-                    .await
-                    .0,
-            );
-        }
-    } else {
-        // the posts timeline requires that we have an entry for every relationship,
-        // since we don't have an account every single relationship should be unknown
-        for response in &responses {
-            if relationships.contains_key(&response.1.author.id) {
-                continue;
-            }
-
-            relationships.insert(response.1.author.id.clone(), RelationshipStatus::Unknown);
-        }
-    }
-
-    // ...
-    return Html(
-        PartialPostsTemplate {
-            config: database.config.clone(),
-            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
-                c.value_trimmed()
-            } else {
-                ""
-            }),
-            profile: auth_user,
-            responses,
-            relationships,
-            is_powerful,
-            is_helper,
-        }
-        .render()
-        .unwrap(),
-    );
-}
-
-#[derive(Template)]
-#[template(path = "timelines/posts_following.html")]
-struct FollowingPostsTemplate {
-    config: Config,
-    lang: langbeam::LangFile,
-    profile: Option<Box<Profile>>,
-    unread: usize,
-    notifs: usize,
-    page: i32,
-    responses: Vec<FullResponse>,
-    relationships: HashMap<String, RelationshipStatus>,
-    is_powerful: bool,
-    is_helper: bool,
-}
-
-/// GET /inbox/posts/following
-pub async fn following_posts_timeline_request(
-    jar: CookieJar,
-    State(database): State<Database>,
-    Query(query): Query<PaginatedQuery>,
-) -> impl IntoResponse {
-    let auth_user = match jar.get("__Secure-Token") {
-        Some(c) => match database
-            .auth
-            .get_profile_by_unhashed(c.value_trimmed())
-            .await
-        {
-            Ok(ua) => ua,
-            Err(_) => return Html(DatabaseError::NotAllowed.to_html(database)),
-        },
-        None => return Html(DatabaseError::NotAllowed.to_html(database)),
-    };
-
-    let unread = database.get_inbox_count_by_recipient(&auth_user.id).await;
-
-    let notifs = database
-        .auth
-        .get_notification_count_by_recipient(&auth_user.id)
-        .await;
-
-    let responses = match database
-        .get_posts_by_following_paginated(query.page, &auth_user.id)
-        .await
-    {
-        Ok(responses) => responses,
-        Err(_) => return Html(DatabaseError::Other.to_html(database)),
-    };
-
-    // build relationships list
-    let mut relationships: HashMap<String, RelationshipStatus> = HashMap::new();
-
-    for response in &responses {
-        if relationships.contains_key(&response.1.author.id) {
-            continue;
-        }
-
-        if response.1.author.id == auth_user.id {
-            // make sure we can view our own responses
-            relationships.insert(response.1.author.id.clone(), RelationshipStatus::Friends);
-            continue;
-        };
-
-        relationships.insert(
-            response.1.author.id.clone(),
-            database
-                .auth
-                .get_user_relationship(&response.1.author.id, &auth_user.id)
-                .await
-                .0,
-        );
-    }
-
-    // ...
-    let mut is_helper: bool = false;
-    let is_powerful = {
-        let group = match database.auth.get_group_by_id(auth_user.group).await {
-            Ok(g) => g,
-            Err(_) => return Html(DatabaseError::Other.to_html(database)),
-        };
-
-        if group.permissions.check_helper() {
-            is_helper = true
-        }
-
-        group.permissions.check_manager()
-    };
-
-    // ...
-    Html(
-        FollowingPostsTemplate {
-            config: database.config.clone(),
-            lang: database.lang(if let Some(c) = jar.get("net.rainbeam.langs.choice") {
-                c.value_trimmed()
-            } else {
-                ""
-            }),
-            profile: Some(auth_user),
-            unread,
-            notifs,
-            page: query.page,
-            responses,
-            relationships,
-            is_powerful,
-            is_helper,
-        }
-        .render()
-        .unwrap(),
-    )
-}
-
-#[derive(Template)]
 #[template(path = "inbox.html")]
 struct InboxTemplate {
     config: Config,
@@ -2140,11 +1853,6 @@ pub async fn routes(database: Database) -> Router {
         .route("/site/fun/carp", get(carp_request))
         // inbox
         .route("/inbox", get(inbox_request))
-        .route("/inbox/posts", get(public_posts_timeline_request))
-        .route(
-            "/inbox/posts/following",
-            get(following_posts_timeline_request),
-        )
         .route("/inbox/global", get(public_global_timeline_request))
         .route("/inbox/global/following", get(global_timeline_request))
         .route("/inbox/notifications", get(notifications_request))
@@ -2205,13 +1913,8 @@ pub async fn routes(database: Database) -> Router {
         // search
         .route("/search", get(search::search_homepage_request))
         .route("/search/responses", get(search::search_responses_request))
-        .route("/search/posts", get(search::search_posts_request))
         .route("/search/questions", get(search::search_questions_request))
         .route("/search/users", get(search::search_users_request))
-        // chats
-        .route("/chats", get(chats::chats_homepage_request))
-        .route("/chats/{id}", get(chats::chat_request))
-        .route("/chats/_app/msg.html", post(chats::render_message_request))
         // market
         .route("/market", get(market::homepage_request))
         .route("/market/new", get(market::create_request))
@@ -2261,7 +1964,6 @@ pub async fn routes(database: Database) -> Router {
             "/_app/timelines/public_timeline.html",
             get(partial_public_timeline_request),
         )
-        .route("/_app/timelines/posts.html", get(partial_posts_request))
         .route(
             "/_app/timelines/discover/responses_top.html",
             get(partial_top_responses_request),
