@@ -3,7 +3,13 @@ macro_rules! cache_sync {
     (|$row:ident, $id:ident| $key:ident->($update:ident in $self:ident){1}) => {{
         let as_str = stringify!($key);
 
-        let row_count = $row.get(as_str).unwrap().parse::<usize>().unwrap_or(0);
+        let row_count = match $row.get(as_str) {
+            Some(s) => s,
+            None => "0",
+        }
+        .parse::<usize>()
+        .unwrap_or(0);
+
         let count = $self
             .base
             .cache

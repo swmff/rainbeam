@@ -24,7 +24,12 @@ use std::{fs::File, io::Read};
 pub fn read_image(static_dir: String, image: String) -> Vec<u8> {
     let mut bytes = Vec::new();
 
-    for byte in File::open(format!("{static_dir}/{image}")).unwrap().bytes() {
+    for byte in match File::open(format!("{static_dir}/{image}")) {
+        Ok(f) => f,
+        Err(_) => return bytes,
+    }
+    .bytes()
+    {
         bytes.push(byte.unwrap())
     }
 
