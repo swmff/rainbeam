@@ -8,7 +8,6 @@ members = [
     "crates/databeam",
     "crates/shared",
     "crates/langbeam",
-    "crates/rainbeam-plugins",
     "crates/carp",
 ]
 

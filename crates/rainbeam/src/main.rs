@@ -53,16 +53,6 @@ pub async fn main() {
             .expect("failed to create carpgraph dir");
     }
 
-    // load plugins
-    let plugins = rainbeam_plugins::config::get_plugins();
-
-    for plugin in plugins {
-        match rainbeam_plugins::run(plugin) {
-            Ok(_) => todo!(),
-            Err(e) => panic!("plugin error: {e}"),
-        };
-    }
-
     // create databases
     let auth_database = AuthDatabase::new(
         DataConf::get_config().connection, // pull connection config from config file

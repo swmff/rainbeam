@@ -3,19 +3,15 @@
 # build release
 build database="sqlite":
     just build-assets
-    cargo build -r --no-default-features --features {{database}},oysters --bin rainbeam
+    cargo build -r --no-default-features --features {{database}},redis --bin rainbeam
 
 mimalloc-build database="sqlite":
     just build-assets
-    cargo build -r --no-default-features --features {{database}},mimalloc,oysters --bin rainbeam
+    cargo build -r --no-default-features --features {{database}},mimalloc,redis --bin rainbeam
 
 moka-build database="sqlite":
     just build-assets
     cargo build -r --no-default-features --features {{database}},mimalloc,moka --bin rainbeam
-
-redis-build database="sqlite":
-    just build-assets
-    cargo build -r --no-default-features --features {{database}},mimalloc,redis --bin rainbeam
 
 init-builder:
     cd crates/builder && npm i && cd ../../
